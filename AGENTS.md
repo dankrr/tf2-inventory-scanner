@@ -1,52 +1,114 @@
 # AGENTS.md
 
-## 📦 Project Overview
+## 🧠 Project Summary
 
-This is a Flask-based web application that accepts multiple SteamID inputs in various formats (SteamID64, SteamID3, Vanity URLs), normalizes them, fetches TF2 inventory data, enriches it with prices from backpack.tf, and displays a visual inventory report per user.
+This is a Python Flask web application that allows a user to input one or more Steam IDs in various formats. The app resolves each ID to a SteamID64, fetches the user’s TF2 inventory, enriches it with item prices from backpack.tf, and displays the following:
 
-### 👤 For each user, the app displays:
-- Steam avatar
 - Steam username
-- TF2 playtime in hours
-- TF2 item images with price (refined metal)
-- Error messages for private inventories or Steam API issues
+- Steam avatar (clickable, linking to profile)
+- TF2 playtime (in hours)
+- Item names, images, and backpack.tf prices
+- Error handling for private inventories or Steam downtime
 
 ---
 
-## 🔧 Agent Instructions
+## 🔍 Expected Steam ID Formats
 
-### 📥 Input Handling
+Input may include:
+- SteamID64 (17-digit numeric)
+- SteamID2 (e.g., `STEAM_0:1:123456`)
+- SteamID3 (e.g., `[U:1:123456]`)
+- Vanity URLs (e.g., `gaben`)
+- Mixed `status` dumps from TF2 servers
 
-- Extract only valid SteamID3 values like `[U:1:#########]` from free-form text.
-- Normalize to SteamID64 for all inventory and profile operations.
-- Ignore unrelated tokens (e.g., map info, account strings, invalid IDs).
+### ✅ Parsing Rules:
+- Only accept `[U:1:########]` from TF2 status output
+- Ignore `[A:1:...]`, `map:`, usernames, or lines without valid IDs
+- Convert everything to SteamID64 before processing
 
-### 🌐 External API Usage
-
-- `ISteamUser/ResolveVanityURL` → Convert vanity → SteamID64
-- `ISteamUser/GetPlayerSummaries` → Username, avatar, profile URL
-- `IPlayerService/GetOwnedGames` → TF2 hours (`appid=440`)
-- `steamcommunity.com/inventory` → Inventory fetch (no key)
-- `backpack.tf/IGetPrices/v4` → Item pricing in refined metal
-
----
-
-## 🧪 Testing & Debugging
-
-- Catch and print errors for all API calls (`try/except`)
-- Return `None` for inventory fetch failures (private or invalid users)
-- Display `"Inventory private or Steam servers down."` in the UI if items cannot be retrieved
+Use `ResolveVanityURL` or manual conversion logic as needed.
 
 ---
 
-## 💻 Running the App
+## 🌐 External API Requirements
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+### 🔑 Steam API (requires STEAM_API_KEY):
+- `ISteamUser/ResolveVanityURL` – for vanity → SteamID64
+- `ISteamUser/GetPlayerSummaries` – get username, avatar, profile URL
+- `IPlayerService/GetOwnedGames` – extract TF2 playtime (appid 440)
 
-export STEAM_API_KEY=your_steam_api_key
-export BACKPACK_API_KEY=your_backpacktf_key
+### 🎒 Steam Inventory:
+- `https://steamcommunity.com/inventory/{steamid}/440/2`  
+  - No API key required
+  - Fails for private accounts or invalid SteamIDs
 
-python app.py
+### 💰 backpack.tf API (requires BACKPACK_API_KEY):
+- `https://backpack.tf/api/IGetPrices/v4?raw=1`
+  - Get prices by item name
+  - Return values in refined metal (e.g., `5.33 ref`)
+
+---
+
+## 💻 Flask Application Behavior
+
+1. User submits one or more Steam IDs in a form
+2. App parses and filters valid IDs
+3. For each user:
+   - Resolves SteamID
+   - Fetches profile summary and TF2 hours
+   - Fetches inventory and item prices
+4. Displays a panel per user:
+   - Avatar (clickable)
+   - Username
+   - Playtime (in hours)
+   - Item cards with image, name, and price
+   - If inventory fetch fails, show `"Inventory private or Steam servers down."`
+
+---
+
+## ⚙️ Development Guide
+
+- Structure all logic in `app.py`
+- Template in `templates/index.html`
+- Do **not modify** `static/` or unrelated template files
+- Use `requests` with timeouts and error handling
+- Raise `ValueError` early if required API keys are missing
+- Cache `prices` during each POST cycle to avoid duplicate fetches
+
+---
+
+## ✨ Style & Formatting Rules
+
+- Use `black` for formatting Python files
+- Use `Jinja2` for HTML with simple loops and conditions
+- Use `<img>` width `64` for avatars and `32` for items
+- Profile links should open in a new tab
+- Always use HTTPS endpoints where available
+
+---
+
+## 🧪 Testing
+
+- Simulate TF2 `status` output as multiline input
+- Gracefully handle:
+  - Invalid Steam IDs
+  - Private inventories
+  - Missing keys
+- Return an empty inventory list + error message if fetch fails
+
+---
+
+## 🔐 Security
+
+- Do not expose API keys in HTML or client-side
+- Always use `os.getenv()` to access keys
+- Show fallback UI if keys are missing (e.g., “API keys required to run”)
+
+---
+
+## 📌 Goals for Codex
+
+- Maintain clear separation between input parsing, data fetching, and rendering
+- Add modular improvements (e.g., pagination, sorting) without breaking layout
+- Allow future extensions like downloadable inventory reports or filtering
+
