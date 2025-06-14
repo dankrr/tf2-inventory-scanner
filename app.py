@@ -20,6 +20,7 @@ BACKPACK_PRICES: Dict[str, float] = {}
 
 # --- Utility functions ------------------------------------------------------
 
+
 def extract_steamids(raw: str) -> List[str]:
     """Return SteamID64 strings extracted from text.
 
@@ -161,15 +162,28 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
     }
 
 
-def fetch_inventory(steamid64: str) -> List[Dict[str, Any]]:
+def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     """Fetch TF2 inventory items for a user."""
     url = f"https://steamcommunity.com/inventory/{steamid64}/440/2?l=english&count=5000"
     print(f"Fetching inventory for {steamid64}")
-    r = requests.get(url, timeout=20)
-    r.raise_for_status()
+    try:
+        r = requests.get(url, timeout=20)
+        r.raise_for_status()
+    except requests.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 400:
+            print(f"Inventory fetch failed for {steamid64}: HTTP 400")
+            return {"items": [], "error": "Private"}
+        print(
+            f"Inventory fetch failed for {steamid64}: HTTP {exc.response.status_code if exc.response else '?'}"
+        )
+        return {"items": [], "error": "Offline"}
+    except requests.RequestException as exc:
+        print(f"Inventory fetch failed for {steamid64}: {exc}")
+        return {"items": [], "error": "Offline"}
+
     data = r.json()
     desc_map = {d["classid"]: d for d in data.get("descriptions", [])}
-    items = []
+    items: List[Dict[str, Any]] = []
     for asset in data.get("assets", []):
         desc = desc_map.get(asset.get("classid"))
         if not desc:
@@ -180,9 +194,11 @@ def fetch_inventory(steamid64: str) -> List[Dict[str, Any]]:
         price = BACKPACK_PRICES.get(name)
         price_str = f"{price:.2f}" if price is not None else "?"
         items.append({"name": name, "icon": icon, "price": price_str})
-    return items
+    return {"items": items}
+
 
 # --- Flask routes -----------------------------------------------------------
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -204,12 +220,28 @@ def index():
                     "profile": f"https://steamcommunity.com/profiles/{sid64}",
                 }
             try:
-                items = fetch_inventory(sid64)
+                inv_result = fetch_inventory(sid64)
             except Exception as exc:
                 print(f"Error processing {sid64}: {exc}")
+                inv_result = {"items": [], "error": "Offline"}
+
+            items = (
+                inv_result.get("items", [])
+                if isinstance(inv_result, dict)
+                else inv_result
+            )
+            if not isinstance(items, list):
                 items = []
-            summary.update({"steamid": sid64, "items": items})
+            error_msg = (
+                inv_result.get("error") if isinstance(inv_result, dict) else None
+            )
+
+            summary.update({"steamid": sid64, "items": items, "error": error_msg})
             users.append(summary)
+
+        for user in users:
+            if not isinstance(user.get("items"), list):
+                user["items"] = []
     return render_template("index.html", users=users, steamids=steamids_input)
 
 
