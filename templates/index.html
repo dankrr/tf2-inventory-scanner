@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TF2 Inventory Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        textarea { width: 100%; height: 100px; }
+        img { vertical-align: middle; }
+    </style>
+</head>
+<body>
+    <h1>TF2 Inventory Checker</h1>
+    <form method="post">
+        <label for="steamids">Enter SteamIDs (one per line):</label><br>
+        <textarea id="steamids" name="steamids">{{ steamids|default('') }}</textarea><br>
+        <button type="submit">Check Inventories</button>
+    </form>
+
+    {% if users %}
+        {% for user in users %}
+            <h2>
+              <a href="{{ user.profile }}" target="_blank">
+                <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
+              </a>
+              {{ user.username }} ({{ user.playtime }} hrs)
+            </h2>
+            {% if user.items %}
+                <ul>
+                {% for item in user.items %}
+                    <li>
+                        <img src="{{ item.icon }}" alt="" width="32"> {{ item.name }} - {{ item.price }} ref
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>No items found.</p>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</body>
+</html>
