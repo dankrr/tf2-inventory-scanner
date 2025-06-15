@@ -190,7 +190,9 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
             continue
         name = desc.get("market_hash_name") or desc.get("name")
         icon_url = desc.get("icon_url")
-        icon = f"https://steamcommunity-a.akamaihd.net/economy/image/{icon_url}"
+        icon = (
+            f"https://steamcommunity-a.akamaihd.net/economy/image/{icon_url}"
+        )
         price = BACKPACK_PRICES.get(name)
         price_str = f"{price:.2f}" if price is not None else "?"
         items.append({"name": name, "icon": icon, "price": price_str})
@@ -233,10 +235,14 @@ def index():
             if not isinstance(items, list):
                 items = []
             error_msg = (
-                inv_result.get("error") if isinstance(inv_result, dict) else None
+                inv_result.get("error")
+                if isinstance(inv_result, dict)
+                else None
             )
 
-            summary.update({"steamid": sid64, "items": items, "error": error_msg})
+            summary.update(
+                {"steamid": sid64, "items": items, "error": error_msg}
+            )
             users.append(summary)
 
         for user in users:
