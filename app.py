@@ -169,7 +169,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     try:
         r = requests.get(url, timeout=20)
         r.raise_for_status()
-    except requests.HTTPError as exc:
+    except requests.exceptions.HTTPError as exc:
         if exc.response is not None and exc.response.status_code == 400:
             print(f"Inventory fetch failed for {steamid64}: HTTP 400")
             return {"items": [], "error": "Private"}
