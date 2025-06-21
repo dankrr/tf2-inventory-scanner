@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TF2 Inventory Viewer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>TF2 Inventory Scanner</h1>
+    <form method="post">
+        <textarea name="steam_ids" placeholder="Enter Steam IDs (any format), one per line"></textarea>
+        <button type="submit">Scan</button>
+    </form>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% for user in inventory_data %}
+        <div class="user-block">
+            <img src="{{ user.profile.avatar }}" alt="avatar">
+            <h2><a href="{{ user.profile.profile_url }}">{{ user.profile.name }}</a> ({{ user.profile.hours }} hrs)</h2>
+            <a href="https://backpack.tf/profiles/{{ user.steamid }}" target="_blank">Backpack.tf Profile</a>
+            <div class="inventory">
+                {% for item in user.items %}
+                    <div class="item" style="background-color: {{ quality_colors[item.quality] }}">
+                        <img src="{{ item.image_url }}">
+                        <p>{{ item.name }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</body>
+</html>
