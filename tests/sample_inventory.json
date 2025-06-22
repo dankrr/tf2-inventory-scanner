@@ -1,0 +1,8 @@
+{
+    "result": {
+        "items": [
+            {"defindex": 205, "icon_url": "test_icon1", "quality": 6},
+            {"defindex": 206, "quality": 11}
+        ]
+    }
+}

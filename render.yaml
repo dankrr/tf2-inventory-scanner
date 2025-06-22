@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: tf2-inventory-scanner
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    autoDeploy: false
