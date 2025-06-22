@@ -1,35 +1,60 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>TF2 Inventory Viewer</title>
+    <meta charset="UTF-8">
+    <title>TF2 Inventory Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    <h1>TF2 Inventory Scanner</h1>
-    <form method="post">
-        <textarea name="steam_ids" placeholder="Enter Steam IDs (any format), one per line"></textarea>
-        <button type="submit">Scan</button>
+<body class="bg-dark text-light">
+<div class="container my-4">
+    <h1 class="mb-4">TF2 Inventory Scanner</h1>
+    <form method="post" class="mb-3">
+        <textarea class="form-control mb-2" name="steam_ids" placeholder="Enter Steam IDs, one per line"></textarea>
+        <button type="submit" class="btn btn-primary">Scan</button>
+        <div id="spinner" class="spinner-border text-light ms-3 d-none" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </form>
-
     {% if error %}
-        <div class="error">{{ error }}</div>
+        <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
-
+    <div class="row">
     {% for user in inventory_data %}
-        <div class="user-block">
-            <img src="{{ user.profile.avatar }}" alt="avatar">
-            <h2><a href="{{ user.profile.profile_url }}">{{ user.profile.name }}</a> ({{ user.profile.hours }} hrs)</h2>
-            <a href="https://backpack.tf/profiles/{{ user.steamid }}" target="_blank">Backpack.tf Profile</a>
-            <div class="inventory">
-                {% for item in user.items %}
-                    <div class="item" style="background-color: {{ quality_colors[item.quality] }}">
-                        <img src="{{ item.image_url }}">
-                        <p>{{ item.name }}</p>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card bg-secondary text-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ user.profile.avatar }}" class="rounded me-2" width="64" height="64" alt="avatar">
+                        <div>
+                            <h5 class="card-title mb-0"><a href="{{ user.profile.profile_url }}" class="text-light" target="_blank">{{ user.profile.name }}</a></h5>
+                            <small>{{ user.profile.hours }} hrs</small>
+                        </div>
                     </div>
-                {% endfor %}
+                    <a href="https://backpack.tf/profiles/{{ user.steamid }}" class="btn btn-sm btn-outline-light mb-2" target="_blank">Backpack.tf</a>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if user.inventory is iterable %}
+                            {% for item in user.inventory %}
+                                <div class="item text-center" style="border-color: {{ quality_colors[item.quality] }};">
+                                <img src="{{ item.image_url }}" alt="item">
+                                <small>{{ item.name }}</small>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     {% endfor %}
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const form = document.querySelector('form');
+  const spinner = document.getElementById('spinner');
+  form.addEventListener('submit', () => {
+    spinner.classList.remove('d-none');
+  });
+</script>
 </body>
 </html>

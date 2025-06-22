@@ -23,7 +23,7 @@ def index():
                 inventory_data.append({
                     "steamid": steamid64,
                     "profile": profile,
-                    "items": processed_items
+                    "inventory": processed_items
                 })
             except Exception as e:
                 error = str(e)
