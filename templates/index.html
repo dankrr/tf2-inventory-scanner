@@ -33,6 +33,10 @@
                     </div>
                     <a href="https://backpack.tf/profiles/{{ user.steamid }}" class="btn btn-sm btn-outline-light mb-2" target="_blank">Backpack.tf</a>
                     <div class="d-flex flex-wrap gap-2">
+<<<<<<< schema-item-name-icon-fix
+=======
+                        {# guard so Jinja doesn't call dict.items() built-in #}
+>>>>>>> main
                         {% if user.inventory is iterable %}
                             {% for item in user.inventory %}
                                 <div class="item text-center" style="border-color: {{ quality_colors[item.quality] }};">
