@@ -36,12 +36,11 @@
                         </div>
                     </div>
                     <a href="https://backpack.tf/profiles/{{ user.steamid }}" class="btn btn-sm btn-outline-light mb-2" target="_blank">Backpack.tf</a>
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="items-strip d-flex overflow-auto flex-row gap-2">
                         {% if user.inventory is iterable %}
                             {% for item in user.inventory %}
-                                <div class="item text-center" style="border-color: {{ quality_colors[item.quality] }};">
-                                    <img src="{{ item.image_url }}" alt="item" onerror="this.src='/static/placeholder.png';">
-                                    <small>{{ item.name }}</small>
+                                <div class="item" style="border-color: {{ quality_colors[item.quality] }};">
+                                    <img src="{{ item.image_url }}" width="48" height="48" alt="item" title="{{ item.name }}">
                                 </div>
                             {% endfor %}
                         {% endif %}

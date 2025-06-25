@@ -1,12 +1,13 @@
 import json
-from utils.inventory_processor import process_inventory, PLACEHOLDER_IMG
+from utils.inventory_processor import process_inventory
 
 
-def test_process_inventory_names_and_placeholder(tmp_path):
+def test_process_inventory_limits_and_images(tmp_path):
     with open('tests/sample_inventory.json') as f:
         data = json.load(f)
-    items = data['result']['items']
+    items = data['result']['items'] * 30
     processed = process_inventory(items)
     assert processed[0]['name'] == 'Vintage Merryweather'
     assert processed[1]['name'] == 'Ghastlierest Gibus'
-    assert processed[1]['image_url'] == PLACEHOLDER_IMG
+    assert processed[0]['image_url'].startswith('https://')
+    assert len(processed) == 50

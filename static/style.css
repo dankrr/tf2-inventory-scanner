@@ -5,15 +5,23 @@ body {
     font-family: "Helvetica Neue", Arial, sans-serif;
 }
 .item {
-    width: 72px;
-    padding: 4px;
-    border-radius: 8px;
-    text-align: center;
+    width: 48px;
+    padding: 2px;
+    border-radius: 6px;
     border: 2px solid transparent;
+    flex: 0 0 auto;
 }
 .item img {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     border-radius: 4px;
     object-fit: cover;
+}
+
+.items-strip::-webkit-scrollbar {
+    height: 6px;
+}
+.items-strip::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
 }
