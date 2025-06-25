@@ -1,4 +1,7 @@
 __pycache__/
 .venv/
 .env
+<<<<<<< schema-item-name-icon-fix
+=======
 .pytest_cache/
+>>>>>>> main
