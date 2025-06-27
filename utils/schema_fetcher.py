@@ -27,7 +27,7 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
             print(f"Schema cache HIT ({len(schema)} items)")
             return schema
 
-    url = "https://api.steampowered.com/IEconItems_440/GetSchema/v1/"
+    url = "https://api.steampowered.com/IEconItems_440/GetSchema/v0001/"
     r = requests.get(f"{url}?key={api_key}", timeout=20)
     r.raise_for_status()
     items = r.json().get("result", {}).get("items", [])
