@@ -33,19 +33,20 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
             return self.payload
 
     responses = [
-        {"result": {"qualities": {"Normal": 0}}},
         {
             "result": {
+                "qualities": {"Normal": 0},
                 "items": [
                     {
                         "defindex": 2,
                         "name": "Other",
+                        "item_name": "Other",
                         "image_url": "u",
                         "image_url_large": None,
                     }
-                ]
+                ],
             }
-        },
+        }
     ]
     captured = []
 
@@ -59,10 +60,10 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         "2": {
             "defindex": 2,
             "name": "Other",
+            "item_name": "Other",
             "image_url": "u",
             "image_url_large": None,
         }
     }
     assert cache.exists()
-    assert any("GetSchemaOverview" in u for u in captured)
-    assert any("GetSchemaItems" in u for u in captured)
+    assert any("GetSchema" in u for u in captured)
