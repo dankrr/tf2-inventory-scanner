@@ -6,7 +6,7 @@ from . import steam_api_client, schema_fetcher
 logger = logging.getLogger(__name__)
 
 # Base URL for item images
-CLOUD = "https://steamcommunity.cloudflare.steamstatic.com/economy/image/"
+CLOUD = "https://community.cloudflare.steamstatic.com/economy/image/"
 
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
@@ -42,12 +42,15 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
-        entry = schema_map.get(defindex)
-        if not entry:
-            continue
+        entry = schema_map.get(defindex, {})
 
-        image_path = entry.get("image_url")
-        img_url = f"{CLOUD}{image_path}" if image_path else ""
+        icon = (
+            entry.get("icon_url")
+            or entry.get("image_url_large")
+            or entry.get("image_url")
+            or ""
+        )
+        img_url = f"{CLOUD}{icon}" if icon else ""
 
         name = entry.get("item_name") or entry.get("name") or f"Item #{defindex}"
 
