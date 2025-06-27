@@ -1,4 +1,5 @@
 from utils import inventory_processor as ip
+from utils import schema_fetcher as sf
 
 
 def test_enrich_inventory():
@@ -12,7 +13,8 @@ def test_enrich_inventory():
             }
         ],
     }
-    ip.SCHEMA = {"111": {"defindex": 111, "name": "Test Item"}}
+    sf.SCHEMA = {"111": {"defindex": 111, "name": "Test Item", "image_url": "img"}}
+    sf.QUALITIES = {}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Test Item"
     assert items[0]["image_url"].startswith(
@@ -28,10 +30,11 @@ def test_process_inventory_handles_missing_icon():
             {"classid": "2", "app_data": {"def_index": "2"}},
         ],
     }
-    ip.SCHEMA = {
-        "1": {"defindex": 1, "name": "One"},
-        "2": {"defindex": 2, "name": "Two"},
+    sf.SCHEMA = {
+        "1": {"defindex": 1, "name": "One", "image_url": "a"},
+        "2": {"defindex": 2, "name": "Two", "image_url": ""},
     }
+    sf.QUALITIES = {}
     items = ip.process_inventory(data)
     assert {i["name"] for i in items} == {"One", "Two"}
     for item in items:
