@@ -41,12 +41,18 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     schema_map = schema_fetcher.SCHEMA or {}
 
     for asset in items_raw:
-        defindex = asset.get("defindex")
-        if defindex is None:
-            continue
-        entry = schema_map.get(str(defindex), {})
-        icon = entry.get("icon_url") or entry.get("image_url") or ""
+        defindex = str(asset.get("defindex", "0"))
+        entry = schema_map.get(defindex, {})
+
+        icon = (
+            entry.get("icon_url")
+            or entry.get("image_url_large")
+            or entry.get("image_url")
+            or ""
+        )
         img_url = f"{CLOUD}{icon}" if icon else ""
+
+        name = entry.get("item_name") or entry.get("name") or f"Item #{defindex}"
 
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
@@ -54,7 +60,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         items.append(
             {
                 "defindex": defindex,
-                "name": entry.get("item_name", f"#{defindex}"),
+                "name": name,
                 "quality": q_name,
                 "quality_color": q_col,
                 "image_url": img_url,

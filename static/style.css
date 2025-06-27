@@ -22,3 +22,13 @@
   height: 24px;
   background: #eee;
 }
+
+.item-name {
+  font-size: 10px;
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 36px;
+}
