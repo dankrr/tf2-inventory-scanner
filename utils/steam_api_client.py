@@ -37,12 +37,10 @@ def get_inventories(steamids: List[str]) -> Dict[str, Any]:
             url = (
                 f"https://steamcommunity.com/inventory/{sid}/440/2?l=english&count=5000"
             )
-            try:
-                r = requests.get(url, timeout=20)
-                r.raise_for_status()
-                results[sid] = r.json()
-            except requests.RequestException:
-                results[sid] = {"assets": [], "descriptions": []}
+            headers = {"User-Agent": "Mozilla/5.0"}
+            r = requests.get(url, headers=headers, timeout=10)
+            r.raise_for_status()
+            results[sid] = r.json()
     return results
 
 
