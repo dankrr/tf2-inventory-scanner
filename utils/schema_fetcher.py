@@ -47,6 +47,7 @@ def _fetch_schema(api_key: str) -> Dict[str, Any]:
                 "defindex": item.get("defindex"),
                 "name": item.get("name"),
                 "image_url": item.get("image_url"),
+                "image_url_large": item.get("image_url_large"),
             }
         if not data.get("next"):
             break

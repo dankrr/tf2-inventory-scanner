@@ -85,7 +85,7 @@ def test_fetch_inventory_handles_http_error(monkeypatch):
 def test_fetch_inventory_statuses(monkeypatch, payload, expected):
     monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
     url = (
-        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
         "?key=x&steamid=1"
     )
     with responses.RequestsMock() as rsps:
