@@ -107,3 +107,29 @@ def test_fetch_inventory_statuses(monkeypatch, pub_status, key_status, expected)
             rsps.add(responses.GET, key_url, **key_status)
         status, data = sac.fetch_inventory("1")
     assert status == expected
+
+
+@pytest.mark.parametrize("status", ["parsed", "incomplete", "private"])
+def test_user_template_safe(monkeypatch, status):
+    monkeypatch.setenv("STEAM_API_KEY", "x")
+    monkeypatch.setenv("BACKPACK_API_KEY", "x")
+    monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", lambda: {})
+    import importlib
+
+    app = importlib.import_module("app")
+    importlib.reload(app)
+
+    from types import SimpleNamespace
+
+    user = SimpleNamespace(
+        steamid="1",
+        username="User",
+        avatar="",
+        playtime=0.0,
+        profile="#",
+        items=[{"image_url": ""}] if status == "parsed" else [],
+        status=status,
+    )
+
+    with app.app.app_context():
+        app.render_template("_user.html", user=user)
