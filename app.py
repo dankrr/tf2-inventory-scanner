@@ -1,6 +1,7 @@
 import os
 import re
 from typing import List, Dict, Any, Tuple
+from types import SimpleNamespace
 
 from dotenv import load_dotenv
 
@@ -200,8 +201,17 @@ def build_user_data(steamid64: str) -> Dict[str, Any]:
     return summary
 
 
+def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
+    """Return a namespace with ``items`` guaranteed to be a list."""
+
+    items = user.get("items", [])
+    user["items"] = items if isinstance(items, list) else []
+    return SimpleNamespace(**user)
+
+
 def fetch_and_process_single_user(steamid64: int) -> str:
     user = build_user_data(str(steamid64))
+    user = normalize_user_payload(user)
     return render_template("_user.html", user=user)
 
 
@@ -231,12 +241,11 @@ def index():
                 status = "incomplete"
             elif status != "parsed":
                 status = "private"
-            if not isinstance(items, list):
-                items = []
             if status != "parsed":
                 items = []
-            user["items"] = items
             user["status"] = status
+            user["items"] = items
+            user = normalize_user_payload(user)
             users.append(user)
     return render_template(
         "index.html",
