@@ -3,7 +3,8 @@
     <a href="{{ user.profile }}" target="_blank">
       <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
     </a>
-    {{ user.username }} ({{ user.playtime }} hrs)
+    {{ user.username }}
+    <span class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</span>
     <span class="pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="click to retry"{% endif %}>
       {% if user.status == 'parsed' %}
         ✅ Public
