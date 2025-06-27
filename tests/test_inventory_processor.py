@@ -2,6 +2,8 @@ from utils import inventory_processor as ip
 from utils import schema_fetcher as sf
 from utils import steam_api_client as sac
 import requests
+import responses
+import pytest
 
 
 def test_enrich_inventory():
@@ -71,43 +73,37 @@ def test_get_inventories_adds_user_agent(monkeypatch):
     assert captured["ua"] == "Mozilla/5.0"
 
 
-def test_fetch_inventory_handles_http_error(monkeypatch, caplog):
-    class DummyResp:
-        def __init__(self, status):
-            self.status_code = status
+def test_fetch_inventory_handles_http_error(monkeypatch):
+    def fake_fetch(_id):
+        return "failed", {}
 
-        def raise_for_status(self):
-            raise requests.HTTPError(response=self)
-
-        def json(self):
-            return {}
-
-    def fake_get(url, headers=None, timeout=10):
-        return DummyResp(400)
-
-    monkeypatch.setattr(sac.requests, "get", fake_get)
-    caplog.set_level("WARNING")
-    data = ip.fetch_inventory("1")
+    monkeypatch.setattr(sac, "fetch_inventory", fake_fetch)
+    data, status = ip.fetch_inventory("1")
     assert data == {"assets": [], "descriptions": []}
-    assert any(
-        "Inventory fetch failed for 1: HTTP 400" in r.message for r in caplog.records
+    assert status == "failed"
+
+
+@pytest.mark.parametrize(
+    "pub_status,key_status,expected",
+    [
+        ({"status": 200, "json": {"assets": [{"classid": "1"}]}}, None, "parsed"),
+        ({"status": 403}, {"status": 200, "json": {"assets": []}}, "private"),
+        (
+            {"body": requests.ConnectionError()},
+            {"body": requests.ConnectionError()},
+            "failed",
+        ),
+    ],
+)
+def test_fetch_inventory_statuses(monkeypatch, pub_status, key_status, expected):
+    monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
+    pub_url = "https://steamcommunity.com/inventory/1/440/2?l=en&count=5000"
+    key_url = (
+        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1?key=x&steamid=1"
     )
-
-
-def test_fetch_inventory_marks_incomplete(monkeypatch):
-    class DummyResp:
-        status_code = 200
-
-        def raise_for_status(self):
-            pass
-
-        def json(self):
-            return {"assets": [{"classid": "1"}]}
-
-    def fake_get(url, headers=None, timeout=20):
-        return DummyResp()
-
-    monkeypatch.setattr(sac.requests, "get", fake_get)
-    data, status = sac.fetch_inventory("1")
-    assert status == "incomplete"
-    assert ip.enrich_inventory(data) == []
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, pub_url, **pub_status)
+        if key_status is not None:
+            rsps.add(responses.GET, key_url, **key_status)
+        status, data = sac.fetch_inventory("1")
+    assert status == expected

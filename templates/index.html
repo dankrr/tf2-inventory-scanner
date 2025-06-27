@@ -8,15 +8,18 @@
         body { font-family: Arial, sans-serif; margin: 2em; }
         textarea { width: 100%; height: 100px; }
         img { vertical-align: middle; }
-        .badge {
+        .pill {
             background: #666;
             color: #fff;
-            padding: 2px 4px;
+            padding: 2px 6px;
             border-radius: 4px;
             font-size: 0.8em;
             margin-left: 4px;
+            cursor: default;
         }
-        .badge-error { background: #c00; }
+        .parsed { background: #4caf50; }
+        .private { background: #999; }
+        .failed { background: #c00; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -31,29 +34,16 @@
         <p>Processed {{ valid_count }} valid IDs{% if invalid_count %} (ignored {{ invalid_count }} invalid){% endif %}.</p>
     {% endif %}
 
+    <button id="retry-all" disabled>Retry Failed</button>
+
+    <div id="results">
     {% if users %}
         {% for user in users %}
-            <h2>
-              <a href="{{ user.profile }}" target="_blank">
-                <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
-              </a>
-              {{ user.username }} ({{ user.playtime }} hrs)
-              {% if user.status == 'incomplete' %}
-                <span class="badge">Incomplete (no icons)</span>
-              {% elif user.status == 'private' %}
-                <span class="badge badge-error">Private</span>
-              {% elif user.status == 'error' %}
-                <span class="badge badge-error">Error</span>
-              {% endif %}
-            </h2>
-            {% if user["items"] %}
-                <div class="items">
-                {% for item in user["items"] %}
-                    <img src="{{ item.image_url }}" width="48" height="48">
-                {% endfor %}
-                </div>
-            {% endif %}
+            {% include '_user.html' with context %}
         {% endfor %}
     {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='retry.js') }}"></script>
 </body>
 </html>

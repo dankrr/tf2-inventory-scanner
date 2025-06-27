@@ -47,48 +47,61 @@ def get_inventories(steamids: List[str]) -> Dict[str, Any]:
     return results
 
 
-def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
-    """Fetch a single inventory and classify its visibility."""
-    url = f"https://steamcommunity.com/inventory/{steamid}/440/2?l=english&count=5000"
+def fetch_inventory(steamid: str) -> Tuple[str, Dict[str, Any]]:
+    """Try two endpoints and classify inventory visibility."""
+
     headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        r = requests.get(url, headers=headers, timeout=20)
-    except requests.RequestException as exc:
-        logger.warning("Inventory fetch failed for %s: %s", steamid, exc)
-        return {}, "error"
+    urls = [
+        f"https://steamcommunity.com/inventory/{steamid}/440/2?l=en&count=5000",
+        f"https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1?key={STEAM_API_KEY}&steamid={steamid}",
+    ]
 
-    if r.status_code in (400, 403):
-        logger.debug("Inventory %s PRIVATE", steamid)
-        return {}, "private"
+    last_status = "failed"
+    last_data: Dict[str, Any] = {}
 
-    try:
-        r.raise_for_status()
-    except requests.HTTPError as exc:
-        logger.warning(
-            "Inventory fetch failed for %s: HTTP %s",
+    for url in urls:
+        assets_len = 0
+        try:
+            resp = requests.get(url, headers=headers, timeout=20)
+        except requests.RequestException:
+            logger.debug(
+                "Inventory %s: endpoint=%s → failed (assets=0)",
+                steamid,
+                url,
+            )
+            continue
+
+        if resp.status_code in (400, 403):
+            logger.debug("Inventory %s: endpoint=%s → private (assets=0)", steamid, url)
+            last_status = "private"
+            last_data = {}
+            continue
+
+        try:
+            data = resp.json()
+        except ValueError:
+            logger.debug("Inventory %s: endpoint=%s → failed (assets=0)", steamid, url)
+            continue
+
+        assets = data.get("assets") or data.get("result", {}).get("items", [])
+        assets_len = len(assets) if assets else 0
+        if assets_len:
+            status = "parsed"
+        else:
+            status = "private" if data else "failed"
+        logger.debug(
+            "Inventory %s: endpoint=%s → %s (assets=%s)",
             steamid,
-            exc.response.status_code if exc.response else "?",
+            url,
+            status,
+            assets_len,
         )
-        return {}, "error"
+        if status == "parsed":
+            return status, data
+        last_status = status
+        last_data = data
 
-    try:
-        data = r.json()
-    except ValueError:
-        logger.warning("Inventory fetch failed for %s: invalid JSON", steamid)
-        return {}, "error"
-
-    if not data.get("assets"):
-        logger.debug("Inventory %s PRIVATE", steamid)
-        return {}, "private"
-
-    if "descriptions" not in data:
-        logger.debug("Inventory %s PUBLIC but INCOMPLETE (no descriptions)", steamid)
-        return data, "incomplete"
-
-    logger.debug(
-        "Inventory %s PUBLIC parsed (%s assets)", steamid, len(data.get("assets", []))
-    )
-    return data, "public"
+    return last_status, last_data
 
 
 def convert_to_steam64(id_str: str) -> str:
