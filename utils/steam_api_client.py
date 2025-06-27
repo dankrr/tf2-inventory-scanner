@@ -33,75 +33,68 @@ def get_player_summaries(steamids: List[str]) -> List[Dict[str, Any]]:
 
 
 def get_inventories(steamids: List[str]) -> Dict[str, Any]:
-    """Fetch TF2 inventories for each user."""
+    """Fetch TF2 inventories for each user via the Steam Web API."""
     results: Dict[str, Any] = {}
+    headers = {"User-Agent": "Mozilla/5.0"}
     for chunk in _chunks(steamids, 20):
         for sid in chunk:
             url = (
-                f"https://steamcommunity.com/inventory/{sid}/440/2?l=english&count=5000"
+                "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+                f"?key={STEAM_API_KEY}&steamid={sid}"
             )
-            headers = {"User-Agent": "Mozilla/5.0"}
             r = requests.get(url, headers=headers, timeout=10)
             r.raise_for_status()
-            results[sid] = r.json()
+            results[sid] = r.json().get("result", {})
     return results
 
 
 def fetch_inventory(steamid: str) -> Tuple[str, Dict[str, Any]]:
-    """Try two endpoints and classify inventory visibility."""
+    """Fetch a user's inventory and classify visibility."""
 
     headers = {"User-Agent": "Mozilla/5.0"}
-    urls = [
-        f"https://steamcommunity.com/inventory/{steamid}/440/2?l=en&count=5000",
-        f"https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1?key={STEAM_API_KEY}&steamid={steamid}",
-    ]
+    url = (
+        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+        f"?key={STEAM_API_KEY}&steamid={steamid}"
+    )
 
-    last_status = "failed"
-    last_data: Dict[str, Any] = {}
+    try:
+        resp = requests.get(url, headers=headers, timeout=20)
+    except requests.RequestException:
+        logger.debug("Inventory %s: request failed", steamid)
+        return "failed", {}
 
-    for url in urls:
-        assets_len = 0
-        try:
-            resp = requests.get(url, headers=headers, timeout=20)
-        except requests.RequestException:
-            logger.debug(
-                "Inventory %s: endpoint=%s → failed (assets=0)",
-                steamid,
-                url,
-            )
-            continue
+    if resp.status_code in (400, 403):
+        logger.debug("Inventory %s: private", steamid)
+        return "private", {}
 
-        if resp.status_code in (400, 403):
-            logger.debug("Inventory %s: endpoint=%s → private (assets=0)", steamid, url)
-            last_status = "private"
-            last_data = {}
-            continue
+    if resp.status_code != 200:
+        logger.debug("Inventory %s: http %s", steamid, resp.status_code)
+        return "failed", {}
 
-        try:
-            data = resp.json()
-        except ValueError:
-            logger.debug("Inventory %s: endpoint=%s → failed (assets=0)", steamid, url)
-            continue
+    try:
+        data = resp.json()
+    except ValueError:
+        logger.debug("Inventory %s: invalid JSON", steamid)
+        return "failed", {}
 
-        assets = data.get("assets") or data.get("result", {}).get("items", [])
-        assets_len = len(assets) if assets else 0
-        if assets_len:
-            status = "parsed"
-        else:
-            status = "private" if data else "failed"
-        logger.debug(
-            "Inventory %s: endpoint=%s → %s (assets=%s)",
-            steamid,
-            url,
-            status,
-            assets_len,
-        )
-        if status == "parsed":
-            return status, data
-        last_status = status
-        last_data = data
+    result = data.get("result", data)
+    status_code = result.get("status")
+    items = result.get("items") or data.get("items")
+    items_len = len(items) if items else 0
 
-    return last_status, last_data
+    if status_code == 1:
+        if items_len:
+            logger.debug("Inventory %s: public & parsed (%s items)", steamid, items_len)
+            return "parsed", result
+        logger.debug("Inventory %s: public but empty", steamid)
+        return "private", result
+
+    if status_code == 15 or not items_len:
+        logger.debug("Inventory %s: private", steamid)
+        return "private", result
+
+    logger.debug("Inventory %s: failed", steamid)
+    return "failed", result
 
 
 def convert_to_steam64(id_str: str) -> str:
