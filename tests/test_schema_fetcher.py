@@ -1,6 +1,5 @@
 import json
 
-import pytest
 from unittest.mock import Mock
 
 import utils.schema_fetcher as sf

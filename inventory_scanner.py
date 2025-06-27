@@ -1,7 +1,9 @@
 import requests
 import sys
 
-API_URL_TEMPLATE = "https://steamcommunity.com/inventory/{steamid}/440/2?l=english&count=5000"
+API_URL_TEMPLATE = (
+    "https://steamcommunity.com/inventory/{steamid}/440/2?l=english&count=5000"
+)
 
 
 def fetch_inventory(steamid: str) -> dict:
