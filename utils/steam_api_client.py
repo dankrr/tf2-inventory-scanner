@@ -138,11 +138,14 @@ def convert_to_steam64(id_str: str) -> str:
 
 def get_tf2_playtime_hours(steamid: str) -> float:
     """Return TF2 playtime in hours for a Steam user."""
-    url = (
-        "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
-        f"?key={STEAM_API_KEY}&steamid={steamid}&appids_filter[0]=440"
-    )
-    r = requests.get(url, timeout=10)
+    url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
+    params = {
+        "key": STEAM_API_KEY,
+        "steamid": steamid,
+        "include_played_free_games": 1,
+        "format": "json",
+    }
+    r = requests.get(url, params=params, timeout=10)
     r.raise_for_status()
     data = r.json().get("response", {})
     for game in data.get("games", []):
