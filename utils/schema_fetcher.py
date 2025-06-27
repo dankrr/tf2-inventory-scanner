@@ -1,10 +1,13 @@
 import json
+import logging
 import os
 import time
 from pathlib import Path
 from typing import Any, Dict
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 CACHE_FILE = Path("data/item_schema.json")
 TTL = 48 * 60 * 60  # 48 hours
@@ -67,7 +70,7 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
                 cached = json.load(f)
             SCHEMA = cached.get("items", {})
             QUALITIES = cached.get("qualities", {})
-            print(f"CACHE HIT ({len(SCHEMA)} items)")
+            logger.info("Schema cache HIT: %s items", len(SCHEMA))
             return SCHEMA
 
     fetched = _fetch_schema(api_key)
@@ -76,5 +79,5 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
         json.dump(fetched, f)
     SCHEMA = fetched["items"]
     QUALITIES = fetched["qualities"]
-    print(f"CACHE MISS ({len(SCHEMA)} items)")
+    logger.info("Schema cache MISS, fetched %s items", len(SCHEMA))
     return SCHEMA
