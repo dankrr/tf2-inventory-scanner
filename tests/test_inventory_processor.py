@@ -15,7 +15,7 @@ def test_enrich_inventory():
     assert items[0]["quality"] == "Normal"
     assert items[0]["quality_color"] == "#B2B2B2"
     assert items[0]["image_url"].startswith(
-        "https://community.cloudflare.steamstatic.com/economy/image/"
+        "https://steamcommunity.cloudflare.steamstatic.com/economy/image/"
     )
 
 
@@ -31,10 +31,19 @@ def test_process_inventory_handles_missing_icon():
     for item in items:
         if item["name"] == "One":
             assert item["image_url"].startswith(
-                "https://community.cloudflare.steamstatic.com/economy/image/"
+                "https://steamcommunity.cloudflare.steamstatic.com/economy/image/"
             )
         else:
             assert item["image_url"] == ""
+
+
+def test_enrich_inventory_skips_unknown_defindex():
+    data = {"items": [{"defindex": 1}, {"defindex": 2}]}
+    sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": "a"}}
+    sf.QUALITIES = {}
+    items = ip.enrich_inventory(data)
+    assert len(items) == 1
+    assert items[0]["name"] == "One"
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
