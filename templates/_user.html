@@ -23,8 +23,8 @@
     <div class="items">
       {% for item in user.items %}
         <div class="item-card" style="background-color: {{ item.quality_color }}20; border-color: {{ item.quality_color }};">
-          {% if item.image_url %}
-            <img src="{{ item.image_url }}" alt="{{ item.name }}" width="32" height="32">
+          {% if item.final_url %}
+            <img src="{{ item.final_url }}" alt="{{ item.name }}" width="32" height="32">
           {% else %}
             <div class="missing-icon"></div>
           {% endif %}

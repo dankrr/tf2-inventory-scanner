@@ -46,8 +46,11 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not entry:
             continue
 
-        image_path = entry.get("image_url")
-        img_url = f"{CLOUD}{image_path}" if image_path else ""
+        image_path = entry.get("image_url") or ""
+        if image_path.startswith("http"):
+            final_url = image_path
+        else:
+            final_url = f"{CLOUD}{image_path}" if image_path else ""
 
         name = entry.get("item_name") or entry.get("name") or f"Item #{defindex}"
 
@@ -60,7 +63,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "name": name,
                 "quality": q_name,
                 "quality_color": q_col,
-                "image_url": img_url,
+                "image_url": image_path,
+                "final_url": final_url,
             }
         )
     return items
