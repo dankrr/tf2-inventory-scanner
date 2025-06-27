@@ -6,9 +6,8 @@ from dotenv import load_dotenv
 
 import requests
 from flask import Flask, render_template, request
-import utils.schema_fetcher as schema_fetcher
+from utils.schema_fetcher import ensure_schema_cached, SCHEMA
 from utils.inventory_processor import enrich_inventory
-import time
 
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -19,14 +18,8 @@ if not STEAM_API_KEY or not BACKPACK_API_KEY:
 
 app = Flask(__name__)
 
-# Warm the schema cache on startup
-cache_status = "HIT"
-if not schema_fetcher.CACHE_FILE.exists() or (
-    time.time() - schema_fetcher.CACHE_FILE.stat().st_mtime >= schema_fetcher.TTL
-):
-    cache_status = "MISS"
-SCHEMA = schema_fetcher.ensure_schema_cached()
-print(f"Loaded {len(SCHEMA)} schema items from {cache_status}")
+SCHEMA = ensure_schema_cached()
+print(f"Loaded {len(SCHEMA)} schema items")
 
 BACKPACK_PRICES: Dict[str, float] = {}
 
