@@ -63,6 +63,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "name": name,
                 "quality": q_name,
                 "quality_color": q_col,
+                "quality_id": quality_id,
                 "image_url": image_path,
                 "final_url": final_url,
             }

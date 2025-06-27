@@ -67,7 +67,8 @@ Only the SteamID3 token is used:
 ```
 
 The application converts the ID to SteamID64, fetches the inventory, and looks
-up prices via backpack.tf.
+up prices via backpack.tf. Price data and currency rates are cached under
+`data/` for offline use.
 
 ## Dependency Management
 
