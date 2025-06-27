@@ -79,22 +79,19 @@ def fetch_inventory(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
     result = data.get("result", data)
     status_code = result.get("status")
-    items = result.get("items") or data.get("items")
-    items_len = len(items) if items else 0
+    items = result.get("items") or []
 
     if status_code == 1:
-        if items_len:
-            logger.debug("Inventory %s: public & parsed (%s items)", steamid, items_len)
+        if items:
+            logger.debug(
+                "Inventory %s: public & parsed (%s items)", steamid, len(items)
+            )
             return "parsed", result
         logger.debug("Inventory %s: public but empty", steamid)
-        return "private", result
+        return "incomplete", result
 
-    if status_code == 15 or not items_len:
-        logger.debug("Inventory %s: private", steamid)
-        return "private", result
-
-    logger.debug("Inventory %s: failed", steamid)
-    return "failed", result
+    logger.debug("Inventory %s: private", steamid)
+    return "private", result
 
 
 def convert_to_steam64(id_str: str) -> str:

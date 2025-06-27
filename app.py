@@ -239,7 +239,7 @@ def index():
             status = user.get("status")
             if status == "failed":
                 status = "incomplete"
-            elif status != "parsed":
+            elif status not in ("parsed", "incomplete"):
                 status = "private"
             if status != "parsed":
                 items = []
