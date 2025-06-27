@@ -24,6 +24,13 @@
 </head>
 <body>
     <h1>TF2 Inventory Checker</h1>
+    {% with msgs = get_flashed_messages() %}
+        {% if msgs %}
+            <ul class="flash">
+            {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     <form method="post">
         <label for="steamids">Enter SteamIDs (separated by space, comma or newline):</label><br>
         <textarea id="steamids" name="steamids">{{ steamids|default('') }}</textarea><br>
