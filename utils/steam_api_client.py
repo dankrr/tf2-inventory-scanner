@@ -72,4 +72,29 @@ def convert_to_steam64(id_str: str) -> str:
         if match:
             z = int(match.group(1))
             return str(z + 76561197960265728)
-    raise ValueError(f"Unsupported SteamID format: {id_str}")
+
+    url = (
+        "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
+        f"?key={STEAM_API_KEY}&vanityurl={id_str}"
+    )
+    r = requests.get(url, timeout=10)
+    r.raise_for_status()
+    data = r.json().get("response", {})
+    if data.get("success") != 1:
+        raise ValueError(f"Unable to resolve vanity URL: {id_str}")
+    return data["steamid"]
+
+
+def get_tf2_playtime_hours(steamid: str) -> float:
+    """Return TF2 playtime in hours for a Steam user."""
+    url = (
+        "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
+        f"?key={STEAM_API_KEY}&steamid={steamid}&appids_filter[0]=440"
+    )
+    r = requests.get(url, timeout=10)
+    r.raise_for_status()
+    data = r.json().get("response", {})
+    for game in data.get("games", []):
+        if game.get("appid") == 440:
+            return game.get("playtime_forever", 0) / 60.0
+    return 0.0

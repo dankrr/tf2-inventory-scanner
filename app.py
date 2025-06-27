@@ -8,6 +8,7 @@ import requests
 from flask import Flask, render_template, request
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
+from utils import steam_api_client as sac
 
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -136,15 +137,8 @@ def extract_price(item_data: Dict[str, Any]) -> float | None:
 
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
     """Return profile name, avatar URL and TF2 playtime for a user."""
-    # Get profile information
-    url = (
-        "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
-        f"?key={STEAM_API_KEY}&steamids={steamid64}"
-    )
     print(f"Fetching player summary for {steamid64}")
-    r = requests.get(url, timeout=10)
-    r.raise_for_status()
-    players = r.json().get("response", {}).get("players", [])
+    players = sac.get_player_summaries([steamid64])
     profile = f"https://steamcommunity.com/profiles/{steamid64}"
     if players:
         player = players[0]
@@ -155,19 +149,7 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
         username = steamid64
         avatar = ""
 
-    # Get TF2 playtime
-    url_games = (
-        "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/"
-        f"?key={STEAM_API_KEY}&steamid={steamid64}&appids_filter[0]=440"
-    )
-    r2 = requests.get(url_games, timeout=10)
-    r2.raise_for_status()
-    data = r2.json().get("response", {})
-    playtime = 0.0
-    for game in data.get("games", []):
-        if game.get("appid") == 440:
-            playtime = game.get("playtime_forever", 0) / 60.0
-            break
+    playtime = sac.get_tf2_playtime_hours(steamid64)
 
     return {
         "username": username,
