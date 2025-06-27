@@ -16,6 +16,7 @@
             font-size: 0.8em;
             margin-left: 4px;
         }
+        .badge-error { background: #c00; }
     </style>
 </head>
 <body>
@@ -37,7 +38,13 @@
                 <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
               </a>
               {{ user.username }} ({{ user.playtime }} hrs)
-              {% if user.error %}<span class="badge">{{ user.error }}</span>{% endif %}
+              {% if user.status == 'incomplete' %}
+                <span class="badge">Incomplete (no icons)</span>
+              {% elif user.status == 'private' %}
+                <span class="badge badge-error">Private</span>
+              {% elif user.status == 'error' %}
+                <span class="badge badge-error">Error</span>
+              {% endif %}
             </h2>
             {% if user["items"] %}
                 <div class="items">
@@ -45,8 +52,6 @@
                     <img src="{{ item.image_url }}" width="48" height="48">
                 {% endfor %}
                 </div>
-            {% else %}
-                <p>Inventory private or Steam servers down.</p>
             {% endif %}
         {% endfor %}
     {% endif %}

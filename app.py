@@ -160,30 +160,15 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
 
 
 def fetch_inventory(steamid64: str) -> Dict[str, Any]:
-    """Fetch TF2 inventory items for a user."""
-    url = f"https://steamcommunity.com/inventory/{steamid64}/440/2?l=english&count=5000"
-    print(f"Fetching inventory for {steamid64}")
-    try:
-        r = requests.get(url, timeout=20)
-        r.raise_for_status()
-    except requests.exceptions.HTTPError as exc:
-        if exc.response is not None and exc.response.status_code == 400:
-            print(f"Inventory fetch failed for {steamid64}: HTTP 400")
-            return {"items": [], "error": "Private"}
-        print(
-            f"Inventory fetch failed for {steamid64}: HTTP {exc.response.status_code if exc.response else '?'}"
-        )
-        return {"items": [], "error": "Offline"}
-    except requests.RequestException as exc:
-        print(f"Inventory fetch failed for {steamid64}: {exc}")
-        return {"items": [], "error": "Offline"}
-
-    data = r.json()
-    items = enrich_inventory(data)
-    for item in items:
-        price = BACKPACK_PRICES.get(item["name"])
-        item["price"] = f"{price:.2f}" if price is not None else "?"
-    return {"items": items}
+    """Fetch TF2 inventory items for a user and return items with a status."""
+    data, status = sac.fetch_inventory(steamid64)
+    items: List[Dict[str, Any]] = []
+    if status in ("public", "incomplete"):
+        items = enrich_inventory(data)
+        for item in items:
+            price = BACKPACK_PRICES.get(item["name"])
+            item["price"] = f"{price:.2f}" if price is not None else "?"
+    return {"items": items, "status": status}
 
 
 # --- Flask routes -----------------------------------------------------------
@@ -213,20 +198,14 @@ def index():
                 inv_result = fetch_inventory(sid64)
             except Exception as exc:
                 print(f"Error processing {sid64}: {exc}")
-                inv_result = {"items": [], "error": "Offline"}
+                inv_result = {"items": [], "status": "error"}
 
-            items = (
-                inv_result.get("items", [])
-                if isinstance(inv_result, dict)
-                else inv_result
-            )
+            items = inv_result.get("items", [])
             if not isinstance(items, list):
                 items = []
-            error_msg = (
-                inv_result.get("error") if isinstance(inv_result, dict) else None
-            )
+            status = inv_result.get("status", "error")
 
-            summary.update({"steamid": sid64, "items": items, "error": error_msg})
+            summary.update({"steamid": sid64, "items": items, "status": status})
             users.append(summary)
 
         for user in users:

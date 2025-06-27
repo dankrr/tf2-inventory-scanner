@@ -92,3 +92,22 @@ def test_fetch_inventory_handles_http_error(monkeypatch, caplog):
     assert any(
         "Inventory fetch failed for 1: HTTP 400" in r.message for r in caplog.records
     )
+
+
+def test_fetch_inventory_marks_incomplete(monkeypatch):
+    class DummyResp:
+        status_code = 200
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"assets": [{"classid": "1"}]}
+
+    def fake_get(url, headers=None, timeout=20):
+        return DummyResp()
+
+    monkeypatch.setattr(sac.requests, "get", fake_get)
+    data, status = sac.fetch_inventory("1")
+    assert status == "incomplete"
+    assert ip.enrich_inventory(data) == []

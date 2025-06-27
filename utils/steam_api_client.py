@@ -1,12 +1,15 @@
 import os
-from typing import List, Dict, Any, Iterator
+from typing import Any, Dict, Iterator, List, Tuple
 
+import logging
 import requests
 
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
 if not STEAM_API_KEY:
     raise ValueError("STEAM_API_KEY is required")
+
+logger = logging.getLogger(__name__)
 
 
 def _chunks(seq: List[str], size: int) -> Iterator[List[str]]:
@@ -42,6 +45,50 @@ def get_inventories(steamids: List[str]) -> Dict[str, Any]:
             r.raise_for_status()
             results[sid] = r.json()
     return results
+
+
+def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
+    """Fetch a single inventory and classify its visibility."""
+    url = f"https://steamcommunity.com/inventory/{steamid}/440/2?l=english&count=5000"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        r = requests.get(url, headers=headers, timeout=20)
+    except requests.RequestException as exc:
+        logger.warning("Inventory fetch failed for %s: %s", steamid, exc)
+        return {}, "error"
+
+    if r.status_code in (400, 403):
+        logger.debug("Inventory %s PRIVATE", steamid)
+        return {}, "private"
+
+    try:
+        r.raise_for_status()
+    except requests.HTTPError as exc:
+        logger.warning(
+            "Inventory fetch failed for %s: HTTP %s",
+            steamid,
+            exc.response.status_code if exc.response else "?",
+        )
+        return {}, "error"
+
+    try:
+        data = r.json()
+    except ValueError:
+        logger.warning("Inventory fetch failed for %s: invalid JSON", steamid)
+        return {}, "error"
+
+    if not data.get("assets"):
+        logger.debug("Inventory %s PRIVATE", steamid)
+        return {}, "private"
+
+    if "descriptions" not in data:
+        logger.debug("Inventory %s PUBLIC but INCOMPLETE (no descriptions)", steamid)
+        return data, "incomplete"
+
+    logger.debug(
+        "Inventory %s PUBLIC parsed (%s assets)", steamid, len(data.get("assets", []))
+    )
+    return data, "public"
 
 
 def convert_to_steam64(id_str: str) -> str:
