@@ -57,9 +57,9 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
 - `IPlayerService/GetOwnedGames` – extract TF2 playtime (appid 440)
 
 ### 🎒 Steam Inventory:
-- `https://steamcommunity.com/inventory/{steamid}/440/2`
-  - No API key required
-  - Fails for private accounts or invalid SteamIDs
+- `https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/?key=<STEAM_API_KEY>&steamid={steamid}`
+  - Returns `status: 1` for public inventories
+  - Returns `status: 15` for private or empty inventories
 
 ### 💰 backpack.tf API (requires BACKPACK_API_KEY):
 - `https://backpack.tf/api/IGetPrices/v4?key=<BACKPACK_API_KEY>`

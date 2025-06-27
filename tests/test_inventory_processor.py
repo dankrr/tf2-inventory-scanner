@@ -20,7 +20,7 @@ def test_enrich_inventory():
     sf.SCHEMA = {"111": {"defindex": 111, "name": "Test Item", "image_url": "img"}}
     sf.QUALITIES = {}
     items = ip.enrich_inventory(data)
-    assert items[0]["name"] == "Test Item"
+    assert items[0]["item_name"] == "Test Item"
     assert items[0]["image_url"].startswith(
         "https://community.cloudflare.steamstatic.com/economy/image/"
     )
@@ -40,9 +40,9 @@ def test_process_inventory_handles_missing_icon():
     }
     sf.QUALITIES = {}
     items = ip.process_inventory(data)
-    assert {i["name"] for i in items} == {"One", "Two"}
+    assert {i["item_name"] for i in items} == {"One", "Two"}
     for item in items:
-        if item["name"] == "One":
+        if item["item_name"] == "One":
             assert item["image_url"].startswith(
                 "https://community.cloudflare.steamstatic.com/economy/image/"
             )
@@ -62,7 +62,7 @@ def test_get_inventories_adds_user_agent(monkeypatch):
                 raise requests.HTTPError(response=self)
 
         def json(self):
-            return {"assets": [], "descriptions": []}
+            return {"result": {"items": []}}
 
     def fake_get(url, headers=None, timeout=10):
         captured["ua"] = headers.get("User-Agent") if headers else None
@@ -84,27 +84,25 @@ def test_fetch_inventory_handles_http_error(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "pub_status,key_status,expected",
+    "payload,expected",
     [
-        ({"status": 200, "json": {"assets": [{"classid": "1"}]}}, None, "parsed"),
-        ({"status": 403}, {"status": 200, "json": {"assets": []}}, "private"),
         (
-            {"body": requests.ConnectionError()},
-            {"body": requests.ConnectionError()},
-            "failed",
+            {"status": 200, "json": {"result": {"status": 1, "items": [{"id": 1}]}}},
+            "parsed",
         ),
+        ({"status": 200, "json": {"result": {"status": 1, "items": []}}}, "private"),
+        ({"status": 200, "json": {"result": {"status": 15}}}, "private"),
+        ({"body": requests.ConnectionError()}, "failed"),
     ],
 )
-def test_fetch_inventory_statuses(monkeypatch, pub_status, key_status, expected):
+def test_fetch_inventory_statuses(monkeypatch, payload, expected):
     monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
-    pub_url = "https://steamcommunity.com/inventory/1/440/2?l=en&count=5000"
-    key_url = (
-        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1?key=x&steamid=1"
+    url = (
+        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+        "?key=x&steamid=1"
     )
     with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, pub_url, **pub_status)
-        if key_status is not None:
-            rsps.add(responses.GET, key_url, **key_status)
+        rsps.add(responses.GET, url, **payload)
         status, data = sac.fetch_inventory("1")
     assert status == expected
 
