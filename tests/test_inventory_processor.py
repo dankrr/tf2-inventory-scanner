@@ -14,7 +14,7 @@ def test_enrich_inventory():
     assert items[0]["name"] == "Test Item"
     assert items[0]["quality"] == "Normal"
     assert items[0]["quality_color"] == "#B2B2B2"
-    assert items[0]["image_url"].startswith(
+    assert items[0]["final_url"].startswith(
         "https://steamcommunity.cloudflare.steamstatic.com/economy/image/"
     )
 
@@ -30,11 +30,20 @@ def test_process_inventory_handles_missing_icon():
     assert {i["name"] for i in items} == {"One", "Two"}
     for item in items:
         if item["name"] == "One":
-            assert item["image_url"].startswith(
+            assert item["final_url"].startswith(
                 "https://steamcommunity.cloudflare.steamstatic.com/economy/image/"
             )
         else:
-            assert item["image_url"] == ""
+            assert item["final_url"] == ""
+
+
+def test_enrich_inventory_preserves_absolute_url():
+    data = {"items": [{"defindex": 5, "quality": 0}]}
+    url = "http://example.com/icon.png"
+    sf.SCHEMA = {"5": {"defindex": 5, "item_name": "Abs", "image_url": url}}
+    sf.QUALITIES = {"0": "Normal"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["final_url"] == url
 
 
 def test_enrich_inventory_skips_unknown_defindex():
@@ -121,7 +130,7 @@ def test_user_template_safe(monkeypatch, status):
         avatar="",
         playtime=0.0,
         profile="#",
-        items=[{"image_url": ""}] if status == "parsed" else [],
+        items=[{"final_url": ""}] if status == "parsed" else [],
         status=status,
     )
 
