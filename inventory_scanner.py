@@ -30,16 +30,13 @@ def main(args: list[str]) -> None:
 
     steamid = args[0]
     data = fetch_inventory(steamid)
-    items = data.get("assets", [])
+    items = data.get("items", [])
     print(f"Found {len(items)} items in inventory for {steamid}")
 
-    # Optionally, print item names if available
-    descriptions = {d["classid"]: d for d in data.get("descriptions", [])}
     for item in items:
-        classid = item.get("classid")
-        desc = descriptions.get(classid)
-        name = desc.get("market_hash_name") if desc else "Unknown Item"
-        print(f"- {name}")
+        defindex = item.get("defindex")
+        quality = item.get("quality")
+        print(f"- defindex={defindex} quality={quality}")
 
 
 if __name__ == "__main__":
