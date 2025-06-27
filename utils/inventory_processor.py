@@ -16,15 +16,16 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             desc.get("app_data", {}).get("def_index") or desc.get("defindex")
         )
         schema_item = SCHEMA.get(defindex)
-        icon_url = desc.get("icon_url")
-        if not schema_item or not icon_url:
+        if not schema_item:
             continue
-        name = schema_item.get("name")
-        quality = asset.get("quality")
+        name = schema_item["name"]
+        icon_url = desc.get("icon_url")
         image_url = (
-            "https://steamcommunity-a.akamaihd.net/economy/image/"
-            f"{quote(icon_url, safe='')}"
+            f"https://community.cloudflare.steamstatic.com/economy/image/{quote(icon_url, safe='')}"
+            if icon_url
+            else ""
         )
+        quality = asset.get("quality")
         items.append(
             {
                 "defindex": defindex,
