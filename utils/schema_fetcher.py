@@ -24,14 +24,11 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
             with CACHE_FILE.open() as f:
                 schema = json.load(f)
             SCHEMA = schema
-            print(f"cache HIT ({len(schema)} items)")
+            print(f"Schema cache HIT ({len(schema)} items)")
             return schema
 
-    url = (
-        "https://api.steampowered.com/IEconItems_440/GetSchema/v1/"
-        f"?key={api_key}&language=en"
-    )
-    r = requests.get(url, timeout=20)
+    url = "https://api.steampowered.com/IEconItems_440/GetSchema/v1/"
+    r = requests.get(f"{url}?key={api_key}", timeout=20)
     r.raise_for_status()
     items = r.json().get("result", {}).get("items", [])
     schema = {str(item["defindex"]): item for item in items if "name" in item}
@@ -39,7 +36,7 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
     with CACHE_FILE.open("w") as f:
         json.dump(schema, f)
     SCHEMA = schema
-    print(f"cache MISS ({len(schema)} items)")
+    print(f"Schema cache MISS (refetched {len(schema)} items)")
     return schema
 
 
