@@ -34,7 +34,18 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
 
     responses = [
         {"result": {"qualities": {"Normal": 0}}},
-        {"result": {"items": [{"defindex": 2, "name": "Other", "image_url": "u"}]}},
+        {
+            "result": {
+                "items": [
+                    {
+                        "defindex": 2,
+                        "name": "Other",
+                        "image_url": "u",
+                        "image_url_large": None,
+                    }
+                ]
+            }
+        },
     ]
     captured = []
 
@@ -44,7 +55,14 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
 
     monkeypatch.setattr(sf.requests, "get", fake_get)
     schema = sf.ensure_schema_cached(api_key="k")
-    assert schema == {"2": {"defindex": 2, "name": "Other", "image_url": "u"}}
+    assert schema == {
+        "2": {
+            "defindex": 2,
+            "name": "Other",
+            "image_url": "u",
+            "image_url_large": None,
+        }
+    }
     assert cache.exists()
     assert any("GetSchemaOverview" in u for u in captured)
     assert any("GetSchemaItems" in u for u in captured)

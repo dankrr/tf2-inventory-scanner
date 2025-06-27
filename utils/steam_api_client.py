@@ -39,7 +39,7 @@ def get_inventories(steamids: List[str]) -> Dict[str, Any]:
     for chunk in _chunks(steamids, 20):
         for sid in chunk:
             url = (
-                "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+                "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
                 f"?key={STEAM_API_KEY}&steamid={sid}"
             )
             r = requests.get(url, headers=headers, timeout=10)
@@ -53,44 +53,47 @@ def fetch_inventory(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
     headers = {"User-Agent": "Mozilla/5.0"}
     url = (
-        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
         f"?key={STEAM_API_KEY}&steamid={steamid}"
     )
 
     try:
         resp = requests.get(url, headers=headers, timeout=20)
     except requests.RequestException:
-        logger.debug("Inventory %s: request failed", steamid)
+        logger.info("Inventory %s: Fetch Failed", steamid)
         return "failed", {}
 
     if resp.status_code in (400, 403):
-        logger.debug("Inventory %s: private", steamid)
+        logger.info("Inventory %s: Private", steamid)
         return "private", {}
 
     if resp.status_code != 200:
-        logger.debug("Inventory %s: http %s", steamid, resp.status_code)
+        logger.info("Inventory %s: HTTP %s", steamid, resp.status_code)
         return "failed", {}
 
     try:
         data = resp.json()
     except ValueError:
-        logger.debug("Inventory %s: invalid JSON", steamid)
+        logger.info("Inventory %s: invalid JSON", steamid)
         return "failed", {}
 
-    result = data.get("result", data)
+    result = data.get("result")
+    if not isinstance(result, dict):
+        logger.info("Inventory %s: Private", steamid)
+        return "private", {}
     status_code = result.get("status")
     items = result.get("items") or []
 
     if status_code == 1:
         if items:
-            logger.debug(
-                "Inventory %s: public & parsed (%s items)", steamid, len(items)
+            logger.info(
+                "Inventory %s: Public and Parsed (%s items)", steamid, len(items)
             )
             return "parsed", result
-        logger.debug("Inventory %s: public but empty", steamid)
+        logger.info("Inventory %s: Public but Empty", steamid)
         return "incomplete", result
 
-    logger.debug("Inventory %s: private", steamid)
+    logger.info("Inventory %s: Private", steamid)
     return "private", result
 
 
