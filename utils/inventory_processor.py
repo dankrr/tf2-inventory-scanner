@@ -22,6 +22,9 @@ def fetch_inventory(steamid: str) -> Dict[str, Any]:
 
 def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info."""
+    if "descriptions" not in data:
+        return []
+
     desc_map = {d.get("classid"): d for d in data.get("descriptions", [])}
     items: List[Dict[str, Any]] = []
     schema_items = schema_fetcher.SCHEMA or {}
