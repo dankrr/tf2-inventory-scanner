@@ -21,10 +21,14 @@
 <body>
     <h1>TF2 Inventory Checker</h1>
     <form method="post">
-        <label for="steamids">Enter SteamIDs (one per line):</label><br>
+        <label for="steamids">Enter SteamIDs (separated by space, comma or newline):</label><br>
         <textarea id="steamids" name="steamids">{{ steamids|default('') }}</textarea><br>
         <button type="submit">Check Inventories</button>
     </form>
+
+    {% if request.method == 'POST' %}
+        <p>Processed {{ valid_count }} valid IDs{% if invalid_count %} (ignored {{ invalid_count }} invalid){% endif %}.</p>
+    {% endif %}
 
     {% if users %}
         {% for user in users %}
