@@ -1,5 +1,7 @@
 from utils import inventory_processor as ip
 from utils import schema_fetcher as sf
+from utils import steam_api_client as sac
+import requests
 
 
 def test_enrich_inventory():
@@ -44,3 +46,49 @@ def test_process_inventory_handles_missing_icon():
             )
         else:
             assert item["image_url"] == ""
+
+
+def test_get_inventories_adds_user_agent(monkeypatch):
+    captured = {}
+
+    class DummyResp:
+        def __init__(self, status=200):
+            self.status_code = status
+
+        def raise_for_status(self):
+            if self.status_code != 200:
+                raise requests.HTTPError(response=self)
+
+        def json(self):
+            return {"assets": [], "descriptions": []}
+
+    def fake_get(url, headers=None, timeout=10):
+        captured["ua"] = headers.get("User-Agent") if headers else None
+        return DummyResp()
+
+    monkeypatch.setattr(sac.requests, "get", fake_get)
+    sac.get_inventories(["1"])
+    assert captured["ua"] == "Mozilla/5.0"
+
+
+def test_fetch_inventory_handles_http_error(monkeypatch, caplog):
+    class DummyResp:
+        def __init__(self, status):
+            self.status_code = status
+
+        def raise_for_status(self):
+            raise requests.HTTPError(response=self)
+
+        def json(self):
+            return {}
+
+    def fake_get(url, headers=None, timeout=10):
+        return DummyResp(400)
+
+    monkeypatch.setattr(sac.requests, "get", fake_get)
+    caplog.set_level("WARNING")
+    data = ip.fetch_inventory("1")
+    assert data == {"assets": [], "descriptions": []}
+    assert any(
+        "Inventory fetch failed for 1: HTTP 400" in r.message for r in caplog.records
+    )
