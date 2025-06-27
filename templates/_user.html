@@ -20,12 +20,12 @@
     {% elif user.status == 'private' %}
       <span class="badge bg-secondary">Private</span>
     {% endif %}
-    {% if user.items %}
     <div class="items">
-      {% for item in user.items | default([]) %}
+      {% for item in user.items %}
         <img src="{{ item.image_url }}" width="48" height="48">
+      {% else %}
+        <div class="empty">No items (inventory private or still parsing).</div>
       {% endfor %}
     </div>
-    {% endif %}
   </div>
 </div>
