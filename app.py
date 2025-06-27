@@ -161,14 +161,54 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
 
 def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     """Fetch TF2 inventory items for a user and return items with a status."""
-    data, status = sac.fetch_inventory(steamid64)
+    status, data = sac.fetch_inventory(steamid64)
     items: List[Dict[str, Any]] = []
-    if status in ("public", "incomplete"):
+    if status == "parsed":
         items = enrich_inventory(data)
         for item in items:
             price = BACKPACK_PRICES.get(item["name"])
             item["price"] = f"{price:.2f}" if price is not None else "?"
     return {"items": items, "status": status}
+
+
+def build_user_data(steamid64: str) -> Dict[str, Any]:
+    """Return a dictionary for rendering a single user card."""
+
+    try:
+        summary = get_player_summary(steamid64)
+    except Exception as exc:
+        print(f"Error fetching summary for {steamid64}: {exc}")
+        summary = {
+            "username": steamid64,
+            "avatar": "",
+            "playtime": 0.0,
+            "profile": f"https://steamcommunity.com/profiles/{steamid64}",
+        }
+
+    try:
+        inv_result = fetch_inventory(steamid64)
+    except Exception as exc:
+        print(f"Error processing {steamid64}: {exc}")
+        inv_result = {"items": [], "status": "failed"}
+
+    items = inv_result.get("items", [])
+    if not isinstance(items, list):
+        items = []
+    status = inv_result.get("status", "failed")
+
+    summary.update({"steamid": steamid64, "items": items, "status": status})
+    return summary
+
+
+def fetch_and_process_single_user(steamid64: int) -> str:
+    user = build_user_data(str(steamid64))
+    return render_template("_user.html", user=user)
+
+
+@app.post("/retry/<int:steamid64>")
+def retry_single(steamid64: int):
+    """Reprocess a single user and return a rendered snippet."""
+    return fetch_and_process_single_user(steamid64)
 
 
 # --- Flask routes -----------------------------------------------------------
@@ -184,29 +224,8 @@ def index():
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} invalid tokens")
         fetch_prices()
         for sid64 in ids:
-            try:
-                summary = get_player_summary(sid64)
-            except Exception as exc:
-                print(f"Error fetching summary for {sid64}: {exc}")
-                summary = {
-                    "username": sid64,
-                    "avatar": "",
-                    "playtime": 0.0,
-                    "profile": f"https://steamcommunity.com/profiles/{sid64}",
-                }
-            try:
-                inv_result = fetch_inventory(sid64)
-            except Exception as exc:
-                print(f"Error processing {sid64}: {exc}")
-                inv_result = {"items": [], "status": "error"}
-
-            items = inv_result.get("items", [])
-            if not isinstance(items, list):
-                items = []
-            status = inv_result.get("status", "error")
-
-            summary.update({"steamid": sid64, "items": items, "status": status})
-            users.append(summary)
+            user = build_user_data(sid64)
+            users.append(user)
 
         for user in users:
             if not isinstance(user.get("items"), list):

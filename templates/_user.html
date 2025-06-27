@@ -1,0 +1,24 @@
+<div id="user-{{ user.steamid }}" class="user-card">
+  <h2>
+    <a href="{{ user.profile }}" target="_blank">
+      <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
+    </a>
+    {{ user.username }} ({{ user.playtime }} hrs)
+    <span class="pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="click to retry"{% endif %}>
+      {% if user.status == 'parsed' %}
+        ✅ Public
+      {% elif user.status == 'private' %}
+        🔒 Private
+      {% else %}
+        🔄 Failed
+      {% endif %}
+    </span>
+  </h2>
+  {% if user.items %}
+  <div class="items">
+    {% for item in user.items %}
+      <img src="{{ item.image_url }}" width="48" height="48">
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

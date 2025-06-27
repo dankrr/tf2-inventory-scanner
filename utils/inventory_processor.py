@@ -1,23 +1,19 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from urllib.parse import quote
 import logging
-import requests
 
 from . import steam_api_client, schema_fetcher
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_inventory(steamid: str) -> Dict[str, Any]:
-    """Return raw inventory data for a user or an empty structure on error."""
-    try:
-        return steam_api_client.get_inventories([steamid]).get(
-            steamid, {"assets": [], "descriptions": []}
-        )
-    except requests.HTTPError as exc:
-        status = exc.response.status_code if exc.response else "?"
-        logger.warning("Inventory fetch failed for %s: HTTP %s", steamid, status)
-        return {"assets": [], "descriptions": []}
+def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
+    """Return inventory data and status using the Steam API helper."""
+
+    status, data = steam_api_client.fetch_inventory(steamid)
+    if status != "parsed":
+        data = data or {"assets": [], "descriptions": []}
+    return data, status
 
 
 def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
