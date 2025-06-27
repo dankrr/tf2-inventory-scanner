@@ -1,9 +1,9 @@
 # TF2 Inventory Web App
 
 This project provides a small Flask application for inspecting the Team Fortress
-2 inventory of one or more Steam users. The app scans pasted server output for
-SteamID3 tokens such as `[U:1:123456]` and converts them to SteamID64 by adding
-`76561197960265728` to the account ID.
+2 inventory of one or more Steam users. It accepts SteamIDs in several formats
+(SteamID64, SteamID2, SteamID3 or vanity URLs) separated by spaces, commas or newlines.
+The app converts everything to SteamID64 before fetching profile and inventory data.
 It also shows each player's Steam profile name, avatar, and total time spent in
 TF2.
 
@@ -36,10 +36,10 @@ The application uses **python-dotenv** to load these values at runtime.
 python app.py
 ```
 
-Navigate to `http://localhost:5000` and paste text containing SteamID3 tokens
-(for example from the in-game `status` command). The app will display each
-user's avatar, profile name, TF2 playtime, and a list of TF2 items with icons
-and prices in refined metal.
+Navigate to `http://localhost:5000` and paste text containing one or more
+SteamIDs (any supported format). The app will display each user's avatar,
+profile name, TF2 playtime, and a list of TF2 items with icons and prices in
+refined metal.
 
 ## Example
 

@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 
 from dotenv import load_dotenv
 
@@ -26,24 +26,34 @@ BACKPACK_PRICES: Dict[str, float] = {}
 # --- Utility functions ------------------------------------------------------
 
 
-def extract_steamids(raw: str) -> List[str]:
-    """Return SteamID64 strings extracted from text.
+def parse_steamids(raw: str) -> Tuple[List[str], List[str]]:
+    """Return valid SteamID64 strings and a list of invalid tokens.
 
-    The function scans ``raw`` for patterns like ``[U:1:123456]`` and ignores any
-    other tokens (for example usernames or ``[A:1:...]`` entries).  The account
-    ID is converted to SteamID64 by adding ``76561197960265728``.  Duplicates are
-    removed while preserving the original order.
+    The input is split on any non-alphanumeric characters to support a mix of
+    newline, comma or space separated values.  Each token is normalised using
+    :func:`steamid_to_64`.  Invalid values are skipped and returned in a second
+    list.  Duplicate IDs are removed while preserving order.
     """
 
-    ids = re.findall(r"\[U:1:(\d+)\]", raw)
+    tokens = re.split(r"[^0-9A-Za-z:\[\]_]+", raw)
+    valid: List[str] = []
+    invalid: List[str] = []
     seen: set[str] = set()
-    results: List[str] = []
-    for account_id in ids:
-        sid64 = str(int(account_id) + 76561197960265728)
+
+    for token in tokens:
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            sid64 = steamid_to_64(token)
+        except Exception:
+            invalid.append(token)
+            continue
         if sid64 not in seen:
             seen.add(sid64)
-            results.append(sid64)
-    return results
+            valid.append(sid64)
+
+    return valid, invalid
 
 
 def steamid_to_64(id_str: str) -> str:
@@ -203,7 +213,8 @@ def index():
     steamids_input = ""
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
-        ids = extract_steamids(steamids_input)
+        ids, invalid = parse_steamids(steamids_input)
+        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} invalid tokens")
         fetch_prices()
         for sid64 in ids:
             try:
@@ -239,7 +250,13 @@ def index():
         for user in users:
             if not isinstance(user.get("items"), list):
                 user["items"] = []
-    return render_template("index.html", users=users, steamids=steamids_input)
+    return render_template(
+        "index.html",
+        users=users,
+        steamids=steamids_input,
+        valid_count=len(ids) if request.method == "POST" else 0,
+        invalid_count=len(invalid) if request.method == "POST" else 0,
+    )
 
 
 if __name__ == "__main__":
