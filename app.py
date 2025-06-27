@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 
 import requests
 from flask import Flask, render_template, request
+import utils.schema_fetcher as schema_fetcher
+from utils.inventory_processor import enrich_inventory
+import time
 
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -15,6 +18,15 @@ if not STEAM_API_KEY or not BACKPACK_API_KEY:
     raise ValueError("STEAM_API_KEY and BACKPACK_API_KEY must be set")
 
 app = Flask(__name__)
+
+# Warm the schema cache on startup
+cache_status = "HIT"
+if not schema_fetcher.CACHE_FILE.exists() or (
+    time.time() - schema_fetcher.CACHE_FILE.stat().st_mtime >= schema_fetcher.TTL
+):
+    cache_status = "MISS"
+SCHEMA = schema_fetcher.ensure_schema_cached()
+print(f"Loaded {len(SCHEMA)} schema items from {cache_status}")
 
 BACKPACK_PRICES: Dict[str, float] = {}
 
@@ -182,20 +194,10 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
         return {"items": [], "error": "Offline"}
 
     data = r.json()
-    desc_map = {d["classid"]: d for d in data.get("descriptions", [])}
-    items: List[Dict[str, Any]] = []
-    for asset in data.get("assets", []):
-        desc = desc_map.get(asset.get("classid"))
-        if not desc:
-            continue
-        name = desc.get("market_hash_name") or desc.get("name")
-        icon_url = desc.get("icon_url")
-        icon = (
-            f"https://steamcommunity-a.akamaihd.net/economy/image/{icon_url}"
-        )
-        price = BACKPACK_PRICES.get(name)
-        price_str = f"{price:.2f}" if price is not None else "?"
-        items.append({"name": name, "icon": icon, "price": price_str})
+    items = enrich_inventory(data)
+    for item in items:
+        price = BACKPACK_PRICES.get(item["name"])
+        item["price"] = f"{price:.2f}" if price is not None else "?"
     return {"items": items}
 
 
@@ -235,14 +237,10 @@ def index():
             if not isinstance(items, list):
                 items = []
             error_msg = (
-                inv_result.get("error")
-                if isinstance(inv_result, dict)
-                else None
+                inv_result.get("error") if isinstance(inv_result, dict) else None
             )
 
-            summary.update(
-                {"steamid": sid64, "items": items, "error": error_msg}
-            )
+            summary.update({"steamid": sid64, "items": items, "error": error_msg})
             users.append(summary)
 
         for user in users:
