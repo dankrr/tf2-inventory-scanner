@@ -225,11 +225,19 @@ def index():
         fetch_prices()
         for sid64 in ids:
             user = build_user_data(sid64)
+            items = user.get("items")
+            status = user.get("status")
+            if status == "failed":
+                status = "incomplete"
+            elif status != "parsed":
+                status = "private"
+            if not isinstance(items, list):
+                items = []
+            if status != "parsed":
+                items = []
+            user["items"] = items
+            user["status"] = status
             users.append(user)
-
-        for user in users:
-            if not isinstance(user.get("items"), list):
-                user["items"] = []
     return render_template(
         "index.html",
         users=users,
