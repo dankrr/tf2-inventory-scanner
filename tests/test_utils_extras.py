@@ -9,16 +9,10 @@ def test_convert_to_steam64():
 
 
 def test_process_inventory_sorting():
-    data = {
-        "assets": [{"classid": "1"}, {"classid": "2"}],
-        "descriptions": [
-            {"classid": "1", "icon_url": "a", "app_data": {"def_index": "2"}},
-            {"classid": "2", "icon_url": "b", "app_data": {"def_index": "1"}},
-        ],
-    }
+    data = {"items": [{"defindex": 2}, {"defindex": 1}]}
     sf.SCHEMA = {
-        "1": {"defindex": 1, "name": "B", "image_url": "a"},
-        "2": {"defindex": 2, "name": "A", "image_url": "b"},
+        "1": {"defindex": 1, "name": "A", "image_url": "b"},
+        "2": {"defindex": 2, "name": "B", "image_url": "a"},
     }
     sf.QUALITIES = {}
     items = ip.process_inventory(data)

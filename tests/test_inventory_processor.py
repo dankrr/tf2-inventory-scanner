@@ -7,18 +7,9 @@ import pytest
 
 
 def test_enrich_inventory():
-    data = {
-        "assets": [{"classid": "1"}],
-        "descriptions": [
-            {
-                "classid": "1",
-                "icon_url": "icon.png",
-                "app_data": {"def_index": "111"},
-            }
-        ],
-    }
+    data = {"items": [{"defindex": 111, "quality": 0}]}
     sf.SCHEMA = {"111": {"defindex": 111, "name": "Test Item", "image_url": "img"}}
-    sf.QUALITIES = {}
+    sf.QUALITIES = {"0": "Normal"}
     items = ip.enrich_inventory(data)
     assert items[0]["item_name"] == "Test Item"
     assert items[0]["image_url"].startswith(
@@ -27,13 +18,7 @@ def test_enrich_inventory():
 
 
 def test_process_inventory_handles_missing_icon():
-    data = {
-        "assets": [{"classid": "1"}, {"classid": "2"}],
-        "descriptions": [
-            {"classid": "1", "icon_url": "icon.png", "app_data": {"def_index": "1"}},
-            {"classid": "2", "app_data": {"def_index": "2"}},
-        ],
-    }
+    data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {
         "1": {"defindex": 1, "name": "One", "image_url": "a"},
         "2": {"defindex": 2, "name": "Two", "image_url": ""},
@@ -79,7 +64,7 @@ def test_fetch_inventory_handles_http_error(monkeypatch):
 
     monkeypatch.setattr(sac, "fetch_inventory", fake_fetch)
     data, status = ip.fetch_inventory("1")
-    assert data == {"assets": [], "descriptions": []}
+    assert data == {"items": []}
     assert status == "failed"
 
 
@@ -90,7 +75,7 @@ def test_fetch_inventory_handles_http_error(monkeypatch):
             {"status": 200, "json": {"result": {"status": 1, "items": [{"id": 1}]}}},
             "parsed",
         ),
-        ({"status": 200, "json": {"result": {"status": 1, "items": []}}}, "private"),
+        ({"status": 200, "json": {"result": {"status": 1, "items": []}}}, "incomplete"),
         ({"status": 200, "json": {"result": {"status": 15}}}, "private"),
         ({"body": requests.ConnectionError()}, "failed"),
     ],
