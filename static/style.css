@@ -1,0 +1,5 @@
+.items {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+}
