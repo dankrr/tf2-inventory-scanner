@@ -8,10 +8,12 @@ import pytest
 
 def test_enrich_inventory():
     data = {"items": [{"defindex": 111, "quality": 0}]}
-    sf.SCHEMA = {"111": {"defindex": 111, "name": "Test Item", "image_url": "img"}}
+    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Test Item", "image_url": "img"}}
     sf.QUALITIES = {"0": "Normal"}
     items = ip.enrich_inventory(data)
-    assert items[0]["item_name"] == "Test Item"
+    assert items[0]["name"] == "Test Item"
+    assert items[0]["quality"] == "Normal"
+    assert items[0]["quality_color"] == "#B2B2B2"
     assert items[0]["image_url"].startswith(
         "https://community.cloudflare.steamstatic.com/economy/image/"
     )
@@ -20,14 +22,14 @@ def test_enrich_inventory():
 def test_process_inventory_handles_missing_icon():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {
-        "1": {"defindex": 1, "name": "One", "image_url": "a"},
-        "2": {"defindex": 2, "name": "Two", "image_url": ""},
+        "1": {"defindex": 1, "item_name": "One", "image_url": "a"},
+        "2": {"defindex": 2, "item_name": "Two", "image_url": ""},
     }
     sf.QUALITIES = {}
     items = ip.process_inventory(data)
-    assert {i["item_name"] for i in items} == {"One", "Two"}
+    assert {i["name"] for i in items} == {"One", "Two"}
     for item in items:
-        if item["item_name"] == "One":
+        if item["name"] == "One":
             assert item["image_url"].startswith(
                 "https://community.cloudflare.steamstatic.com/economy/image/"
             )
