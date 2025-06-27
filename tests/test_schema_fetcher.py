@@ -26,7 +26,14 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         def json(self):
             return {"result": {"items": [{"defindex": 2, "name": "Other"}]}}
 
-    monkeypatch.setattr(sf.requests, "get", lambda url, timeout: DummyResp())
+    captured = {}
+
+    def fake_get(url, timeout):
+        captured["url"] = url
+        return DummyResp()
+
+    monkeypatch.setattr(sf.requests, "get", fake_get)
     schema = sf.ensure_schema_cached(api_key="k")
     assert schema == {"2": {"defindex": 2, "name": "Other"}}
     assert cache.exists()
+    assert "v0001" in captured["url"]
