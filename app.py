@@ -139,6 +139,7 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
 
 
 def fetch_and_process_single_user(steamid64: int) -> str:
+    fetch_prices()
     user = build_user_data(str(steamid64))
     user = normalize_user_payload(user)
     return render_template("_user.html", user=user)
@@ -176,26 +177,13 @@ def index():
                 invalid_count=len(invalid),
             )
         fetch_prices()
-        for sid64 in ids:
-            user = build_user_data(sid64)
-            items = user.get("items")
-            status = user.get("status")
-            if status == "failed":
-                status = "incomplete"
-            elif status not in ("parsed", "incomplete"):
-                status = "private"
-            if status != "parsed":
-                items = []
-            user["status"] = status
-            user["items"] = items
-            user = normalize_user_payload(user)
-            users.append(user)
     return render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
         valid_count=len(ids) if request.method == "POST" else 0,
         invalid_count=len(invalid) if request.method == "POST" else 0,
+        ids=ids,
     )
 
 
