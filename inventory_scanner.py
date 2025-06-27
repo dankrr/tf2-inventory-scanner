@@ -3,7 +3,7 @@ import requests
 import sys
 
 API_URL_TEMPLATE = (
-    "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v1/"
+    "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
     "?key={key}&steamid={steamid}"
 )
 
