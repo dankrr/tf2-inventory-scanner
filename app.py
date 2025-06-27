@@ -167,7 +167,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     if status == "parsed":
         items = enrich_inventory(data)
         for item in items:
-            price = BACKPACK_PRICES.get(item["item_name"])
+            price = BACKPACK_PRICES.get(item["name"])
             item["price"] = f"{price:.2f}" if price is not None else "?"
     return {"items": items, "status": status}
 

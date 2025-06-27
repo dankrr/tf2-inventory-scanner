@@ -3,3 +3,22 @@
     overflow-x: auto;
     gap: 4px;
 }
+
+.item-card {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin: 2px;
+}
+.item-card img {
+  display: block;
+}
+.missing-icon {
+  width: 24px;
+  height: 24px;
+  background: #eee;
+}
