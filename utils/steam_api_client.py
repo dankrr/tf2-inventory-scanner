@@ -44,3 +44,32 @@ def get_inventories(steamids: List[str]) -> Dict[str, Any]:
             except requests.RequestException:
                 results[sid] = {"assets": [], "descriptions": []}
     return results
+
+
+def convert_to_steam64(id_str: str) -> str:
+    """Convert Steam identifiers to SteamID64."""
+    import re
+
+    if re.fullmatch(r"\d{17}", id_str):
+        return id_str
+
+    if id_str.startswith("STEAM_"):
+        try:
+            _, y, z = id_str.split(":")
+            y = int(y.split("_")[1]) if "_" in y else int(y)
+            z = int(z)
+        except (ValueError, IndexError):
+            raise ValueError(f"Invalid SteamID2: {id_str}") from None
+        account_id = z * 2 + y
+        return str(account_id + 76561197960265728)
+
+    if id_str.startswith("[U:"):
+        match = re.match(r"\[U:(\d+):(\d+)\]", id_str)
+        if match:
+            z = int(match.group(2))
+            return str(z + 76561197960265728)
+        match = re.match(r"\[U:1:(\d+)\]", id_str)
+        if match:
+            z = int(match.group(1))
+            return str(z + 76561197960265728)
+    raise ValueError(f"Unsupported SteamID format: {id_str}")

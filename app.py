@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 import requests
 from flask import Flask, render_template, request
-from utils.schema_fetcher import ensure_schema_cached, SCHEMA
+from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 
 load_dotenv()
@@ -69,7 +69,7 @@ def steamid_to_64(id_str: str) -> str:
             y = int(y.split("_")[1]) if "_" in y else int(y)
             z = int(z)
         except (ValueError, IndexError):
-            raise ValueError(f"Invalid SteamID2: {id_str}")
+            raise ValueError(f"Invalid SteamID2: {id_str}") from None
         account_id = z * 2 + y
         return str(account_id + 76561197960265728)
 

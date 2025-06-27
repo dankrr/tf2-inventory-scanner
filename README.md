@@ -1,4 +1,4 @@
-# TF2 Inventory Web App
+# TF2 Inventory Web App ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey.svg)
 
 This project provides a small Flask application for inspecting the Team Fortress
 2 inventory of one or more Steam users. It accepts SteamIDs in several formats
@@ -13,6 +13,15 @@ TF2.
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+```
+
+### Quick start
+
+Run the Flask server locally:
+
+```bash
+export FLASK_DEBUG=1
+python app.py
 ```
 
 Copy `.env.example` to `.env` and fill in your API keys:
@@ -59,3 +68,43 @@ Only the SteamID3 token is used:
 
 The application converts the ID to SteamID64, fetches the inventory, and looks
 up prices via backpack.tf.
+
+## Dependency Management
+
+Dependencies are pinned in `requirements.txt` and locked with
+`requirements.lock`. To update packages securely:
+
+```bash
+pip install -r requirements.txt --upgrade
+pip-compile --generate-hashes -o requirements.lock requirements.txt
+pip-audit
+```
+
+Always run `pip-audit` to check for known vulnerabilities after upgrading.
+
+### Lint & Test
+
+```bash
+ruff check .
+black --check .
+pytest --cov=utils --cov=app
+```
+
+The HTML coverage report is written to `htmlcov/`.
+
+### Pre-commit
+
+Install hooks once:
+
+```bash
+pre-commit install
+```
+
+### Deploy
+
+The app can be deployed to any platform that supports Python 3.12. For Docker:
+
+```bash
+docker build -t tf2-scanner .
+docker run -p 5000:5000 tf2-scanner
+```

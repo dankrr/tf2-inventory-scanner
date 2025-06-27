@@ -1,7 +1,4 @@
 import importlib
-from types import ModuleType
-
-import pytest
 
 
 def test_app_uses_mock_schema(monkeypatch):
