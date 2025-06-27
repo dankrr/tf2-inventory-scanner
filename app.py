@@ -1,12 +1,13 @@
 import os
 import re
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
 
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash
+from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
@@ -26,78 +27,6 @@ print(f"Loaded {len(SCHEMA)} schema items")
 BACKPACK_PRICES: Dict[str, float] = {}
 
 # --- Utility functions ------------------------------------------------------
-
-
-def parse_steamids(raw: str) -> Tuple[List[str], List[str]]:
-    """Return valid SteamID64 strings and a list of invalid tokens.
-
-    The input is split on any non-alphanumeric characters to support a mix of
-    newline, comma or space separated values.  Each token is normalised using
-    :func:`steamid_to_64`.  Invalid values are skipped and returned in a second
-    list.  Duplicate IDs are removed while preserving order.
-    """
-
-    tokens = re.split(r"[^0-9A-Za-z:\[\]_]+", raw)
-    valid: List[str] = []
-    invalid: List[str] = []
-    seen: set[str] = set()
-
-    for token in tokens:
-        token = token.strip()
-        if not token:
-            continue
-        try:
-            sid64 = steamid_to_64(token)
-        except Exception:
-            invalid.append(token)
-            continue
-        if sid64 not in seen:
-            seen.add(sid64)
-            valid.append(sid64)
-
-    return valid, invalid
-
-
-def steamid_to_64(id_str: str) -> str:
-    """Convert various SteamID forms to SteamID64."""
-    # SteamID64
-    if re.fullmatch(r"\d{17}", id_str):
-        return id_str
-
-    # SteamID2: STEAM_X:Y:Z
-    if id_str.startswith("STEAM_"):
-        try:
-            _, y, z = id_str.split(":")
-            y = int(y.split("_")[1]) if "_" in y else int(y)
-            z = int(z)
-        except (ValueError, IndexError):
-            raise ValueError(f"Invalid SteamID2: {id_str}") from None
-        account_id = z * 2 + y
-        return str(account_id + 76561197960265728)
-
-    # SteamID3: [U:1:Z]
-    if id_str.startswith("[U:"):
-        match = re.match(r"\[U:(\d+):(\d+)\]", id_str)
-        if match:
-            z = int(match.group(2))
-            return str(z + 76561197960265728)
-        match = re.match(r"\[U:1:(\d+)\]", id_str)
-        if match:
-            z = int(match.group(1))
-            return str(z + 76561197960265728)
-
-    # Vanity URL
-    url = (
-        "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
-        f"?key={STEAM_API_KEY}&vanityurl={id_str}"
-    )
-    print(f"Resolving vanity URL {id_str}")
-    r = requests.get(url, timeout=10)
-    r.raise_for_status()
-    data = r.json().get("response", {})
-    if data.get("success") != 1:
-        raise ValueError(f"Unable to resolve vanity URL: {id_str}")
-    return data["steamid"]
 
 
 def fetch_prices() -> None:
@@ -228,10 +157,24 @@ def retry_single(steamid64: int):
 def index():
     users: List[Dict[str, Any]] = []
     steamids_input = ""
+    ids: List[str] = []
+    invalid: List[str] = []
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
-        ids, invalid = parse_steamids(steamids_input)
-        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} invalid tokens")
+        tokens = re.split(r"\s+", steamids_input.strip())
+        raw_ids = extract_steam_ids(steamids_input)
+        invalid = [t for t in tokens if t and t not in raw_ids]
+        ids = [sac.convert_to_steam64(t) for t in raw_ids]
+        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
+        if not ids:
+            flash("No valid Steam IDs found!")
+            return render_template(
+                "index.html",
+                users=users,
+                steamids=steamids_input,
+                valid_count=0,
+                invalid_count=len(invalid),
+            )
         fetch_prices()
         for sid64 in ids:
             user = build_user_data(sid64)
