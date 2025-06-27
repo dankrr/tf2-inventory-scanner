@@ -14,11 +14,18 @@
       {% endif %}
     </span>
   </h2>
-  {% if user.items %}
-  <div class="items">
-    {% for item in user.items %}
-      <img src="{{ item.image_url }}" width="48" height="48">
-    {% endfor %}
+  <div class="card-body">
+    {% if user.status == 'incomplete' %}
+      <span class="badge bg-warning text-dark">Fetched but unparsed</span>
+    {% elif user.status == 'private' %}
+      <span class="badge bg-secondary">Private</span>
+    {% endif %}
+    {% if user.items %}
+    <div class="items">
+      {% for item in user.items | default([]) %}
+        <img src="{{ item.image_url }}" width="48" height="48">
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 </div>
