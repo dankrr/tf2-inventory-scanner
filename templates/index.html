@@ -42,16 +42,13 @@
         <p>Processed {{ valid_count }} valid IDs{% if invalid_count %} (ignored {{ invalid_count }} invalid){% endif %}.</p>
     {% endif %}
 
-    <button id="retry-all" disabled>Retry Failed</button>
+    <button id="retry-all" disabled>Refresh Failed</button>
 
-    <div id="results">
-    {% if users %}
-        {% for user in users %}
-            {% include '_user.html' with context %}
-        {% endfor %}
-    {% endif %}
-    </div>
+    <div id="user-container"></div>
 
+    <script>
+      window.initialIds = {{ ids|tojson|safe }};
+    </script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
 </body>
 </html>
