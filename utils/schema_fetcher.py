@@ -18,30 +18,40 @@ QUALITIES: Dict[str | int, str] = {}
 
 
 def _fetch_schema(api_key: str) -> Dict[str, Any]:
-    """Fetch the full TF2 item schema in one request."""
+    """Fetch schema overview and all items from Steam."""
 
-    url = (
-        "https://api.steampowered.com/IEconItems_440/GetSchema/v0001/" f"?key={api_key}"
+    overview_url = (
+        "https://api.steampowered.com/IEconItems_440/GetSchemaOverview/v1/"
+        f"?key={api_key}"
     )
-    r = requests.get(url, timeout=30)
+    r = requests.get(overview_url, timeout=20)
     r.raise_for_status()
-    data = r.json()["result"]
-    qualities = {str(v): k for k, v in data.get("qualities", {}).items()}
+    overview = r.json()["result"]
+    qualities = {str(v): k for k, v in overview.get("qualities", {}).items()}
 
     items: Dict[str, Any] = {}
-    for item in data.get("items", []):
-        defindex = str(item.get("defindex"))
-        if not defindex:
-            continue
-        if "name" not in item and "item_name" not in item:
-            continue
-        items[defindex] = {
-            "defindex": item.get("defindex"),
-            "name": item.get("name"),
-            "item_name": item.get("item_name"),
-            "image_url": item.get("image_url"),
-            "image_url_large": item.get("image_url_large"),
-        }
+    start = 0
+    while True:
+        items_url = (
+            "https://api.steampowered.com/IEconItems_440/GetSchemaItems/v1/"
+            f"?key={api_key}&start={start}"
+        )
+        r = requests.get(items_url, timeout=20)
+        r.raise_for_status()
+        data = r.json()["result"]
+        for item in data.get("items", []):
+            defindex = str(item.get("defindex"))
+            if not defindex or "name" not in item:
+                continue
+            items[defindex] = {
+                "defindex": item.get("defindex"),
+                "name": item.get("name"),
+                "image_url": item.get("image_url"),
+                "image_url_large": item.get("image_url_large"),
+            }
+        if not data.get("next"):
+            break
+        start = data["next"]
 
     return {"items": items, "qualities": qualities}
 
