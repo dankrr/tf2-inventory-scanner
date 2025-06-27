@@ -108,3 +108,10 @@ The app can be deployed to any platform that supports Python 3.12. For Docker:
 docker build -t tf2-scanner .
 docker run -p 5000:5000 tf2-scanner
 ```
+
+### LAN testing
+
+```bash
+python app.py          # now reachable at http://<LAN_IP>:5000
+docker run -p 5000:5000 tf2-inv
+```
