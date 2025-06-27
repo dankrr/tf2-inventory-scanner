@@ -10,6 +10,48 @@ CACHE_FILE = Path("data/item_schema.json")
 TTL = 48 * 60 * 60  # 48 hours
 
 
+SCHEMA: Dict[str, Any] | None = None
+QUALITIES: Dict[str | int, str] = {}
+
+
+def _fetch_schema(api_key: str) -> Dict[str, Any]:
+    """Fetch schema overview and all items from Steam."""
+
+    overview_url = (
+        "https://api.steampowered.com/IEconItems_440/GetSchemaOverview/v1/"
+        f"?key={api_key}"
+    )
+    r = requests.get(overview_url, timeout=20)
+    r.raise_for_status()
+    overview = r.json()["result"]
+    qualities = {str(v): k for k, v in overview.get("qualities", {}).items()}
+
+    items: Dict[str, Any] = {}
+    start = 0
+    while True:
+        items_url = (
+            "https://api.steampowered.com/IEconItems_440/GetSchemaItems/v1/"
+            f"?key={api_key}&start={start}"
+        )
+        r = requests.get(items_url, timeout=20)
+        r.raise_for_status()
+        data = r.json()["result"]
+        for item in data.get("items", []):
+            defindex = str(item.get("defindex"))
+            if not defindex or "name" not in item:
+                continue
+            items[defindex] = {
+                "defindex": item.get("defindex"),
+                "name": item.get("name"),
+                "image_url": item.get("image_url"),
+            }
+        if not data.get("next"):
+            break
+        start = data["next"]
+
+    return {"items": items, "qualities": qualities}
+
+
 def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
     """Return cached item schema mapping."""
     if api_key is None:
@@ -17,29 +59,22 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
     if not api_key:
         raise ValueError("STEAM_API_KEY is required to fetch item schema")
 
-    global SCHEMA
+    global SCHEMA, QUALITIES
     if CACHE_FILE.exists():
         age = time.time() - CACHE_FILE.stat().st_mtime
         if age < TTL:
             with CACHE_FILE.open() as f:
-                schema = json.load(f)
-            SCHEMA = schema
-            print(f"CACHE HIT ({len(schema)} items)")
-            return schema
+                cached = json.load(f)
+            SCHEMA = cached.get("items", {})
+            QUALITIES = cached.get("qualities", {})
+            print(f"CACHE HIT ({len(SCHEMA)} items)")
+            return SCHEMA
 
-    url = "https://api.steampowered.com/IEconItems_440/GetSchema/v0001/"
-    r = requests.get(f"{url}?key={api_key}", timeout=20)
-    r.raise_for_status()
-    items = r.json()["result"]["items"]
-    schema = {str(item["defindex"]): item for item in items if "name" in item}
+    fetched = _fetch_schema(api_key)
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
     with CACHE_FILE.open("w") as f:
-        json.dump(schema, f)
-    SCHEMA = schema
-    print(f"CACHE MISS ({len(schema)} items)")
-    return schema
-
-
-# Module-level constant so other modules can import the schema without
-# reloading the JSON file.
-SCHEMA: Dict[str, Any] | None = None
+        json.dump(fetched, f)
+    SCHEMA = fetched["items"]
+    QUALITIES = fetched["qualities"]
+    print(f"CACHE MISS ({len(SCHEMA)} items)")
+    return SCHEMA

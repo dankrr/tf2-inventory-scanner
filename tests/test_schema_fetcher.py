@@ -7,12 +7,15 @@ import utils.schema_fetcher as sf
 
 def test_schema_cache_hit(tmp_path, monkeypatch):
     cache = tmp_path / "item_schema.json"
-    sample = {"1": {"defindex": 1, "name": "Item"}}
+    sample = {
+        "items": {"1": {"defindex": 1, "name": "Item", "image_url": "i"}},
+        "qualities": {"0": "Normal"},
+    }
     cache.write_text(json.dumps(sample))
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
     monkeypatch.setattr(sf, "requests", Mock())
     schema = sf.ensure_schema_cached(api_key="k")
-    assert schema == sample
+    assert schema == sample["items"]
 
 
 def test_schema_cache_miss(tmp_path, monkeypatch):
@@ -20,20 +23,28 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
 
     class DummyResp:
+        def __init__(self, payload):
+            self.payload = payload
+
         def raise_for_status(self):
             pass
 
         def json(self):
-            return {"result": {"items": [{"defindex": 2, "name": "Other"}]}}
+            return self.payload
 
-    captured = {}
+    responses = [
+        {"result": {"qualities": {"Normal": 0}}},
+        {"result": {"items": [{"defindex": 2, "name": "Other", "image_url": "u"}]}},
+    ]
+    captured = []
 
     def fake_get(url, timeout):
-        captured["url"] = url
-        return DummyResp()
+        captured.append(url)
+        return DummyResp(responses.pop(0))
 
     monkeypatch.setattr(sf.requests, "get", fake_get)
     schema = sf.ensure_schema_cached(api_key="k")
-    assert schema == {"2": {"defindex": 2, "name": "Other"}}
+    assert schema == {"2": {"defindex": 2, "name": "Other", "image_url": "u"}}
     assert cache.exists()
-    assert "v0001" in captured["url"]
+    assert any("GetSchemaOverview" in u for u in captured)
+    assert any("GetSchemaItems" in u for u in captured)
