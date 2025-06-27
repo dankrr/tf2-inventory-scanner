@@ -22,4 +22,4 @@ def test_process_inventory_sorting():
     }
     sf.QUALITIES = {}
     items = ip.process_inventory(data)
-    assert [item["name"] for item in items] == ["A", "B"]
+    assert [item["item_name"] for item in items] == ["A", "B"]

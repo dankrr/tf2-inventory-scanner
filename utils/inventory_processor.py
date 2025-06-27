@@ -48,7 +48,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         items.append(
             {
                 "defindex": defindex,
-                "name": name,
+                "item_name": name,
                 "quality": quality,
                 "image_url": image_url,
             }
@@ -59,4 +59,4 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 def process_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
     items = enrich_inventory(data)
-    return sorted(items, key=lambda i: i["name"])
+    return sorted(items, key=lambda i: i["item_name"])
