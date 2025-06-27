@@ -22,9 +22,13 @@
     {% endif %}
     <div class="items">
       {% for item in user.items %}
-        <img src="{{ item.image_url }}" width="48" height="48">
-      {% else %}
-        <div class="empty">No items (inventory private or still parsing).</div>
+        <div class="item-card" style="background-color: {{ item.quality_color }}20;">
+          {% if item.image_url %}
+            <img src="{{ item.image_url }}" alt="{{ item.name }}" width="32" height="32">
+          {% else %}
+            <div class="missing-icon"></div>
+          {% endif %}
+        </div>
       {% endfor %}
     </div>
   </div>

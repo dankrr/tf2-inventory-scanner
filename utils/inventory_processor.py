@@ -1,10 +1,23 @@
 from typing import Any, Dict, List, Tuple
-from urllib.parse import quote
 import logging
 
 from . import steam_api_client, schema_fetcher
 
 logger = logging.getLogger(__name__)
+
+# Base URL for item images
+CLOUD = "https://community.cloudflare.steamstatic.com/economy/image/"
+
+# Map of quality ID to (name, background color)
+QUALITY_MAP = {
+    0: ("Normal", "#B2B2B2"),
+    1: ("Genuine", "#4D7455"),
+    3: ("Vintage", "#476291"),
+    5: ("Unusual", "#8650AC"),
+    6: ("Unique", "#FFD700"),
+    11: ("Strange", "#CF6A32"),
+    13: ("Haunted", "#38F3AB"),
+}
 
 
 def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
@@ -25,30 +38,26 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_items = schema_fetcher.SCHEMA or {}
-    qualities = schema_fetcher.QUALITIES or {}
+    schema_map = schema_fetcher.SCHEMA or {}
 
-    for entry in items_raw:
-        defindex = str(entry.get("defindex"))
-        schema_item = schema_items.get(defindex)
-        if not schema_item:
+    for asset in items_raw:
+        defindex = asset.get("defindex")
+        if defindex is None:
             continue
-        name = schema_item.get("name")
-        icon_url = schema_item.get("image_url")
-        image_url = (
-            f"https://community.cloudflare.steamstatic.com/economy/image/{quote(icon_url, safe='')}"
-            if icon_url
-            else ""
-        )
-        quality_val = entry.get("quality")
-        quality = qualities.get(str(quality_val), qualities.get(quality_val))
+        entry = schema_map.get(str(defindex), {})
+        icon = entry.get("icon_url") or entry.get("image_url") or ""
+        img_url = f"{CLOUD}{icon}" if icon else ""
+
+        quality_id = asset.get("quality", 0)
+        q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
+
         items.append(
             {
                 "defindex": defindex,
-                "item_name": name,
-                "quality": quality,
-                "image_url": image_url,
-                "attributes": entry.get("attributes", []),
+                "name": entry.get("item_name", f"#{defindex}"),
+                "quality": q_name,
+                "quality_color": q_col,
+                "image_url": img_url,
             }
         )
     return items
@@ -57,4 +66,4 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 def process_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
     items = enrich_inventory(data)
-    return sorted(items, key=lambda i: i["item_name"])
+    return sorted(items, key=lambda i: i["name"])
