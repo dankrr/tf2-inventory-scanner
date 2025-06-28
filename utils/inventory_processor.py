@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Tuple
 import logging
+import re
+from html import unescape
 
 import json
 from pathlib import Path
@@ -28,6 +30,36 @@ QUALITY_MAP = {
     11: ("Strange", "#CF6A32"),
     13: ("Haunted", "#38F3AB"),
 }
+
+
+def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
+    """Return the unusual effect name from description text if present."""
+
+    for desc in asset.get("descriptions", []):
+        if not isinstance(desc, dict):
+            continue
+        text = unescape(desc.get("value", ""))
+        text = re.sub(r"<[^>]+>", "", text)
+        match = re.search(r"Unusual Effect:\s*(.+)", text, re.I)
+        if match:
+            return match.group(1).strip()
+    return None
+
+
+def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
+    """Return the display name prefixed with quality/effect."""
+
+    parts: List[str] = []
+    effect = _extract_unusual_effect(asset)
+    if effect:
+        parts.append(effect)
+        if quality not in ("Unique", "Normal", "Unusual"):
+            parts.append(quality)
+    else:
+        if quality not in ("Unique", "Normal"):
+            parts.append(quality)
+    parts.append(base)
+    return " ".join(parts)
 
 
 def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
@@ -72,7 +104,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             else:
                 final_url = f"{CLOUD}{image_path}" if image_path else ""
 
-        name = (
+        base_name = (
             WARPAINT_MAP.get(defindex)
             or entry.get("item_name")
             or entry.get("name")
@@ -81,11 +113,12 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
+        display_name = _build_item_name(base_name, q_name, asset)
 
         items.append(
             {
                 "defindex": defindex,
-                "name": name,
+                "name": display_name,
                 "quality": q_name,
                 "quality_color": q_col,
                 "image_url": image_path,
