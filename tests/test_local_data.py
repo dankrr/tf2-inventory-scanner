@@ -25,3 +25,17 @@ def test_load_files_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(ld, "ITEMS_GAME_FILE", tmp_path / "missing2.json")
     with pytest.raises(RuntimeError):
         ld.load_files()
+
+
+def test_clean_items_game_parses_all():
+    sample = {
+        "items_game": {
+            "items": {
+                "111": {"name": "Correct"},
+                "30607": {"name": "Pump"},
+            }
+        }
+    }
+    cleaned = ld.clean_items_game(sample)
+    assert cleaned["111"]["name"] == "Correct"
+    assert cleaned["30607"]["name"] == "Pump"
