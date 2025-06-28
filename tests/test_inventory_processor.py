@@ -1,3 +1,8 @@
+# ruff: noqa: E402
+import os
+
+os.environ.setdefault("BACKPACK_API_KEY", "x")
+
 from utils import inventory_processor as ip
 from utils import schema_fetcher as sf
 from utils import steam_api_client as sac

@@ -1,3 +1,8 @@
+# ruff: noqa: E402
+import os
+
+os.environ.setdefault("BACKPACK_API_KEY", "x")
+
 import services.pricing_service as ps
 
 

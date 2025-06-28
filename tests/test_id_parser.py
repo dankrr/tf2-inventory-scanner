@@ -1,3 +1,8 @@
+# ruff: noqa: E402
+import os
+
+os.environ.setdefault("BACKPACK_API_KEY", "x")
+
 import utils.steam_api_client as sac
 from utils.id_parser import extract_steam_ids
 

@@ -7,7 +7,9 @@ PRICE_TTL = 900
 CACHE_DIR = "data"
 PRICE_CACHE = f"{CACHE_DIR}/price_schema.json"
 CURR_CACHE = f"{CACHE_DIR}/currencies.json"
-KEY = os.getenv("BACKPACK_KEY")
+KEY = os.getenv("BACKPACK_API_KEY")
+if not KEY:
+    raise RuntimeError("BACKPACK_API_KEY not set. Please set it in .env or export it.")
 
 
 def ensure_prices_cached():
