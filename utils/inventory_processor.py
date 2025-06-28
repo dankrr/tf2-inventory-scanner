@@ -6,7 +6,7 @@ from html import unescape
 import json
 from pathlib import Path
 
-from . import steam_api_client, schema_fetcher
+from . import steam_api_client, schema_fetcher, items_game_cache
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,16 @@ WARPAINT_MAP: Dict[str, str] = {}
 if MAPPING_FILE.exists():
     with MAPPING_FILE.open() as f:
         WARPAINT_MAP = json.load(f)
+
+
+def _load_items_game() -> Dict[str, Any]:
+    """Return cached items_game data or an empty mapping."""
+    try:
+        return items_game_cache.ensure_items_game_cached()
+    except Exception as exc:  # pragma: no cover - network failure
+        logger.info("Failed to load items_game: %s", exc)
+        return {}
+
 
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
@@ -104,8 +114,16 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             else:
                 final_url = f"{CLOUD}{image_path}" if image_path else ""
 
+        # Prefer name from items_game if available
+        ig_data = _load_items_game()
+        ig_item = (
+            ig_data.get("items", {}).get(defindex, {})
+            if isinstance(ig_data, dict)
+            else {}
+        )
         base_name = (
             WARPAINT_MAP.get(defindex)
+            or ig_item.get("name")
             or entry.get("item_name")
             or entry.get("name")
             or f"Item #{defindex}"
