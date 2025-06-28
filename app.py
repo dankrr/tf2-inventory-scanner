@@ -5,6 +5,13 @@ from types import SimpleNamespace
 
 from dotenv import load_dotenv
 
+load_dotenv()
+if not os.getenv("STEAM_API_KEY") or not os.getenv("BACKPACK_API_KEY"):
+    raise RuntimeError(
+        "Required env vars missing: STEAM_API_KEY and/or BACKPACK_API_KEY. "
+        "Make sure you have a .env file or export them."
+    )
+
 import requests
 from flask import Flask, render_template, request, flash
 from utils.id_parser import extract_steam_ids
@@ -12,12 +19,8 @@ from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 
-load_dotenv()
-STEAM_API_KEY = os.getenv("STEAM_API_KEY")
-BACKPACK_API_KEY = os.getenv("BACKPACK_API_KEY")
-
-if not STEAM_API_KEY or not BACKPACK_API_KEY:
-    raise ValueError("STEAM_API_KEY and BACKPACK_API_KEY must be set")
+STEAM_API_KEY = os.environ["STEAM_API_KEY"]
+BACKPACK_API_KEY = os.environ["BACKPACK_API_KEY"]
 
 app = Flask(__name__)
 

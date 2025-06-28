@@ -6,9 +6,6 @@ import requests
 
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
-if not STEAM_API_KEY:
-    raise ValueError("STEAM_API_KEY is required")
-
 logger = logging.getLogger(__name__)
 
 
