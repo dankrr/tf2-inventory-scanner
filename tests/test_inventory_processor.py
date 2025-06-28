@@ -115,7 +115,6 @@ def test_fetch_inventory_statuses(monkeypatch, payload, expected):
 @pytest.mark.parametrize("status", ["parsed", "incomplete", "private"])
 def test_user_template_safe(monkeypatch, status):
     monkeypatch.setenv("STEAM_API_KEY", "x")
-    monkeypatch.setenv("BACKPACK_API_KEY", "x")
     monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", lambda: {})
     import importlib
 
