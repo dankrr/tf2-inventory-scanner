@@ -20,34 +20,30 @@ BULK_NAME_URL = "https://schema.autobot.tf/getName/fromItemObjectBulk"
 SCHEMA: Dict[str, Any] | None = None
 
 
-def _fetch_schema() -> Dict[str, Any]:
-    """Fetch enriched TF2 schema from schema.autobot.tf."""
+def _download_schema() -> None:
+    """Download the raw TF2 schema and save it to the cache file."""
 
     logger.info("Fetching schema from %s", SCHEMA_URL)
-    r = requests.get(SCHEMA_URL, headers={"Accept": "*/*"})
+    r = requests.get(SCHEMA_URL, stream=True, timeout=20)
     r.raise_for_status()
-    data = r.json()
-    logger.info("Fetched schema with %s items", len(data.get("items", [])))
-    return data
+    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with CACHE_FILE.open("wb") as f:
+        f.write(r.content)
+    logger.info("Schema fetch success, saved to cache")
 
 
-def ensure_schema_cached() -> Dict[str, Any]:
-    """Return cached item schema mapping."""
+def _load_schema() -> Dict[str, Any]:
+    """Parse the cached schema file and build an item mapping."""
 
-    global SCHEMA
-    if CACHE_FILE.exists():
-        logger.info("Loading schema from cache %s", CACHE_FILE)
-        with CACHE_FILE.open() as f:
-            cached = json.load(f)
-        ts = cached.get("timestamp", 0)
-        if time.time() - ts < TTL:
-            SCHEMA = cached.get("items", {})
-            logger.info("Schema cache HIT: %s items", len(SCHEMA))
-            return SCHEMA
+    with CACHE_FILE.open() as f:
+        data = json.load(f)
 
-    fetched = _fetch_schema()
+    items_raw = data.get("items") if isinstance(data, dict) else data
+    if not isinstance(items_raw, list):
+        items_raw = []
+
     items: Dict[str, Any] = {}
-    for item in fetched.get("items", []):
+    for item in items_raw:
         defindex = item.get("defindex")
         if defindex is None:
             continue
@@ -56,12 +52,23 @@ def ensure_schema_cached() -> Dict[str, Any]:
         key = f"{defindex};{quality};{1 if craftable else 0}"
         items[key] = item
 
-    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with CACHE_FILE.open("w") as f:
-        json.dump({"timestamp": time.time(), "items": items}, f)
-    SCHEMA = items
-    logger.info("Schema cache MISS, fetched %s items", len(SCHEMA))
-    logger.info("Schema cache updated at %s", CACHE_FILE)
+    logger.info("Loaded %s schema items", len(items))
+    return items
+
+
+def ensure_schema_cached() -> Dict[str, Any]:
+    """Return cached item schema mapping."""
+
+    global SCHEMA
+
+    refresh = not CACHE_FILE.exists() or time.time() - CACHE_FILE.stat().st_mtime > TTL
+    if refresh:
+        _download_schema()
+        logger.info("Schema cache updated at %s", CACHE_FILE)
+    else:
+        logger.info("Schema cache is still fresh")
+
+    SCHEMA = _load_schema()
     return SCHEMA
 
 
