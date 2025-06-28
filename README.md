@@ -116,8 +116,9 @@ want to refresh the cache:
 python scripts/update_items_game.py
 ```
 
-The processed JSON is stored under `cache/items_game.json` and reused for 48
-hours.
+This downloads `items_game.txt`, stores a reduced copy under `cache/items_game.json`,
+and writes the cleaned map to `data/items_game_cleaned.json` for the app to use.
+The cache is reused for 48 hours.
 
 ### Deploy
 
