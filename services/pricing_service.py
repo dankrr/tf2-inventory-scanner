@@ -10,9 +10,9 @@ from utils.cache_manager import read_json, write_json
 
 logger = logging.getLogger(__name__)
 
-PRICE_CACHE_FILE = Path("data/price_cache.json")
-CURRENCY_FILE = Path("data/currency_rates.json")
-TTL = 6 * 60 * 60  # 6 hours
+PRICE_CACHE_FILE = Path("data/cached_prices.json")
+CURRENCY_FILE = Path("data/cached_currencies.json")
+TTL = 48 * 60 * 60  # 48 hours
 
 PRICES: Dict[str, Any] | None = None
 KEY_REF_RATE: float | None = None
