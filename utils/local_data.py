@@ -2,12 +2,33 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
+import vdf
+
 TF2_SCHEMA: Dict[str, Any] = {}
 ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 EFFECT_NAMES: Dict[str, str] = {}
 
 SCHEMA_FILE = Path("data/tf2_schema.json")
 ITEMS_GAME_FILE = Path("data/items_game_cleaned.json")
+
+
+def clean_items_game(raw: dict | str) -> Dict[str, Any]:
+    """Return a simplified map of defindex -> item info."""
+
+    if isinstance(raw, str):
+        parsed = vdf.loads(raw)
+    else:
+        parsed = raw
+
+    data = parsed.get("items_game", parsed)
+    items = data.get("items", {})
+
+    cleaned: Dict[str, Any] = {}
+    for key, info in items.items():
+        if not str(key).isdigit() or not isinstance(info, dict):
+            continue
+        cleaned[str(key)] = info
+    return cleaned
 
 
 def load_files() -> Tuple[Dict[str, Any], Dict[str, Any]]:
