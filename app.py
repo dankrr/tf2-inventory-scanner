@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+import logging
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -12,6 +14,12 @@ from utils import steam_api_client as sac
 from utils import price_fetcher
 
 load_dotenv()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 BACKPACK_API_KEY = os.getenv("BACKPACK_API_KEY")
 
@@ -21,7 +29,7 @@ if not STEAM_API_KEY or not BACKPACK_API_KEY:
 app = Flask(__name__)
 
 SCHEMA = ensure_schema_cached()
-print(f"Loaded {len(SCHEMA)} schema items")
+logger.info("Loaded %s schema items", len(SCHEMA))
 
 PRICE_CACHE: Dict[str, Any] = {}
 KEY_REF_RATE: float = 0.0
@@ -44,7 +52,7 @@ def fetch_prices() -> None:
 
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
     """Return profile name, avatar URL and TF2 playtime for a user."""
-    print(f"Fetching player summary for {steamid64}")
+    logger.debug("Fetching player summary for %s", steamid64)
     players = sac.get_player_summaries([steamid64])
     profile = f"https://steamcommunity.com/profiles/{steamid64}"
     if players:
@@ -81,7 +89,7 @@ def build_user_data(steamid64: str) -> Dict[str, Any]:
     try:
         summary = get_player_summary(steamid64)
     except Exception as exc:
-        print(f"Error fetching summary for {steamid64}: {exc}")
+        logger.error("Error fetching summary for %s: %s", steamid64, exc)
         summary = {
             "username": steamid64,
             "avatar": "",
@@ -92,7 +100,7 @@ def build_user_data(steamid64: str) -> Dict[str, Any]:
     try:
         inv_result = fetch_inventory(steamid64)
     except Exception as exc:
-        print(f"Error processing {steamid64}: {exc}")
+        logger.error("Error processing %s: %s", steamid64, exc)
         inv_result = {"items": [], "status": "failed"}
 
     items = inv_result.get("items", [])
@@ -122,7 +130,40 @@ def fetch_and_process_single_user(steamid64: int) -> str:
 @app.post("/retry/<int:steamid64>")
 def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
-    return fetch_and_process_single_user(steamid64)
+    logger.info("Retry start for %s", steamid64)
+    try:
+        fetch_prices()
+        if not SCHEMA:
+            logger.warning("Schema cache missing or invalid")
+        if not PRICE_CACHE or not KEY_REF_RATE:
+            logger.warning("Price cache missing or invalid")
+
+        status, raw_data = sac.fetch_inventory(str(steamid64))
+        assets = raw_data.get("items") if isinstance(raw_data, dict) else None
+        if not assets:
+            logger.warning("Inventory fetch for %s returned no assets", steamid64)
+        else:
+            logger.debug("Fetched %s raw items for %s", len(assets), steamid64)
+
+        if status != "parsed":
+            logger.info("Inventory fetch status for %s: %s", steamid64, status)
+
+        parsed_items = (
+            enrich_inventory(raw_data, PRICE_CACHE, KEY_REF_RATE) if assets else []
+        )
+        if parsed_items:
+            logger.info("Parsed %s items for %s", len(parsed_items), steamid64)
+        else:
+            logger.warning("No parsed items generated for %s", steamid64)
+
+        user = get_player_summary(str(steamid64))
+        user.update({"steamid": steamid64, "items": parsed_items, "status": status})
+        logger.info("User data updated for %s", steamid64)
+        user_ns = normalize_user_payload(user)
+        return render_template("_user.html", user=user_ns)
+    except Exception:
+        logger.exception("Retry %s: unexpected error", steamid64)
+        raise
 
 
 # --- Flask routes -----------------------------------------------------------
@@ -140,7 +181,7 @@ def index():
         raw_ids = extract_steam_ids(steamids_input)
         invalid = [t for t in tokens if t and t not in raw_ids]
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
-        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
+        logger.info("Parsed %s valid IDs, %s tokens ignored", len(ids), len(invalid))
         if not ids:
             flash("No valid Steam IDs found!")
             return render_template(

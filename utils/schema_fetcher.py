@@ -23,9 +23,12 @@ SCHEMA: Dict[str, Any] | None = None
 def _fetch_schema() -> Dict[str, Any]:
     """Fetch enriched TF2 schema from schema.autobot.tf."""
 
+    logger.info("Fetching schema from %s", SCHEMA_URL)
     r = requests.get(SCHEMA_URL, headers={"Accept": "*/*"})
     r.raise_for_status()
-    return r.json()
+    data = r.json()
+    logger.info("Fetched schema with %s items", len(data.get("items", [])))
+    return data
 
 
 def ensure_schema_cached() -> Dict[str, Any]:
@@ -33,6 +36,7 @@ def ensure_schema_cached() -> Dict[str, Any]:
 
     global SCHEMA
     if CACHE_FILE.exists():
+        logger.info("Loading schema from cache %s", CACHE_FILE)
         with CACHE_FILE.open() as f:
             cached = json.load(f)
         ts = cached.get("timestamp", 0)
@@ -57,6 +61,7 @@ def ensure_schema_cached() -> Dict[str, Any]:
         json.dump({"timestamp": time.time(), "items": items}, f)
     SCHEMA = items
     logger.info("Schema cache MISS, fetched %s items", len(SCHEMA))
+    logger.info("Schema cache updated at %s", CACHE_FILE)
     return SCHEMA
 
 
