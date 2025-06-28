@@ -40,16 +40,14 @@ def _load_schema() -> Dict[str, Any]:
 
     logger.debug("Schema cache loaded: type=%s", type(data).__name__)
 
-    if isinstance(data, dict):
-        items_raw = data.get("items", [])
-    elif isinstance(data, list):
-        items_raw = data
-    else:
-        items_raw = []
+    if not isinstance(data, dict):
+        logger.error("Schema cache not an object; type=%s", type(data).__name__)
+        return {}
 
+    items_raw = data.get("items", [])
     if not isinstance(items_raw, list):
-        logger.warning("Schema cache not a list; type=%s", type(data).__name__)
-        items_raw = []
+        logger.error("Schema 'items' not a list; type=%s", type(items_raw).__name__)
+        return {}
 
     logger.debug(
         "Schema items structure: type=%s count=%s",
@@ -69,7 +67,6 @@ def _load_schema() -> Dict[str, Any]:
         key = f"{defindex};{quality};{1 if craftable else 0}"
         items[key] = item
 
-    logger.info("Loaded %s schema items", len(items))
     return items
 
 
@@ -86,6 +83,7 @@ def ensure_schema_cached() -> Dict[str, Any]:
         logger.info("Schema cache is still fresh")
 
     SCHEMA = _load_schema()
+    logger.info("Loaded %s schema items", len(SCHEMA))
     return SCHEMA
 
 
