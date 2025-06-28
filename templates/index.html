@@ -7,18 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SzlrxWUlpfUZ2x+pcUCos9rqPhtwzXubcjoCz1uyjq8q2+mZ4c4WxJJgAOQh2AnGkacD1x0gRhFeojVk51Pp1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         img { vertical-align: middle; }
-        .pill {
-            background: #666;
-            color: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            margin-left: 4px;
-            cursor: default;
-        }
-        .parsed { background: #4caf50; }
-        .private { background: #999; }
-        .failed { background: #c00; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,16 +24,17 @@
             <i class="fa-brands fa-steam steam-icon"></i>
             <textarea id="steamids" name="steamids" placeholder="Enter SteamID, vanity URL, or multiple IDs…">{{ steamids|default('') }}</textarea>
         </div>
-        <button type="submit" class="primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
+        <div class="form-actions">
+            <button type="submit" class="primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
+            <button id="retry-all" disabled class="refresh-btn"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
+        </div>
     </form>
-
-    <button id="retry-all" disabled class="refresh-btn"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
 
     <div id="user-container"></div>
 
     <footer class="page-footer">
-        <i class="fa-brands fa-steam-symbol"></i>
-        <div class="footer-text">This site is not affiliated with Valve Corporation.<br>Team Fortress 2 content © Valve Corporation.</div>
+        <img src="/static/img/steam_logo.svg" height="24" alt="Steam logo" />
+        Team Fortress 2 © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation.
     </footer>
 
     <script>

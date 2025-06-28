@@ -46,7 +46,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not entry:
             continue
 
-        image_path = entry.get("image_url") or ""
+        image_path = entry.get("image_url") or entry.get("image_url_large") or ""
         if image_path.startswith("http"):
             final_url = image_path
         else:
