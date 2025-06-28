@@ -20,6 +20,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
+            position: relative;
         }
         .inventory-scroll .inventory-container {
             display: grid;
@@ -29,6 +30,10 @@
             overflow-x: auto;
             overflow-y: hidden;
             scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+        }
+        .inventory-scroll .inventory-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
         }
         .scroll-arrow {
             background: transparent;
@@ -37,7 +42,13 @@
             cursor: pointer;
             font-size: 1.4rem;
             padding: 0 6px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
         }
+        .scroll-arrow.left { left: 0; }
+        .scroll-arrow.right { right: 0; }
     </style>
 </head>
 <body>
@@ -79,9 +90,18 @@
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
           const container = wrapper.querySelector('.inventory-container');
           if (!container) return;
-          const amount = container.clientWidth;
+          const amount = container.clientWidth / 2;
           const left = wrapper.querySelector('.scroll-arrow.left');
           const right = wrapper.querySelector('.scroll-arrow.right');
+          function updateVisibility() {
+            const show = container.scrollWidth > container.clientWidth && container.childElementCount > 0;
+            if (left) left.style.display = show ? 'block' : 'none';
+            if (right) right.style.display = show ? 'block' : 'none';
+          }
+          updateVisibility();
+          container.addEventListener('scroll', updateVisibility);
+          window.addEventListener('resize', updateVisibility);
+
           if (left) {
             left.addEventListener('click', () => {
               container.scrollBy({ left: -amount, behavior: 'smooth' });
@@ -92,6 +112,17 @@
               container.scrollBy({ left: amount, behavior: 'smooth' });
             });
           }
+
+          container.addEventListener(
+            'wheel',
+            e => {
+              if (container.scrollWidth > container.clientWidth) {
+                e.preventDefault();
+                container.scrollLeft += e.deltaY;
+              }
+            },
+            { passive: false }
+          );
         });
       }
       if (window.attachHandlers) {
