@@ -91,6 +91,9 @@
         <span>
             Team Fortress 2 © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation.
         </span>
+        {% if debug_ms %}
+          <div>Longest merge: {{ debug_ms }} ms</div>
+        {% endif %}
     </footer>
 
     <script>
