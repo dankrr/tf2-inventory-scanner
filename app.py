@@ -9,7 +9,7 @@ from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
-from services import pricing_service
+from utils import price_fetcher
 
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -29,25 +29,17 @@ KEY_REF_RATE: float = 0.0
 # --- Utility functions ------------------------------------------------------
 
 
-def build_sku(item: Dict[str, Any]) -> str:
-    """Return backpack.tf SKU for an item."""
-    parts = [str(item.get("defindex")), str(item.get("quality_id", 0))]
-    if item.get("australium"):
-        parts.append("australium")
-    if item.get("uncraftable"):
-        parts.append("uncraftable")
-    if item.get("effect"):
-        parts.append(f"u{item['effect']}")
-    return ";".join(parts)
-
-
 def fetch_prices() -> None:
     """Load price cache and currency rates once per run."""
     global PRICE_CACHE, KEY_REF_RATE
     if PRICE_CACHE and KEY_REF_RATE:
         return
-    PRICE_CACHE = pricing_service.ensure_price_cache()
-    KEY_REF_RATE = pricing_service.ensure_currency_rates()
+    data = price_fetcher.ensure_prices_cached()
+    PRICE_CACHE = data.get("items", {}) if isinstance(data, dict) else {}
+    currencies = price_fetcher.ensure_currencies_cached()
+    metal_val = currencies.get("metal", {}).get("value")
+    key_val = currencies.get("keys", {}).get("value")
+    KEY_REF_RATE = key_val / metal_val if metal_val else 0.0
 
 
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
@@ -79,18 +71,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     status, data = sac.fetch_inventory(steamid64)
     items: List[Dict[str, Any]] = []
     if status == "parsed":
-        items = enrich_inventory(data)
-        for item in items:
-            sku = build_sku(item)
-            entry = PRICE_CACHE.get(sku)
-            if entry and entry.get("value") is not None:
-                item["price"] = "Price: " + pricing_service.format_price(
-                    float(entry["value"]), KEY_REF_RATE
-                )
-                item["unknown"] = False
-            else:
-                item["price"] = "Price: Unknown"
-                item["unknown"] = True
+        items = enrich_inventory(data, PRICE_CACHE, KEY_REF_RATE)
     return {"items": items, "status": status}
 
 
