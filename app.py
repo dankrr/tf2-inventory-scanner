@@ -12,6 +12,7 @@ from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 from utils import items_game_cache
+from utils import local_data
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -28,6 +29,7 @@ MAX_MERGE_MS = 0
 
 SCHEMA = ensure_schema_cached()
 print(f"Loaded {len(SCHEMA)} schema items")
+local_data.load_files()
 
 # --- Utility functions ------------------------------------------------------
 

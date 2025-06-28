@@ -6,7 +6,7 @@ from html import unescape
 import json
 from pathlib import Path
 
-from . import steam_api_client, schema_fetcher, items_game_cache
+from . import steam_api_client, schema_fetcher, items_game_cache, local_data
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,20 @@ QUALITY_MAP = {
 
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
-    """Return the unusual effect name from description text if present."""
+    """Return the unusual effect name from attributes or descriptions."""
+
+    if "effect" in asset:
+        name = local_data.EFFECT_NAMES.get(str(asset["effect"]))
+        if name:
+            return name
+
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx == 134:
+            val = str(int(attr.get("float_value", 0)))
+            name = local_data.EFFECT_NAMES.get(val)
+            if name:
+                return name
 
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
@@ -79,11 +92,12 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = schema_fetcher.SCHEMA or {}
+    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
+    cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
-        entry = schema_map.get(defindex)
+        entry = cleaned_map.get(defindex) or schema_map.get(defindex)
         if not entry:
             continue
 
@@ -103,8 +117,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             else:
                 final_url = f"{CLOUD}{image_path}" if image_path else ""
 
-        # Prefer name from items_game if available
-        ig_item = items_game_cache.ITEM_BY_DEFINDEX.get(defindex, {})
+        # Prefer name from cleaned items_game if available
+        ig_item = cleaned_map.get(defindex) or {}
         base_name = (
             WARPAINT_MAP.get(defindex)
             or ig_item.get("name")
@@ -117,16 +131,32 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
         display_name = _build_item_name(base_name, q_name, asset)
 
-        items.append(
-            {
-                "defindex": defindex,
-                "name": display_name,
-                "quality": q_name,
-                "quality_color": q_col,
-                "image_url": image_path,
-                "final_url": final_url,
-            }
-        )
+        item = {
+            "defindex": defindex,
+            "name": display_name,
+            "quality": q_name,
+            "quality_color": q_col,
+            "image_url": image_path,
+            "final_url": final_url,
+        }
+        items.append(item)
+
+        if len(items) <= 3:
+            effect_id = asset.get("effect")
+            ks = None
+            sheen = None
+            for attr in asset.get("attributes", []):
+                idx = attr.get("defindex")
+                val = int(attr.get("float_value", 0))
+                if idx == 2025:
+                    ks = val
+                elif idx == 2014:
+                    sheen = val
+                elif idx == 134 and effect_id is None:
+                    effect_id = val
+            print(
+                f"Parsed: {display_name} (defindex {defindex}, effect: {effect_id}, ks: {ks}, sheen: {sheen})"
+            )
     return items
 
 

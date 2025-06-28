@@ -1,4 +1,6 @@
 .env
 __pycache__/
 data/
+!data/tf2_schema.json
+!data/items_game_cleaned.json
 .venv/
