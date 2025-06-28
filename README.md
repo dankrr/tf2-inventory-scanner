@@ -34,7 +34,6 @@ Edit `.env` to set your credentials:
 
 ```
 STEAM_API_KEY=your_steam_key
-BACKPACK_API_KEY=your_backpack_key
 ```
 
 The application uses **python-dotenv** to load these values at runtime.
@@ -56,8 +55,7 @@ python app.py
 
 Navigate to `http://localhost:5000` and paste text containing one or more
 SteamIDs (any supported format). The app will display each user's avatar,
-profile name, TF2 playtime, and a list of TF2 items with icons and prices in
-refined metal.
+profile name, TF2 playtime, and a list of TF2 items with icons.
 
 ## Example
 
@@ -75,8 +73,7 @@ Only the SteamID3 token is used:
 [U:1:1602028086]
 ```
 
-The application converts the ID to SteamID64, fetches the inventory, and looks
-up prices via backpack.tf.
+The application converts the ID to SteamID64 and fetches the inventory.
 
 ## Dependency Management
 
