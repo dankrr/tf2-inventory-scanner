@@ -1,5 +1,7 @@
 import os
 import re
+import asyncio
+import time
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -9,6 +11,7 @@ from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
+from utils import items_game_cache
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -19,6 +22,9 @@ if not os.getenv("STEAM_API_KEY"):
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
+
+ITEMS_GAME_READY_FUTURE = items_game_cache.ensure_future()
+MAX_MERGE_MS = 0
 
 SCHEMA = ensure_schema_cached()
 print(f"Loaded {len(SCHEMA)} schema items")
@@ -59,25 +65,14 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     return {"items": items, "status": status}
 
 
-def build_user_data(steamid64: str) -> Dict[str, Any]:
-    """Return a dictionary for rendering a single user card."""
-
-    try:
-        summary = get_player_summary(steamid64)
-    except Exception as exc:
-        print(f"Error fetching summary for {steamid64}: {exc}")
-        summary = {
-            "username": steamid64,
-            "avatar": "",
-            "playtime": 0.0,
-            "profile": f"https://steamcommunity.com/profiles/{steamid64}",
-        }
-
-    try:
-        inv_result = fetch_inventory(steamid64)
-    except Exception as exc:
-        print(f"Error processing {steamid64}: {exc}")
-        inv_result = {"items": [], "status": "failed"}
+async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
+    """Asynchronously build user card data."""
+    inv_task = asyncio.to_thread(fetch_inventory, steamid64)
+    await items_game_cache.wait_until_ready()
+    t1 = time.perf_counter()
+    summary = await asyncio.to_thread(get_player_summary, steamid64)
+    inv_result = await inv_task
+    t2 = time.perf_counter()
 
     items = inv_result.get("items", [])
     if not isinstance(items, list):
@@ -85,7 +80,23 @@ def build_user_data(steamid64: str) -> Dict[str, Any]:
     status = inv_result.get("status", "failed")
 
     summary.update({"steamid": steamid64, "items": items, "status": status})
+
+    inventory_fetch_ms = int((t2 - t1) * 1000)
+    merge_ms = int((time.perf_counter() - t2) * 1000)
+    global MAX_MERGE_MS
+    MAX_MERGE_MS = max(MAX_MERGE_MS, merge_ms)
+    print(
+        f"inventory_fetch_ms={inventory_fetch_ms} merge_ms={merge_ms}",
+        flush=True,
+    )
+
     return summary
+
+
+def build_user_data(steamid64: str) -> Dict[str, Any]:
+    """Return a dictionary for rendering a single user card."""
+
+    return asyncio.run(build_user_data_async(steamid64))
 
 
 def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
@@ -137,6 +148,7 @@ def index():
         users=users,
         steamids=steamids_input,
         ids=ids,
+        debug_ms=MAX_MERGE_MS if os.getenv("FLASK_DEBUG") else None,
     )
 
 
