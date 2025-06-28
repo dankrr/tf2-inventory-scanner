@@ -52,7 +52,12 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         else:
             final_url = f"{CLOUD}{image_path}" if image_path else ""
 
-        name = entry.get("item_name") or entry.get("name") or f"Item #{defindex}"
+        name = (
+            asset.get("market_hash_name")
+            or entry.get("item_name")
+            or entry.get("name")
+            or f"Item #{defindex}"
+        )
 
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
@@ -66,6 +71,10 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "quality_id": quality_id,
                 "image_url": image_path,
                 "final_url": final_url,
+                "uncraftable": bool(asset.get("flag_cannot_craft")),
+                "australium": bool(asset.get("australium")),
+                "tradable": not asset.get("flag_cannot_trade", False),
+                "effect": asset.get("quality2"),
             }
         )
     return items

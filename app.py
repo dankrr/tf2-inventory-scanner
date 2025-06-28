@@ -29,6 +29,18 @@ KEY_REF_RATE: float = 0.0
 # --- Utility functions ------------------------------------------------------
 
 
+def build_sku(item: Dict[str, Any]) -> str:
+    """Return backpack.tf SKU for an item."""
+    parts = [str(item.get("defindex")), str(item.get("quality_id", 0))]
+    if item.get("australium"):
+        parts.append("australium")
+    if item.get("uncraftable"):
+        parts.append("uncraftable")
+    if item.get("effect"):
+        parts.append(f"u{item['effect']}")
+    return ";".join(parts)
+
+
 def fetch_prices() -> None:
     """Load price cache and currency rates once per run."""
     global PRICE_CACHE, KEY_REF_RATE
@@ -69,10 +81,10 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     if status == "parsed":
         items = enrich_inventory(data)
         for item in items:
-            sku = f"{item['defindex']};{item.get('quality_id', 0)}"
+            sku = build_sku(item)
             entry = PRICE_CACHE.get(sku)
             if entry and entry.get("value") is not None:
-                item["price"] = pricing_service.format_price(
+                item["price"] = "Price: " + pricing_service.format_price(
                     float(entry["value"]), KEY_REF_RATE
                 )
                 item["unknown"] = False
