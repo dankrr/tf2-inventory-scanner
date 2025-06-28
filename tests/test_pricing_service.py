@@ -26,12 +26,19 @@ def test_price_cache_fetch(tmp_path, monkeypatch):
         "response": {
             "success": 1,
             "items": {
-                "30035;6": {
-                    "defindex": 30035,
-                    "quality": 6,
-                    "value": 5100,
-                    "currency": "metal",
-                    "last_update": 1,
+                "Item": {
+                    "defindex": ["30035"],
+                    "prices": {
+                        "6": {
+                            "Tradable": {
+                                "0": {
+                                    "value": 5100,
+                                    "currency": "metal",
+                                    "last_update": 1,
+                                }
+                            }
+                        }
+                    },
                 }
             },
         }

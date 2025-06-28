@@ -18,27 +18,38 @@ PRICES: Dict[str, Any] | None = None
 KEY_REF_RATE: float | None = None
 
 
+def _parse_prices(payload: Dict[str, Any]) -> Dict[str, Any]:
+    items: Dict[str, Any] = {}
+    resp = payload.get("response", {})
+    for data in resp.get("items", {}).values():
+        defs = data.get("defindex") or []
+        if not isinstance(defs, list):
+            defs = [defs]
+        prices = data.get("prices", {})
+        for q, qinfo in prices.items():
+            trade = qinfo.get("Tradable") or next(iter(qinfo.values()), {})
+            craft = trade.get("0") or next(iter(trade.values()), {})
+            value = craft.get("value")
+            currency = craft.get("currency", "metal")
+            last_update = craft.get("last_update", 0)
+            for d in defs:
+                sku = f"{d};{q}"
+                items[sku] = {
+                    "defindex": int(d),
+                    "quality": int(q),
+                    "value": value,
+                    "currency": currency,
+                    "last_update": last_update,
+                }
+    return items
+
+
 def _fetch_prices(api_key: str) -> Dict[str, Any]:
-    url = "https://backpack.tf/api/IGetPrices/v4?key=" f"{api_key}&compress=1&appid=440"
+    url = "https://backpack.tf/api/IGetPrices/v4?key=" f"{api_key}&compress=1"
     r = requests.get(url, timeout=20)
     r.raise_for_status()
-    data = r.json().get("response", {})
-    if data.get("success") != 1:
-        raise ValueError("Invalid response from backpack.tf")
-
-    items: Dict[str, Any] = {}
-    for sku, info in data.get("items", {}).items():
-        entry = {
-            "defindex": info.get("defindex"),
-            "quality": info.get("quality"),
-            "value": info.get("value"),
-            "currency": info.get("currency"),
-            "last_update": info.get("last_update"),
-        }
-        if "value_high" in info:
-            entry["value_high"] = info["value_high"]
-        items[sku] = entry
-    return items
+    payload = r.json()
+    return _parse_prices(payload)
 
 
 def _fetch_currencies(api_key: str) -> Dict[str, Any]:
