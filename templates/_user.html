@@ -21,11 +21,11 @@
     {% elif user.status == 'private' %}
       <span class="badge bg-secondary">Private</span>
     {% endif %}
-    <div class="items">
+    <div class="inventory-container">
       {% for item in user.items %}
         <div class="item-card" style="border-color: {{ item.quality_color }};">
           {% if item.final_url %}
-            <img src="{{ item.final_url }}" alt="{{ item.name }}" class="item-img">
+            <img class="item-img" src="{{ item.final_url }}" alt="{{ item.name }}" onerror="this.style.display='none';">
           {% else %}
             <div class="missing-icon"></div>
           {% endif %}
