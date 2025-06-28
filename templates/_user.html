@@ -5,13 +5,13 @@
     </a>
     {{ user.username }}
     <span class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</span>
-    <span class="pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="click to retry"{% endif %}>
+    <span class="pill status-pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="Retry scan for this user"{% endif %}>
       {% if user.status == 'parsed' %}
-        ✅ Public
+        <i class="fa-solid fa-check"></i> Public
       {% elif user.status == 'private' %}
-        🔒 Private
+        <i class="fa-solid fa-lock"></i> Private
       {% else %}
-        🔄 Failed
+        <i class="fa-solid fa-arrows-rotate"></i> Failed
       {% endif %}
     </span>
   </h2>

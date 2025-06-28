@@ -85,7 +85,19 @@ button {
 
 .refresh-btn {
     padding: 6px 12px;
+    margin-left: 8px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
     margin-bottom: 16px;
+}
+
+#user-container {
+    margin-top: 16px;
 }
 
 .items {
@@ -94,14 +106,44 @@ button {
     gap: 4px;
 }
 
+.status-pill {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-left: 4px;
+    cursor: default;
+    transition: background 0.2s;
+}
+
+.status-pill.parsed {
+    color: #6fdc6f;
+    border-color: #4caf50;
+}
+
+.status-pill.private {
+    color: #ccc;
+    border-color: #777;
+}
+
+.status-pill.failed {
+    color: #ffaaaa;
+    border-color: #c00;
+    cursor: pointer;
+}
+
+.status-pill.failed:hover {
+    background: rgba(255, 0, 0, 0.1);
+}
+
 
 .item-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  width: 120px;
-  aspect-ratio: 1 / 1;
+  width: 140px;
+  height: 200px;
   padding: 8px;
   border: 1px solid #333;
   border-radius: 4px;
@@ -109,21 +151,21 @@ button {
   background: rgba(40, 40, 40, 0.8);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 .item-img {
   width: 100%;
-  height: 100%;
+  height: 50%;
   object-fit: contain;
 }
 .missing-icon {
   width: 100%;
-  height: 100%;
+  height: 50%;
   background: #444;
   display: flex;
   align-items: center;
@@ -134,7 +176,7 @@ button {
   font-size: 14px;
   font-weight: 600;
   text-align: center;
-  margin-top: 4px;
+  margin-top: 8px;
   width: 100%;
   word-break: break-word;
 }
@@ -148,10 +190,7 @@ button {
   color: #aaa;
 }
 
-.page-footer .fa-steam-symbol {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
+
 
 @media (max-width: 600px) {
   body {
