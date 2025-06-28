@@ -1,0 +1,27 @@
+import json
+import pytest
+
+from utils import local_data as ld
+
+
+def test_load_files_success(tmp_path, monkeypatch, capsys):
+    schema_file = tmp_path / "tf2_schema.json"
+    items_file = tmp_path / "items_game_cleaned.json"
+    schema_file.write_text(json.dumps({"items": {"1": {"name": "One"}}}))
+    items_file.write_text(json.dumps({"1": {"name": "A"}}))
+    monkeypatch.setattr(ld, "SCHEMA_FILE", schema_file)
+    monkeypatch.setattr(ld, "ITEMS_GAME_FILE", items_file)
+    ld.TF2_SCHEMA = {}
+    ld.ITEMS_GAME_CLEANED = {}
+    ld.EFFECT_NAMES = {}
+    ld.load_files()
+    out = capsys.readouterr().out
+    assert ld.TF2_SCHEMA["1"]["name"] == "One"
+    assert "Loaded 1 items" in out
+
+
+def test_load_files_missing(tmp_path, monkeypatch):
+    monkeypatch.setattr(ld, "SCHEMA_FILE", tmp_path / "missing.json")
+    monkeypatch.setattr(ld, "ITEMS_GAME_FILE", tmp_path / "missing2.json")
+    with pytest.raises(RuntimeError):
+        ld.load_files()

@@ -2,6 +2,7 @@ from utils import inventory_processor as ip
 from utils import schema_fetcher as sf
 from utils import steam_api_client as sac
 from utils import items_game_cache as ig
+from utils import local_data as ld
 import requests
 import responses
 import pytest
@@ -11,6 +12,8 @@ import pytest
 def no_items_game(monkeypatch):
     monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
     monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
+    ld.TF2_SCHEMA = {}
+    ld.ITEMS_GAME_CLEANED = {}
 
 
 def test_enrich_inventory():
@@ -42,6 +45,7 @@ def test_enrich_inventory_unusual_effect():
         "222": {"defindex": 222, "item_name": "Team Captain", "image_url": "img"}
     }
     sf.QUALITIES = {"5": "Unusual"}
+    ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Burning Flames Team Captain"
     assert items[0]["quality"] == "Unusual"
