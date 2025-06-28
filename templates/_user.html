@@ -21,17 +21,25 @@
     {% elif user.status == 'private' %}
       <span class="badge bg-secondary">Private</span>
     {% endif %}
-    <div class="inventory-container">
-      {% for item in user.items %}
-        <div class="item-card" style="border-color: {{ item.quality_color }};">
-          {% if item.final_url %}
-            <img class="item-img" src="{{ item.final_url }}" alt="{{ item.name }}" onerror="this.style.display='none';">
-          {% else %}
-            <div class="missing-icon"></div>
-          {% endif %}
-          <div class="item-name">{{ item.name }}</div>
-        </div>
-      {% endfor %}
+    <div class="inventory-scroll">
+      <button class="scroll-arrow left" type="button" aria-label="Scroll left">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <div class="inventory-container">
+        {% for item in user.items %}
+          <div class="item-card" style="border-color: {{ item.quality_color }};">
+            {% if item.final_url %}
+              <img class="item-img" src="{{ item.final_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
+            {% else %}
+              <div class="missing-icon"></div>
+            {% endif %}
+            <div class="item-name">{{ item.name }}</div>
+          </div>
+        {% endfor %}
       </div>
+      <button class="scroll-arrow right" type="button" aria-label="Scroll right">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </div>
