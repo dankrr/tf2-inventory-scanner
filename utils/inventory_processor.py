@@ -46,7 +46,10 @@ def enrich_inventory(
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
-        entry = schema_map.get(defindex)
+        quality_id = asset.get("quality", 0)
+        craftable_bool = not asset.get("flag_cannot_craft", False)
+        key = f"{defindex};{quality_id};{1 if craftable_bool else 0}"
+        entry = schema_map.get(key)
         if not entry:
             continue
 
@@ -63,7 +66,6 @@ def enrich_inventory(
             or f"Item #{defindex}"
         )
 
-        quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
 
         item = {
@@ -85,9 +87,9 @@ def enrich_inventory(
             if price_data:
                 quality = "6"
                 tradable = "Tradable"
-                craftable = "Craftable"
+                craftable_state = "Craftable"
                 try:
-                    entry = price_data["prices"][quality][tradable][craftable][0]
+                    entry = price_data["prices"][quality][tradable][craftable_state][0]
                     from .valuation_service import format_price
 
                     item["price"] = format_price(entry, key_price_ref)

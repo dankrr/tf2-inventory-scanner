@@ -2,7 +2,9 @@ import importlib
 
 
 def test_app_uses_mock_schema(monkeypatch):
-    mock_schema = {"5": {"defindex": 5, "name": "Five"}}
+    mock_schema = {
+        "5;0;1": {"defindex": 5, "name": "Five", "quality": 0, "craftable": True}
+    }
 
     def fake_ensure():
         return mock_schema
