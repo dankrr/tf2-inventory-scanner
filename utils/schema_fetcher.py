@@ -9,7 +9,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-CACHE_FILE = Path("data/item_schema.json")
+CACHE_FILE = Path("cache/tf2_schema.json")
 TTL = 48 * 60 * 60  # 48 hours
 
 
@@ -57,26 +57,37 @@ def _fetch_schema(api_key: str) -> Dict[str, Any]:
 
 
 def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
-    """Return cached item schema mapping."""
+    """Return cached item schema mapping, refetching if missing or stale."""
+
     if api_key is None:
         api_key = os.getenv("STEAM_API_KEY")
 
     global SCHEMA, QUALITIES
-    if CACHE_FILE.exists():
-        age = time.time() - CACHE_FILE.stat().st_mtime
+    cache_path = CACHE_FILE.resolve()
+    need_fetch = True
+    if cache_path.exists():
+        age = time.time() - cache_path.stat().st_mtime
         if age < TTL:
-            with CACHE_FILE.open() as f:
+            with cache_path.open() as f:
                 cached = json.load(f)
-            SCHEMA = cached.get("items", {})
-            QUALITIES = cached.get("qualities", {})
-            logger.info("Schema cache HIT: %s items", len(SCHEMA))
-            return SCHEMA
+            items = cached.get("items", cached)
+            if isinstance(items, dict) and len(items) >= 5000:
+                SCHEMA = items
+                QUALITIES = cached.get("qualities", {})
+                logger.info("Loaded %s items from %s", len(SCHEMA), cache_path)
+                need_fetch = False
 
-    fetched = _fetch_schema(api_key)
-    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with CACHE_FILE.open("w") as f:
-        json.dump(fetched, f)
-    SCHEMA = fetched["items"]
-    QUALITIES = fetched["qualities"]
-    logger.info("Schema cache MISS, fetched %s items", len(SCHEMA))
+    if need_fetch:
+        logger.warning("\N{CROSS MARK} Schema missing or invalid — refetching...")
+        fetched = _fetch_schema(api_key)
+        CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CACHE_FILE.write_text(json.dumps(fetched))
+        SCHEMA = fetched["items"]
+        QUALITIES = fetched["qualities"]
+        logger.info(
+            "\N{CHECK MARK} Fetched and cached full schema with %s items → %s",
+            len(SCHEMA),
+            cache_path,
+        )
+
     return SCHEMA
