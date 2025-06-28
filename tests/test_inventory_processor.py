@@ -1,9 +1,15 @@
 from utils import inventory_processor as ip
 from utils import schema_fetcher as sf
 from utils import steam_api_client as sac
+from utils import items_game_cache as ig
 import requests
 import responses
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def no_items_game(monkeypatch):
+    monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
 
 
 def test_enrich_inventory():
