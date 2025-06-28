@@ -10,6 +10,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def no_items_game(monkeypatch):
     monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
+    monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
 
 
 def test_enrich_inventory():
