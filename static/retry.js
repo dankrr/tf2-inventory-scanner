@@ -8,6 +8,10 @@ function appendCard(html) {
 }
 
 function refreshCard(id) {
+  const pill = document.querySelector('#user-' + id + ' .status-pill');
+  if (pill) {
+    pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
+  }
   return fetch('/retry/' + id, { method: 'POST' })
     .then(r => r.text())
     .then(html => {
