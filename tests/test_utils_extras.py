@@ -16,9 +16,20 @@ def test_convert_to_steam64():
 def test_process_inventory_sorting():
     data = {"items": [{"defindex": 2}, {"defindex": 1}]}
     sf.SCHEMA = {
-        "1": {"defindex": 1, "item_name": "A", "image_url": "b"},
-        "2": {"defindex": 2, "item_name": "B", "image_url": "a"},
+        "1;0;1": {
+            "defindex": 1,
+            "name": "A",
+            "image_url": "b",
+            "quality": 0,
+            "craftable": True,
+        },
+        "2;0;1": {
+            "defindex": 2,
+            "name": "B",
+            "image_url": "a",
+            "quality": 0,
+            "craftable": True,
+        },
     }
-    sf.QUALITIES = {}
     items = ip.process_inventory(data)
     assert [item["name"] for item in items] == ["A", "B"]

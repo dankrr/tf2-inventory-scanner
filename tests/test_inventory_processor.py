@@ -13,8 +13,15 @@ import pytest
 
 def test_enrich_inventory():
     data = {"items": [{"defindex": 111, "quality": 0}]}
-    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Test Item", "image_url": "img"}}
-    sf.QUALITIES = {"0": "Normal"}
+    sf.SCHEMA = {
+        "111;0;1": {
+            "defindex": 111,
+            "name": "Test Item",
+            "image_url": "img",
+            "quality": 0,
+            "craftable": True,
+        }
+    }
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Test Item"
     assert items[0]["quality"] == "Normal"
@@ -27,10 +34,21 @@ def test_enrich_inventory():
 def test_process_inventory_handles_missing_icon():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {
-        "1": {"defindex": 1, "item_name": "One", "image_url": "a"},
-        "2": {"defindex": 2, "item_name": "Two", "image_url": ""},
+        "1;0;1": {
+            "defindex": 1,
+            "name": "One",
+            "image_url": "a",
+            "quality": 0,
+            "craftable": True,
+        },
+        "2;0;1": {
+            "defindex": 2,
+            "name": "Two",
+            "image_url": "",
+            "quality": 0,
+            "craftable": True,
+        },
     }
-    sf.QUALITIES = {}
     items = ip.process_inventory(data)
     assert {i["name"] for i in items} == {"One", "Two"}
     for item in items:
@@ -45,16 +63,30 @@ def test_process_inventory_handles_missing_icon():
 def test_enrich_inventory_preserves_absolute_url():
     data = {"items": [{"defindex": 5, "quality": 0}]}
     url = "http://example.com/icon.png"
-    sf.SCHEMA = {"5": {"defindex": 5, "item_name": "Abs", "image_url": url}}
-    sf.QUALITIES = {"0": "Normal"}
+    sf.SCHEMA = {
+        "5;0;1": {
+            "defindex": 5,
+            "name": "Abs",
+            "image_url": url,
+            "quality": 0,
+            "craftable": True,
+        }
+    }
     items = ip.enrich_inventory(data)
     assert items[0]["final_url"] == url
 
 
 def test_enrich_inventory_skips_unknown_defindex():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
-    sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": "a"}}
-    sf.QUALITIES = {}
+    sf.SCHEMA = {
+        "1;0;1": {
+            "defindex": 1,
+            "name": "One",
+            "image_url": "a",
+            "quality": 0,
+            "craftable": True,
+        }
+    }
     items = ip.enrich_inventory(data)
     assert len(items) == 1
     assert items[0]["name"] == "One"
