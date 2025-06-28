@@ -38,9 +38,29 @@ def _load_schema() -> Dict[str, Any]:
     with CACHE_FILE.open() as f:
         data = json.load(f)
 
-    items_raw = data.get("items") if isinstance(data, dict) else data
+    logger.debug(
+        "Schema cache loaded: type=%s",
+        type(data).__name__,
+    )
+
+    if isinstance(data, list):
+        items_raw = data
+    else:
+        items_raw = data.get("items") if isinstance(data, dict) else None
+        if items_raw is not None:
+            logger.warning("Unexpected object root in schema, using 'items' key")
+
     if not isinstance(items_raw, list):
+        logger.warning("Schema cache not a list; type=%s", type(data).__name__)
         items_raw = []
+
+    logger.debug(
+        "Schema items structure: type=%s count=%s",
+        type(items_raw).__name__,
+        len(items_raw) if isinstance(items_raw, list) else "N/A",
+    )
+    if isinstance(items_raw, list) and items_raw:
+        logger.debug("First schema entry keys: %s", list(items_raw[0].keys()))
 
     items: Dict[str, Any] = {}
     for item in items_raw:
@@ -83,3 +103,23 @@ def resolve_item_names_bulk(objs: list[dict]) -> list[str]:
     r.raise_for_status()
     data = r.json()
     return data.get("itemNames", [])
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="TF2 schema cache helper")
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Load schema and print a brief summary",
+    )
+    args = parser.parse_args()
+    ensure_schema_cached()
+    if args.show:
+        if SCHEMA:
+            first = next(iter(SCHEMA.values()))
+            print(f"Total items: {len(SCHEMA)}")
+            print(f"First item keys: {list(first.keys())}")
+        else:
+            print("Schema not loaded")
