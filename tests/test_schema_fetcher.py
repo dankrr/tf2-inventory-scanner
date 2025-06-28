@@ -11,22 +11,20 @@ import utils.schema_fetcher as sf
 
 def test_schema_cache_hit(tmp_path, monkeypatch):
     cache = tmp_path / "cached_schema.json"
-    sample = {
-        "items": [
-            {
-                "defindex": 1,
-                "name": "Item",
-                "image_url": "i",
-                "quality": 0,
-                "craftable": True,
-            }
-        ]
-    }
+    sample = [
+        {
+            "defindex": 1,
+            "name": "Item",
+            "image_url": "i",
+            "quality": 0,
+            "craftable": True,
+        }
+    ]
     cache.write_text(json.dumps(sample))
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
     monkeypatch.setattr(sf, "requests", Mock())
     schema = sf.ensure_schema_cached()
-    assert schema == {"1;0;1": sample["items"][0]}
+    assert schema == {"1;0;1": sample[0]}
 
 
 def test_schema_cache_miss(tmp_path, monkeypatch):
@@ -40,17 +38,15 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         def raise_for_status(self):
             pass
 
-    payload = {
-        "items": [
-            {
-                "defindex": 2,
-                "name": "Other",
-                "image_url": "u",
-                "quality": 0,
-                "craftable": True,
-            }
-        ]
-    }
+    payload = [
+        {
+            "defindex": 2,
+            "name": "Other",
+            "image_url": "u",
+            "quality": 0,
+            "craftable": True,
+        }
+    ]
 
     def fake_get(url, stream=False, timeout=20):
         assert url == sf.SCHEMA_URL
