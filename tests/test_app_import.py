@@ -1,4 +1,5 @@
 import importlib
+import asyncio
 
 
 def test_app_uses_mock_schema(monkeypatch):
@@ -8,6 +9,10 @@ def test_app_uses_mock_schema(monkeypatch):
         return mock_schema
 
     monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", fake_ensure)
+    monkeypatch.setattr(
+        "utils.items_game_cache.ensure_future",
+        lambda *a, **k: asyncio.get_event_loop().create_future(),
+    )
     monkeypatch.setenv("STEAM_API_KEY", "x")
     app = importlib.import_module("app")
     assert app.SCHEMA == mock_schema
