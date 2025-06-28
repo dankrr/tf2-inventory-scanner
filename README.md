@@ -120,6 +120,10 @@ This downloads `items_game.txt`, stores a reduced copy under `cache/items_game.j
 and writes the cleaned map to `data/items_game_cleaned.json` for the app to use.
 The cache is reused for 48 hours.
 
+Both `tf2_schema.json` and `items_game_cleaned.json` can be overridden via the
+`TF2_SCHEMA_FILE` and `TF2_ITEMS_GAME_FILE` environment variables if you want to
+store them elsewhere.
+
 ### Deploy
 
 The app can be deployed to any platform that supports Python 3.12. For Docker:
