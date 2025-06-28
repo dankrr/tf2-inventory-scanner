@@ -34,10 +34,17 @@ Edit `.env` to set your credentials:
 
 ```
 STEAM_API_KEY=your_steam_key
-BACKPACK_API_KEY=your_backpack_key
+BACKPACK_API_KEY=your_key_here
 ```
 
 The application uses **python-dotenv** to load these values at runtime.
+
+### Required Environment Variables
+
+| Variable           | Description                      |
+|--------------------|----------------------------------|
+| `STEAM_API_KEY`    | Your Steam Web API key           |
+| `BACKPACK_API_KEY` | Your Backpack.tf API key         |
 
 ## Usage
 

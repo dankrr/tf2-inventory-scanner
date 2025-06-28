@@ -1,6 +1,10 @@
+# ruff: noqa: E402
+import os
 import json
 
 from unittest.mock import Mock
+
+os.environ.setdefault("BACKPACK_API_KEY", "x")
 
 import utils.schema_fetcher as sf
 
