@@ -4,6 +4,7 @@ from . import (
     schema_fetcher,
     inventory_processor,
     id_parser,
+    valuation_service,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "schema_fetcher",
     "inventory_processor",
     "id_parser",
+    "valuation_service",
 ]

@@ -31,7 +31,11 @@ def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
     return data, status
 
 
-def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def enrich_inventory(
+    data: Dict[str, Any],
+    prices: Dict[str, Any] | None = None,
+    key_price_ref: float | None = None,
+) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info."""
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
@@ -62,21 +66,37 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
 
-        items.append(
-            {
-                "defindex": defindex,
-                "name": name,
-                "quality": q_name,
-                "quality_color": q_col,
-                "quality_id": quality_id,
-                "image_url": image_path,
-                "final_url": final_url,
-                "uncraftable": bool(asset.get("flag_cannot_craft")),
-                "australium": bool(asset.get("australium")),
-                "tradable": not asset.get("flag_cannot_trade", False),
-                "effect": asset.get("quality2"),
-            }
-        )
+        item = {
+            "defindex": defindex,
+            "name": name,
+            "quality": q_name,
+            "quality_color": q_col,
+            "quality_id": quality_id,
+            "image_url": image_path,
+            "final_url": final_url,
+            "uncraftable": bool(asset.get("flag_cannot_craft")),
+            "australium": bool(asset.get("australium")),
+            "tradable": not asset.get("flag_cannot_trade", False),
+            "effect": asset.get("quality2"),
+        }
+
+        if prices and key_price_ref:
+            price_data = prices.get(name)
+            if price_data:
+                quality = "6"
+                tradable = "Tradable"
+                craftable = "Craftable"
+                try:
+                    entry = price_data["prices"][quality][tradable][craftable][0]
+                    from .valuation_service import format_price
+
+                    item["price"] = format_price(entry, key_price_ref)
+                except Exception:
+                    item["price"] = ""
+            else:
+                item["price"] = ""
+
+        items.append(item)
     return items
 
 
