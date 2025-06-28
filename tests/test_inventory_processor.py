@@ -153,7 +153,18 @@ def test_fetch_inventory_statuses(monkeypatch, payload, expected):
 def test_user_template_safe(monkeypatch, status):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BACKPACK_API_KEY", "x")
-    monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", lambda: {})
+    monkeypatch.setattr(
+        "utils.schema_fetcher.ensure_schema_cached",
+        lambda: {"1;0;1": {"defindex": 1, "quality": 0, "craftable": True}},
+    )
+    monkeypatch.setattr(
+        "utils.price_fetcher.ensure_prices_cached",
+        lambda: {"1;0": {"value": 1, "currency": "metal", "last_update": 0}},
+    )
+    monkeypatch.setattr(
+        "utils.price_fetcher.ensure_currencies_cached",
+        lambda: {"metal": {"value": 1}, "keys": {"value": 1}},
+    )
     import importlib
 
     app = importlib.import_module("app")

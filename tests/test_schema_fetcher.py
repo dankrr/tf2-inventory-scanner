@@ -33,10 +33,13 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
 
     class DummyResp:
         def __init__(self, payload):
-            self.content = json.dumps(payload).encode()
+            self.payload = payload
 
         def raise_for_status(self):
             pass
+
+        def json(self):
+            return self.payload
 
     payload = {
         "items": [
@@ -50,9 +53,8 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         ]
     }
 
-    def fake_get(url, stream=False, timeout=20):
+    def fake_get(url, timeout=20):
         assert url == sf.SCHEMA_URL
-        assert stream is True
         return DummyResp(payload)
 
     monkeypatch.setattr(sf.requests, "get", fake_get)

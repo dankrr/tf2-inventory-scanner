@@ -6,6 +6,9 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
+
+load_dotenv()
+
 from flask import Flask, render_template, request, flash
 from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
@@ -13,7 +16,6 @@ from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 from utils import price_fetcher
 
-load_dotenv()
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
@@ -47,6 +49,24 @@ def fetch_prices() -> None:
     metal_val = currencies.get("metal", {}).get("value")
     key_val = currencies.get("keys", {}).get("value")
     KEY_REF_RATE = key_val / metal_val if metal_val else 0.0
+
+
+fetch_prices()
+logger.info("Loaded %s price entries", len(PRICE_CACHE))
+if not SCHEMA:
+    raise RuntimeError("Schema contains no items")
+
+
+def _prices_match_schema() -> bool:
+    for sku in SCHEMA:
+        base = ";".join(sku.split(";")[:2])
+        if base in PRICE_CACHE:
+            return True
+    return False
+
+
+if not _prices_match_schema():
+    raise RuntimeError("Price cache does not match schema SKUs")
 
 
 def get_player_summary(steamid64: str) -> Dict[str, Any]:

@@ -1,3 +1,7 @@
+"""Helpers for downloading and caching the TF2 item schema."""
+
+from __future__ import annotations
+
 import json
 import logging
 import time
@@ -8,9 +12,9 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# cache file location and refresh interval
+# cache file location and refresh interval (1 day)
 CACHE_FILE = Path("data/cached_schema.json")
-TTL = 48 * 60 * 60  # 48 hours
+TTL = 24 * 60 * 60
 
 # remote schema endpoint
 SCHEMA_URL = "https://schema.autobot.tf/schema/download"
@@ -20,34 +24,51 @@ BULK_NAME_URL = "https://schema.autobot.tf/getName/fromItemObjectBulk"
 SCHEMA: Dict[str, Any] | None = None
 
 
-def _download_schema() -> None:
+def _fetch_schema() -> Dict[str, Any]:
+    """Return the raw schema JSON payload from the remote endpoint."""
+
+    last_exc: Exception | None = None
+    for _ in range(3):
+        try:
+            r = requests.get(SCHEMA_URL, timeout=20)
+            r.raise_for_status()
+            return r.json()
+        except requests.RequestException as exc:  # pragma: no cover - network
+            last_exc = exc
+            time.sleep(1)
+    raise RuntimeError(f"Schema fetch failed: {last_exc}")
+
+
+def _download_schema() -> Dict[str, Any]:
     """Download the raw TF2 schema and save it to the cache file."""
 
     logger.info("Fetching schema from %s", SCHEMA_URL)
-    r = requests.get(SCHEMA_URL, stream=True, timeout=20)
-    r.raise_for_status()
+    data = _fetch_schema()
+    items = data.get("items")
+    if not isinstance(items, list):
+        raise ValueError("Invalid schema format: missing 'items' list")
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with CACHE_FILE.open("wb") as f:
-        f.write(r.content)
-    logger.info("Schema fetch success, saved to cache")
+    with CACHE_FILE.open("w") as f:
+        json.dump(data, f)
+    logger.info("Schema fetch success, saved to cache (%s items)", len(items))
+    return data
 
 
 def _load_schema() -> Dict[str, Any]:
     """Parse the cached schema file and build an item mapping."""
 
-    with CACHE_FILE.open() as f:
-        data = json.load(f)
-
-    logger.debug("Schema cache loaded: type=%s", type(data).__name__)
+    try:
+        with CACHE_FILE.open() as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Failed to read schema cache: {exc}") from exc
 
     if not isinstance(data, dict):
-        logger.error("Schema cache not an object; type=%s", type(data).__name__)
-        return {}
+        raise ValueError("Schema JSON is not an object")
 
-    items_raw = data.get("items", [])
+    items_raw = data.get("items")
     if not isinstance(items_raw, list):
-        logger.error("Schema 'items' not a list; type=%s", type(items_raw).__name__)
-        return {}
+        raise ValueError("Schema 'items' not a list")
 
     logger.debug(
         "Schema items structure: type=%s count=%s",
@@ -75,15 +96,32 @@ def ensure_schema_cached() -> Dict[str, Any]:
 
     global SCHEMA
 
-    refresh = not CACHE_FILE.exists() or time.time() - CACHE_FILE.stat().st_mtime > TTL
-    if refresh:
-        _download_schema()
-        logger.info("Schema cache updated at %s", CACHE_FILE)
+    need_fetch = (
+        not CACHE_FILE.exists() or time.time() - CACHE_FILE.stat().st_mtime > TTL
+    )
+    if need_fetch:
+        try:
+            _download_schema()
+            source = "fetched"
+        except Exception as exc:
+            logger.warning("Schema fetch failed: %s", exc)
+            if not CACHE_FILE.exists():
+                raise RuntimeError("No schema cache available") from exc
+            source = "cache"
+            if time.time() - CACHE_FILE.stat().st_mtime > TTL:
+                logger.warning("Using stale schema cache")
     else:
-        logger.info("Schema cache is still fresh")
+        source = "cache"
 
-    SCHEMA = _load_schema()
-    logger.info("Loaded %s schema items", len(SCHEMA))
+    try:
+        SCHEMA = _load_schema()
+    except Exception as exc:  # pragma: no cover - config error
+        raise RuntimeError(f"Failed to load schema: {exc}") from exc
+
+    if not SCHEMA:
+        raise RuntimeError("Schema cache empty")
+
+    logger.info("Loaded %s schema items from %s", len(SCHEMA), source)
     return SCHEMA
 
 
