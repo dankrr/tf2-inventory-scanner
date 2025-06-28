@@ -21,7 +21,7 @@
             align-items: center;
             gap: 4px;
             position: relative;
-            padding: 0 12px;
+            padding: 0 20px;
         }
         .inventory-scroll .inventory-container {
             display: grid;
@@ -31,10 +31,18 @@
             overflow-x: auto;
             overflow-y: hidden;
             scroll-behavior: smooth;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
         }
         .inventory-scroll .inventory-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            height: 6px;
+        }
+        .inventory-scroll .inventory-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .inventory-scroll .inventory-container::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
         }
         .scroll-arrow {
             background: transparent;
@@ -50,7 +58,9 @@
         }
         .scroll-arrow.left { left: 0; }
         .scroll-arrow.right { right: 0; }
-        .form-actions { margin-top: 0.5rem; }
+        .form-actions {
+            margin-top: 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -120,10 +130,17 @@
           container.addEventListener(
             'wheel',
             e => {
-              if (container.scrollWidth > container.clientWidth) {
+              if (
+                container.scrollWidth > container.clientWidth &&
+                (e.deltaX !== 0 || e.shiftKey)
+              ) {
                 e.preventDefault();
-                const direction = e.deltaY > 0 ? 1 : -1;
-                container.scrollBy({ left: direction * pageSize(), behavior: 'smooth' });
+                const delta = e.deltaX || e.deltaY;
+                const direction = delta > 0 ? 1 : -1;
+                container.scrollBy({
+                  left: direction * pageSize(),
+                  behavior: 'smooth'
+                });
               }
             },
             { passive: false }
