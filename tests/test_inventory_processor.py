@@ -7,16 +7,37 @@ import pytest
 
 
 def test_enrich_inventory():
-    data = {"items": [{"defindex": 111, "quality": 0}]}
-    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Test Item", "image_url": "img"}}
-    sf.QUALITIES = {"0": "Normal"}
+    data = {"items": [{"defindex": 111, "quality": 11}]}
+    sf.SCHEMA = {
+        "111": {"defindex": 111, "item_name": "Rocket Launcher", "image_url": "img"}
+    }
+    sf.QUALITIES = {"11": "Strange"}
     items = ip.enrich_inventory(data)
-    assert items[0]["name"] == "Test Item"
-    assert items[0]["quality"] == "Normal"
-    assert items[0]["quality_color"] == "#B2B2B2"
+    assert items[0]["name"] == "Strange Rocket Launcher"
+    assert items[0]["quality"] == "Strange"
+    assert items[0]["quality_color"] == "#CF6A32"
     assert items[0]["final_url"].startswith(
         "https://steamcommunity-a.akamaihd.net/economy/image/"
     )
+
+
+def test_enrich_inventory_unusual_effect():
+    data = {
+        "items": [
+            {
+                "defindex": 222,
+                "quality": 5,
+                "descriptions": [{"value": "Unusual Effect: Burning Flames"}],
+            }
+        ]
+    }
+    sf.SCHEMA = {
+        "222": {"defindex": 222, "item_name": "Team Captain", "image_url": "img"}
+    }
+    sf.QUALITIES = {"5": "Unusual"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["name"] == "Burning Flames Team Captain"
+    assert items[0]["quality"] == "Unusual"
 
 
 def test_process_inventory_handles_missing_icon():
