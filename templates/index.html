@@ -21,6 +21,7 @@
             align-items: center;
             gap: 4px;
             position: relative;
+            padding: 0 12px;
         }
         .inventory-scroll .inventory-container {
             display: grid;
@@ -49,6 +50,7 @@
         }
         .scroll-arrow.left { left: 0; }
         .scroll-arrow.right { right: 0; }
+        .form-actions { margin-top: 0.5rem; }
     </style>
 </head>
 <body>
@@ -90,7 +92,9 @@
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
           const container = wrapper.querySelector('.inventory-container');
           if (!container) return;
-          const amount = container.clientWidth / 2;
+          function pageSize() {
+            return container.offsetWidth || container.clientWidth;
+          }
           const left = wrapper.querySelector('.scroll-arrow.left');
           const right = wrapper.querySelector('.scroll-arrow.right');
           function updateVisibility() {
@@ -104,12 +108,12 @@
 
           if (left) {
             left.addEventListener('click', () => {
-              container.scrollBy({ left: -amount, behavior: 'smooth' });
+              container.scrollBy({ left: -pageSize(), behavior: 'smooth' });
             });
           }
           if (right) {
             right.addEventListener('click', () => {
-              container.scrollBy({ left: amount, behavior: 'smooth' });
+              container.scrollBy({ left: pageSize(), behavior: 'smooth' });
             });
           }
 
@@ -118,7 +122,8 @@
             e => {
               if (container.scrollWidth > container.clientWidth) {
                 e.preventDefault();
-                container.scrollLeft += e.deltaY;
+                const direction = e.deltaY > 0 ? 1 : -1;
+                container.scrollBy({ left: direction * pageSize(), behavior: 'smooth' });
               }
             },
             { passive: false }
