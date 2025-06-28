@@ -130,15 +130,12 @@ def index():
                 "index.html",
                 users=users,
                 steamids=steamids_input,
-                valid_count=0,
-                invalid_count=len(invalid),
+                ids=[],
             )
     return render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
-        valid_count=len(ids) if request.method == "POST" else 0,
-        invalid_count=len(invalid) if request.method == "POST" else 0,
         ids=ids,
     )
 
