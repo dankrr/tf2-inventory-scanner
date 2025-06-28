@@ -16,6 +16,28 @@
             font-size: 0.8rem;
             color: #aaa;
         }
+        .inventory-scroll {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .inventory-scroll .inventory-container {
+            display: grid;
+            grid-template-rows: repeat(4, auto);
+            grid-auto-flow: column;
+            gap: 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+        }
+        .scroll-arrow {
+            background: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.4rem;
+            padding: 0 6px;
+        }
     </style>
 </head>
 <body>
@@ -52,5 +74,34 @@
       window.initialIds = {{ ids|tojson|safe }};
     </script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
+    <script>
+      function attachScrollButtons() {
+        document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
+          const container = wrapper.querySelector('.inventory-container');
+          if (!container) return;
+          const amount = container.clientWidth;
+          const left = wrapper.querySelector('.scroll-arrow.left');
+          const right = wrapper.querySelector('.scroll-arrow.right');
+          if (left) {
+            left.addEventListener('click', () => {
+              container.scrollBy({ left: -amount, behavior: 'smooth' });
+            });
+          }
+          if (right) {
+            right.addEventListener('click', () => {
+              container.scrollBy({ left: amount, behavior: 'smooth' });
+            });
+          }
+        });
+      }
+      if (window.attachHandlers) {
+        const oldAttach = window.attachHandlers;
+        window.attachHandlers = function () {
+          oldAttach();
+          attachScrollButtons();
+        };
+      }
+      document.addEventListener('DOMContentLoaded', attachScrollButtons);
+    </script>
 </body>
 </html>
