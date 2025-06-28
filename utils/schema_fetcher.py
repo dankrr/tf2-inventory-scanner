@@ -60,8 +60,6 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
     """Return cached item schema mapping."""
     if api_key is None:
         api_key = os.getenv("STEAM_API_KEY")
-    if not api_key:
-        raise ValueError("STEAM_API_KEY is required to fetch item schema")
 
     global SCHEMA, QUALITIES
     if CACHE_FILE.exists():
