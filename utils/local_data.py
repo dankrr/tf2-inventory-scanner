@@ -8,8 +8,9 @@ TF2_SCHEMA: Dict[str, Any] = {}
 ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 EFFECT_NAMES: Dict[str, str] = {}
 
-SCHEMA_FILE = Path("data/tf2_schema.json")
-ITEMS_GAME_FILE = Path("data/items_game_cleaned.json")
+BASE_DIR = Path(__file__).resolve().parent.parent
+SCHEMA_FILE = BASE_DIR / "data" / "tf2_schema.json"
+ITEMS_GAME_FILE = BASE_DIR / "data" / "items_game_cleaned.json"
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:
@@ -44,7 +45,12 @@ def load_files() -> Tuple[Dict[str, Any], Dict[str, Any]]:
         raise RuntimeError("tf2_schema.json is empty or invalid")
     TF2_SCHEMA = items
     EFFECT_NAMES = data.get("effects", {}) if isinstance(data, dict) else {}
-    print(f"\N{CHECK MARK} Loaded {len(TF2_SCHEMA)} items from tf2_schema.json")
+    print(f"\N{CHECK MARK} Loaded {len(TF2_SCHEMA)} items from {SCHEMA_FILE}")
+    if len(TF2_SCHEMA) < 100:
+        print(
+            "\N{WARNING SIGN} tf2_schema.json may be stale or incomplete. "
+            "Consider forcing a refetch."
+        )
 
     if not ITEMS_GAME_FILE.exists():
         raise RuntimeError(f"Missing {ITEMS_GAME_FILE}")
