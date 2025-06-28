@@ -7,8 +7,8 @@ import services.pricing_service as ps
 
 
 def test_price_cache_fetch(tmp_path, monkeypatch):
-    price_file = tmp_path / "price_cache.json"
-    curr_file = tmp_path / "currency_rates.json"
+    price_file = tmp_path / "cached_prices.json"
+    curr_file = tmp_path / "cached_currencies.json"
     monkeypatch.setattr(ps, "PRICE_CACHE_FILE", price_file)
     monkeypatch.setattr(ps, "CURRENCY_FILE", curr_file)
 

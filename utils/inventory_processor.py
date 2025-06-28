@@ -83,20 +83,17 @@ def enrich_inventory(
         }
 
         if prices and key_price_ref:
-            price_data = prices.get(name)
-            if price_data:
-                quality = "6"
-                tradable = "Tradable"
-                craftable_state = "Craftable"
-                try:
-                    entry = price_data["prices"][quality][tradable][craftable_state][0]
-                    from .valuation_service import format_price
+            sku = f"{defindex};{quality_id}"
+            price_entry = prices.get(sku)
+            from .valuation_service import format_price
 
-                    item["price"] = format_price(entry, key_price_ref)
-                except Exception:
-                    item["price"] = ""
+            if price_entry:
+                item["price"] = format_price(price_entry, key_price_ref)
+                item["unknown"] = False
             else:
-                item["price"] = ""
+                logger.info("Price not found for %s", sku)
+                item["price"] = "Unknown Value"
+                item["unknown"] = True
 
         items.append(item)
     return items
