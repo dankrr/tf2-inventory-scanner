@@ -11,5 +11,5 @@ All notable changes to this project will be documented in this file.
 - Coverage and CI badges in the README.
 
 ### Changed
-- Updated schema caching logic and UI (previous releases).
+- Updated schema source to schema.autobot.tf with 48h caching.
 - Security audit using git-secrets and pip-audit.
