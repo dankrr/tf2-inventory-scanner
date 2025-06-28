@@ -8,7 +8,8 @@ from flask import Flask, render_template, request, flash
 from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
-from utils import steam_api_client as sac, price_fetcher
+from utils import steam_api_client as sac
+from services import pricing_service
 
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -33,8 +34,8 @@ def fetch_prices() -> None:
     global PRICE_CACHE, KEY_REF_RATE
     if PRICE_CACHE and KEY_REF_RATE:
         return
-    PRICE_CACHE = price_fetcher.ensure_price_cache()
-    KEY_REF_RATE = price_fetcher.ensure_currency_rates()
+    PRICE_CACHE = pricing_service.ensure_price_cache()
+    KEY_REF_RATE = pricing_service.ensure_currency_rates()
 
 
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
@@ -71,11 +72,13 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
             sku = f"{item['defindex']};{item.get('quality_id', 0)}"
             entry = PRICE_CACHE.get(sku)
             if entry and entry.get("value") is not None:
-                item["price"] = price_fetcher.format_price(
+                item["price"] = pricing_service.format_price(
                     float(entry["value"]), KEY_REF_RATE
                 )
+                item["unknown"] = False
             else:
-                item["price"] = "?"
+                item["price"] = "Price: Unknown"
+                item["unknown"] = True
     return {"items": items, "status": status}
 
 
