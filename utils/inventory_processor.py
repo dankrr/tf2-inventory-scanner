@@ -58,11 +58,47 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
+_KILLSTREAK_TIER = {
+    1: "Killstreak",
+    2: "Specialized Killstreak",
+    3: "Professional Killstreak",
+}
+
+_SHEEN_NAMES = {
+    1: "Team Shine",
+    2: "Deadly Daffodil",
+    3: "Mandarin",
+    4: "Mean Green",
+    5: "Villainous Violet",
+    6: "Hot Rod",
+}
+
+
+def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
+    """Return killstreak tier and sheen names if present."""
+
+    tier = None
+    sheen = None
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        val = int(attr.get("float_value", 0))
+        if idx == 2025:
+            tier = _KILLSTREAK_TIER.get(val)
+        elif idx == 2014:
+            sheen = _SHEEN_NAMES.get(val)
+    return tier, sheen
+
+
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     """Return the display name prefixed with quality/effect."""
 
     parts: List[str] = []
+    ks_tier, sheen = _extract_killstreak(asset)
     effect = _extract_unusual_effect(asset)
+
+    if ks_tier:
+        parts.append(ks_tier)
+
     if effect:
         parts.append(effect)
         if quality not in ("Unique", "Normal", "Unusual"):
@@ -70,7 +106,12 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     else:
         if quality not in ("Unique", "Normal"):
             parts.append(quality)
+
     parts.append(base)
+
+    if sheen:
+        parts.append(f"({sheen})")
+
     return " ".join(parts)
 
 
