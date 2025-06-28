@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <title>TF2 Inventory Checker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SzlrxWUlpfUZ2x+pcUCos9rqPhtwzXubcjoCz1uyjq8q2+mZ4c4WxJJgAOQh2AnGkacD1x0gRhFeojVk51Pp1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif; margin: 2em; }
-        textarea { width: 100%; height: 100px; background-color: #1e1e1e; border: 1px solid #333; color: #fff; }
-        button { background-color: #1e1e1e; border: 1px solid #333; color: #fff; padding: 6px 12px; }
         img { vertical-align: middle; }
         .pill {
             background: #666;
@@ -32,19 +30,23 @@
             </ul>
         {% endif %}
     {% endwith %}
-    <form method="post">
-        <label for="steamids">Enter SteamIDs (separated by space, comma or newline):</label><br>
-        <textarea id="steamids" name="steamids">{{ steamids|default('') }}</textarea><br>
-        <button type="submit">Check Inventories</button>
+    <form method="post" class="input-form">
+        <label for="steamids" class="visually-hidden">Steam IDs</label>
+        <div class="input-wrapper">
+            <i class="fa-brands fa-steam steam-icon"></i>
+            <textarea id="steamids" name="steamids" placeholder="Enter SteamID, vanity URL, or multiple IDs…">{{ steamids|default('') }}</textarea>
+        </div>
+        <button type="submit" class="primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
     </form>
 
-    {% if request.method == 'POST' %}
-        <p>Processed {{ valid_count }} valid IDs{% if invalid_count %} (ignored {{ invalid_count }} invalid){% endif %}.</p>
-    {% endif %}
-
-    <button id="retry-all" disabled>Refresh Failed</button>
+    <button id="retry-all" disabled class="refresh-btn"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
 
     <div id="user-container"></div>
+
+    <footer class="page-footer">
+        <i class="fa-brands fa-steam-symbol"></i>
+        <div class="footer-text">This site is not affiliated with Valve Corporation.<br>Team Fortress 2 content © Valve Corporation.</div>
+    </footer>
 
     <script>
       window.initialIds = {{ ids|tojson|safe }};

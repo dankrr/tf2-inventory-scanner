@@ -3,6 +3,7 @@ body {
     color: #e0e0e0;
     font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
     margin: 2em;
+    line-height: 1.5;
 }
 
 input,
@@ -25,24 +26,89 @@ button {
     cursor: pointer;
 }
 
+.input-form {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.input-wrapper textarea {
+    width: 100%;
+    padding: 8px 8px 8px 36px;
+    border-radius: 6px;
+    resize: vertical;
+}
+
+.steam-icon {
+    position: absolute;
+    left: 10px;
+    color: #888;
+    pointer-events: none;
+}
+
+.input-wrapper textarea:focus {
+    box-shadow: 0 0 0 2px #4285f4;
+    outline: none;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.primary-btn,
+.refresh-btn {
+    background-color: #333;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+}
+
+.primary-btn {
+    margin-top: 8px;
+    padding: 8px 12px;
+}
+
+.refresh-btn {
+    padding: 6px 12px;
+    margin-bottom: 16px;
+}
+
 .items {
     display: flex;
     overflow-x: auto;
     gap: 4px;
 }
 
+
 .item-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  min-width: 120px;
+  justify-content: flex-end;
+  width: 120px;
+  aspect-ratio: 1 / 1;
   padding: 8px;
   border: 1px solid #333;
   border-radius: 4px;
   margin: 4px;
   background: rgba(40, 40, 40, 0.8);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
   transition: transform 0.1s, box-shadow 0.1s;
 }
 
@@ -50,18 +116,23 @@ button {
   transform: translateY(-2px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
-.item-card img {
-  display: block;
+.item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .missing-icon {
-  width: 32px;
-  height: 32px;
+  width: 100%;
+  height: 100%;
   background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .item-name {
-  font-size: 13px;
-  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
   text-align: center;
   margin-top: 4px;
   width: 100%;
@@ -69,3 +140,24 @@ button {
 }
 
 .tf2-hours { margin-left: 6px; font-size: 0.9em; }
+
+.page-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.page-footer .fa-steam-symbol {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 1em;
+  }
+  .items {
+    gap: 2px;
+  }
+}

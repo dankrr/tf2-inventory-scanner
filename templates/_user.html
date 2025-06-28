@@ -25,13 +25,13 @@
       {% for item in user.items %}
         <div class="item-card" style="border-color: {{ item.quality_color }};">
           {% if item.final_url %}
-            <img src="{{ item.final_url }}" alt="{{ item.name }}" width="32" height="32">
+            <img src="{{ item.final_url }}" alt="{{ item.name }}" class="item-img">
           {% else %}
             <div class="missing-icon"></div>
           {% endif %}
           <div class="item-name">{{ item.name }}</div>
         </div>
       {% endfor %}
-    </div>
+      </div>
   </div>
 </div>
