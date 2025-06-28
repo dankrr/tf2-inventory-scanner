@@ -14,6 +14,9 @@ def test_convert_to_steam64():
 def no_items_game(monkeypatch):
     monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
     monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
+    from utils import local_data as ld
+
+    ld.TF2_SCHEMA = {}
 
 
 def test_process_inventory_sorting():
