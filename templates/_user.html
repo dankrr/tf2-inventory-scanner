@@ -29,7 +29,7 @@
           {% else %}
             <div class="missing-icon"></div>
           {% endif %}
-          <div class="item-name">{{ item.name }}</div>
+          <div class="item-name">{{ item.name }}{% if item.price %} - {{ item.price }}{% endif %}</div>
         </div>
       {% endfor %}
     </div>

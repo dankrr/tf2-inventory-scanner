@@ -4,13 +4,11 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-
-import requests
 from flask import Flask, render_template, request, flash
 from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
-from utils import steam_api_client as sac
+from utils import steam_api_client as sac, price_fetcher
 
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
@@ -24,45 +22,19 @@ app = Flask(__name__)
 SCHEMA = ensure_schema_cached()
 print(f"Loaded {len(SCHEMA)} schema items")
 
-BACKPACK_PRICES: Dict[str, float] = {}
+PRICE_CACHE: Dict[str, Any] = {}
+KEY_REF_RATE: float = 0.0
 
 # --- Utility functions ------------------------------------------------------
 
 
 def fetch_prices() -> None:
-    """Fetch price data from backpack.tf and populate BACKPACK_PRICES."""
-    global BACKPACK_PRICES
-    if BACKPACK_PRICES:
+    """Load price cache and currency rates once per run."""
+    global PRICE_CACHE, KEY_REF_RATE
+    if PRICE_CACHE and KEY_REF_RATE:
         return
-    url = f"https://backpack.tf/api/IGetPrices/v4?key={BACKPACK_API_KEY}"
-    print("Fetching price data from backpack.tf")
-    r = requests.get(url, timeout=20)
-    r.raise_for_status()
-    data = r.json().get("response", {})
-    if data.get("success") != 1:
-        raise ValueError("Invalid response from backpack.tf")
-    items = data.get("items", {})
-    for name, info in items.items():
-        price = extract_price(info)
-        if price is not None:
-            BACKPACK_PRICES[name] = price
-
-
-def extract_price(item_data: Dict[str, Any]) -> float | None:
-    """Extract a metal price from backpack.tf price data."""
-    prices = item_data.get("prices", {})
-    for quality in prices.values():
-        if not isinstance(quality, dict):
-            continue
-        for tradable in quality.values():
-            node = None
-            if isinstance(tradable, list) and tradable:
-                node = tradable[0]
-            elif isinstance(tradable, dict):
-                node = tradable
-            if node and node.get("currency") == "metal":
-                return float(node.get("value"))
-    return None
+    PRICE_CACHE = price_fetcher.ensure_price_cache()
+    KEY_REF_RATE = price_fetcher.ensure_currency_rates()
 
 
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
@@ -96,8 +68,14 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     if status == "parsed":
         items = enrich_inventory(data)
         for item in items:
-            price = BACKPACK_PRICES.get(item["name"])
-            item["price"] = f"{price:.2f}" if price is not None else "?"
+            sku = f"{item['defindex']};{item.get('quality_id', 0)}"
+            entry = PRICE_CACHE.get(sku)
+            if entry and entry.get("value") is not None:
+                item["price"] = price_fetcher.format_price(
+                    float(entry["value"]), KEY_REF_RATE
+                )
+            else:
+                item["price"] = "?"
     return {"items": items, "status": status}
 
 
