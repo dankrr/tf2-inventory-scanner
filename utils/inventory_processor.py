@@ -56,10 +56,15 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not entry:
             continue
 
-        icon_url = asset.get("icon_url_large") or asset.get("icon_url")
+        icon_url = asset.get("icon_url") or asset.get("icon_url_large")
         if icon_url:
             image_path = icon_url
-            final_url = f"{CLOUD}{icon_url}/360fx360f"
+            if icon_url.startswith("//"):
+                final_url = "https:" + icon_url
+            elif icon_url.startswith("http"):
+                final_url = icon_url
+            else:
+                final_url = f"{CLOUD}{icon_url}/360fx360f"
         else:
             image_path = entry.get("image_url") or entry.get("image_url_large") or ""
             if image_path.startswith("http"):
