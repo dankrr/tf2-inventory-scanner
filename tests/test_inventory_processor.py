@@ -148,6 +148,7 @@ def test_fetch_inventory_statuses(monkeypatch, payload, expected):
 def test_user_template_safe(monkeypatch, status):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", lambda: {})
+    monkeypatch.setattr("utils.local_data.load_files", lambda: ({}, {}))
     import importlib
 
     app = importlib.import_module("app")

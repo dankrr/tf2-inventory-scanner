@@ -119,8 +119,7 @@ python scripts/update_items_game.py
 This downloads `items_game.txt`, stores a reduced copy under `cache/items_game.json`,
 and writes the cleaned map to `data/items_game_cleaned.json` for the app to use.
 The cache is reused for 48 hours.
-
-Both `tf2_schema.json` and `items_game_cleaned.json` can be overridden via the
+Both `cache/tf2_schema.json` and `items_game_cleaned.json` can be overridden via the
 `TF2_SCHEMA_FILE` and `TF2_ITEMS_GAME_FILE` environment variables if you want to
 store them elsewhere.
 
