@@ -6,9 +6,12 @@ import utils.schema_fetcher as sf
 
 
 def test_schema_cache_hit(tmp_path, monkeypatch):
-    cache = tmp_path / "item_schema.json"
+    cache = tmp_path / "tf2_schema.json"
     sample = {
-        "items": {"1": {"defindex": 1, "name": "Item", "image_url": "i"}},
+        "items": {
+            str(i): {"defindex": i, "name": "Item", "image_url": "i"}
+            for i in range(5000)
+        },
         "qualities": {"0": "Normal"},
     }
     cache.write_text(json.dumps(sample))
@@ -19,7 +22,7 @@ def test_schema_cache_hit(tmp_path, monkeypatch):
 
 
 def test_schema_cache_miss(tmp_path, monkeypatch):
-    cache = tmp_path / "item_schema.json"
+    cache = tmp_path / "tf2_schema.json"
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
 
     class DummyResp:
