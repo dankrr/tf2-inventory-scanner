@@ -4,9 +4,24 @@
     <meta charset="UTF-8">
     <title>TF2 Inventory Checker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SzlrxWUlpfUZ2x+pcUCos9rqPhtwzXubcjoCz1uyjq8q2+mZ4c4WxJJgAOQh2AnGkacD1x0gRhFeojVk51Pp1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         img { vertical-align: middle; }
+        .action-button {
+            padding: 10px 18px;
+            font-size: 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .retry-pill:hover {
+            background: rgba(255, 0, 0, 0.1);
+        }
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
@@ -25,16 +40,18 @@
             <textarea id="steamids" name="steamids" placeholder="Enter SteamID, vanity URL, or multiple IDs…">{{ steamids|default('') }}</textarea>
         </div>
         <div class="form-actions">
-            <button type="submit" class="primary-btn"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
-            <button id="retry-all" disabled class="refresh-btn"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
+            <button type="submit" class="primary-btn action-button"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
+            <button id="retry-all" disabled class="refresh-btn action-button"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
         </div>
     </form>
 
     <div id="user-container"></div>
 
-    <footer class="page-footer">
-        <img src="/static/img/steam_logo.svg" height="24" alt="Steam logo" />
-        Team Fortress 2 © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation.
+    <footer class="footer">
+        <i class="fa-brands fa-steam"></i>
+        <span>
+            Team Fortress 2 © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation.
+        </span>
     </footer>
 
     <script>

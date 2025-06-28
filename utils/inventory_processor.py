@@ -1,12 +1,22 @@
 from typing import Any, Dict, List, Tuple
 import logging
 
+import json
+from pathlib import Path
+
 from . import steam_api_client, schema_fetcher
 
 logger = logging.getLogger(__name__)
 
 # Base URL for item images
-CLOUD = "https://steamcommunity.cloudflare.steamstatic.com/economy/image/"
+CLOUD = "https://steamcommunity-a.akamaihd.net/economy/image/"
+
+# Mapping of defindex -> human readable name for warpaints
+MAPPING_FILE = Path(__file__).with_name("warpaint_mapping.json")
+WARPAINT_MAP: Dict[str, str] = {}
+if MAPPING_FILE.exists():
+    with MAPPING_FILE.open() as f:
+        WARPAINT_MAP = json.load(f)
 
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
@@ -46,13 +56,23 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not entry:
             continue
 
-        image_path = entry.get("image_url") or entry.get("image_url_large") or ""
-        if image_path.startswith("http"):
-            final_url = image_path
+        icon_url = asset.get("icon_url_large") or asset.get("icon_url")
+        if icon_url:
+            image_path = icon_url
+            final_url = f"{CLOUD}{icon_url}/360fx360f"
         else:
-            final_url = f"{CLOUD}{image_path}" if image_path else ""
+            image_path = entry.get("image_url") or entry.get("image_url_large") or ""
+            if image_path.startswith("http"):
+                final_url = image_path
+            else:
+                final_url = f"{CLOUD}{image_path}" if image_path else ""
 
-        name = entry.get("item_name") or entry.get("name") or f"Item #{defindex}"
+        name = (
+            WARPAINT_MAP.get(defindex)
+            or entry.get("item_name")
+            or entry.get("name")
+            or f"Item #{defindex}"
+        )
 
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
