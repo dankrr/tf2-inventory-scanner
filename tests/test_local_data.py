@@ -17,7 +17,8 @@ def test_load_files_success(tmp_path, monkeypatch, capsys):
     ld.load_files()
     out = capsys.readouterr().out
     assert ld.TF2_SCHEMA["1"]["name"] == "One"
-    assert "Loaded 1 items" in out
+    assert f"Loaded 1 items from {schema_file}" in out
+    assert "tf2_schema.json may be stale" in out
 
 
 def test_load_files_missing(tmp_path, monkeypatch):
