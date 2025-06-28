@@ -12,9 +12,9 @@ import utils.schema_fetcher as sf
 
 
 def test_schema_cache_hit(tmp_path, monkeypatch):
-    cache = tmp_path / "item_schema.json"
+    cache = tmp_path / "cached_schema.json"
     sample = {
-        "fetched": time.time(),
+        "timestamp": time.time(),
         "items": {
             "1;0;1": {
                 "defindex": 1,
@@ -33,7 +33,7 @@ def test_schema_cache_hit(tmp_path, monkeypatch):
 
 
 def test_schema_cache_miss(tmp_path, monkeypatch):
-    cache = tmp_path / "item_schema.json"
+    cache = tmp_path / "cached_schema.json"
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
 
     class DummyResp:
@@ -58,8 +58,9 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         ]
     }
 
-    def fake_get(url, timeout):
+    def fake_get(url, headers=None):
         assert url == sf.SCHEMA_URL
+        assert headers == {"Accept": "*/*"}
         return DummyResp(payload)
 
     monkeypatch.setattr(sf.requests, "get", fake_get)
@@ -74,3 +75,26 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         }
     }
     assert cache.exists()
+
+
+def test_resolve_item_names_bulk(monkeypatch):
+    captured = {}
+
+    def fake_post(url, headers=None, json=None):
+        captured["url"] = url
+        captured["json"] = json
+        captured["headers"] = headers
+
+        class DummyResp:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"itemNames": ["Item"]}
+
+        return DummyResp()
+
+    monkeypatch.setattr(sf.requests, "post", fake_post)
+    names = sf.resolve_item_names_bulk([{"defindex": 1, "quality": 6}])
+    assert names == ["Item"]
+    assert captured["url"] == sf.BULK_NAME_URL

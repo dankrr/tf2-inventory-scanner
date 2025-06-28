@@ -9,11 +9,12 @@ import requests
 logger = logging.getLogger(__name__)
 
 # cache file location and refresh interval
-CACHE_FILE = Path("data/item_schema.json")
+CACHE_FILE = Path("data/cached_schema.json")
 TTL = 48 * 60 * 60  # 48 hours
 
 # remote schema endpoint
-SCHEMA_URL = "https://schema.autobot.tf/v1/schema"
+SCHEMA_URL = "https://schema.autobot.tf/schema/download"
+BULK_NAME_URL = "https://schema.autobot.tf/getName/fromItemObjectBulk"
 
 
 SCHEMA: Dict[str, Any] | None = None
@@ -22,7 +23,7 @@ SCHEMA: Dict[str, Any] | None = None
 def _fetch_schema() -> Dict[str, Any]:
     """Fetch enriched TF2 schema from schema.autobot.tf."""
 
-    r = requests.get(SCHEMA_URL, timeout=20)
+    r = requests.get(SCHEMA_URL, headers={"Accept": "*/*"})
     r.raise_for_status()
     return r.json()
 
@@ -34,7 +35,7 @@ def ensure_schema_cached() -> Dict[str, Any]:
     if CACHE_FILE.exists():
         with CACHE_FILE.open() as f:
             cached = json.load(f)
-        ts = cached.get("fetched", 0)
+        ts = cached.get("timestamp", 0)
         if time.time() - ts < TTL:
             SCHEMA = cached.get("items", {})
             logger.info("Schema cache HIT: %s items", len(SCHEMA))
@@ -53,7 +54,20 @@ def ensure_schema_cached() -> Dict[str, Any]:
 
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
     with CACHE_FILE.open("w") as f:
-        json.dump({"fetched": time.time(), "items": items}, f)
+        json.dump({"timestamp": time.time(), "items": items}, f)
     SCHEMA = items
     logger.info("Schema cache MISS, fetched %s items", len(SCHEMA))
     return SCHEMA
+
+
+def resolve_item_names_bulk(objs: list[dict]) -> list[str]:
+    """Return display names for a list of item objects."""
+
+    r = requests.post(
+        BULK_NAME_URL,
+        headers={"Content-Type": "application/json"},
+        json=objs,
+    )
+    r.raise_for_status()
+    data = r.json()
+    return data.get("itemNames", [])
