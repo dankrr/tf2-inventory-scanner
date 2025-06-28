@@ -106,6 +106,19 @@ Install hooks once:
 pre-commit install
 ```
 
+### Updating items_game cache
+
+The application relies on a reduced copy of `items_game.txt` from SteamDatabase
+for improved item names. Fetch and preprocess this file manually whenever you
+want to refresh the cache:
+
+```bash
+python scripts/update_items_game.py
+```
+
+The processed JSON is stored under `cache/items_game.json` and reused for 48
+hours.
+
 ### Deploy
 
 The app can be deployed to any platform that supports Python 3.12. For Docker:
