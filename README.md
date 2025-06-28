@@ -39,6 +39,15 @@ BACKPACK_API_KEY=your_backpack_key
 
 The application uses **python-dotenv** to load these values at runtime.
 
+## Running locally
+
+```bash
+cp .env.example .env   # then edit keys
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
 ## Usage
 
 ```bash
