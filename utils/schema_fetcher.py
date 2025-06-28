@@ -38,17 +38,14 @@ def _load_schema() -> Dict[str, Any]:
     with CACHE_FILE.open() as f:
         data = json.load(f)
 
-    logger.debug(
-        "Schema cache loaded: type=%s",
-        type(data).__name__,
-    )
+    logger.debug("Schema cache loaded: type=%s", type(data).__name__)
 
-    if isinstance(data, list):
+    if isinstance(data, dict):
+        items_raw = data.get("items", [])
+    elif isinstance(data, list):
         items_raw = data
     else:
-        items_raw = data.get("items") if isinstance(data, dict) else None
-        if items_raw is not None:
-            logger.warning("Unexpected object root in schema, using 'items' key")
+        items_raw = []
 
     if not isinstance(items_raw, list):
         logger.warning("Schema cache not a list; type=%s", type(data).__name__)

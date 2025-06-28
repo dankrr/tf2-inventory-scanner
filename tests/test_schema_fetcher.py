@@ -20,7 +20,7 @@ def test_schema_cache_hit(tmp_path, monkeypatch):
             "craftable": True,
         }
     ]
-    cache.write_text(json.dumps(sample))
+    cache.write_text(json.dumps({"items": sample}))
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
     monkeypatch.setattr(sf, "requests", Mock())
     schema = sf.ensure_schema_cached()
@@ -38,15 +38,17 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         def raise_for_status(self):
             pass
 
-    payload = [
-        {
-            "defindex": 2,
-            "name": "Other",
-            "image_url": "u",
-            "quality": 0,
-            "craftable": True,
-        }
-    ]
+    payload = {
+        "items": [
+            {
+                "defindex": 2,
+                "name": "Other",
+                "image_url": "u",
+                "quality": 0,
+                "craftable": True,
+            }
+        ]
+    }
 
     def fake_get(url, stream=False, timeout=20):
         assert url == sf.SCHEMA_URL

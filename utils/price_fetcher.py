@@ -15,32 +15,49 @@ if not KEY:
 logger = logging.getLogger(__name__)
 
 
+def _parse_prices(payload: dict) -> dict[str, dict]:
+    items: dict[str, dict] = {}
+    response = payload.get("response", {})
+    for info in response.get("items", {}).values():
+        defindexes = info.get("defindex") or []
+        if not isinstance(defindexes, list):
+            defindexes = [defindexes]
+        prices = info.get("prices", {})
+        for q, qinfo in prices.items():
+            trade = qinfo.get("Tradable") or next(iter(qinfo.values()), {})
+            craft = trade.get("0") or next(iter(trade.values()), {})
+            value = craft.get("value")
+            currency = craft.get("currency", "metal")
+            last_update = craft.get("last_update", 0)
+            for d in defindexes:
+                sku = f"{d};{q}"
+                items[sku] = {
+                    "defindex": int(d),
+                    "quality": int(q),
+                    "value": value,
+                    "currency": currency,
+                    "last_update": last_update,
+                }
+    return items
+
+
 def ensure_prices_cached():
-    if (
+    fresh = (
         os.path.exists(PRICE_CACHE)
         and time.time() - os.path.getmtime(PRICE_CACHE) < PRICE_TTL
-    ):
+    )
+    if fresh:
         with open(PRICE_CACHE) as f:
             data = json.load(f)
         logger.info("Price cache HIT: %s entries", len(data))
         return data
+
     logger.info("Fetching prices from backpack.tf")
     url = f"https://backpack.tf/api/IGetPrices/v4?key={KEY}&compress=1"
     r = requests.get(url, timeout=20)
     r.raise_for_status()
-    resp = r.json()["response"]
-    items: dict[str, dict] = {}
-    for sku, info in resp.get("items", {}).items():
-        entry = {
-            "defindex": info.get("defindex"),
-            "quality": info.get("quality"),
-            "value": info.get("value"),
-            "currency": info.get("currency"),
-            "last_update": info.get("last_update"),
-        }
-        if "value_high" in info:
-            entry["value_high"] = info["value_high"]
-        items[sku] = entry
+    payload = r.json()
+    items = _parse_prices(payload)
 
     os.makedirs(CACHE_DIR, exist_ok=True)
     with open(PRICE_CACHE, "w") as f:

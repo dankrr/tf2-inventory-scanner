@@ -42,8 +42,7 @@ def fetch_prices() -> None:
     global PRICE_CACHE, KEY_REF_RATE
     if PRICE_CACHE and KEY_REF_RATE:
         return
-    data = price_fetcher.ensure_prices_cached()
-    PRICE_CACHE = data.get("items", {}) if isinstance(data, dict) else {}
+    PRICE_CACHE = price_fetcher.ensure_prices_cached()
     currencies = price_fetcher.ensure_currencies_cached()
     metal_val = currencies.get("metal", {}).get("value")
     key_val = currencies.get("keys", {}).get("value")
