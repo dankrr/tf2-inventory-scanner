@@ -135,17 +135,18 @@ function attachItemModal() {
         wrap.style.display = '';
       }
 
-      setSection('general', [
-        ['Quality', data.quality],
-        ['Origin', data.origin],
-        ['Level', data.level],
-      ]);
+      const generalEntries = [];
+      if (data.quality) generalEntries.push(['Quality', data.quality]);
+      if (data.level) generalEntries.push(['', 'Level ' + data.level]);
+      if (data.origin) generalEntries.push(['', data.origin]);
+      setSection('general', generalEntries);
 
-      setSection('killstreak', [
-        ['Tier', data.killstreak_tier],
-        ['Sheen', data.sheen],
-        ['Effect', data.killstreak_effect],
-      ]);
+      const ksEntries = [];
+      if (data.killstreak_tier) ksEntries.push(['Tier', data.killstreak_tier]);
+      if (data.sheen) ksEntries.push(['Sheen', data.sheen]);
+      if (data.killstreak_effect)
+        ksEntries.push(['Effect', data.killstreak_effect]);
+      setSection('killstreak', ksEntries);
 
       if (sections.paint && sectionWrap.paint) {
         sections.paint.innerHTML = '';
