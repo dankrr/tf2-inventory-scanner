@@ -23,13 +23,10 @@ if not os.getenv("STEAM_API_KEY"):
     )
 
 if "--refresh" in sys.argv[1:]:
-    from utils import autobot_schema_cache
-    from utils import local_data
-
     print(
-        "\N{anticlockwise open circle arrow} Refresh requested: refetching TF2 schema and items_game..."
+        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: redownloading TF2 schema and items_game..."
     )
-    autobot_schema_cache.ensure_all_cached(refresh=True)
+    ensure_all_cached(refresh=True)
     local_data.load_files()
     print("\N{CHECK MARK} Autobot schema refreshed")
     print(

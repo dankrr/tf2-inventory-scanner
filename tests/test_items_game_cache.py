@@ -8,26 +8,24 @@ def test_items_game_cache_hit(tmp_path, monkeypatch):
     sample = {"items": {"1": {"name": "One"}}}
     json_file.write_text(json.dumps(sample))
     monkeypatch.setattr(ig, "JSON_FILE", json_file)
-    monkeypatch.setattr(ig, "RAW_FILE", tmp_path / "items_game.txt")
     ig.ITEMS_GAME = None
     data = ig.ensure_items_game_cached()
     assert data == sample
 
 
 class DummyResp:
-    def __init__(
-        self,
-        text='"items_game"\n{\n "items"\n {\n  "1"\n  {\n   "name" "One"\n  }\n }\n}\n',
-    ):
-        self.text = text
+    def __init__(self, payload=None):
+        self.payload = payload or {"items": {"1": {"name": "One"}}}
 
     def raise_for_status(self):
         pass
 
+    def json(self):
+        return self.payload
+
 
 def test_items_game_cache_miss(tmp_path, monkeypatch):
     monkeypatch.setattr(ig, "JSON_FILE", tmp_path / "items_game.json")
-    monkeypatch.setattr(ig, "RAW_FILE", tmp_path / "items_game.txt")
     monkeypatch.setattr(ig.requests, "get", lambda url, timeout: DummyResp())
     ig.ITEMS_GAME = None
     data = ig.ensure_items_game_cached()
