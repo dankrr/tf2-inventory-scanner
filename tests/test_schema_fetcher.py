@@ -9,7 +9,11 @@ def test_schema_cache_hit(tmp_path, monkeypatch):
     cache = tmp_path / "tf2_schema.json"
     sample = {
         "items": {
-            str(i): {"defindex": i, "name": "Item", "image_url": "i"}
+            str(i): {
+                "defindex": i,
+                "name": "Item",
+                "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/i/360fx360f",
+            }
             for i in range(5000)
         },
         "qualities": {"0": "Normal"},
@@ -62,8 +66,7 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         "2": {
             "defindex": 2,
             "name": "Other",
-            "image_url": "u",
-            "image_url_large": None,
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/u/360fx360f",
         }
     }
     assert cache.exists()
