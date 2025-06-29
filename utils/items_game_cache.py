@@ -10,7 +10,7 @@ import vdf
 
 logger = logging.getLogger(__name__)
 
-RAW_FILE = Path("cache/items_game_raw.txt")
+RAW_FILE = Path("cache/items_game.txt")
 JSON_FILE = Path("cache/items_game.json")
 TTL = 48 * 60 * 60  # 48 hours
 
