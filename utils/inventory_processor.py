@@ -147,6 +147,14 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     """Return killstreak effect string if present."""
 
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx in (2071, 2013):
+            val = str(int(attr.get("float_value", 0)))
+            name = local_data.EFFECT_NAMES.get(val)
+            if name:
+                return name
+
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
@@ -169,6 +177,14 @@ def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
         "has_pumpkin_bombs": False,
         "has_voice_lines": False,
     }
+    SPELL_BITS = {
+        1: ("Exorcism", "has_exorcism"),
+        2: ("Paint Spell", "has_paint_spell"),
+        4: ("Footprints", "has_footprints"),
+        8: ("Pumpkin Bombs", "has_pumpkin_bombs"),
+        16: ("Voices From Below", "has_voice_lines"),
+    }
+
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
@@ -187,6 +203,16 @@ def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
             flags["has_pumpkin_bombs"] = True
         if "voices" in ltext or "rare spell" in ltext:
             flags["has_voice_lines"] = True
+
+    for attr in asset.get("attributes", []):
+        if attr.get("defindex") == 730:
+            bitmask = int(attr.get("float_value", 0))
+            for bit, (name, flag) in SPELL_BITS.items():
+                if bitmask & bit:
+                    if name not in lines:
+                        lines.append(name)
+                    flags[flag] = True
+            break
     return lines, flags
 
 
