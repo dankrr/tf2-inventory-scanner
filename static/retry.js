@@ -67,8 +67,16 @@ function attachItemModal() {
   const title = document.getElementById('modal-title');
   const img = document.getElementById('modal-img');
   const details = document.getElementById('modal-details');
-  const close = document.getElementById('modal-close');
-  if (close) close.addEventListener('click', () => modal.close());
+  const badgeBox = document.getElementById('modal-badges');
+
+  function closeModal() {
+    modal.style.opacity = '0';
+    setTimeout(() => modal.close(), 200);
+  }
+
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
 
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -79,27 +87,76 @@ function attachItemModal() {
       if (img) img.src = data.image_url || '';
       if (details) {
         details.innerHTML = '';
-        const fields = [
+        const attrs = document.createElement('div');
+        if (data.killstreak_tier) {
+          const ks = document.createElement('div');
+          ks.textContent = data.killstreak_tier;
+          attrs.appendChild(ks);
+          if (data.sheen) {
+            const sh = document.createElement('div');
+            sh.textContent = '\u2022 Sheen: ' + data.sheen;
+            attrs.appendChild(sh);
+          }
+          if (data.killstreak_effect) {
+            const ke = document.createElement('div');
+            ke.textContent = '\u2022 Effect: ' + data.killstreak_effect;
+            attrs.appendChild(ke);
+          }
+        }
+
+        [
           ['Type', data.item_type_name],
           ['Level', data.level],
-          ['Origin', data.origin],
-          ['Killstreak', data.killstreak_tier],
-          ['Paint', data.paint_name],
-        ];
-        fields.forEach(([label, value]) => {
+          ['Origin', data.origin]
+        ].forEach(([label, value]) => {
           if (!value) return;
           const div = document.createElement('div');
-          if (label === 'Paint' && data.paint_hex) {
+          div.textContent = label + ': ' + value;
+          attrs.appendChild(div);
+        });
+
+        if (data.paint_name) {
+          const div = document.createElement('div');
+          if (data.paint_hex) {
             const sw = document.createElement('span');
             sw.style.display = 'inline-block';
             sw.style.width = '12px';
             sw.style.height = '12px';
             sw.style.marginRight = '4px';
+            sw.style.border = '1px solid #333';
+            sw.style.borderRadius = '50%';
             sw.style.background = data.paint_hex;
             div.appendChild(sw);
           }
-          div.appendChild(document.createTextNode(label + ': ' + value));
-          details.appendChild(div);
+          div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
+          attrs.appendChild(div);
+        }
+
+        details.appendChild(attrs);
+
+        if (Array.isArray(data.spells) && data.spells.length) {
+          const head = document.createElement('h4');
+          head.textContent = 'Spells';
+          head.id = 'modal-spells';
+          details.appendChild(head);
+          data.spells.forEach(sp => {
+            const sdiv = document.createElement('div');
+            sdiv.textContent = sp;
+            details.appendChild(sdiv);
+          });
+        }
+      }
+      if (badgeBox) {
+        badgeBox.innerHTML = '';
+        (data.badges || []).forEach(b => {
+          const span = document.createElement('span');
+          span.textContent = b.icon;
+          span.title = b.title;
+          span.addEventListener('click', () => {
+            const sec = document.getElementById('modal-spells');
+            if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+          });
+          badgeBox.appendChild(span);
         });
       }
       if (typeof modal.showModal === 'function') {
@@ -107,6 +164,7 @@ function attachItemModal() {
       } else {
         modal.style.display = 'block';
       }
+      modal.style.opacity = '1';
     });
   });
 }

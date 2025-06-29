@@ -67,7 +67,10 @@
             border: 1px solid #555;
             border-radius: 8px;
             padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
+        #item-modal[open] { opacity: 1; }
         #item-modal::backdrop {
             background: rgba(0,0,0,0.6);
         }
@@ -76,14 +79,9 @@
             justify-content: space-between;
             align-items: center;
         }
-        #item-modal button {
-            background: transparent;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
         #modal-details div { margin-top: 2px; }
+        .item-badges { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; }
+        .item-badges span { font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -111,8 +109,8 @@
 
     <dialog id="item-modal">
       <div class="modal-header">
-        <button id="modal-close" type="button">&times;</button>
         <h3 id="modal-title"></h3>
+        <div id="modal-badges" class="item-badges"></div>
       </div>
       <div class="modal-body">
         <img id="modal-img" src="" width="64" height="64" alt="">
