@@ -11,7 +11,7 @@ EFFECT_NAMES: Dict[str, str] = {}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2_schema.json"
-DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "data" / "items_game_cleaned.json"
+DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game_cleaned.json"
 SCHEMA_FILE = Path(os.getenv("TF2_SCHEMA_FILE", DEFAULT_SCHEMA_FILE))
 ITEMS_GAME_FILE = Path(os.getenv("TF2_ITEMS_GAME_FILE", DEFAULT_ITEMS_GAME_FILE))
 
