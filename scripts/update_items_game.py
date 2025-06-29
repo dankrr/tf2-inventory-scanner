@@ -15,19 +15,12 @@ def main() -> None:
     sys.path.insert(0, str(root))
 
     from utils import items_game_cache  # local import after path tweak
-    from utils import local_data
 
     logging.basicConfig(level=logging.INFO)
     data = items_game_cache.update_items_game()
-    cleaned = local_data.clean_items_game(data)
-    dest = (root / "cache/items_game.json").resolve()
-    dest.write_text(json.dumps(cleaned))
-    print(f"Fetched {len(data.get('items', {}))} items")
-    print(f"Wrote {len(cleaned)} cleaned items to {dest}")
-    if len(cleaned) < 10000:
-        print(
-            "Warning: cleaned items_game has fewer than 10k entries. Check parsing logic."
-        )
+    dest = (root / "cache/items_game_cleaned.json").resolve()
+    dest.write_text(json.dumps(data))
+    print(f"Fetched {len(data.get('items', {}))} cleaned items to {dest}")
 
 
 if __name__ == "__main__":

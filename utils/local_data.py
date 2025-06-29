@@ -11,8 +11,7 @@ EFFECT_NAMES: Dict[str, str] = {}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2schema.json"
-# Autobot provides an already reduced items_game.json
-DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game.json"
+DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game_cleaned.json"
 SCHEMA_FILE = Path(os.getenv("TF2_SCHEMA_FILE", DEFAULT_SCHEMA_FILE))
 ITEMS_GAME_FILE = Path(os.getenv("TF2_ITEMS_GAME_FILE", DEFAULT_ITEMS_GAME_FILE))
 
@@ -81,12 +80,12 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
     with items_game_path.open() as f:
         ITEMS_GAME_CLEANED = json.load(f)
     if not isinstance(ITEMS_GAME_CLEANED, dict) or not ITEMS_GAME_CLEANED:
-        raise RuntimeError("items_game.json is empty or invalid")
+        raise RuntimeError("items_game_cleaned.json is empty or invalid")
     print(
         f"\N{CHECK MARK} Loaded items_game with {len(ITEMS_GAME_CLEANED)} entries from {items_game_path}"
     )
     if len(ITEMS_GAME_CLEANED) < 10000:
         print(
-            "\N{WARNING SIGN} items_game.json may be stale or incomplete. Consider a refresh."
+            "\N{WARNING SIGN} items_game_cleaned.json may be stale or incomplete. Consider a refresh."
         )
     return TF2_SCHEMA, ITEMS_GAME_CLEANED
