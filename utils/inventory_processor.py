@@ -6,7 +6,7 @@ from html import unescape
 import json
 from pathlib import Path
 
-from . import steam_api_client, schema_fetcher, items_game_cache, local_data
+from . import steam_api_client, items_game_cache, local_data
 
 logger = logging.getLogger(__name__)
 
@@ -225,7 +225,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
+    schema_map = local_data.TF2_SCHEMA
     cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:

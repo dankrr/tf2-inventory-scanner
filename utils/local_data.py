@@ -10,10 +10,19 @@ ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 EFFECT_NAMES: Dict[str, str] = {}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2schema.json"
-DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game_cleaned.json"
-SCHEMA_FILE = Path(os.getenv("TF2_SCHEMA_FILE", DEFAULT_SCHEMA_FILE))
+
+# Default locations for Autobot schema files
+SCHEMA_DIR = BASE_DIR / "cache" / "schema"
+ITEMS_GAME_DIR = BASE_DIR / "cache" / "items_game"
+PROPERTIES_DIR = BASE_DIR / "cache" / "properties"
+
+DEFAULT_SCHEMA_ITEMS_FILE = SCHEMA_DIR / "items.json"
+DEFAULT_ITEMS_GAME_FILE = ITEMS_GAME_DIR / "items.json"
+DEFAULT_EFFECTS_FILE = PROPERTIES_DIR / "effects.json"
+
+SCHEMA_ITEMS_FILE = Path(os.getenv("TF2_SCHEMA_ITEMS_FILE", DEFAULT_SCHEMA_ITEMS_FILE))
 ITEMS_GAME_FILE = Path(os.getenv("TF2_ITEMS_GAME_FILE", DEFAULT_ITEMS_GAME_FILE))
+EFFECTS_FILE = Path(os.getenv("TF2_EFFECTS_FILE", DEFAULT_EFFECTS_FILE))
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:
@@ -36,56 +45,49 @@ def clean_items_game(raw: dict | str) -> Dict[str, Any]:
 
 
 def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Load local schema files and populate globals."""
+    """Load Autobot schema files and populate globals."""
 
     global TF2_SCHEMA, ITEMS_GAME_CLEANED, EFFECT_NAMES
 
-    schema_path = SCHEMA_FILE.resolve()
+    schema_path = SCHEMA_ITEMS_FILE.resolve()
     if not schema_path.exists():
         raise RuntimeError(f"Missing {schema_path}")
     with schema_path.open() as f:
-        data = json.load(f)
+        items = json.load(f)
 
-    items = data.get("items") or data
     if not isinstance(items, dict) or not items:
-        raise RuntimeError("tf2schema.json is empty or invalid")
-
-    if len(items) < 5000 and auto_refetch:
-        try:
-            from . import schema_fetcher
-
-            api_key = os.getenv("STEAM_API_KEY")
-            if not api_key:
-                raise RuntimeError("STEAM_API_KEY is required for refetch")
-            fetched = schema_fetcher._fetch_schema(api_key)
-            schema_path.write_text(json.dumps(fetched))
-            data = fetched
-            items = fetched.get("items") or fetched
-            print(f"Refetched TF2 schema: {len(items)} items -> {schema_path}")
-        except Exception as exc:  # pragma: no cover - network failure
-            print(f"Failed to refetch schema: {exc}")
+        raise RuntimeError("schema/items.json is empty or invalid")
 
     TF2_SCHEMA = items
-    EFFECT_NAMES = data.get("effects", {}) if isinstance(data, dict) else {}
     print(f"\N{CHECK MARK} Loaded {len(TF2_SCHEMA)} items from {schema_path}")
     if len(TF2_SCHEMA) < 5000:
         print(
-            "\N{WARNING SIGN} tf2schema.json may be stale or incomplete. "
+            "\N{WARNING SIGN} schema/items.json may be stale or incomplete. "
             "Consider forcing a refetch."
         )
+
+    effects_path = EFFECTS_FILE.resolve()
+    if effects_path.exists():
+        with effects_path.open() as f:
+            EFFECT_NAMES = json.load(f)
+    else:
+        EFFECT_NAMES = {}
 
     items_game_path = ITEMS_GAME_FILE.resolve()
     if not items_game_path.exists():
         raise RuntimeError(f"Missing {items_game_path}")
     with items_game_path.open() as f:
-        ITEMS_GAME_CLEANED = json.load(f)
+        data = json.load(f)
+
+    ITEMS_GAME_CLEANED = data.get("items", data)
     if not isinstance(ITEMS_GAME_CLEANED, dict) or not ITEMS_GAME_CLEANED:
-        raise RuntimeError("items_game_cleaned.json is empty or invalid")
+        raise RuntimeError("items_game/items.json is empty or invalid")
     print(
         f"\N{CHECK MARK} Loaded items_game with {len(ITEMS_GAME_CLEANED)} entries from {items_game_path}"
     )
     if len(ITEMS_GAME_CLEANED) < 10000:
         print(
-            "\N{WARNING SIGN} items_game_cleaned.json may be stale or incomplete. Consider a refresh."
+            "\N{WARNING SIGN} items_game/items.json may be stale or incomplete. Consider a refresh."
         )
+
     return TF2_SCHEMA, ITEMS_GAME_CLEANED

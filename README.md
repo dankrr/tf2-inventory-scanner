@@ -115,8 +115,8 @@ Run the application with the `--refresh` flag to download the latest TF2 schema,
 python app.py --refresh
 ```
 
-The files are stored under `cache/` and include `tf2schema.json`,
-`items_game.txt`, `items_game_cleaned.json` and all Autobot API responses. Start
+The files are stored under `cache/` and include the `schema/` and `items_game/`
+JSON files downloaded from Autobot along with `items_game.txt`. Start
 the server normally without `--refresh` after the update completes.
 
 ### Deploy
