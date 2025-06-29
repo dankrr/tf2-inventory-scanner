@@ -6,7 +6,7 @@ from utils import local_data as ld
 
 def test_load_files_success(tmp_path, monkeypatch, capsys):
     schema_file = tmp_path / "tf2schema.json"
-    items_file = tmp_path / "items_game.json"
+    items_file = tmp_path / "items_game_cleaned.json"
     schema_file.write_text(json.dumps({"items": {"1": {"name": "One"}}}))
     items_file.write_text(json.dumps({"1": {"name": "A"}}))
     monkeypatch.setattr(ld, "SCHEMA_FILE", schema_file)

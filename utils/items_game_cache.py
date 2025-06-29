@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import Any, Dict
 
 import requests
+from . import local_data
 
 logger = logging.getLogger(__name__)
 
-JSON_FILE = Path("cache/items_game.json")
+RAW_FILE = Path("cache/items_game.txt")
+JSON_FILE = Path("cache/items_game_cleaned.json")
 TTL = 48 * 60 * 60  # 48 hours
 
 ITEMS_GAME: Dict[str, Any] | None = None
@@ -20,15 +22,22 @@ _ITEMS_GAME_FUTURE: asyncio.Future | None = None
 
 
 def update_items_game() -> Dict[str, Any]:
-    """Download the cleaned items_game from schema.autobot.tf."""
+    """Download the raw items_game and write a cleaned version."""
 
-    url = "https://schema.autobot.tf/raw/items_game/cleaned"
+    url = "https://schema.autobot.tf/raw/items_game/"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
-    data = r.json()
+    raw_text = r.text
 
+    RAW_FILE.parent.mkdir(parents=True, exist_ok=True)
+    RAW_FILE.write_text(raw_text)
+    print("\N{CHECK MARK} Downloaded raw items_game from schema.autobot.tf")
+
+    cleaned = local_data.clean_items_game(raw_text)
+    data = {"items": cleaned}
     JSON_FILE.parent.mkdir(parents=True, exist_ok=True)
     JSON_FILE.write_text(json.dumps(data))
+    print(f"\N{CHECK MARK} Cleaned items_game written with {len(cleaned)} entries")
     return data
 
 

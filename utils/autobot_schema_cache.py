@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import requests
+from . import items_game_cache
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,6 @@ GRADE_FILES = {
 
 BASE_ENDPOINTS = {
     "tf2schema.json": "/schema",
-    "items_game.json": "/raw/items_game/cleaned",
 }
 
 
@@ -121,6 +121,13 @@ def ensure_all_cached(refresh: bool = False) -> None:
     for fname, endpoint in BASE_ENDPOINTS.items():
         url = f"{BASE_URL}{endpoint}"
         _ensure_file(CACHE_DIR / fname, url, refresh)
+
+    if refresh:
+        items_game_cache.update_items_game()
+    elif not items_game_cache.JSON_FILE.exists():
+        raise RuntimeError(
+            f"Missing {items_game_cache.JSON_FILE}. Run with --refresh to download."
+        )
 
 
 def get_item_grade(defindex: int | str) -> Dict[str, Any]:
