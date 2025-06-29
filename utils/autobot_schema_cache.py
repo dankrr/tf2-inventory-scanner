@@ -105,7 +105,13 @@ def _ensure_file(path: Path, url: str, refresh: bool) -> None:
     """Download ``url`` to ``path`` if ``refresh`` is True."""
 
     if refresh:
-        data = _fetch_json(url)
+        try:
+            data = _fetch_json(url)
+        except requests.HTTPError as exc:  # pragma: no cover - network failure
+            if exc.response is not None and exc.response.status_code == 404:
+                logger.warning("%s returned 404; skipping", url)
+                return
+            raise
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(data))
         logger.info("\N{CHECK MARK} Cached %s", path)
@@ -146,7 +152,7 @@ def ensure_all_cached(refresh: bool = False) -> None:
         _ensure_file(dest, url, refresh)
 
     for key in SCHEMA_KEYS:
-        url = f"{BASE_URL}/schema/{key}"
+        url = f"{BASE_URL}/raw/schema/{key}"
         dest = SCHEMA_DIR / f"{key}.json"
         _ensure_file(dest, url, refresh)
 

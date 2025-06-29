@@ -115,3 +115,33 @@ def test_unknown_class_ignored(tmp_path, monkeypatch):
     ac.ensure_all_cached(refresh=True)
 
     assert not list(tmp_path.iterdir())
+
+
+def test_404_warning(tmp_path, monkeypatch):
+    monkeypatch.setattr(ac, "SCHEMA_DIR", tmp_path / "schema")
+    monkeypatch.setattr(ac, "ITEMS_GAME_DIR", tmp_path / "items_game")
+    monkeypatch.setattr(ac, "PROPERTIES_DIR", tmp_path / "properties")
+    monkeypatch.setattr(ac, "GRADES_DIR", tmp_path / "grades")
+    monkeypatch.setattr(ac, "SCHEMA_KEYS", ["missing"])
+    monkeypatch.setattr(ac, "ITEMS_GAME_KEYS", [])
+    monkeypatch.setattr(ac, "PROPERTIES_KEYS", [])
+    monkeypatch.setattr(ac, "CLASS_NAMES", [])
+    monkeypatch.setattr(ac, "GRADE_ENDPOINTS", [])
+    monkeypatch.setattr(ac.items_game_cache, "update_items_game", lambda: None)
+    monkeypatch.setattr(
+        ac.items_game_cache, "JSON_FILE", tmp_path / "items_game_cleaned.json"
+    )
+    (tmp_path / "items_game_cleaned.json").write_text("{}")
+
+    from types import SimpleNamespace
+    import requests
+
+    def fake_fetch(url):
+        resp = SimpleNamespace(status_code=404)
+        raise requests.HTTPError(response=resp)
+
+    monkeypatch.setattr(ac, "_fetch_json", fake_fetch)
+
+    ac.ensure_all_cached(refresh=True)
+
+    assert not (tmp_path / "schema" / "missing.json").exists()
