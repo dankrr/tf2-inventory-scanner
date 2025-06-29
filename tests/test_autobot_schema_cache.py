@@ -6,9 +6,9 @@ import utils.autobot_schema_cache as ac
 def test_ensure_all_cached(tmp_path, monkeypatch):
     monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(ac, "PROPERTIES", {"defindexes": "defindexes.json"})
-    monkeypatch.setattr(ac, "CLASS_CHARS", [])
+    monkeypatch.setattr(ac, "CLASS_NAMES", [])
     monkeypatch.setattr(ac, "GRADE_FILES", {"v1": "item_grade_v1.json"})
-    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {"tf2_schema.json": "/schema/download"})
+    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {"tf2schema.json": "/schema"})
 
     calls = []
 
@@ -18,18 +18,18 @@ def test_ensure_all_cached(tmp_path, monkeypatch):
 
     monkeypatch.setattr(ac, "_fetch_json", fake_fetch)
 
-    ac.ensure_all_cached()
+    ac.ensure_all_cached(refresh=True)
 
     assert (tmp_path / "defindexes.json").exists()
     assert (tmp_path / "item_grade_v1.json").exists()
-    assert (tmp_path / "tf2_schema.json").exists()
+    assert (tmp_path / "tf2schema.json").exists()
     assert calls
 
 
 def test_cache_hit(tmp_path, monkeypatch):
     monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(ac, "PROPERTIES", {"defindexes": "defindexes.json"})
-    monkeypatch.setattr(ac, "CLASS_CHARS", [])
+    monkeypatch.setattr(ac, "CLASS_NAMES", [])
     monkeypatch.setattr(ac, "GRADE_FILES", {})
     monkeypatch.setattr(ac, "BASE_ENDPOINTS", {})
 

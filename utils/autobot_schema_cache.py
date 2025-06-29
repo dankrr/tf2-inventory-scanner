@@ -19,14 +19,22 @@ PROPERTIES = {
     "wears": "wears.json",
     "crateseries": "crateseries.json",
     "paints": "paints.json",
-    "strangeParts": "strange_parts.json",
-    "craftWeapons": "craft_weapons.json",
-    "uncraftWeapons": "uncraft_weapons.json",
+    "strangeParts": "strangeParts.json",
+    "craftWeapons": "craftWeapons.json",
+    "uncraftWeapons": "uncraftWeapons.json",
 }
 
-# The "s" slug used to exist for Scout weapons but the endpoint now returns
-# a 400 error. Skip it until the API exposes valid slugs again.
-CLASS_CHARS = ["p", "m", "d", "e", "h", "t", "l", "g"]
+CLASS_NAMES = [
+    "Scout",
+    "Soldier",
+    "Demo",
+    "Pyro",
+    "Medic",
+    "Heavy",
+    "Sniper",
+    "Spy",
+    "Engineer",
+]
 
 GRADE_FILES = {
     "v1": "item_grade_v1.json",
@@ -34,8 +42,8 @@ GRADE_FILES = {
 }
 
 BASE_ENDPOINTS = {
-    "tf2_schema.json": "/schema/download",
-    "items_game.json": "/raw/items_game/current",
+    "tf2schema.json": "/schema",
+    "items_game.json": "/raw/items_game/cleaned",
 }
 
 
@@ -46,23 +54,32 @@ def _fetch_json(url: str) -> Dict[str, Any]:
 
 
 def _ensure_file(path: Path, url: str, refresh: bool) -> None:
-    if refresh or not path.exists():
+    """Download ``url`` to ``path`` if ``refresh`` is True."""
+
+    if refresh:
         data = _fetch_json(url)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(data))
-        logger.info("cached %s", path)
+        logger.info("\N{CHECK MARK} Cached %s", path)
+    elif not path.exists():
+        raise RuntimeError(f"Missing {path}. Run with --refresh to download.")
 
 
 def ensure_all_cached(refresh: bool = False) -> None:
     """Ensure all schema files from Autobot are cached."""
 
+    if refresh:
+        legacy = Path("data/tf2schema.json")
+        if legacy.exists():
+            legacy.unlink()
+
     for name, fname in PROPERTIES.items():
         url = f"{BASE_URL}/properties/{name}"
         _ensure_file(CACHE_DIR / fname, url, refresh)
 
-    for char in CLASS_CHARS:
-        url = f"{BASE_URL}/properties/craftWeaponsByClass/{char}"
-        dest = CACHE_DIR / "craft_by_class" / f"{char}.json"
+    for name in CLASS_NAMES:
+        url = f"{BASE_URL}/properties/craftWeaponsByClass/{name}"
+        dest = CACHE_DIR / f"craftWeaponsByClass_{name}.json"
         _ensure_file(dest, url, refresh)
 
     for ver, fname in GRADE_FILES.items():

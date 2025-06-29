@@ -6,11 +6,9 @@ from pathlib import Path
 from typing import Any, Dict
 
 import requests
-import vdf
 
 logger = logging.getLogger(__name__)
 
-RAW_FILE = Path("cache/items_game.txt")
 JSON_FILE = Path("cache/items_game.json")
 TTL = 48 * 60 * 60  # 48 hours
 
@@ -22,24 +20,16 @@ _ITEMS_GAME_FUTURE: asyncio.Future | None = None
 
 
 def update_items_game() -> Dict[str, Any]:
-    """Download, filter and cache items_game from SteamDatabase."""
+    """Download the cleaned items_game from schema.autobot.tf."""
 
-    url = (
-        "https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/master/"
-        "tf/scripts/items/items_game.txt"
-    )
+    url = "https://schema.autobot.tf/raw/items_game/cleaned"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
-    text = r.text
-    RAW_FILE.parent.mkdir(parents=True, exist_ok=True)
-    RAW_FILE.write_text(text)
+    data = r.json()
 
-    parsed = vdf.loads(text).get("items_game", {})
-    allowed = ["items", "item_sets", "qualities", "rarities", "attributes"]
-    reduced = {k: parsed.get(k, {}) for k in allowed if k in parsed}
-
-    JSON_FILE.write_text(json.dumps(reduced))
-    return reduced
+    JSON_FILE.parent.mkdir(parents=True, exist_ok=True)
+    JSON_FILE.write_text(json.dumps(data))
+    return data
 
 
 def _populate_maps(data: Dict[str, Any]) -> None:

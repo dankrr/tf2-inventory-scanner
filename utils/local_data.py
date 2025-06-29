@@ -10,7 +10,7 @@ ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 EFFECT_NAMES: Dict[str, str] = {}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2_schema.json"
+DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2schema.json"
 # Autobot provides an already reduced items_game.json
 DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game.json"
 SCHEMA_FILE = Path(os.getenv("TF2_SCHEMA_FILE", DEFAULT_SCHEMA_FILE))
@@ -49,7 +49,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
 
     items = data.get("items") or data
     if not isinstance(items, dict) or not items:
-        raise RuntimeError("tf2_schema.json is empty or invalid")
+        raise RuntimeError("tf2schema.json is empty or invalid")
 
     if len(items) < 5000 and auto_refetch:
         try:
@@ -71,7 +71,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
     print(f"\N{CHECK MARK} Loaded {len(TF2_SCHEMA)} items from {schema_path}")
     if len(TF2_SCHEMA) < 5000:
         print(
-            "\N{WARNING SIGN} tf2_schema.json may be stale or incomplete. "
+            "\N{WARNING SIGN} tf2schema.json may be stale or incomplete. "
             "Consider forcing a refetch."
         )
 

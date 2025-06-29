@@ -12,7 +12,7 @@ BASE_URL = "https://schema.autobot.tf"
 
 logger = logging.getLogger(__name__)
 
-CACHE_FILE = Path("cache/tf2_schema.json")
+CACHE_FILE = Path("cache/tf2schema.json")
 TTL = 48 * 60 * 60  # 48 hours
 
 
@@ -23,7 +23,7 @@ QUALITIES: Dict[str | int, str] = {}
 def _fetch_schema(_: str | None = None) -> Dict[str, Any]:
     """Download the complete schema JSON from schema.autobot.tf."""
 
-    url = f"{BASE_URL}/schema/download"
+    url = f"{BASE_URL}/schema"
     r = requests.get(url, timeout=20)
     r.raise_for_status()
     return r.json()
