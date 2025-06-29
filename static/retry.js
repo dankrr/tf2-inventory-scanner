@@ -35,6 +35,8 @@ function attachHandlers() {
   if (btn) {
     btn.disabled = document.querySelectorAll('.retry-pill').length === 0;
   }
+
+  attachItemModal();
 }
 
 function refreshAll() {
@@ -59,6 +61,56 @@ function loadUsers(ids) {
   });
 }
 
+function attachItemModal() {
+  const modal = document.getElementById('item-modal');
+  if (!modal) return;
+  const title = document.getElementById('modal-title');
+  const img = document.getElementById('modal-img');
+  const details = document.getElementById('modal-details');
+  const close = document.getElementById('modal-close');
+  if (close) close.addEventListener('click', () => modal.close());
+
+  document.querySelectorAll('.item-card').forEach(card => {
+    card.addEventListener('click', () => {
+      let data = card.dataset.item;
+      if (!data) return;
+      try { data = JSON.parse(data); } catch (e) { return; }
+      if (title) title.textContent = data.name || '';
+      if (img) img.src = data.image_url || '';
+      if (details) {
+        details.innerHTML = '';
+        const fields = [
+          ['Type', data.item_type_name],
+          ['Level', data.level],
+          ['Origin', data.origin],
+          ['Killstreak', data.killstreak_tier],
+          ['Paint', data.paint_name],
+        ];
+        fields.forEach(([label, value]) => {
+          if (!value) return;
+          const div = document.createElement('div');
+          if (label === 'Paint' && data.paint_hex) {
+            const sw = document.createElement('span');
+            sw.style.display = 'inline-block';
+            sw.style.width = '12px';
+            sw.style.height = '12px';
+            sw.style.marginRight = '4px';
+            sw.style.background = data.paint_hex;
+            div.appendChild(sw);
+          }
+          div.appendChild(document.createTextNode(label + ': ' + value));
+          details.appendChild(div);
+        });
+      }
+      if (typeof modal.showModal === 'function') {
+        modal.showModal();
+      } else {
+        modal.style.display = 'block';
+      }
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   attachHandlers();
   const btn = document.getElementById('retry-all');
@@ -68,4 +120,5 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.initialIds && window.initialIds.length) {
     loadUsers(window.initialIds);
   }
+  attachItemModal();
 });
