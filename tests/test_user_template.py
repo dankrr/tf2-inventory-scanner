@@ -19,7 +19,7 @@ def app(monkeypatch):
 @pytest.mark.parametrize(
     "context",
     [
-        {"user": {"items": [{"name": "Foo", "final_url": ""}]}},
+        {"user": {"items": [{"name": "Foo", "image_url": ""}]}},
         {"user": {"items": []}},
         {"user": {}},
     ],
