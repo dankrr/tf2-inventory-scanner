@@ -4,11 +4,15 @@ import utils.autobot_schema_cache as ac
 
 
 def test_ensure_all_cached(tmp_path, monkeypatch):
-    monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(ac, "PROPERTIES", {"defindexes": "defindexes.json"})
+    monkeypatch.setattr(ac, "SCHEMA_DIR", tmp_path / "schema")
+    monkeypatch.setattr(ac, "ITEMS_GAME_DIR", tmp_path / "items_game")
+    monkeypatch.setattr(ac, "PROPERTIES_DIR", tmp_path / "properties")
+    monkeypatch.setattr(ac, "GRADES_DIR", tmp_path / "grades")
+    monkeypatch.setattr(ac, "SCHEMA_KEYS", ["items"])
+    monkeypatch.setattr(ac, "ITEMS_GAME_KEYS", ["items"])
+    monkeypatch.setattr(ac, "PROPERTIES_KEYS", ["defindexes"])
     monkeypatch.setattr(ac, "CLASS_NAMES", [])
-    monkeypatch.setattr(ac, "GRADE_FILES", {"v1": "item_grade_v1.json"})
-    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {"tf2schema.json": "/schema"})
+    monkeypatch.setattr(ac, "GRADE_ENDPOINTS", ["v1"])
     monkeypatch.setattr(ac.items_game_cache, "update_items_game", lambda: None)
     monkeypatch.setattr(
         ac.items_game_cache, "JSON_FILE", tmp_path / "items_game_cleaned.json"
@@ -25,24 +29,30 @@ def test_ensure_all_cached(tmp_path, monkeypatch):
 
     ac.ensure_all_cached(refresh=True)
 
-    assert (tmp_path / "defindexes.json").exists()
-    assert (tmp_path / "item_grade_v1.json").exists()
-    assert (tmp_path / "tf2schema.json").exists()
+    assert (tmp_path / "properties" / "defindexes.json").exists()
+    assert (tmp_path / "grades" / "v1.json").exists()
+    assert (tmp_path / "schema" / "items.json").exists()
+    assert (tmp_path / "items_game" / "items.json").exists()
     assert calls
 
 
 def test_cache_hit(tmp_path, monkeypatch):
-    monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(ac, "PROPERTIES", {"defindexes": "defindexes.json"})
+    monkeypatch.setattr(ac, "SCHEMA_DIR", tmp_path / "schema")
+    monkeypatch.setattr(ac, "ITEMS_GAME_DIR", tmp_path / "items_game")
+    monkeypatch.setattr(ac, "PROPERTIES_DIR", tmp_path / "properties")
+    monkeypatch.setattr(ac, "GRADES_DIR", tmp_path / "grades")
+    monkeypatch.setattr(ac, "SCHEMA_KEYS", [])
+    monkeypatch.setattr(ac, "ITEMS_GAME_KEYS", [])
+    monkeypatch.setattr(ac, "PROPERTIES_KEYS", ["defindexes"])
     monkeypatch.setattr(ac, "CLASS_NAMES", [])
-    monkeypatch.setattr(ac, "GRADE_FILES", {})
-    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {})
+    monkeypatch.setattr(ac, "GRADE_ENDPOINTS", [])
     monkeypatch.setattr(
         ac.items_game_cache, "JSON_FILE", tmp_path / "items_game_cleaned.json"
     )
     (tmp_path / "items_game_cleaned.json").write_text("{}")
 
-    (tmp_path / "defindexes.json").write_text(json.dumps({"x": 1}))
+    (tmp_path / "properties" / "defindexes.json").parent.mkdir(parents=True)
+    (tmp_path / "properties" / "defindexes.json").write_text(json.dumps({"x": 1}))
 
     monkeypatch.setattr(
         ac,
@@ -54,10 +64,14 @@ def test_cache_hit(tmp_path, monkeypatch):
 
 
 def test_class_aliases(tmp_path, monkeypatch):
-    monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(ac, "PROPERTIES", {})
-    monkeypatch.setattr(ac, "GRADE_FILES", {})
-    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {})
+    monkeypatch.setattr(ac, "SCHEMA_DIR", tmp_path / "schema")
+    monkeypatch.setattr(ac, "ITEMS_GAME_DIR", tmp_path / "items_game")
+    monkeypatch.setattr(ac, "PROPERTIES_DIR", tmp_path / "properties")
+    monkeypatch.setattr(ac, "GRADES_DIR", tmp_path / "grades")
+    monkeypatch.setattr(ac, "PROPERTIES_KEYS", [])
+    monkeypatch.setattr(ac, "GRADE_ENDPOINTS", [])
+    monkeypatch.setattr(ac, "SCHEMA_KEYS", [])
+    monkeypatch.setattr(ac, "ITEMS_GAME_KEYS", [])
     monkeypatch.setattr(ac, "CLASS_NAMES", ["Demo", "Engie"])
     monkeypatch.setattr(ac.items_game_cache, "update_items_game", lambda: None)
     monkeypatch.setattr(
@@ -74,17 +88,21 @@ def test_class_aliases(tmp_path, monkeypatch):
 
     ac.ensure_all_cached(refresh=True)
 
-    assert (tmp_path / "craftWeaponsByClass_Demoman.json").exists()
-    assert (tmp_path / "craftWeaponsByClass_Engineer.json").exists()
+    assert (tmp_path / "properties" / "craftWeaponsByClass_Demoman.json").exists()
+    assert (tmp_path / "properties" / "craftWeaponsByClass_Engineer.json").exists()
     assert any("Demoman" in u for u in captured)
     assert any("Engineer" in u for u in captured)
 
 
 def test_unknown_class_ignored(tmp_path, monkeypatch):
-    monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(ac, "PROPERTIES", {})
-    monkeypatch.setattr(ac, "GRADE_FILES", {})
-    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {})
+    monkeypatch.setattr(ac, "SCHEMA_DIR", tmp_path / "schema")
+    monkeypatch.setattr(ac, "ITEMS_GAME_DIR", tmp_path / "items_game")
+    monkeypatch.setattr(ac, "PROPERTIES_DIR", tmp_path / "properties")
+    monkeypatch.setattr(ac, "GRADES_DIR", tmp_path / "grades")
+    monkeypatch.setattr(ac, "PROPERTIES_KEYS", [])
+    monkeypatch.setattr(ac, "GRADE_ENDPOINTS", [])
+    monkeypatch.setattr(ac, "SCHEMA_KEYS", [])
+    monkeypatch.setattr(ac, "ITEMS_GAME_KEYS", [])
     monkeypatch.setattr(ac, "CLASS_NAMES", ["xyz"])
 
     monkeypatch.setattr(ac.items_game_cache, "update_items_game", lambda: None)

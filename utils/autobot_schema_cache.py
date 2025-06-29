@@ -10,31 +10,59 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://schema.autobot.tf"
 CACHE_DIR = Path("cache")
+SCHEMA_DIR = CACHE_DIR / "schema"
+ITEMS_GAME_DIR = CACHE_DIR / "items_game"
+PROPERTIES_DIR = CACHE_DIR / "properties"
+GRADES_DIR = CACHE_DIR / "grades"
 
-PROPERTIES = {
-    "defindexes": "defindexes.json",
-    "qualities": "qualities.json",
-    "killstreaks": "killstreaks.json",
-    "effects": "effects.json",
-    "paintkits": "paintkits.json",
-    "wears": "wears.json",
-    "crateseries": "crateseries.json",
-    "paints": "paints.json",
-    "strangeParts": "strangeParts.json",
-    "craftWeapons": "craftWeapons.json",
-    "uncraftWeapons": "uncraftWeapons.json",
-}
+SCHEMA_KEYS = [
+    "items_game_url",
+    "qualities",
+    "qualityNames",
+    "originNames",
+    "attributes",
+    "item_sets",
+    "attribute_controlled_attached_particles",
+    "item_levels",
+    "kill_eater_score_types",
+    "string_lookups",
+    "items",
+    "paintkits",
+]
+
+ITEMS_GAME_KEYS = [
+    "items",
+    "attributes",
+    "item_sets",
+    "recipes",
+    "attribute_controlled_attached_particles",
+    "community_market_item_remaps",
+]
+
+PROPERTIES_KEYS = [
+    "defindexes",
+    "qualities",
+    "killstreaks",
+    "effects",
+    "paintkits",
+    "wears",
+    "paints",
+    "strangeParts",
+    "crateseries",
+    "craftWeapons",
+    "uncraftWeapons",
+]
 
 CLASS_NAMES = [
     "Scout",
     "Soldier",
-    "Demo",
     "Pyro",
-    "Medic",
+    "Demoman",
     "Heavy",
+    "Engineer",
+    "Medic",
     "Sniper",
     "Spy",
-    "Engineer",
 ]
 
 # Map various aliases to canonical TF2 class names used by the Autobot API.
@@ -60,14 +88,10 @@ def _canonical_class(name: str) -> str | None:
     return CLASS_ALIASES.get(name.lower())
 
 
-GRADE_FILES = {
-    "v1": "item_grade_v1.json",
-    "v2": "item_grade_v2.json",
-}
-
-BASE_ENDPOINTS = {
-    "tf2schema.json": "/schema",
-}
+GRADE_ENDPOINTS = [
+    "v1",
+    "v2",
+]
 
 
 def _fetch_json(url: str) -> Dict[str, Any]:
@@ -96,9 +120,10 @@ def ensure_all_cached(refresh: bool = False) -> None:
         if legacy.exists():
             legacy.unlink()
 
-    for name, fname in PROPERTIES.items():
+    for name in PROPERTIES_KEYS:
         url = f"{BASE_URL}/properties/{name}"
-        _ensure_file(CACHE_DIR / fname, url, refresh)
+        dest = PROPERTIES_DIR / f"{name}.json"
+        _ensure_file(dest, url, refresh)
 
     fetched_classes = []
     for name in CLASS_NAMES:
@@ -107,20 +132,27 @@ def ensure_all_cached(refresh: bool = False) -> None:
             logger.warning("Unknown class %s; skipping", name)
             continue
         url = f"{BASE_URL}/properties/craftWeaponsByClass/{canonical}"
-        dest = CACHE_DIR / f"craftWeaponsByClass_{canonical}.json"
+        dest = PROPERTIES_DIR / f"craftWeaponsByClass_{canonical}.json"
         _ensure_file(dest, url, refresh)
         fetched_classes.append(canonical)
 
     if refresh and fetched_classes:
         logger.info("craftWeaponsByClass fetched for: %s", ", ".join(fetched_classes))
 
-    for ver, fname in GRADE_FILES.items():
-        url = f"{BASE_URL}/getItemGrade/{ver}"
-        _ensure_file(CACHE_DIR / fname, url, refresh)
+    for endpoint in GRADE_ENDPOINTS:
+        url = f"{BASE_URL}/getItemGrade/{endpoint}"
+        dest = GRADES_DIR / f"{endpoint}.json"
+        _ensure_file(dest, url, refresh)
 
-    for fname, endpoint in BASE_ENDPOINTS.items():
-        url = f"{BASE_URL}{endpoint}"
-        _ensure_file(CACHE_DIR / fname, url, refresh)
+    for key in SCHEMA_KEYS:
+        url = f"{BASE_URL}/schema/{key}"
+        dest = SCHEMA_DIR / f"{key}.json"
+        _ensure_file(dest, url, refresh)
+
+    for key in ITEMS_GAME_KEYS:
+        url = f"{BASE_URL}/raw/items_game/{key}"
+        dest = ITEMS_GAME_DIR / f"{key}.json"
+        _ensure_file(dest, url, refresh)
 
     if refresh:
         items_game_cache.update_items_game()
@@ -133,7 +165,7 @@ def ensure_all_cached(refresh: bool = False) -> None:
 def get_item_grade(defindex: int | str) -> Dict[str, Any]:
     """Return item grade data for a defindex, fetching if needed."""
 
-    path = CACHE_DIR / "item_grade_by_defindex" / f"{defindex}.json"
+    path = GRADES_DIR / "fromDefindex" / f"{defindex}.json"
     if not path.exists():
         url = f"{BASE_URL}/getItemGrade/fromDefindex/{defindex}"
         _ensure_file(path, url, refresh=False)
