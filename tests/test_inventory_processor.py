@@ -19,14 +19,18 @@ def no_items_game(monkeypatch):
 def test_enrich_inventory():
     data = {"items": [{"defindex": 111, "quality": 11}]}
     sf.SCHEMA = {
-        "111": {"defindex": 111, "item_name": "Rocket Launcher", "image_url": "img"}
+        "111": {
+            "defindex": 111,
+            "item_name": "Rocket Launcher",
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/img/360fx360f",
+        }
     }
     sf.QUALITIES = {"11": "Strange"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Strange Rocket Launcher"
     assert items[0]["quality"] == "Strange"
     assert items[0]["quality_color"] == "#CF6A32"
-    assert items[0]["final_url"].startswith(
+    assert items[0]["image_url"].startswith(
         "https://steamcommunity-a.akamaihd.net/economy/image/"
     )
 
@@ -54,7 +58,11 @@ def test_enrich_inventory_unusual_effect():
 def test_process_inventory_handles_missing_icon():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {
-        "1": {"defindex": 1, "item_name": "One", "image_url": "a"},
+        "1": {
+            "defindex": 1,
+            "item_name": "One",
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/a/360fx360f",
+        },
         "2": {"defindex": 2, "item_name": "Two", "image_url": ""},
     }
     sf.QUALITIES = {}
@@ -62,11 +70,11 @@ def test_process_inventory_handles_missing_icon():
     assert {i["name"] for i in items} == {"One", "Two"}
     for item in items:
         if item["name"] == "One":
-            assert item["final_url"].startswith(
+            assert item["image_url"].startswith(
                 "https://steamcommunity-a.akamaihd.net/economy/image/"
             )
         else:
-            assert item["final_url"] == ""
+            assert item["image_url"] == ""
 
 
 def test_enrich_inventory_preserves_absolute_url():
@@ -75,7 +83,7 @@ def test_enrich_inventory_preserves_absolute_url():
     sf.SCHEMA = {"5": {"defindex": 5, "item_name": "Abs", "image_url": url}}
     sf.QUALITIES = {"0": "Normal"}
     items = ip.enrich_inventory(data)
-    assert items[0]["final_url"] == url
+    assert items[0]["image_url"] == url
 
 
 def test_enrich_inventory_skips_unknown_defindex():
@@ -162,7 +170,7 @@ def test_user_template_safe(monkeypatch, status):
         avatar="",
         playtime=0.0,
         profile="#",
-        items=[{"final_url": ""}] if status == "parsed" else [],
+        items=[{"image_url": ""}] if status == "parsed" else [],
         status=status,
     )
 

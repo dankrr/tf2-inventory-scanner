@@ -28,8 +28,8 @@
       <div class="inventory-container">
         {% for item in user.items %}
           <div class="item-card" style="border-color: {{ item.quality_color }};">
-            {% if item.final_url %}
-              <img class="item-img" src="{{ item.final_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
+            {% if item.image_url %}
+              <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
             {% else %}
               <div class="missing-icon"></div>
             {% endif %}

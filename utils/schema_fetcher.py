@@ -7,6 +7,8 @@ from typing import Any, Dict
 
 import requests
 
+CLOUD = "https://steamcommunity-a.akamaihd.net/economy/image/"
+
 logger = logging.getLogger(__name__)
 
 CACHE_FILE = Path("cache/tf2_schema.json")
@@ -43,11 +45,25 @@ def _fetch_schema(api_key: str) -> Dict[str, Any]:
             defindex = str(item.get("defindex"))
             if not defindex or "name" not in item:
                 continue
+
+            path = (
+                item.get("image_url_large")
+                or item.get("image_url")
+                or item.get("icon_url_large")
+                or item.get("icon_url")
+                or ""
+            )
+            if path.startswith("http"):
+                image_url = path
+            elif path:
+                image_url = f"{CLOUD}{path}/360fx360f"
+            else:
+                image_url = ""
+
             items[defindex] = {
                 "defindex": item.get("defindex"),
                 "name": item.get("name"),
-                "image_url": item.get("image_url"),
-                "image_url_large": item.get("image_url_large"),
+                "image_url": image_url,
             }
         if not data.get("next"):
             break
