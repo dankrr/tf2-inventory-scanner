@@ -39,36 +39,24 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
         def json(self):
             return self.payload
 
-    responses = [
-        {"result": {"qualities": {"Normal": 0}}},
-        {
-            "result": {
-                "items": [
-                    {
-                        "defindex": 2,
-                        "name": "Other",
-                        "image_url": "u",
-                        "image_url_large": None,
-                    }
-                ]
+    payload = {
+        "items": {
+            "2": {
+                "defindex": 2,
+                "name": "Other",
+                "image_url": "u",
             }
         },
-    ]
+        "qualities": {"0": "Normal"},
+    }
     captured = []
 
     def fake_get(url, timeout):
         captured.append(url)
-        return DummyResp(responses.pop(0))
+        return DummyResp(payload)
 
     monkeypatch.setattr(sf.requests, "get", fake_get)
     schema = sf.ensure_schema_cached(api_key="k")
-    assert schema == {
-        "2": {
-            "defindex": 2,
-            "name": "Other",
-            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/u/360fx360f",
-        }
-    }
+    assert schema == payload["items"]
     assert cache.exists()
-    assert any("GetSchemaOverview" in u for u in captured)
-    assert any("GetSchemaItems" in u for u in captured)
+    assert any("schema/download" in u for u in captured)

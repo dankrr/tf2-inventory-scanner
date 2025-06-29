@@ -2,9 +2,7 @@ import os
 import re
 import asyncio
 import time
-import json
 import sys
-from pathlib import Path
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -25,23 +23,15 @@ if not os.getenv("STEAM_API_KEY"):
     )
 
 if "--refresh" in sys.argv[1:]:
-    from utils import schema_fetcher, items_game_cache, local_data
     from utils import autobot_schema_cache
+    from utils import local_data
 
     print(
         "\N{anticlockwise open circle arrow} Refresh requested: refetching TF2 schema and items_game..."
     )
-    api_key = os.environ["STEAM_API_KEY"]
-    schema = schema_fetcher._fetch_schema(api_key)
-    Path("cache").mkdir(parents=True, exist_ok=True)
-    Path("cache/tf2_schema.json").write_text(json.dumps(schema))
-    print(f"Fetched {len(schema['items'])} schema items")
-
-    items_game = items_game_cache.update_items_game()
-    cleaned = local_data.clean_items_game(items_game)
-    Path("cache/items_game_cleaned.json").write_text(json.dumps(cleaned))
-    print(f"Saved {len(cleaned)} cleaned item definitions")
     autobot_schema_cache.ensure_all_cached(refresh=True)
+    local_data.load_files()
+    print("\N{CHECK MARK} Autobot schema refreshed")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
@@ -54,9 +44,9 @@ app = Flask(__name__)
 ITEMS_GAME_READY_FUTURE = items_game_cache.ensure_future()
 MAX_MERGE_MS = 0
 
+ensure_all_cached()
 SCHEMA = ensure_schema_cached()
 print(f"Loaded {len(SCHEMA)} schema items")
-ensure_all_cached()
 local_data.load_files()
 
 # --- Utility functions ------------------------------------------------------
