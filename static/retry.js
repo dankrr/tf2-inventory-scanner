@@ -66,11 +66,29 @@ function attachItemModal() {
   if (!modal) return;
   const title = document.getElementById('modal-title');
   const img = document.getElementById('modal-img');
+  const missing = document.getElementById('modal-missing');
   const details = document.getElementById('modal-details');
   const badgeBox = document.getElementById('modal-badges');
+  const copyLink = document.getElementById('copy-json');
+
+  const sections = {
+    general: document.getElementById('modal-general'),
+    killstreak: document.getElementById('modal-killstreak'),
+    paint: document.getElementById('modal-paint'),
+    spells: document.getElementById('modal-spells'),
+    parts: document.getElementById('modal-parts'),
+  };
+  const sectionWrap = {
+    general: document.getElementById('section-general'),
+    killstreak: document.getElementById('section-killstreak'),
+    paint: document.getElementById('section-paint'),
+    spells: document.getElementById('section-spells'),
+    parts: document.getElementById('section-parts'),
+  };
 
   function closeModal() {
     modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.95)';
     setTimeout(() => modal.close(), 200);
   }
 
@@ -82,122 +100,152 @@ function attachItemModal() {
     card.addEventListener('click', () => {
       let data = card.dataset.item;
       if (!data) return;
-      try { data = JSON.parse(data); } catch (e) { return; }
+      try {
+        data = JSON.parse(data);
+      } catch {
+        return;
+      }
       if (title) title.textContent = data.name || '';
-      if (img) img.src = data.image_url || '';
-      if (details) {
-        details.innerHTML = '';
-        const attrs = document.createElement('div');
-        if (data.killstreak_tier) {
-          const ks = document.createElement('div');
-          ks.textContent = data.killstreak_tier;
-          attrs.appendChild(ks);
-          if (data.sheen) {
-            const sh = document.createElement('div');
-            sh.textContent = '\u2022 Sheen: ' + data.sheen;
-            attrs.appendChild(sh);
-          }
-          if (data.killstreak_effect) {
-            const ke = document.createElement('div');
-            ke.textContent = '\u2022 Effect: ' + data.killstreak_effect;
-            attrs.appendChild(ke);
-          }
+      if (img) {
+        if (data.image_url) {
+          img.style.display = 'block';
+          img.src = data.image_url;
+          if (missing) missing.style.display = 'none';
+        } else {
+          img.style.display = 'none';
+          if (missing) missing.style.display = 'flex';
         }
+      }
 
-        [
-          ['Type', data.item_type_name],
-          ['Level', data.level],
-          ['Origin', data.origin]
-        ].forEach(([label, value]) => {
-          if (!value) return;
+      function setSection(key, entries) {
+        const box = sections[key];
+        const wrap = sectionWrap[key];
+        if (!box || !wrap) return;
+        box.innerHTML = '';
+        const rows = entries.filter(e => e[1]);
+        if (!rows.length) {
+          wrap.style.display = 'none';
+          return;
+        }
+        rows.forEach(([label, val]) => {
           const div = document.createElement('div');
-          div.textContent = label + ': ' + value;
-          attrs.appendChild(div);
+          div.textContent = label ? label + ': ' + val : val;
+          box.appendChild(div);
         });
+        wrap.style.display = '';
+      }
 
+      setSection('general', [
+        ['Quality', data.quality],
+        ['Origin', data.origin],
+        ['Level', data.level],
+      ]);
+
+      setSection('killstreak', [
+        ['Tier', data.killstreak_tier],
+        ['Sheen', data.sheen],
+        ['Effect', data.killstreak_effect],
+      ]);
+
+      if (sections.paint && sectionWrap.paint) {
+        sections.paint.innerHTML = '';
         if (data.paint_name) {
           const div = document.createElement('div');
           if (data.paint_hex) {
             const sw = document.createElement('span');
-            sw.style.display = 'inline-block';
-            sw.style.width = '12px';
-            sw.style.height = '12px';
-            sw.style.marginRight = '4px';
-            sw.style.border = '1px solid #333';
-            sw.style.borderRadius = '50%';
+            sw.className = 'paint-swatch';
             sw.style.background = data.paint_hex;
             div.appendChild(sw);
           }
-          div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
-          attrs.appendChild(div);
-        }
-
-        details.appendChild(attrs);
-
-        if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
-          const head = document.createElement('h4');
-          head.textContent = 'Strange Parts';
-          details.appendChild(head);
-          data.strange_parts.forEach(part => {
-            const div = document.createElement('div');
-            div.textContent = part;
-            details.appendChild(div);
-          });
-        }
-
-        if (Array.isArray(data.spells) && data.spells.length) {
-          const head = document.createElement('h4');
-          head.textContent = 'Spells';
-          head.id = 'modal-spells';
-          details.appendChild(head);
-          data.spells.forEach(sp => {
-            const sdiv = document.createElement('div');
-            let icon = '';
-            const l = sp.toLowerCase();
-            if (l.includes('footsteps')) icon = '👣';
-            else if (l.includes('exorcism')) icon = '👻';
-            else if (l.includes('pumpkin')) icon = '🎃';
-            else if (l.includes('paint')) icon = '🎨';
-            if (icon) {
-              const span = document.createElement('span');
-              span.className = 'badge-icon';
-              span.textContent = icon;
-              span.style.marginRight = '4px';
-              sdiv.appendChild(span);
-            }
-            sdiv.appendChild(document.createTextNode(sp));
-            details.appendChild(sdiv);
-          });
+          div.appendChild(document.createTextNode(data.paint_name));
+          sections.paint.appendChild(div);
+          sectionWrap.paint.style.display = '';
+        } else {
+          sectionWrap.paint.style.display = 'none';
         }
       }
+
+      if (sections.spells && sectionWrap.spells) {
+        sections.spells.innerHTML = '';
+        if (Array.isArray(data.spells) && data.spells.length) {
+          data.spells.forEach(sp => {
+            const li = document.createElement('li');
+            li.textContent = sp;
+            sections.spells.appendChild(li);
+          });
+          sectionWrap.spells.style.display = '';
+        } else {
+          sectionWrap.spells.style.display = 'none';
+        }
+      }
+
+      if (sections.parts && sectionWrap.parts) {
+        sections.parts.innerHTML = '';
+        if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
+          data.strange_parts.forEach(pt => {
+            const li = document.createElement('li');
+            li.textContent = pt;
+            sections.parts.appendChild(li);
+          });
+          sectionWrap.parts.style.display = '';
+        } else {
+          sectionWrap.parts.style.display = 'none';
+        }
+      }
+
+      if (copyLink) {
+        if (window.debugMode) {
+          copyLink.style.display = 'inline';
+          copyLink.onclick = e => {
+            e.preventDefault();
+            navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+            copyLink.textContent = 'copied!';
+            setTimeout(() => (copyLink.textContent = 'copy raw JSON'), 1000);
+          };
+        } else {
+          copyLink.style.display = 'none';
+        }
+      }
+
       if (badgeBox) {
         badgeBox.innerHTML = '';
-        const extra = [];
-        if (data.paint_name) extra.push({ icon: '🎨', title: 'Painted' });
-        if (data.killstreak_tier)
-          extra.push({ icon: '⚔️', title: data.killstreak_tier });
-        if (data.killstreaker_effect)
-          extra.push({ icon: '💀', title: 'Killstreaker Effect' });
-        if (Array.isArray(data.strange_parts) && data.strange_parts.length)
-          extra.push({ icon: '📊', title: 'Strange Parts' });
-        [...(data.badges || []), ...extra].forEach(b => {
+        (data.badges || []).forEach(b => {
           const span = document.createElement('span');
           span.className = 'badge-icon';
           span.textContent = b.icon;
           span.title = b.title;
-          span.addEventListener('click', () => {
-            const sec = document.getElementById('modal-spells');
-            if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-          });
+          let target = '';
+          if (b.icon === '🎨') {
+            target = b.title.startsWith('Painted') ? 'section-paint' : 'section-spells';
+          } else if (b.icon === '⚔️' || b.icon === '💀') {
+            target = 'section-killstreak';
+          } else if (b.icon === '📊') {
+            target = 'section-parts';
+          } else if (['👻', '👣', '🎃', '✨'].includes(b.icon)) {
+            target = 'section-spells';
+          }
+          if (target) {
+            span.style.cursor = 'pointer';
+            span.addEventListener('click', () => {
+              const sec = document.getElementById(target);
+              if (sec) {
+                sec.scrollIntoView({ behavior: 'smooth' });
+                sec.classList.add('flash');
+                setTimeout(() => sec.classList.remove('flash'), 600);
+              }
+            });
+          }
           badgeBox.appendChild(span);
         });
       }
+
       if (typeof modal.showModal === 'function') {
         modal.showModal();
       } else {
         modal.style.display = 'block';
       }
       modal.style.opacity = '1';
+      modal.style.transform = 'scale(1)';
     });
   });
 }

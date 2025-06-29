@@ -115,11 +115,36 @@
     <dialog id="item-modal">
       <div class="modal-header">
         <h3 id="modal-title"></h3>
+        <a id="copy-json" href="#" style="display:none;font-size:0.8rem;">copy raw JSON</a>
         <div id="modal-badges" class="item-badges"></div>
       </div>
       <div class="modal-body">
-        <img id="modal-img" src="" width="64" height="64" alt="">
-        <div id="modal-details"></div>
+        <div class="modal-image">
+          <img id="modal-img" src="" width="64" height="64" alt="">
+          <div id="modal-missing" class="missing-icon" style="display:none;"></div>
+        </div>
+        <div id="modal-details">
+          <div id="section-general" class="modal-section">
+            <h4>General Info</h4>
+            <div id="modal-general"></div>
+          </div>
+          <div id="section-killstreak" class="modal-section">
+            <h4>Killstreak</h4>
+            <div id="modal-killstreak"></div>
+          </div>
+          <div id="section-paint" class="modal-section">
+            <h4>Paint</h4>
+            <div id="modal-paint"></div>
+          </div>
+          <div id="section-spells" class="modal-section">
+            <h4>Spells</h4>
+            <ul id="modal-spells"></ul>
+          </div>
+          <div id="section-parts" class="modal-section">
+            <h4>Strange Parts</h4>
+            <ul id="modal-parts"></ul>
+          </div>
+        </div>
       </div>
     </dialog>
 
@@ -135,6 +160,7 @@
 
     <script>
       window.initialIds = {{ ids|tojson|safe }};
+      window.debugMode = {{ 'true' if debug_ms else 'false' }};
     </script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
     <script>
