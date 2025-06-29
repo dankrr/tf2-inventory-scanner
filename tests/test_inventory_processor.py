@@ -95,6 +95,38 @@ def test_enrich_inventory_skips_unknown_defindex():
     assert items[0]["name"] == "One"
 
 
+def test_enrich_inventory_killstreak_effect_from_attribute():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 6,
+                "attributes": [{"defindex": 2071, "float_value": 2003}],
+            }
+        ]
+    }
+    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket", "image_url": "i"}}
+    sf.QUALITIES = {"6": "Unique"}
+    ld.EFFECT_NAMES = {"2003": "Cerebral Discharge"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["killstreak_effect"] == "Cerebral Discharge"
+
+
+def test_enrich_inventory_spells_bitmask():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "attributes": [{"defindex": 730, "float_value": 5}],
+            }
+        ]
+    }
+    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket", "image_url": "i"}}
+    sf.QUALITIES = {}
+    items = ip.enrich_inventory(data)
+    assert set(items[0]["spells"]) == {"Exorcism", "Footprints"}
+
+
 def test_get_inventories_adds_user_agent(monkeypatch):
     captured = {}
 
