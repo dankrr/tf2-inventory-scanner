@@ -32,11 +32,37 @@ SCHEMA_KEYS = [
 ITEMS_GAME_KEYS = [
     "items",
     "attributes",
+    "item_sets",
+    "item_levels",
+    "kill_eater_score_types",
+    "string_lookups",
+    "attribute_controlled_attached_particles",
+    "armory_data",
+    "item_criteria_templates",
+    "random_attribute_templates",
+    "lootlist_job_template_definitions",
+    "client_loot_lists",
+    "revolving_loot_lists",
+    "recipes",
+    "achievement_rewards",
+    "mvm_maps",
+    "mvm_tours",
+    "matchmaking_categories",
+    "maps",
+    "master_maps_list",
+    "steam_packages",
+    "community_market_item_remaps",
+    "war_definitions",
     "game_info",
+    "qualities",
+    "colors",
     "rarities",
-    "paintkits",
-    "paints",
-    "strange_parts",
+    "equip_regions_list",
+    "equip_conflicts",
+    "quest_objective_conditions",
+    "item_series_types",
+    "item_collections",
+    "operations",
     "prefabs",
 ]
 
@@ -159,7 +185,10 @@ def ensure_all_cached(refresh: bool = False) -> None:
     for key in ITEMS_GAME_KEYS:
         url = f"{BASE_URL}/raw/items_game/{key}"
         dest = ITEMS_GAME_DIR / f"{key}.json"
-        _ensure_file(dest, url, refresh)
+        try:
+            _ensure_file(dest, url, refresh)
+        except requests.HTTPError as e:  # pragma: no cover - network failure
+            print(f"[!] Failed to fetch {url}: {e}")
 
     if refresh:
         items_game_cache.update_items_game()
