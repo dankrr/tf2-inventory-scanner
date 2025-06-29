@@ -134,6 +134,17 @@ function attachItemModal() {
 
         details.appendChild(attrs);
 
+        if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
+          const head = document.createElement('h4');
+          head.textContent = 'Strange Parts';
+          details.appendChild(head);
+          data.strange_parts.forEach(part => {
+            const div = document.createElement('div');
+            div.textContent = part;
+            details.appendChild(div);
+          });
+        }
+
         if (Array.isArray(data.spells) && data.spells.length) {
           const head = document.createElement('h4');
           head.textContent = 'Spells';
@@ -141,15 +152,37 @@ function attachItemModal() {
           details.appendChild(head);
           data.spells.forEach(sp => {
             const sdiv = document.createElement('div');
-            sdiv.textContent = sp;
+            let icon = '';
+            const l = sp.toLowerCase();
+            if (l.includes('footsteps')) icon = '👣';
+            else if (l.includes('exorcism')) icon = '👻';
+            else if (l.includes('pumpkin')) icon = '🎃';
+            else if (l.includes('paint')) icon = '🎨';
+            if (icon) {
+              const span = document.createElement('span');
+              span.className = 'badge-icon';
+              span.textContent = icon;
+              span.style.marginRight = '4px';
+              sdiv.appendChild(span);
+            }
+            sdiv.appendChild(document.createTextNode(sp));
             details.appendChild(sdiv);
           });
         }
       }
       if (badgeBox) {
         badgeBox.innerHTML = '';
-        (data.badges || []).forEach(b => {
+        const extra = [];
+        if (data.paint_name) extra.push({ icon: '🎨', title: 'Painted' });
+        if (data.killstreak_tier)
+          extra.push({ icon: '⚔️', title: data.killstreak_tier });
+        if (data.killstreaker_effect)
+          extra.push({ icon: '💀', title: 'Killstreaker Effect' });
+        if (Array.isArray(data.strange_parts) && data.strange_parts.length)
+          extra.push({ icon: '📊', title: 'Strange Parts' });
+        [...(data.badges || []), ...extra].forEach(b => {
           const span = document.createElement('span');
+          span.className = 'badge-icon';
           span.textContent = b.icon;
           span.title = b.title;
           span.addEventListener('click', () => {

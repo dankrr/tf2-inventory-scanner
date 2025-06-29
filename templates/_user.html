@@ -30,8 +30,20 @@
           <div class="item-card" style="border-color: {{ item.quality_color }};" data-item='{{ item|tojson|safe }}'>
             <div class="item-badges">
               {% for badge in item.badges or [] %}
-                <span title="{{ badge.title }}">{{ badge.icon }}</span>
+                <span class="badge-icon" title="{{ badge.title }}">{{ badge.icon }}</span>
               {% endfor %}
+              {% if item.paint_name %}
+                <span class="badge-icon" title="Painted">🎨</span>
+              {% endif %}
+              {% if item.killstreak_tier %}
+                <span class="badge-icon" title="{{ item.killstreak_tier }}">⚔️</span>
+              {% endif %}
+              {% if item.killstreaker_effect %}
+                <span class="badge-icon" title="Killstreaker Effect">💀</span>
+              {% endif %}
+              {% if item.strange_parts %}
+                <span class="badge-icon" title="Strange Parts">📊</span>
+              {% endif %}
             </div>
             {% if item.image_url %}
               <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
