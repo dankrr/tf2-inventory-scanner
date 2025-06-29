@@ -135,6 +135,52 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     return None, None
 
 
+def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
+    """Return killstreak effect string if present."""
+
+    for desc in asset.get("descriptions", []):
+        if not isinstance(desc, dict):
+            continue
+        text = unescape(desc.get("value", ""))
+        text = re.sub(r"<[^>]+>", "", text)
+        m = re.search(r"Killstreaker:?\s*(.+)", text, re.I)
+        if m:
+            return m.group(1).strip()
+    return None
+
+
+def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
+    """Return spell lines and boolean flags for badge mapping."""
+
+    lines: List[str] = []
+    flags = {
+        "has_exorcism": False,
+        "has_paint_spell": False,
+        "has_footprints": False,
+        "has_pumpkin_bombs": False,
+        "has_voice_lines": False,
+    }
+    for desc in asset.get("descriptions", []):
+        if not isinstance(desc, dict):
+            continue
+        text = unescape(desc.get("value", ""))
+        text = re.sub(r"<[^>]+>", "", text).strip()
+        ltext = text.lower()
+        if "halloween" in ltext or "spell" in ltext:
+            lines.append(text)
+        if "exorcism" in ltext:
+            flags["has_exorcism"] = True
+        if "paint" in ltext and "spell" in ltext:
+            flags["has_paint_spell"] = True
+        if "footprints" in ltext:
+            flags["has_footprints"] = True
+        if "pumpkin" in ltext:
+            flags["has_pumpkin_bombs"] = True
+        if "voices" in ltext or "rare spell" in ltext:
+            flags["has_voice_lines"] = True
+    return lines, flags
+
+
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     """Return the display name prefixed with quality/effect."""
 
@@ -205,7 +251,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         display_name = _build_item_name(base_name, q_name, asset)
 
         ks_tier, sheen = _extract_killstreak(asset)
+        ks_effect = _extract_killstreak_effect(asset)
         paint_name, paint_hex = _extract_paint(asset)
+        spell_lines, spell_flags = _extract_spells(asset)
 
         item = {
             "defindex": defindex,
@@ -244,7 +292,21 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "sheen": sheen,
             "paint_name": paint_name,
             "paint_hex": paint_hex,
+            "killstreak_effect": ks_effect,
+            "spells": spell_lines,
         }
+        badges = []
+        for key, icon, title in [
+            ("has_exorcism", "\U0001f47b", "Exorcism"),
+            ("has_paint_spell", "\U0001f3a8", "Paint spell"),
+            ("has_footprints", "\U0001f463", "Footprints spell"),
+            ("has_pumpkin_bombs", "\U0001f383", "Pumpkin Bombs"),
+            ("has_voice_lines", "\u2728", "Rare spell"),
+        ]:
+            if spell_flags.get(key):
+                badges.append({"icon": icon, "title": title})
+        if badges:
+            item["badges"] = badges
         items.append(item)
 
         if len(items) <= 3:
