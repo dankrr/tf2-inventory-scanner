@@ -71,6 +71,43 @@ _SHEEN_NAMES = {
     6: "Hot Rod",
 }
 
+# Map of item origin ID -> human readable string
+ORIGIN_MAP = {
+    0: "Timed Drop",
+    1: "Achievement",
+    2: "Purchased",
+    3: "Traded",
+    4: "Crafted",
+    5: "Store Promotion",
+    6: "Gifted",
+    7: "Support Promotion",
+    8: "Found in Crate",
+    9: "Earned",
+    10: "Third-Party Promotion",
+    11: "Purchased",
+    12: "Halloween Drop",
+    13: "Package Item",
+    14: "Store Promotion",
+    15: "Foreign",
+}
+
+# Map of paint ID -> (name, hex color)
+PAINT_MAP = {
+    3100495: ("A Color Similar to Slate", "#2F4F4F"),
+    8208497: ("A Deep Commitment to Purple", "#7D4071"),
+    8208498: ("A Distinctive Lack of Hue", "#141414"),
+    1315860: ("An Extraordinary Abundance of Tinge", "#CF7336"),
+    2960676: ("Color No. 216-190-216", "#D8BED8"),
+    8289918: ("Dark Salmon Injustice", "#8847FF"),
+    15132390: ("Drably Olive", "#808000"),
+    8421376: ("Indubitably Green", "#729E42"),
+    13595446: ("Mann Co. Orange", "#CF7336"),
+    12377523: ("Muskelmannbraun", "#A57545"),
+    5322826: ("Noble Hatter's Violet", "#51384A"),
+    15787660: ("Pink as Hell", "#FF69B4"),
+    15185211: ("A Mann's Mint", "#BCDDB3"),
+}
+
 
 def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return killstreak tier and sheen names if present."""
@@ -85,6 +122,17 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         elif idx == 2014:
             sheen = _SHEEN_NAMES.get(val)
     return tier, sheen
+
+
+def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
+    """Return paint name and hex color if present."""
+
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx == 142:
+            val = int(attr.get("float_value", 0))
+            return PAINT_MAP.get(val, (None, None))
+    return None, None
 
 
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
@@ -156,12 +204,46 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
         display_name = _build_item_name(base_name, q_name, asset)
 
+        ks_tier, sheen = _extract_killstreak(asset)
+        paint_name, paint_hex = _extract_paint(asset)
+
         item = {
             "defindex": defindex,
             "name": display_name,
             "quality": q_name,
             "quality_color": q_col,
             "image_url": image_url,
+            "item_type_name": (
+                schema_entry.get("item_type_name")
+                if schema_entry
+                else ig_item.get("item_type_name")
+            ),
+            "item_name": (
+                schema_entry.get("name") if schema_entry else ig_item.get("name")
+            ),
+            "craft_class": (
+                schema_entry.get("craft_class")
+                if schema_entry
+                else ig_item.get("craft_class")
+            ),
+            "craft_material_type": (
+                schema_entry.get("craft_material_type")
+                if schema_entry
+                else ig_item.get("craft_material_type")
+            ),
+            "item_set": schema_entry.get("item_set"),
+            "capabilities": schema_entry.get("capabilities"),
+            "tags": schema_entry.get("tags"),
+            "equip_regions": ig_item.get("equip_regions")
+            or ig_item.get("equip_region"),
+            "item_class": ig_item.get("item_class"),
+            "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
+            "level": asset.get("level"),
+            "origin": ORIGIN_MAP.get(asset.get("origin")),
+            "killstreak_tier": ks_tier,
+            "sheen": sheen,
+            "paint_name": paint_name,
+            "paint_hex": paint_hex,
         }
         items.append(item)
 
