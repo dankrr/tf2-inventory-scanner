@@ -109,7 +109,7 @@ def test_enrich_inventory_killstreak_effect_from_attribute():
     sf.QUALITIES = {"6": "Unique"}
     ld.EFFECT_NAMES = {"2003": "Cerebral Discharge"}
     items = ip.enrich_inventory(data)
-    assert items[0]["killstreak_effect"] == "Cerebral Discharge"
+    assert items[0]["killstreaker"] == "Cerebral Discharge"
 
 
 def test_enrich_inventory_spells_bitmask():
@@ -124,7 +124,33 @@ def test_enrich_inventory_spells_bitmask():
     sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket", "image_url": "i"}}
     sf.QUALITIES = {}
     items = ip.enrich_inventory(data)
-    assert set(items[0]["spells"]) == {"Exorcism", "Footprints"}
+    assert set(items[0]["spells"]) == {"Fire Footprints", "Pumpkin Bombs"}
+
+
+def test_attribute_handlers_combined():
+    data = {
+        "items": [
+            {
+                "defindex": 999,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 730, "float_value": 17},
+                    {"defindex": 2071, "float_value": 2003},
+                    {"defindex": 380, "float_value": 0},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {"999": {"defindex": 999, "item_name": "Thing", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    ld.EFFECT_NAMES = {"2003": "Cerebral Discharge"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["killstreaker"] == "Cerebral Discharge"
+    assert set(item["spells"]) == {"Fire Footprints", "Paint Spell"}
+    assert item["spell_flags"]["footprints"]
+    assert item["spell_flags"]["paint_spell"]
+    assert "Heavies Killed" in item["strange_parts"]
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
