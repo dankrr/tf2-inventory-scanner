@@ -10,6 +10,9 @@ HTML = '{% include "_user.html" %}'
 def app(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", lambda: {})
+    monkeypatch.setattr(
+        "utils.autobot_schema_cache.ensure_all_cached", lambda *a, **k: None
+    )
     monkeypatch.setattr("utils.local_data.load_files", lambda: ({}, {}))
     mod = importlib.import_module("app")
     importlib.reload(mod)
