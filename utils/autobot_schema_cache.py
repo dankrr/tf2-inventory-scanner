@@ -16,7 +16,6 @@ PROPERTIES_DIR = CACHE_DIR / "properties"
 GRADES_DIR = CACHE_DIR / "grades"
 
 SCHEMA_KEYS = [
-    "items_game_url",
     "qualities",
     "qualityNames",
     "originNames",
@@ -33,10 +32,12 @@ SCHEMA_KEYS = [
 ITEMS_GAME_KEYS = [
     "items",
     "attributes",
-    "item_sets",
-    "recipes",
-    "attribute_controlled_attached_particles",
-    "community_market_item_remaps",
+    "game_info",
+    "rarities",
+    "paintkits",
+    "paints",
+    "strange_parts",
+    "prefabs",
 ]
 
 PROPERTIES_KEYS = [
