@@ -75,6 +75,14 @@ Only the SteamID3 token is used:
 
 The application converts the ID to SteamID64 and fetches the inventory.
 
+### Enriched Item Data
+
+Each item returned from the API is decorated with extra fields such as
+`killstreak_tier`, `sheen`, `killstreaker`, applied paints, spells and strange
+parts. Boolean flags like `is_festivized` and a list of `badges` make it easy to
+display everything in the UI. Refer to `utils/inventory_processor.py` for the
+full structure.
+
 ## Dependency Management
 
 Dependencies are pinned in `requirements.txt` and locked with

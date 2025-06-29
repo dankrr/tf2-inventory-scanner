@@ -15,7 +15,6 @@ from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 from utils import items_game_cache
-from utils import local_data
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -24,7 +23,7 @@ if not os.getenv("STEAM_API_KEY"):
     )
 
 if "--refresh" in sys.argv[1:]:
-    from utils import schema_fetcher, items_game_cache, local_data
+    from utils import schema_fetcher, items_game_cache
 
     print(
         "\N{anticlockwise open circle arrow} Refresh requested: refetching TF2 schema and items_game..."
@@ -36,9 +35,8 @@ if "--refresh" in sys.argv[1:]:
     print(f"Fetched {len(schema['items'])} schema items")
 
     items_game = items_game_cache.update_items_game()
-    cleaned = local_data.clean_items_game(items_game)
-    Path("cache/items_game_cleaned.json").write_text(json.dumps(cleaned))
-    print(f"Saved {len(cleaned)} cleaned item definitions")
+    Path("cache/items_game_cleaned.json").write_text(json.dumps(items_game))
+    print(f"Saved {len(items_game.get('items', {}) )} raw item definitions")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
@@ -53,7 +51,6 @@ MAX_MERGE_MS = 0
 
 SCHEMA = ensure_schema_cached()
 print(f"Loaded {len(SCHEMA)} schema items")
-local_data.load_files()
 
 # --- Utility functions ------------------------------------------------------
 
