@@ -10,8 +10,6 @@ from . import steam_api_client, schema_fetcher, items_game_cache, local_data
 
 logger = logging.getLogger(__name__)
 
-# Base URL for item images
-CLOUD = "https://steamcommunity-a.akamaihd.net/economy/image/"
 
 # Mapping of defindex -> human readable name for warpaints
 MAPPING_FILE = Path(__file__).with_name("warpaint_mapping.json")
@@ -138,33 +136,19 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
-        entry = cleaned_map.get(defindex) or schema_map.get(defindex)
-        if not entry:
+        schema_entry = schema_map.get(defindex)
+        ig_item = cleaned_map.get(defindex) or {}
+        if not (schema_entry or ig_item):
             continue
 
-        icon_url = asset.get("icon_url") or asset.get("icon_url_large")
-        if icon_url:
-            image_path = icon_url
-            if icon_url.startswith("//"):
-                final_url = "https:" + icon_url
-            elif icon_url.startswith("http"):
-                final_url = icon_url
-            else:
-                final_url = f"{CLOUD}{icon_url}/360fx360f"
-        else:
-            image_path = entry.get("image_url") or entry.get("image_url_large") or ""
-            if image_path.startswith("http"):
-                final_url = image_path
-            else:
-                final_url = f"{CLOUD}{image_path}" if image_path else ""
+        image_url = schema_entry.get("image_url") if schema_entry else ""
 
         # Prefer name from cleaned items_game if available
-        ig_item = cleaned_map.get(defindex) or {}
         base_name = (
             WARPAINT_MAP.get(defindex)
             or ig_item.get("name")
-            or entry.get("item_name")
-            or entry.get("name")
+            or (schema_entry.get("item_name") if schema_entry else None)
+            or (schema_entry.get("name") if schema_entry else None)
             or f"Item #{defindex}"
         )
 
@@ -177,8 +161,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "name": display_name,
             "quality": q_name,
             "quality_color": q_col,
-            "image_url": image_path,
-            "final_url": final_url,
+            "image_url": image_url,
         }
         items.append(item)
 
