@@ -61,6 +61,29 @@
         .form-actions {
             margin-top: 0.75rem;
         }
+        #item-modal {
+            background: #1e1e1e;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        #item-modal::backdrop {
+            background: rgba(0,0,0,0.6);
+        }
+        #item-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #item-modal button {
+            background: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        #modal-details div { margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -85,6 +108,17 @@
     </form>
 
     <div id="user-container"></div>
+
+    <dialog id="item-modal">
+      <div class="modal-header">
+        <button id="modal-close" type="button">&times;</button>
+        <h3 id="modal-title"></h3>
+      </div>
+      <div class="modal-body">
+        <img id="modal-img" src="" width="64" height="64" alt="">
+        <div id="modal-details"></div>
+      </div>
+    </dialog>
 
     <footer class="footer">
         <i class="fa-brands fa-steam"></i>
