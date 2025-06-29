@@ -6,7 +6,7 @@ import utils.schema_fetcher as sf
 
 
 def test_schema_cache_hit(tmp_path, monkeypatch):
-    cache = tmp_path / "tf2_schema.json"
+    cache = tmp_path / "tf2schema.json"
     sample = {
         "items": {
             str(i): {
@@ -26,7 +26,7 @@ def test_schema_cache_hit(tmp_path, monkeypatch):
 
 
 def test_schema_cache_miss(tmp_path, monkeypatch):
-    cache = tmp_path / "tf2_schema.json"
+    cache = tmp_path / "tf2schema.json"
     monkeypatch.setattr(sf, "CACHE_FILE", cache)
 
     class DummyResp:
@@ -59,4 +59,4 @@ def test_schema_cache_miss(tmp_path, monkeypatch):
     schema = sf.ensure_schema_cached(api_key="k")
     assert schema == payload["items"]
     assert cache.exists()
-    assert any("schema/download" in u for u in captured)
+    assert any("/schema" in u for u in captured)
