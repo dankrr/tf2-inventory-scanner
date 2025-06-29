@@ -1,5 +1,4 @@
 from utils import inventory_processor as ip
-from utils import schema_fetcher as sf
 from utils import steam_api_client as sac
 from utils import items_game_cache as ig
 from utils import local_data as ld
@@ -18,14 +17,13 @@ def no_items_game(monkeypatch):
 
 def test_enrich_inventory():
     data = {"items": [{"defindex": 111, "quality": 11}]}
-    sf.SCHEMA = {
+    ld.TF2_SCHEMA = {
         "111": {
             "defindex": 111,
             "item_name": "Rocket Launcher",
             "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/img/360fx360f",
         }
     }
-    sf.QUALITIES = {"11": "Strange"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Strange Rocket Launcher"
     assert items[0]["quality"] == "Strange"
@@ -45,10 +43,9 @@ def test_enrich_inventory_unusual_effect():
             }
         ]
     }
-    sf.SCHEMA = {
+    ld.TF2_SCHEMA = {
         "222": {"defindex": 222, "item_name": "Team Captain", "image_url": "img"}
     }
-    sf.QUALITIES = {"5": "Unusual"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Burning Flames Team Captain"
@@ -57,7 +54,7 @@ def test_enrich_inventory_unusual_effect():
 
 def test_process_inventory_handles_missing_icon():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
-    sf.SCHEMA = {
+    ld.TF2_SCHEMA = {
         "1": {
             "defindex": 1,
             "item_name": "One",
@@ -65,7 +62,6 @@ def test_process_inventory_handles_missing_icon():
         },
         "2": {"defindex": 2, "item_name": "Two", "image_url": ""},
     }
-    sf.QUALITIES = {}
     items = ip.process_inventory(data)
     assert {i["name"] for i in items} == {"One", "Two"}
     for item in items:
@@ -80,16 +76,14 @@ def test_process_inventory_handles_missing_icon():
 def test_enrich_inventory_preserves_absolute_url():
     data = {"items": [{"defindex": 5, "quality": 0}]}
     url = "http://example.com/icon.png"
-    sf.SCHEMA = {"5": {"defindex": 5, "item_name": "Abs", "image_url": url}}
-    sf.QUALITIES = {"0": "Normal"}
+    ld.TF2_SCHEMA = {"5": {"defindex": 5, "item_name": "Abs", "image_url": url}}
     items = ip.enrich_inventory(data)
     assert items[0]["image_url"] == url
 
 
 def test_enrich_inventory_skips_unknown_defindex():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
-    sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": "a"}}
-    sf.QUALITIES = {}
+    ld.TF2_SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": "a"}}
     items = ip.enrich_inventory(data)
     assert len(items) == 1
     assert items[0]["name"] == "One"
