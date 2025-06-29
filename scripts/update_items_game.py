@@ -20,7 +20,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO)
     data = items_game_cache.update_items_game()
     cleaned = local_data.clean_items_game(data)
-    dest = (root / "cache/items_game_cleaned.json").resolve()
+    dest = (root / "cache/items_game.json").resolve()
     dest.write_text(json.dumps(cleaned))
     print(f"Fetched {len(data.get('items', {}))} items")
     print(f"Wrote {len(cleaned)} cleaned items to {dest}")

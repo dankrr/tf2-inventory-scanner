@@ -116,7 +116,7 @@ python app.py --refresh
 ```
 
 The files are stored under `cache/` and include `tf2_schema.json`,
-`items_game.txt`, `items_game_cleaned.json` and all Autobot API responses. Start
+`items_game.txt`, `items_game.json` and all Autobot API responses. Start
 the server normally without `--refresh` after the update completes.
 
 ### Deploy

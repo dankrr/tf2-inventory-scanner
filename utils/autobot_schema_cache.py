@@ -24,7 +24,9 @@ PROPERTIES = {
     "uncraftWeapons": "uncraft_weapons.json",
 }
 
-CLASS_CHARS = ["s", "p", "m", "d", "e", "h", "t", "l", "g"]
+# The "s" slug used to exist for Scout weapons but the endpoint now returns
+# a 400 error. Skip it until the API exposes valid slugs again.
+CLASS_CHARS = ["p", "m", "d", "e", "h", "t", "l", "g"]
 
 GRADE_FILES = {
     "v1": "item_grade_v1.json",

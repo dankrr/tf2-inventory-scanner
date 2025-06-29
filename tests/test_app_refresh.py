@@ -5,27 +5,24 @@ import pytest
 
 
 def test_refresh_flag_triggers_update(monkeypatch):
-    called = {"schema": False, "items": False}
+    called = {"autobot": False}
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setattr("pathlib.Path.write_text", lambda self, text: None)
     monkeypatch.setattr(
         "pathlib.Path.mkdir", lambda self, parents=True, exist_ok=True: None
     )
+
+    def fake_cache(refresh=False):
+        called["autobot"] = refresh
+
     monkeypatch.setattr(
-        "utils.schema_fetcher._fetch_schema",
-        lambda k: called.__setitem__("schema", True) or {"items": {}},
+        "utils.autobot_schema_cache.ensure_all_cached",
+        fake_cache,
     )
-    monkeypatch.setattr(
-        "utils.items_game_cache.update_items_game",
-        lambda: called.__setitem__("items", True) or {},
-    )
-    monkeypatch.setattr(
-        "utils.autobot_schema_cache.ensure_all_cached", lambda *a, **k: None
-    )
-    monkeypatch.setattr("utils.local_data.clean_items_game", lambda d: {})
+    monkeypatch.setattr("utils.local_data.load_files", lambda: None)
     monkeypatch.setattr(sys, "argv", ["app.py", "--refresh"])
     sys.modules.pop("app", None)
     with pytest.raises(SystemExit):
         importlib.import_module("app")
-    assert called["schema"] and called["items"]
+    assert called["autobot"]
