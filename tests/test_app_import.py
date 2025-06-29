@@ -14,14 +14,10 @@ def test_app_uses_mock_schema(monkeypatch):
         lambda *a, **k: asyncio.get_event_loop().create_future(),
     )
 
-    def fake_load():
-        from utils import local_data as ld
+    from utils import local_data as ld
 
-        ld.TF2_SCHEMA = {"1": {"name": "A"}}
-        ld.ITEMS_GAME_CLEANED = {"1": {"name": "B"}}
-        return ld.TF2_SCHEMA, ld.ITEMS_GAME_CLEANED
-
-    monkeypatch.setattr("utils.local_data.load_files", fake_load)
+    ld.TF2_SCHEMA = {"1": {"name": "A"}}
+    ld.ITEMS_GAME_CLEANED = {"1": {"name": "B"}}
     monkeypatch.setenv("STEAM_API_KEY", "x")
     app = importlib.import_module("app")
     assert app.SCHEMA == mock_schema

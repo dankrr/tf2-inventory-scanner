@@ -109,7 +109,7 @@ def test_enrich_inventory_killstreak_effect_from_attribute():
     sf.QUALITIES = {"6": "Unique"}
     ld.EFFECT_NAMES = {"2003": "Cerebral Discharge"}
     items = ip.enrich_inventory(data)
-    assert items[0]["killstreak_effect"] == "Cerebral Discharge"
+    assert items[0]["killstreaker"] == "Cerebral Discharge"
 
 
 def test_enrich_inventory_spells_bitmask():
@@ -124,7 +124,38 @@ def test_enrich_inventory_spells_bitmask():
     sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket", "image_url": "i"}}
     sf.QUALITIES = {}
     items = ip.enrich_inventory(data)
-    assert set(items[0]["spells"]) == {"Exorcism", "Footprints"}
+    assert items[0]["spells"] == ["Fire Footprints", "Pumpkin Bombs"]
+    expected_flags = {flag: False for _, flag in ld.SPELL_BITFLAGS.values()}
+    expected_flags.update({"footprints": True, "pumpkin": True})
+    assert items[0]["spell_flags"] == expected_flags
+
+
+def test_attribute_handlers_combined():
+    data = {
+        "items": [
+            {
+                "defindex": 999,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 730, "float_value": 17},
+                    {"defindex": 2071, "float_value": 2003},
+                    {"defindex": 380, "float_value": 0},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {"999": {"defindex": 999, "item_name": "Thing", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    ld.EFFECT_NAMES = {"2003": "Cerebral Discharge"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["killstreaker"] == "Cerebral Discharge"
+    assert set(item["spells"]) == {"Fire Footprints", "Paint Spell"}
+    expected_flags = {flag: False for _, flag in ld.SPELL_BITFLAGS.values()}
+    expected_flags.update({"footprints": True, "paint_spell": True})
+    assert item["spell_flags"] == expected_flags
+    assert item["strange_parts"] == [ld.STRANGE_PARTS[380]]
+    assert item["misc_attrs"] == []
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
@@ -188,7 +219,6 @@ def test_fetch_inventory_statuses(monkeypatch, payload, expected):
 def test_user_template_safe(monkeypatch, status):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", lambda: {})
-    monkeypatch.setattr("utils.local_data.load_files", lambda: ({}, {}))
     import importlib
 
     app = importlib.import_module("app")

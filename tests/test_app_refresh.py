@@ -20,7 +20,6 @@ def test_refresh_flag_triggers_update(monkeypatch):
         "utils.items_game_cache.update_items_game",
         lambda: called.__setitem__("items", True) or {},
     )
-    monkeypatch.setattr("utils.local_data.clean_items_game", lambda d: {})
     monkeypatch.setattr(sys, "argv", ["app.py", "--refresh"])
     sys.modules.pop("app", None)
     with pytest.raises(SystemExit):

@@ -1,42 +1,27 @@
+import importlib
 import json
-import pytest
+from types import ModuleType
 
+import os
 from utils import local_data as ld
 
 
-def test_load_files_success(tmp_path, monkeypatch, capsys):
+def reload_with(tmp_path, schema=None, ig=None) -> ModuleType:
+    if schema is None:
+        schema = {"items": {"1": {"name": "One"}}, "qualities": {"Normal": 0}}
+    if ig is None:
+        ig = {"paints": {"1": {"name": "Red", "hex": "#f00"}}}
     schema_file = tmp_path / "tf2_schema.json"
     items_file = tmp_path / "items_game_cleaned.json"
-    schema_file.write_text(json.dumps({"items": {"1": {"name": "One"}}}))
-    items_file.write_text(json.dumps({"1": {"name": "A"}}))
-    monkeypatch.setattr(ld, "SCHEMA_FILE", schema_file)
-    monkeypatch.setattr(ld, "ITEMS_GAME_FILE", items_file)
-    ld.TF2_SCHEMA = {}
-    ld.ITEMS_GAME_CLEANED = {}
-    ld.EFFECT_NAMES = {}
-    ld.load_files()
-    out = capsys.readouterr().out
-    assert ld.TF2_SCHEMA["1"]["name"] == "One"
-    assert f"Loaded 1 items from {schema_file}" in out
-    assert "tf2_schema.json may be stale" in out
+    schema_file.write_text(json.dumps(schema))
+    items_file.write_text(json.dumps(ig))
+    os.environ["TF2_SCHEMA_FILE"] = str(schema_file)
+    os.environ["TF2_ITEMS_GAME_FILE"] = str(items_file)
+    importlib.invalidate_caches()
+    return importlib.reload(ld)
 
 
-def test_load_files_missing(tmp_path, monkeypatch):
-    monkeypatch.setattr(ld, "SCHEMA_FILE", tmp_path / "missing.json")
-    monkeypatch.setattr(ld, "ITEMS_GAME_FILE", tmp_path / "missing2.json")
-    with pytest.raises(RuntimeError):
-        ld.load_files()
-
-
-def test_clean_items_game_parses_all():
-    sample = {
-        "items_game": {
-            "items": {
-                "111": {"name": "Correct"},
-                "30607": {"name": "Pump"},
-            }
-        }
-    }
-    cleaned = ld.clean_items_game(sample)
-    assert cleaned["111"]["name"] == "Correct"
-    assert cleaned["30607"]["name"] == "Pump"
+def test_tables_load_from_cache(tmp_path):
+    mod = reload_with(tmp_path)
+    assert mod.TF2_SCHEMA["1"]["name"] == "One"
+    assert mod.PAINTS[1]["hex"] == "#f00"

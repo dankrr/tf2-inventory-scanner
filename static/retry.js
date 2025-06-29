@@ -139,13 +139,14 @@ function attachItemModal() {
       if (data.quality) generalEntries.push(['Quality', data.quality]);
       if (data.level) generalEntries.push(['', 'Level ' + data.level]);
       if (data.origin) generalEntries.push(['', data.origin]);
+      if (data.unusual_effect) generalEntries.push(['Effect', data.unusual_effect]);
+      if (data.is_festivized) generalEntries.push(['Festivized', 'Yes']);
       setSection('general', generalEntries);
 
       const ksEntries = [];
       if (data.killstreak_tier) ksEntries.push(['Tier', data.killstreak_tier]);
       if (data.sheen) ksEntries.push(['Sheen', data.sheen]);
-      if (data.killstreak_effect)
-        ksEntries.push(['Effect', data.killstreak_effect]);
+      if (data.killstreaker) ksEntries.push(['Killstreaker', data.killstreaker]);
       setSection('killstreak', ksEntries);
 
       if (sections.paint && sectionWrap.paint) {
