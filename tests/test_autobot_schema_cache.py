@@ -42,3 +42,40 @@ def test_cache_hit(tmp_path, monkeypatch):
     )
 
     ac.ensure_all_cached()
+
+
+def test_class_aliases(tmp_path, monkeypatch):
+    monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(ac, "PROPERTIES", {})
+    monkeypatch.setattr(ac, "GRADE_FILES", {})
+    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {})
+    monkeypatch.setattr(ac, "CLASS_NAMES", ["Demo", "Engie"])
+
+    captured = []
+
+    def fake_fetch(url):
+        captured.append(url)
+        return {}
+
+    monkeypatch.setattr(ac, "_fetch_json", fake_fetch)
+
+    ac.ensure_all_cached(refresh=True)
+
+    assert (tmp_path / "craftWeaponsByClass_Demoman.json").exists()
+    assert (tmp_path / "craftWeaponsByClass_Engineer.json").exists()
+    assert any("Demoman" in u for u in captured)
+    assert any("Engineer" in u for u in captured)
+
+
+def test_unknown_class_ignored(tmp_path, monkeypatch):
+    monkeypatch.setattr(ac, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(ac, "PROPERTIES", {})
+    monkeypatch.setattr(ac, "GRADE_FILES", {})
+    monkeypatch.setattr(ac, "BASE_ENDPOINTS", {})
+    monkeypatch.setattr(ac, "CLASS_NAMES", ["xyz"])
+
+    monkeypatch.setattr(ac, "_fetch_json", lambda url: {})
+
+    ac.ensure_all_cached(refresh=True)
+
+    assert not list(tmp_path.iterdir())

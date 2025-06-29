@@ -36,6 +36,29 @@ CLASS_NAMES = [
     "Engineer",
 ]
 
+# Map various aliases to canonical TF2 class names used by the Autobot API.
+CLASS_ALIASES = {
+    "demo": "Demoman",
+    "demoman": "Demoman",
+    "pyro": "Pyro",
+    "engie": "Engineer",
+    "engineer": "Engineer",
+    "heavy": "Heavy",
+    "solly": "Soldier",
+    "soldier": "Soldier",
+    "scout": "Scout",
+    "medic": "Medic",
+    "sniper": "Sniper",
+    "spy": "Spy",
+}
+
+
+def _canonical_class(name: str) -> str | None:
+    """Return canonical TF2 class name or ``None`` if unknown."""
+
+    return CLASS_ALIASES.get(name.lower())
+
+
 GRADE_FILES = {
     "v1": "item_grade_v1.json",
     "v2": "item_grade_v2.json",
@@ -77,10 +100,19 @@ def ensure_all_cached(refresh: bool = False) -> None:
         url = f"{BASE_URL}/properties/{name}"
         _ensure_file(CACHE_DIR / fname, url, refresh)
 
+    fetched_classes = []
     for name in CLASS_NAMES:
-        url = f"{BASE_URL}/properties/craftWeaponsByClass/{name}"
-        dest = CACHE_DIR / f"craftWeaponsByClass_{name}.json"
+        canonical = _canonical_class(name)
+        if not canonical:
+            logger.warning("Unknown class %s; skipping", name)
+            continue
+        url = f"{BASE_URL}/properties/craftWeaponsByClass/{canonical}"
+        dest = CACHE_DIR / f"craftWeaponsByClass_{canonical}.json"
         _ensure_file(dest, url, refresh)
+        fetched_classes.append(canonical)
+
+    if refresh and fetched_classes:
+        logger.info("craftWeaponsByClass fetched for: %s", ", ".join(fetched_classes))
 
     for ver, fname in GRADE_FILES.items():
         url = f"{BASE_URL}/getItemGrade/{ver}"
