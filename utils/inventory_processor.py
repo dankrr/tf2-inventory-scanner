@@ -130,6 +130,73 @@ def load_cached_data() -> None:
         SCHEMA_DATA = _load_schema()
 
 
+def _parse_attributes(attributes: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Return parsed attribute metadata for an inventory item."""
+
+    info: Dict[str, Any] = {
+        "strange_parts": [],
+        "spells": [],
+    }
+    for attr in attributes:
+        aclass = (attr.get("attribute_class") or "").lower()
+        name = attr.get("account_info", {}).get("personaname") or ""
+        value = attr.get("float_value")
+
+        if aclass in {
+            "set_item_tint_rgb",
+            "set_weapon_tint_rgb",
+            "set_wearable_color",
+        }:
+            try:
+                info["paint_hex"] = f"#{int(value):06x}"
+                if name:
+                    info["paint_name"] = name
+            except (TypeError, ValueError):
+                logger.warning("Invalid paint value: %s", value)
+        elif aclass == "killstreak_tier":
+            try:
+                info["killstreak_tier"] = int(value)
+            except (TypeError, ValueError):
+                pass
+        elif "sheen" in aclass:
+            if name:
+                info["sheen"] = name
+        elif "killstreaker" in aclass:
+            if name:
+                info["killstreaker"] = name
+        elif "unusual" in aclass or "particle" in aclass:
+            if name:
+                info["unusual_effect"] = name
+        elif "festivized" in aclass:
+            info["is_festivized"] = True
+        elif "strange part" in name.lower():
+            info["strange_parts"].append(name)
+        elif "spell" in name.lower():
+            info["spells"].append(name)
+
+    return info
+
+
+def _build_badges(info: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Convert parsed attributes to overlay badges."""
+
+    badges: List[Dict[str, str]] = []
+    spells = info.get("spells", [])
+    if info.get("strange_parts"):
+        badges.append({"icon": "\u2699", "title": "Strange Part"})
+    if any("footprint" in s.lower() for s in spells):
+        badges.append({"icon": "\ud83d\udc63", "title": "Footprint Spell"})
+    if any("pumpkin bombs" in s.lower() for s in spells):
+        badges.append({"icon": "\ud83c\udf83", "title": "Pumpkin Bombs Spell"})
+    if any("exorcism" in s.lower() for s in spells):
+        badges.append({"icon": "\ud83d\udc7b", "title": "Exorcism"})
+    if info.get("is_festivized"):
+        badges.append({"icon": "\u2728", "title": "Festivized"})
+    if info.get("unusual_effect"):
+        badges.append({"icon": "\ud83d\udd25", "title": info["unusual_effect"]})
+    return badges
+
+
 def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
     """Return inventory data and status using the Steam API helper."""
 
@@ -189,23 +256,36 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
 
+        attributes = asset.get("attributes", [])
         enriched = {
             "custom_name": asset.get("custom_name"),
             "custom_description": asset.get("custom_description"),
-            "attributes": asset.get("attributes", []),
+            "attributes": attributes,
+            "origin": asset.get("origin"),
+            "level": asset.get("level"),
         }
 
-        items.append(
-            {
-                "defindex": defindex,
-                "name": name,
-                "quality": q_name,
-                "quality_color": q_col,
-                "image_url": image_path,
-                "final_url": final_url,
-                "enriched": enriched,
-            }
-        )
+        extra = _parse_attributes(attributes)
+        enriched.update(extra)
+
+        item = {
+            "defindex": defindex,
+            "name": name,
+            "quality": q_name,
+            "quality_color": q_col,
+            "image_url": image_path,
+            "final_url": final_url,
+            "killstreak_tier": extra.get("killstreak_tier"),
+            "paint_hex": extra.get("paint_hex"),
+            "badges": _build_badges(extra),
+            "enriched": enriched,
+        }
+
+        if extra.get("paint_hex"):
+            enriched["paint_hex"] = extra["paint_hex"]
+        if extra.get("paint_name"):
+            enriched["paint_name"] = extra["paint_name"]
+        items.append(item)
     return items
 
 
