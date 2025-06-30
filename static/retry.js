@@ -76,7 +76,14 @@ function attachItemModal() {
       if (!data) return;
       try { data = JSON.parse(data); } catch (e) { return; }
       if (title) title.textContent = data.name || '';
-      if (img) img.src = data.image_url || '';
+      if (img) {
+        img.onerror = () => {
+          const imgSrc = img.getAttribute('src');
+          if (!imgSrc) return; // empty means we already warned
+          img.src = '';
+        };
+        img.src = data.image_url || '';
+      }
       if (details) {
         details.innerHTML = '';
         if (data.custom_name) {

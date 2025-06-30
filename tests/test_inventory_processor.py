@@ -90,7 +90,7 @@ def test_enrich_inventory_uses_image_url_field():
         "6": {
             "defindex": 6,
             "item_name": "Shotgun",
-            "image_url": "shot.png",
+            "image": "https://steamcdn-a.akamaihd.net/apps/440/icons/shot.png",
         }
     }
     sf.QUALITIES = {"0": "Normal"}

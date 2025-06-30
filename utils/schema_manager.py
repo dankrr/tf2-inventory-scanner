@@ -43,15 +43,18 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
         }
         if item.get("item_type_name"):
             entry["item_type_name"] = item["item_type_name"]
-        path = (
-            item.get("icon_url")
+        icon_name = (
+            item.get("image_url_large")
             or item.get("image_url")
-            or item.get("image_url_large")
+            or item.get("icon_url")
             or item.get("icon_url_large")
         )
-        if path:
-            icon = path.split("/")[-1].split("?")[0]
-            entry["image_url"] = icon
+        if icon_name:
+            if not icon_name.endswith(".png"):
+                icon_name += ".png"
+            entry["image"] = ICON_BASE + icon_name.split("/")[-1]
+        else:
+            entry["image"] = ""
         items_map[idx] = entry
 
     overview = _load_json(overview_path).get("result", {})
@@ -70,6 +73,12 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
             entry = items_map.setdefault(str(idx), {})
             for key, value in meta.items():
                 entry.setdefault(key, value)
+            if not entry.get("image"):
+                icon_name = meta.get("image_inventory")
+                if icon_name:
+                    if not icon_name.endswith(".png"):
+                        icon_name += ".png"
+                    entry["image"] = ICON_BASE + icon_name.split("/")[-1]
         strange_parts = {
             str(idx): info.get("name")
             for idx, info in ig_raw.get("items", {}).items()
@@ -86,13 +95,8 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
         "strange_parts": strange_parts,
     }
 
-    for item in hybrid["items"].values():
-        icon = item.get("image_url", "")
-        if icon:
-            icon = icon.split("/")[-1].split("?")[0]
-            item["image"] = f"{ICON_BASE}{icon}"
-        else:
-            item["image"] = ""
+    for item in items_map.values():
+        if not item.get("image"):
             logger.warning(
                 "Missing image for defindex %s (%s)",
                 item.get("defindex"),
