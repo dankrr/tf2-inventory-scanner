@@ -145,6 +145,7 @@ function attachItemModal() {
       }
 
       const generalEntries = [];
+      if (data.item_name) generalEntries.push(["Base Name", data.item_name]);
       if (data.quality) generalEntries.push(["Quality", data.quality]);
       if (data.level) generalEntries.push(["", "Level " + data.level]);
       if (data.origin) generalEntries.push(["", data.origin]);
