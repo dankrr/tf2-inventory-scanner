@@ -84,6 +84,20 @@ def test_enrich_inventory_preserves_absolute_url():
     assert items[0]["image_url"] == url
 
 
+def test_enrich_inventory_uses_image_url_field():
+    data = {"items": [{"defindex": 6, "quality": 0}]}
+    sf.SCHEMA = {
+        "6": {
+            "defindex": 6,
+            "item_name": "Shotgun",
+            "image_url": "shot.png",
+        }
+    }
+    sf.QUALITIES = {"0": "Normal"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["image_url"].endswith("shot.png")
+
+
 def test_enrich_inventory_skips_unknown_defindex():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image": "a"}}
