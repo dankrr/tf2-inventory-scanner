@@ -1,3 +1,4 @@
+import json
 from utils import inventory_processor as ip
 from utils import schema_fetcher as sf
 from utils import steam_api_client as sac
@@ -208,3 +209,29 @@ def test_user_template_safe(monkeypatch, status):
 
     with app.app.app_context():
         app.render_template("_user.html", user=user)
+
+
+def test_enrich_inventory_pro_item():
+    with open("tests/fixtures/pro_item.json") as f:
+        asset = json.load(f)
+
+    data = {"items": [asset]}
+    sf.SCHEMA = {"222": {"defindex": 222, "item_name": "Rocket", "image_url": "i"}}
+    sf.QUALITIES = {"6": "Unique"}
+    ld.SHEENS = {701: "Team Shine"}
+    ld.KILLSTREAKERS = {2002: "Fire Horns"}
+    ld.STRANGE_PARTS = {380: "Buildings Destroyed"}
+    ld.SPELL_FLAGS = {4: "Exorcism", 8: "Pumpkin Bombs"}
+    ld.EFFECTS = {13: "Burning Flames"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["spells"] == ["Exorcism", "Pumpkin Bombs"]
+    assert item["killstreak_tier"] == "Professional"
+    assert item["sheen"] == "Team Shine"
+    assert item["killstreaker"] == "Fire Horns"
+    assert item["strange_parts"] == ["Buildings Destroyed"]
+    assert item["is_festivized"] is True
+    assert item["unusual_effect"] == "Burning Flames"
+    icons = [b["icon"] for b in item.get("badges", [])]
+    for ic in ["🎄", "🔥", "👻", "⚔️"]:
+        assert ic in icons

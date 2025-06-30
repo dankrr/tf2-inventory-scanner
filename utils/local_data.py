@@ -9,6 +9,16 @@ TF2_SCHEMA: Dict[str, Any] = {}
 ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 EFFECT_NAMES: Dict[str, str] = {}
 
+# Static lookup tables populated from cached files
+QUALITY_MAP: Dict[int, Tuple[str, str]] = {}
+ORIGIN_MAP: Dict[int, str] = {}
+PAINTS: Dict[int, Dict[str, str]] = {}
+SHEENS: Dict[int, str] = {}
+KILLSTREAKERS: Dict[int, str] = {}
+SPELL_FLAGS: Dict[int, str] = {}
+STRANGE_PARTS: Dict[int, str] = {}
+EFFECTS: Dict[int, str] = {}
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2_schema.json"
 DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game_cleaned.json"
@@ -88,4 +98,74 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
         print(
             "\N{WARNING SIGN} items_game_cleaned.json may be stale or incomplete. Consider a refresh."
         )
+    _populate_static_maps()
     return TF2_SCHEMA, ITEMS_GAME_CLEANED
+
+
+def _populate_static_maps() -> None:
+    """Populate lookup tables from the loaded files."""
+
+    QUALITY_MAP.clear()
+    ORIGIN_MAP.clear()
+    PAINTS.clear()
+    SHEENS.clear()
+    KILLSTREAKERS.clear()
+    SPELL_FLAGS.clear()
+    STRANGE_PARTS.clear()
+    EFFECTS.clear()
+
+    if not TF2_SCHEMA or not ITEMS_GAME_CLEANED:
+        return
+
+    q_colors = TF2_SCHEMA.get("quality_colors", {})
+    for name, qid in TF2_SCHEMA.get("qualities", {}).items():
+        qid_int = int(qid)
+        color = q_colors.get(str(qid)) or q_colors.get(name, "#B2B2B2")
+        if color and not str(color).startswith("#"):
+            color = f"#{color}"
+        QUALITY_MAP[qid_int] = (name.capitalize(), color)
+
+    for idx, origin in TF2_SCHEMA.get("originNames", {}).items():
+        ORIGIN_MAP[int(idx)] = origin
+
+    for pid, info in ITEMS_GAME_CLEANED.get("paint_kits", {}).items():
+        if not isinstance(info, dict):
+            continue
+        hex_color = info.get("hex_color") or info.get("color")
+        if hex_color and not str(hex_color).startswith("#"):
+            hex_color = f"#{hex_color}"
+        PAINTS[int(pid)] = {"name": info.get("name", str(pid)), "hex": hex_color}
+
+    for sid, name in ITEMS_GAME_CLEANED.get("sheens", {}).items():
+        SHEENS[int(sid)] = name
+
+    for kid, name in ITEMS_GAME_CLEANED.get("killstreakers", {}).items():
+        KILLSTREAKERS[int(kid)] = name
+
+    for bit, name in ITEMS_GAME_CLEANED.get("spells", {}).items():
+        SPELL_FLAGS[int(bit)] = name
+
+    for aid, name in ITEMS_GAME_CLEANED.get("strange_parts", {}).items():
+        STRANGE_PARTS[int(aid)] = name
+
+    for eid, name in (TF2_SCHEMA.get("effects") or {}).items():
+        EFFECTS[int(eid)] = name
+
+
+_populate_static_maps()
+
+__all__ = [
+    "TF2_SCHEMA",
+    "ITEMS_GAME_CLEANED",
+    "EFFECT_NAMES",
+    "QUALITY_MAP",
+    "ORIGIN_MAP",
+    "PAINTS",
+    "SHEENS",
+    "KILLSTREAKERS",
+    "SPELL_FLAGS",
+    "STRANGE_PARTS",
+    "EFFECTS",
+    "clean_items_game",
+    "load_files",
+]
