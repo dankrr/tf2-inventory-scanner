@@ -150,6 +150,7 @@ button {
   border: 2px solid #FFDD00;
   border-radius: 8px;
   overflow: hidden;
+  position: relative;
   background-color: #1e1e1e;
 }
 
@@ -176,6 +177,97 @@ button {
   text-align: center;
   word-break: break-word;
   color: #fff;
+}
+
+.badge-row {
+  display: flex;
+  gap: 2px;
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+}
+.badge-row span {
+  font-size: 12px;
+  line-height: 1;
+  filter: drop-shadow(0 0 2px #000);
+}
+
+.paint-dot {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid #000;
+}
+
+.ks-mark {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  line-height: 1;
+  color: #fff;
+  filter: drop-shadow(0 0 2px #000);
+}
+.ks-tier-1::before {
+  content: "\02C4";
+}
+.ks-tier-2::before {
+  white-space: pre;
+  content: "\02C4\A\02C4";
+}
+.ks-tier-3::before {
+  white-space: pre;
+  content: "\02C4\A\02C4\A\02C4";
+}
+
+.item-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+}
+.item-modal.open {
+  display: flex;
+}
+.item-modal .modal-content {
+  background: #222;
+  padding: 12px;
+  border-radius: 8px;
+  max-width: 300px;
+  max-height: 80%;
+  overflow-y: auto;
+  position: relative;
+  color: #fff;
+}
+.item-modal .modal-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+}
+.item-modal dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 8px;
+}
+.item-modal dt {
+  font-weight: bold;
+}
+.item-modal dd {
+  margin: 0 0 4px 0;
 }
 
 .tf2-hours { margin-left: 6px; font-size: 0.9em; }
