@@ -119,6 +119,16 @@ The files are stored under `cache/` as `tf2_schema.json`, `items_game.txt` and
 `items_game_cleaned.json`. Start the server normally without `--refresh` after
 the update completes.
 
+### Fetching example data
+
+Use the helper script below to download raw schema files and a sample
+inventory for testing. `STEAM_API_KEY` and `TEST_STEAM_ID` must be set in your
+environment:
+
+```bash
+python scripts/fetch_data.py
+```
+
 ### Deploy
 
 The app can be deployed to any platform that supports Python 3.12. For Docker:
