@@ -24,11 +24,11 @@ export FLASK_DEBUG=1
 python app.py
 ```
 
-To run the tests with cached data:
+
+To run the tests with cached data, set `STEAM_API_KEY` and
+`TEST_STEAM_ID` in your `.env` file then run:
 
 ```bash
-export STEAM_API_KEY=XXX
-export TEST_STEAM_ID=76561197972495328
 python scripts/fetch_data.py
 pytest -q
 ```
@@ -131,8 +131,8 @@ the update completes.
 ### Fetching example data
 
 Use the helper script below to download raw schema files and a sample
-inventory for testing. `STEAM_API_KEY` and `TEST_STEAM_ID` must be set in your
-environment:
+inventory for testing. Set `STEAM_API_KEY` and `TEST_STEAM_ID` in your
+`.env` file first:
 
 ```bash
 python scripts/fetch_data.py

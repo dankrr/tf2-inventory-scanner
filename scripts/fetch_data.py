@@ -3,7 +3,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 import requests
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 SCHEMA_ITEMS_URL = (
     "https://api.steampowered.com/IEconItems_440/GetSchemaItems/v1/"
