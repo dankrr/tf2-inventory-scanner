@@ -37,13 +37,17 @@ QUALITY_MAP = {
 HYBRID_SCHEMA: Dict[str, Any] | None = None
 
 
-def _safe_int(val: Any, default: int = 0) -> int:
-    """Return ``val`` coerced to ``int`` or ``default`` on failure."""
+def _to_int(value: Any, default: int = 0) -> int:
+    """Return ``value`` coerced to ``int`` or ``default`` on failure."""
 
     try:
-        return int(float(val))
-    except (ValueError, TypeError):
+        return int(float(value))
+    except (TypeError, ValueError):
         return default
+
+
+# Backwards compatibility until all uses are updated
+_safe_int = _to_int
 
 
 def _get_hybrid_schema() -> Dict[str, Any]:
@@ -78,7 +82,7 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 134:
-            val = str(_safe_int(attr.get("float_value")))
+            val = str(_to_int(attr.get("float_value")))
             name = local_data.EFFECT_NAMES.get(val)
             if name:
                 return name
@@ -157,7 +161,7 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         raw_val = attr.get("value", attr.get("float_value", 0))
-        val = _safe_int(raw_val)
+        val = _to_int(raw_val)
         if idx == 2014:
             tier = _KILLSTREAK_TIER.get(val)
         elif idx == 2012:
@@ -177,7 +181,7 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 142:
-            val = _safe_int(attr.get("float_value"))
+            val = _to_int(attr.get("float_value"))
             return paint_map.get(val, PAINT_MAP.get(val, (None, None)))
     return None, None
 
@@ -263,14 +267,19 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         festivized = False
         strange_parts: List[str] = []
         spells: List[str] = []
-        effect_map = hybrid.get("effects", {})
+        _ks_list = hybrid.get("killstreakers", [])
+        _ks_map: Dict[str, str] = {
+            str(entry["id"]): entry["name"]
+            for entry in _ks_list
+            if isinstance(entry, dict) and "id" in entry and "name" in entry
+        }
         parts_map = hybrid.get("strange_parts", {})
         for attr in asset.get("attributes", []):
             idx = attr.get("defindex")
             raw_val = attr.get("value", attr.get("float_value", 0))
-            val = _safe_int(raw_val)
+            val = _to_int(raw_val)
             if idx == 2013:
-                killstreaker = effect_map.get(str(val))
+                killstreaker = _ks_map.get(str(val))
             elif idx == 2053:
                 festivized = bool(val)
             elif idx >= 382 and str(val) in parts_map:
@@ -278,7 +287,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             elif 1004 <= idx <= 1009:
                 spells.append(str(idx))
 
-        badges: List[str] = []
+        badges: List[Dict[str, str] | str] = []
         if paint_name:
             badges.append(BADGE_EMOJIS["paint"])
         if ks_tier:
@@ -286,7 +295,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if sheen:
             badges.append(BADGE_EMOJIS["sheen"])
         if killstreaker:
-            badges.append(BADGE_EMOJIS["killstreaker"])
+            badges.append(
+                {"icon": "\U0001f480", "title": f"Killstreaker: {killstreaker}"}
+            )
         if festivized:
             badges.append(BADGE_EMOJIS["festivized"])
         if q_name == "Strange" or strange_parts:
@@ -346,7 +357,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             sheen = None
             for attr in asset.get("attributes", []):
                 idx = attr.get("defindex")
-                val = _safe_int(attr.get("float_value"))
+                val = _to_int(attr.get("float_value"))
                 if idx == 2025:
                     ks = val
                 elif idx == 2014:
