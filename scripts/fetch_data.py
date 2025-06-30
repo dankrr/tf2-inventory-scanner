@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 AUTOBOT_BASE = "https://schema.autobot.tf"
 ITEMS_GAME_URL = (
     "https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/"
-    "master/tf/resource/tf2_base/items_game.txt"
+    "refs/heads/master/tf/scripts/items/items_game.txt"
 )
 
 CACHE_DIR = Path("cache")
