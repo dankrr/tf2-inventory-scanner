@@ -27,40 +27,25 @@ def _load_json(path: Path) -> Dict[str, Any]:
 def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
     """Merge schema data and items_game into a single mapping."""
 
-    items_path = cache_dir / "schema_items.json"
-    overview_path = cache_dir / "schema_overview.json"
+    items_path = cache_dir / "defindexes.json"
+    overview_path = cache_dir / "qualities.json"
     ig_path = cache_dir / "items_game.txt"
 
     items_map: Dict[str, Any] = {}
     data = _load_json(items_path)
-    for item in data.get("result", {}).get("items", data.get("items", [])):
-        idx = str(item.get("defindex"))
+    for idx, item in data.items():
         if not idx:
             continue
-        entry: Dict[str, Any] = {
-            "defindex": item.get("defindex"),
-            "name": item.get("name"),
-        }
-        if item.get("item_type_name"):
-            entry["item_type_name"] = item["item_type_name"]
-        icon_name = (
-            item.get("image_url_large")
-            or item.get("image_url")
-            or item.get("icon_url")
-            or item.get("icon_url_large")
-        )
-        if icon_name:
-            if not icon_name.endswith(".png"):
-                icon_name += ".png"
-            entry["image"] = ICON_BASE + icon_name.split("/")[-1]
-        else:
-            entry["image"] = ""
-        items_map[idx] = entry
+        if not isinstance(item, dict):
+            continue
+        entry: Dict[str, Any] = {"defindex": item.get("defindex", idx)}
+        for key, value in item.items():
+            entry[key] = value
+        items_map[str(idx)] = entry
 
-    overview = _load_json(overview_path).get("result", {})
-    qualities = {str(v): k for k, v in overview.get("qualities", {}).items()}
-    qualities_colored = overview.get("qualityNames", {})
-    effects = overview.get("attribute_controlled_attached_particles", {})
+    qualities = _load_json(overview_path)
+    qualities_colored = {}
+    effects = _load_json(cache_dir / "effects.json")
 
     ig_data: Dict[str, Any] = {}
     strange_parts: Dict[str, Any] = {}
@@ -85,14 +70,19 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
             if isinstance(info, dict) and info.get("item_class") == "strange_part"
         }
 
+    paint_kits = _load_json(cache_dir / "paintkits.json")
+    killstreakers = _load_json(cache_dir / "killstreaks.json")
+    strange_parts.update(_load_json(cache_dir / "strangeParts.json"))
+
     hybrid = {
         "items": items_map,
         "attributes": ig_data.get("attributes", {}),
         "qualities": qualities,
         "qualities_colored": qualities_colored,
         "effects": effects,
-        "paint_kits": ig_data.get("paint_kits", {}),
+        "paint_kits": paint_kits,
         "strange_parts": strange_parts,
+        "killstreakers": killstreakers,
     }
 
     for item in items_map.values():
