@@ -24,6 +24,15 @@ export FLASK_DEBUG=1
 python app.py
 ```
 
+To run the tests with cached data:
+
+```bash
+export STEAM_API_KEY=XXX
+export TEST_STEAM_ID=76561197972495328
+python scripts/fetch_data.py
+pytest -q
+```
+
 Copy `.env.example` to `.env` and fill in your API keys:
 
 ```bash
@@ -172,6 +181,7 @@ docker run -p 5000:5000 tf2-inv
 | paint_name          | `A Deep Commitment to Purple`  | Applied paint         |
 | paint_hex           | `#7D4071`                      | Paint color           |
 | spells              | `["Exorcism"]`                 | Halloween spells      |
+| spell_flags         | _dict_                         | Spell badge flags     |
 | strange_parts       | `["Buildings Destroyed"]`      | Attached parts        |
 | unusual_effect      | `Burning Flames`               | Unusual effect        |
 | is_festivized       | `true`                         | Has festive lights    |

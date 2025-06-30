@@ -1,20 +1,75 @@
 import json
-from utils import inventory_processor as ip
-from utils import schema_fetcher as sf
-from utils import steam_api_client as sac
-from utils import items_game_cache as ig
-from utils import local_data as ld
 import requests
 import responses
 import pytest
+
+from utils import inventory_processor as ip
+from utils import schema_cache as sc
+from utils import schema_fetcher as sf
+from utils import steam_api_client as sac
+from utils import items_game_cache as ig
 
 
 @pytest.fixture(autouse=True)
 def no_items_game(monkeypatch):
     monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
     monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
-    ld.TF2_SCHEMA = {}
-    ld.ITEMS_GAME_CLEANED = {}
+
+
+@pytest.fixture(autouse=True)
+def stub_schema(monkeypatch):
+    mapping = {
+        111: {
+            "defindex": 111,
+            "base_name": "Rocket Launcher",
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/img/360fx360f",
+        },
+        222: {"defindex": 222, "base_name": "Team Captain", "image_url": "img"},
+        1: {
+            "defindex": 1,
+            "base_name": "One",
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/a/360fx360f",
+        },
+        2: {"defindex": 2, "base_name": "Two", "image_url": ""},
+        5: {
+            "defindex": 5,
+            "base_name": "Abs",
+            "image_url": "http://example.com/icon.png",
+        },
+    }
+
+    monkeypatch.setattr(sc, "get_item", lambda idx: mapping[idx])
+    monkeypatch.setattr(
+        sc,
+        "get_quality",
+        lambda q: {
+            11: ("Strange", "#CF6A32"),
+            5: ("Unusual", "#B2B2B2"),
+            6: ("Unique", "#B2B2B2"),
+            0: ("Normal", "#B2B2B2"),
+        }.get(q),
+    )
+    monkeypatch.setattr(sc, "get_origin", lambda o: None)
+    monkeypatch.setattr(sc, "get_sheen", lambda sid: {701: "Team Shine"}.get(sid))
+    monkeypatch.setattr(
+        sc, "get_killstreaker", lambda kid: {2002: "Fire Horns"}.get(kid)
+    )
+    monkeypatch.setattr(
+        sc,
+        "get_effect",
+        lambda eid: {13: "Burning Flames", 2003: "Cerebral Discharge"}.get(eid),
+    )
+    monkeypatch.setattr(
+        sc, "get_strange_part", lambda aid: {380: "Buildings Destroyed"}.get(aid)
+    )
+    monkeypatch.setattr(
+        sc,
+        "get_spell",
+        lambda bit: {1: "Exorcism", 4: "Footprints", 8: "Pumpkin Bombs"}.get(bit),
+    )
+    monkeypatch.setattr(
+        sc, "_SPELLS", {1: "Exorcism", 4: "Footprints", 8: "Pumpkin Bombs"}, False
+    )
 
 
 def test_enrich_inventory():
@@ -36,7 +91,7 @@ def test_enrich_inventory():
     )
 
 
-def test_enrich_inventory_unusual_effect():
+def test_enrich_inventory_unusual_effect(monkeypatch):
     data = {
         "items": [
             {
@@ -50,7 +105,7 @@ def test_enrich_inventory_unusual_effect():
         "222": {"defindex": 222, "item_name": "Team Captain", "image_url": "img"}
     }
     sf.QUALITIES = {"5": "Unusual"}
-    ld.EFFECT_NAMES = {"13": "Burning Flames"}
+    monkeypatch.setattr(sc, "get_effect", lambda eid: {13: "Burning Flames"}.get(eid))
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Burning Flames Team Captain"
     assert items[0]["quality"] == "Unusual"
@@ -87,16 +142,22 @@ def test_enrich_inventory_preserves_absolute_url():
     assert items[0]["image_url"] == url
 
 
-def test_enrich_inventory_skips_unknown_defindex():
+def test_enrich_inventory_skips_unknown_defindex(monkeypatch):
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": "a"}}
     sf.QUALITIES = {}
+    monkeypatch.setattr(
+        sc,
+        "get_item",
+        lambda idx: {1: {"defindex": 1, "base_name": "One", "image_url": "a"}}.get(idx)
+        or (_ for _ in ()).throw(KeyError()),
+    )
     items = ip.enrich_inventory(data)
     assert len(items) == 1
     assert items[0]["name"] == "One"
 
 
-def test_enrich_inventory_killstreak_effect_from_attribute():
+def test_enrich_inventory_killstreak_effect_from_attribute(monkeypatch):
     data = {
         "items": [
             {
@@ -108,9 +169,11 @@ def test_enrich_inventory_killstreak_effect_from_attribute():
     }
     sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket", "image_url": "i"}}
     sf.QUALITIES = {"6": "Unique"}
-    ld.EFFECT_NAMES = {"2003": "Cerebral Discharge"}
+    monkeypatch.setattr(
+        sc, "get_killstreaker", lambda kid: {2003: "Cerebral Discharge"}.get(kid)
+    )
     items = ip.enrich_inventory(data)
-    assert items[0]["killstreak_effect"] == "Cerebral Discharge"
+    assert items[0]["killstreaker"] == "Cerebral Discharge"
 
 
 def test_enrich_inventory_spells_bitmask():
@@ -175,10 +238,7 @@ def test_fetch_inventory_handles_http_error(monkeypatch):
 )
 def test_fetch_inventory_statuses(monkeypatch, payload, expected):
     monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
-    url = (
-        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
-        "?key=x&steamid=1"
-    )
+    url = "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/?key=x&steamid=1"
     with responses.RequestsMock() as rsps:
         rsps.add(responses.GET, url, **payload)
         status, data = sac.fetch_inventory("1")
@@ -211,21 +271,27 @@ def test_user_template_safe(monkeypatch, status):
         app.render_template("_user.html", user=user)
 
 
-def test_enrich_inventory_pro_item():
+def test_enrich_inventory_pro_item(monkeypatch):
     with open("tests/fixtures/pro_item.json") as f:
         asset = json.load(f)
 
     data = {"items": [asset]}
     sf.SCHEMA = {"222": {"defindex": 222, "item_name": "Rocket", "image_url": "i"}}
     sf.QUALITIES = {"6": "Unique"}
-    ld.SHEENS = {701: "Team Shine"}
-    ld.KILLSTREAKERS = {2002: "Fire Horns"}
-    ld.STRANGE_PARTS = {380: "Buildings Destroyed"}
-    ld.SPELL_FLAGS = {4: "Exorcism", 8: "Pumpkin Bombs"}
-    ld.EFFECTS = {13: "Burning Flames"}
+    monkeypatch.setattr(sc, "get_sheen", lambda sid: {701: "Team Shine"}.get(sid))
+    monkeypatch.setattr(
+        sc, "get_killstreaker", lambda kid: {2002: "Fire Horns"}.get(kid)
+    )
+    monkeypatch.setattr(
+        sc, "get_strange_part", lambda aid: {380: "Buildings Destroyed"}.get(aid)
+    )
+    monkeypatch.setattr(
+        sc, "get_spell", lambda bit: {4: "Footprints", 8: "Pumpkin Bombs"}.get(bit)
+    )
+    monkeypatch.setattr(sc, "get_effect", lambda eid: {13: "Burning Flames"}.get(eid))
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["spells"] == ["Exorcism", "Pumpkin Bombs"]
+    assert item["spells"] == ["Footprints", "Pumpkin Bombs"]
     assert item["killstreak_tier"] == "Professional"
     assert item["sheen"] == "Team Shine"
     assert item["killstreaker"] == "Fire Horns"
@@ -233,5 +299,5 @@ def test_enrich_inventory_pro_item():
     assert item["is_festivized"] is True
     assert item["unusual_effect"] == "Burning Flames"
     icons = [b["icon"] for b in item.get("badges", [])]
-    for ic in ["🎄", "🔥", "👻", "⚔️"]:
+    for ic in ["🎄", "🔥", "👣", "🎃", "⚔️", "💀", "✨", "📊"]:
         assert ic in icons
