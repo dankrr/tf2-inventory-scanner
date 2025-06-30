@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -11,6 +12,12 @@ from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 
 load_dotenv()
+if "--refresh" in sys.argv:
+    from scripts.fetch_ab_schema import fetch_all_ab_schema
+    from scripts.fetch_data import fetch_items_game
+
+    fetch_all_ab_schema()
+    fetch_items_game()
 if not os.getenv("STEAM_API_KEY"):
     raise RuntimeError(
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
