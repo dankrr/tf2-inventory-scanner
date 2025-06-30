@@ -21,7 +21,7 @@ def test_fetch_items_game(tmp_path, monkeypatch):
     path = fd.fetch_items_game()
     assert path == tmp_path / "items_game.txt"
     assert path.read_text() == "content"
-    assert "GameTracking-TF2" in captured["url"]
+    assert captured["url"] == fd.ITEMS_GAME_URL
 
 
 def test_fetch_autobot_schema(tmp_path, monkeypatch):
