@@ -84,6 +84,26 @@
             font-size: 1.2rem;
         }
         #modal-details div { margin-top: 2px; }
+        .item-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .item-img {
+            object-fit: contain;
+            max-width: 100%;
+            max-height: 64px;
+            transition: opacity 0.3s ease;
+        }
+        .item-img.loading { opacity: 0; }
+        .missing-icon-border { border: 2px dashed #555 !important; }
+        .missing-icon-text {
+            font-size: 0.75rem;
+            color: #bbb;
+            text-align: center;
+            padding-top: 12px;
+        }
     </style>
 </head>
 <body>
@@ -184,14 +204,38 @@
           );
         });
       }
+      function enhanceItemImages(root = document) {
+        root.querySelectorAll('.item-card img.item-img').forEach(img => {
+          img.classList.add('loading');
+          const card = img.closest('.item-card');
+          const showMissing = () => {
+            if (!card || card.querySelector('.missing-icon-text')) return;
+            const div = document.createElement('div');
+            div.className = 'missing-icon-text';
+            div.textContent = 'Missing Icon';
+            card.classList.add('missing-icon-border');
+            card.insertBefore(div, card.firstChild);
+          };
+          img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
+          img.addEventListener('error', () => { img.remove(); showMissing(); }, { once: true });
+          if (img.complete) {
+            if (img.naturalWidth) img.classList.remove('loading');
+            else { img.remove(); showMissing(); }
+          }
+        });
+      }
       if (window.attachHandlers) {
         const oldAttach = window.attachHandlers;
         window.attachHandlers = function () {
           oldAttach();
           attachScrollButtons();
+          enhanceItemImages();
         };
       }
-      document.addEventListener('DOMContentLoaded', attachScrollButtons);
+      document.addEventListener('DOMContentLoaded', () => {
+        attachScrollButtons();
+        enhanceItemImages();
+      });
     </script>
 </body>
 </html>

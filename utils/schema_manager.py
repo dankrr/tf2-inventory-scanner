@@ -5,6 +5,8 @@ from typing import Any, Dict
 
 import vdf
 
+ICON_BASE = "https://steamcdn-a.akamaihd.net/apps/440/icons/"
+
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = Path("cache")
@@ -42,13 +44,14 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
         if item.get("item_type_name"):
             entry["item_type_name"] = item["item_type_name"]
         path = (
-            item.get("image_url_large")
+            item.get("icon_url")
             or item.get("image_url")
+            or item.get("image_url_large")
             or item.get("icon_url_large")
-            or item.get("icon_url")
         )
         if path:
-            entry["image_url"] = path
+            icon = path.split("/")[-1].split("?")[0]
+            entry["image_url"] = icon
         items_map[idx] = entry
 
     overview = _load_json(overview_path).get("result", {})
@@ -84,11 +87,10 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
     }
 
     for item in hybrid["items"].values():
-        image = item.get("image_url") or item.get("image_url_large") or ""
-        if isinstance(image, str) and image.startswith("http"):
-            item["image"] = image
-        elif image:
-            item["image"] = f"https://steamcdn-a.akamaihd.net/{image.lstrip('/')}"
+        icon = item.get("image_url", "")
+        if icon:
+            icon = icon.split("/")[-1].split("?")[0]
+            item["image"] = f"{ICON_BASE}{icon}"
         else:
             item["image"] = ""
             logger.warning(
