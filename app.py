@@ -24,7 +24,7 @@ if not os.getenv("STEAM_API_KEY"):
     )
 
 if "--refresh" in sys.argv[1:]:
-    from utils import schema_fetcher, items_game_cache, local_data
+    from utils import schema_fetcher, items_game_cache, local_data, schema_manager
 
     print(
         "\N{anticlockwise open circle arrow} Refresh requested: refetching TF2 schema and items_game..."
@@ -39,6 +39,9 @@ if "--refresh" in sys.argv[1:]:
     cleaned = local_data.clean_items_game(items_game)
     Path("cache/items_game_cleaned.json").write_text(json.dumps(cleaned))
     print(f"Saved {len(cleaned)} cleaned item definitions")
+
+    schema_manager.build_hybrid_schema()
+    print("Built hybrid_schema.json")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )

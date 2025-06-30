@@ -6,7 +6,13 @@ from html import unescape
 import json
 from pathlib import Path
 
-from . import steam_api_client, schema_fetcher, items_game_cache, local_data
+from . import (
+    steam_api_client,
+    schema_fetcher,
+    items_game_cache,
+    local_data,
+    schema_manager,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +32,29 @@ QUALITY_MAP = {
     6: ("Unique", "#FFD700"),
     11: ("Strange", "#CF6A32"),
     13: ("Haunted", "#38F3AB"),
+}
+
+HYBRID_SCHEMA: Dict[str, Any] | None = None
+
+
+def _get_hybrid_schema() -> Dict[str, Any]:
+    global HYBRID_SCHEMA
+    if HYBRID_SCHEMA is None:
+        try:
+            HYBRID_SCHEMA = schema_manager.load_hybrid_schema()
+        except Exception:
+            HYBRID_SCHEMA = {}
+    return HYBRID_SCHEMA
+
+
+BADGE_EMOJIS = {
+    "paint": "\U0001f3a8",
+    "killstreak": "\u2694\ufe0f",
+    "sheen": "\u2728",
+    "killstreaker": "\U0001f480",
+    "festivized": "\U0001f384",
+    "strange": "\U0001f4ca",
+    "spell": "\U0001f47b",
 }
 
 
@@ -58,8 +87,8 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
 
 _KILLSTREAK_TIER = {
     1: "Killstreak",
-    2: "Specialized Killstreak",
-    3: "Professional Killstreak",
+    2: "Specialized",
+    3: "Professional",
 }
 
 _SHEEN_NAMES = {
@@ -114,24 +143,32 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 
     tier = None
     sheen = None
+    hybrid = _get_hybrid_schema()
+    sheen_map = hybrid.get("sheens") or _SHEEN_NAMES
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        val = int(attr.get("float_value", 0))
-        if idx == 2025:
+        val = int(attr.get("value", attr.get("float_value", 0)))
+        if idx == 2014:
             tier = _KILLSTREAK_TIER.get(val)
-        elif idx == 2014:
-            sheen = _SHEEN_NAMES.get(val)
+        elif idx == 2012:
+            sheen = sheen_map.get(str(val)) or _SHEEN_NAMES.get(val)
     return tier, sheen
 
 
 def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return paint name and hex color if present."""
 
+    hybrid = _get_hybrid_schema()
+    paint_map = {
+        int(k): (v.get("name"), v.get("color"))
+        for k, v in hybrid.get("paint_kits", {}).items()
+        if isinstance(v, dict)
+    } or PAINT_MAP
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 142:
             val = int(attr.get("float_value", 0))
-            return PAINT_MAP.get(val, (None, None))
+            return paint_map.get(val, PAINT_MAP.get(val, (None, None)))
     return None, None
 
 
@@ -179,7 +216,10 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
+    hybrid = _get_hybrid_schema()
+    schema_map = (
+        hybrid.get("items") or local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
+    )
     cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:
@@ -203,13 +243,50 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
         display_name = _build_item_name(base_name, q_name, asset)
+        if asset.get("custom_name"):
+            display_name = asset["custom_name"]
 
         ks_tier, sheen = _extract_killstreak(asset)
         paint_name, paint_hex = _extract_paint(asset)
 
+        killstreaker = None
+        festivized = False
+        strange_parts: List[str] = []
+        spells: List[str] = []
+        effect_map = hybrid.get("effects", {})
+        parts_map = hybrid.get("strange_parts", {})
+        for attr in asset.get("attributes", []):
+            idx = attr.get("defindex")
+            val = int(attr.get("value", attr.get("float_value", 0)))
+            if idx == 2013:
+                killstreaker = effect_map.get(str(val))
+            elif idx == 2053:
+                festivized = bool(val)
+            elif idx >= 382 and str(val) in parts_map:
+                strange_parts.append(parts_map[str(val)])
+            elif 1004 <= idx <= 1009:
+                spells.append(str(idx))
+
+        badges: List[str] = []
+        if paint_name:
+            badges.append(BADGE_EMOJIS["paint"])
+        if ks_tier:
+            badges.append(BADGE_EMOJIS["killstreak"])
+        if sheen:
+            badges.append(BADGE_EMOJIS["sheen"])
+        if killstreaker:
+            badges.append(BADGE_EMOJIS["killstreaker"])
+        if festivized:
+            badges.append(BADGE_EMOJIS["festivized"])
+        if q_name == "Strange" or strange_parts:
+            badges.append(BADGE_EMOJIS["strange"])
+        if spells:
+            badges.append(BADGE_EMOJIS["spell"])
+
         item = {
             "defindex": defindex,
             "name": display_name,
+            "base_name": base_name,
             "quality": q_name,
             "quality_color": q_col,
             "image_url": image_url,
@@ -244,6 +321,11 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "sheen": sheen,
             "paint_name": paint_name,
             "paint_hex": paint_hex,
+            "killstreaker": killstreaker,
+            "is_festivized": festivized,
+            "strange_parts": strange_parts,
+            "spells": spells,
+            "badges": badges,
         }
         items.append(item)
 
