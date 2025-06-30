@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# ruff: noqa: F401, F403, F405
+
 import logging
 import re
 from html import unescape
@@ -7,7 +9,8 @@ from pathlib import Path
 import json
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import items_game_cache, local_data, schema_fetcher, steam_api_client
+from utils.local_data import *  # noqa: F401,F403,F405
+from . import items_game_cache, schema_fetcher, steam_api_client
 
 logger = logging.getLogger(__name__)
 
@@ -60,43 +63,58 @@ def handle_custom_name(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
 
 def handle_paint_color(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
     val = int(attr.get("float_value", 0))
-    pair = local_data.PAINT_MAP.get(val)
-    if pair:
-        item["paint_name"], item["paint_hex"] = pair
+    paint = PAINTS.get(val)
+    if paint:
+        item["paint_name"] = paint.get("name")
+        item["paint_hex"] = paint.get("hex")
+
+
+SPELL_FLAG_SLUGS = {
+    1: "footprints",
+    2: "voices",
+    4: "pumpkin",
+    8: "exorcism",
+    16: "paint_spell",
+}
 
 
 def handle_spell_bitmask(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
     mask = int(attr.get("float_value", 0))
-    flags = {
-        flag: bool(mask & bit) for bit, (_, flag) in local_data.SPELL_BITFLAGS.items()
-    }
+    flags = {slug: bool(mask & bit) for bit, slug in SPELL_FLAG_SLUGS.items()}
     item["spell_flags"] = flags
     item["spells"] = [
-        name for bit, (name, flag) in local_data.SPELL_BITFLAGS.items() if mask & bit
+        SPELL_FLAGS.get(bit, "") for bit in SPELL_FLAG_SLUGS if mask & bit
     ]
 
 
+KILLSTREAK_TIERS = {
+    1: "Killstreak",
+    2: "Specialized Killstreak",
+    3: "Professional Killstreak",
+}
+
+
 def handle_killstreak_tier(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    tier = local_data.KILLSTREAK_TIERS.get(int(attr.get("float_value", 0)))
+    tier = KILLSTREAK_TIERS.get(int(attr.get("float_value", 0)))
     if tier:
         item["killstreak_tier"] = tier
 
 
 def handle_sheen(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    sheen = local_data.SHEEN_NAMES.get(int(attr.get("float_value", 0)))
+    sheen = SHEENS.get(int(attr.get("float_value", 0)))
     if sheen:
         item["sheen"] = sheen
 
 
 def handle_killstreaker(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    effect_id = str(int(attr.get("float_value", 0)))
-    name = local_data.EFFECT_NAMES.get(effect_id)
+    effect_id = int(attr.get("float_value", 0))
+    name = KILLSTREAKERS.get(effect_id)
     if name:
         item["killstreaker"] = name
 
 
 def handle_strange_part(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    name = local_data.STRANGE_PARTS.get(int(attr.get("defindex", 0)))
+    name = STRANGE_PARTS.get(int(attr.get("defindex", 0)))
     if name:
         item.setdefault("strange_parts", []).append(name)
 
@@ -106,30 +124,17 @@ def handle_festivized(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
 
 
 def handle_unusual_effect(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    effect_id = str(int(attr.get("float_value", 0)))
-    name = local_data.EFFECT_NAMES.get(effect_id)
+    effect_id = int(attr.get("float_value", 0))
+    name = EFFECTS.get(effect_id)
     if name:
         item["unusual_effect"] = name
 
 
-ATTRIBUTE_HANDLERS: Dict[int, Callable[[Dict[str, Any], Dict[str, Any]], None]] = {
-    134: handle_custom_name,
-    142: handle_paint_color,
-    730: handle_spell_bitmask,
-    2025: handle_killstreak_tier,
-    2013: handle_sheen,
-    2071: handle_killstreaker,
-    214: handle_unusual_effect,
-}
-
-for idx in range(380, 386):
-    ATTRIBUTE_HANDLERS[idx] = handle_strange_part
-for idx in range(2041, 2045):
-    ATTRIBUTE_HANDLERS[idx] = handle_festivized
+ATTRIBUTE_HANDLERS: Dict[int, Callable[[Dict[str, Any], Dict[str, Any]], None]] = {}
 
 
-def decode_attributes(asset: Dict[str, Any]) -> Dict[str, Any]:
-    result: Dict[str, Any] = {
+def _decode_attributes(asset: Dict[str, Any]) -> Dict[str, Any]:
+    item: Dict[str, Any] = {
         "strange_parts": [],
         "spells": [],
         "spell_flags": {},
@@ -140,17 +145,17 @@ def decode_attributes(asset: Dict[str, Any]) -> Dict[str, Any]:
         idx = int(attr.get("defindex", 0))
         handler = ATTRIBUTE_HANDLERS.get(idx)
         if handler:
-            handler(result, attr)
+            handler(item, attr)
         else:
-            result["misc_attrs"].append(attr)
-    return result
+            item["misc_attrs"].append(attr)
+    return item
 
 
 def parse_spell_descriptions(
     asset: Dict[str, Any]
 ) -> Tuple[List[str], Dict[str, bool]]:
     lines: List[str] = []
-    flags = {flag: False for _, flag in local_data.SPELL_BITFLAGS.values()}
+    flags = {slug: False for slug in SPELL_FLAG_SLUGS.values()}
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
@@ -237,8 +242,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
-    cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
+    schema_map = schema_fetcher.SCHEMA or {}
+    cleaned_map = items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
@@ -247,7 +252,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not (schema_entry or ig_item):
             continue
 
-        attr_data = decode_attributes(asset)
+        attr_data = _decode_attributes(asset)
 
         if not attr_data.get("spells"):
             lines, flags = parse_spell_descriptions(asset)
@@ -259,7 +264,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not attr_data.get("unusual_effect"):
             effect_id = asset.get("effect")
             if effect_id:
-                name = local_data.EFFECT_NAMES.get(str(effect_id))
+                name = EFFECTS.get(int(effect_id))
                 if name:
                     attr_data["unusual_effect"] = name
         if not attr_data.get("unusual_effect"):
