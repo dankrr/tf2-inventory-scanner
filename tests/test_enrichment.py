@@ -14,7 +14,7 @@ def test_full_enrichment(tmp_path, monkeypatch):
         },
         "qualities": {"11": "Strange"},
         "qualityNames": {"strange": "#CF6A32"},
-        "effects": {"2003": "Incinerator"},
+        "killstreakers": [{"id": 2003, "name": "Incinerator"}],
         "paint_kits": {},
         "strange_parts": {"24": "Players Hit"},
     }
@@ -51,8 +51,12 @@ def test_full_enrichment(tmp_path, monkeypatch):
     assert items[0]["killstreaker"] == "Incinerator"
     assert items[0]["is_festivized"] is True
     assert items[0]["strange_parts"] == ["Players Hit"]
-    for badge in ["\u2694\ufe0f", "\u2728", "\U0001f480", "\U0001f384", "\U0001f4ca"]:
-        assert badge in items[0]["badges"]
+    badges = items[0]["badges"]
+    assert "\u2694\ufe0f" in badges
+    assert "\u2728" in badges
+    assert any(isinstance(b, dict) and b.get("icon") == "\U0001f480" for b in badges)
+    assert "\U0001f384" in badges
+    assert "\U0001f4ca" in badges
 
 
 def test_string_attribute_safe_int(tmp_path, monkeypatch):
@@ -82,3 +86,35 @@ def test_string_attribute_safe_int(tmp_path, monkeypatch):
 
     items = inventory_processor.enrich_inventory(data)
     assert items[0]["killstreak_tier"] == "Professional"
+
+
+def test_killstreaker_lookup_list(tmp_path, monkeypatch):
+    schema = {
+        "items": {
+            "199": {"name": "Pistol", "item_type_name": "Weapon", "image_url": ""}
+        },
+        "qualities": {"6": "Unique"},
+        "killstreakers": [{"id": 2003, "name": "Incinerator"}],
+    }
+    cache = tmp_path / "hybrid_schema.json"
+    cache.write_text(json.dumps(schema))
+    monkeypatch.setattr(schema_manager, "HYBRID_FILE", cache)
+    monkeypatch.setattr(schema_manager, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(inventory_processor, "HYBRID_SCHEMA", None)
+
+    data = {
+        "items": [
+            {
+                "defindex": 199,
+                "quality": 6,
+                "attributes": [{"defindex": 2013, "value": 2003}],
+            }
+        ]
+    }
+
+    enriched_item = inventory_processor.enrich_inventory(data)[0]
+    assert enriched_item["killstreaker"] == "Incinerator"
+    assert any(
+        isinstance(b, dict) and b.get("icon") == "\U0001f480"
+        for b in enriched_item["badges"]
+    )
