@@ -6,7 +6,8 @@ from html import unescape
 import json
 from pathlib import Path
 
-from . import steam_api_client, schema_fetcher, items_game_cache, local_data
+from . import steam_api_client, schema_fetcher, items_game_cache
+from utils.local_data import *
 
 logger = logging.getLogger(__name__)
 
@@ -17,23 +18,16 @@ WARPAINT_MAP: Dict[str, str] = {}
 if MAPPING_FILE.exists():
     with MAPPING_FILE.open() as f:
         WARPAINT_MAP = json.load(f)
-# Map of quality ID to (name, background color)
-QUALITY_MAP = {
-    0: ("Normal", "#B2B2B2"),
-    1: ("Genuine", "#4D7455"),
-    3: ("Vintage", "#476291"),
-    5: ("Unusual", "#8650AC"),
-    6: ("Unique", "#FFD700"),
-    11: ("Strange", "#CF6A32"),
-    13: ("Haunted", "#38F3AB"),
-}
+
+# Attribute handlers populated below
+ATTRIBUTE_HANDLERS: Dict[int, callable] = {}
 
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     """Return the unusual effect name from attributes or descriptions."""
 
     if "effect" in asset:
-        name = local_data.EFFECT_NAMES.get(str(asset["effect"]))
+        name = EFFECTS.get(int(asset["effect"]))
         if name:
             return name
 
@@ -41,7 +35,7 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
         idx = attr.get("defindex")
         if idx == 134:
             val = str(int(attr.get("float_value", 0)))
-            name = local_data.EFFECT_NAMES.get(val)
+            name = EFFECTS.get(int(val))
             if name:
                 return name
 
@@ -56,66 +50,10 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-_KILLSTREAK_TIER = {
-    1: "Killstreak",
-    2: "Specialized Killstreak",
-    3: "Professional Killstreak",
-}
+_KILLSTREAK_TIER = {1: "Killstreak", 2: "Specialized", 3: "Professional"}
 
-_SHEEN_NAMES = {
-    1: "Team Shine",
-    2: "Deadly Daffodil",
-    3: "Mandarin",
-    4: "Mean Green",
-    5: "Villainous Violet",
-    6: "Hot Rod",
-}
 
 # Map of item origin ID -> human readable string
-ORIGIN_MAP = {
-    0: "Timed Drop",
-    1: "Achievement",
-    2: "Purchased",
-    3: "Traded",
-    4: "Crafted",
-    5: "Store Promotion",
-    6: "Gifted",
-    7: "Support Promotion",
-    8: "Found in Crate",
-    9: "Earned",
-    10: "Third-Party Promotion",
-    11: "Purchased",
-    12: "Halloween Drop",
-    13: "Package Item",
-    14: "Store Promotion",
-    15: "Foreign",
-}
-
-# Map of paint ID -> (name, hex color)
-PAINT_MAP = {
-    3100495: ("A Color Similar to Slate", "#2F4F4F"),
-    8208497: ("A Deep Commitment to Purple", "#7D4071"),
-    8208498: ("A Distinctive Lack of Hue", "#141414"),
-    1315860: ("An Extraordinary Abundance of Tinge", "#CF7336"),
-    2960676: ("Color No. 216-190-216", "#D8BED8"),
-    8289918: ("Dark Salmon Injustice", "#8847FF"),
-    15132390: ("Drably Olive", "#808000"),
-    8421376: ("Indubitably Green", "#729E42"),
-    13595446: ("Mann Co. Orange", "#CF7336"),
-    12377523: ("Muskelmannbraun", "#A57545"),
-    5322826: ("Noble Hatter's Violet", "#51384A"),
-    15787660: ("Pink as Hell", "#FF69B4"),
-    15185211: ("A Mann's Mint", "#BCDDB3"),
-}
-
-# Map of attribute ID to Strange Part name (not exhaustive)
-STRANGE_PART_MAP = {
-    380: "Heavies Killed",
-    381: "Buildings Destroyed",
-    382: "Domination Kills",
-    383: "Kills While Ubercharged",
-    384: "Kills While Explosive Jumping",
-}
 
 
 def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
@@ -129,7 +67,7 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         if idx == 2025:
             tier = _KILLSTREAK_TIER.get(val)
         elif idx == 2014:
-            sheen = _SHEEN_NAMES.get(val)
+            sheen = SHEENS.get(val)
     return tier, sheen
 
 
@@ -140,7 +78,9 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         idx = attr.get("defindex")
         if idx == 142:
             val = int(attr.get("float_value", 0))
-            return PAINT_MAP.get(val, (None, None))
+            paint = PAINTS.get(val)
+            if paint:
+                return paint.get("name"), paint.get("hex")
     return None, None
 
 
@@ -151,7 +91,7 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
         idx = attr.get("defindex")
         if idx in (2071, 2013):
             val = str(int(attr.get("float_value", 0)))
-            name = local_data.EFFECT_NAMES.get(val)
+            name = EFFECTS.get(int(val))
             if name:
                 return name
 
@@ -178,11 +118,7 @@ def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
         "has_voice_lines": False,
     }
     SPELL_BITS = {
-        1: ("Exorcism", "has_exorcism"),
-        2: ("Paint Spell", "has_paint_spell"),
-        4: ("Footprints", "has_footprints"),
-        8: ("Pumpkin Bombs", "has_pumpkin_bombs"),
-        16: ("Voices From Below", "has_voice_lines"),
+        bit: (name, name.lower().replace(" ", "_")) for bit, name in SPELL_FLAGS.items()
     }
 
     for desc in asset.get("descriptions", []):
@@ -222,72 +158,149 @@ def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
     parts: List[str] = []
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        name = STRANGE_PART_MAP.get(idx)
+        name = STRANGE_PARTS.get(idx)
         if name:
             parts.append(name)
     return parts
 
 
-def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
-    """Return the display name prefixed with quality/effect."""
+def handle_custom_name(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    name = attr.get("value") or attr.get("string_value")
+    if name:
+        item["custom_name"] = str(name)
+
+
+def handle_paint_color(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    val = int(attr.get("float_value", 0))
+    paint = PAINTS.get(val)
+    if paint:
+        item["paint_name"] = paint.get("name")
+        item["paint_hex"] = paint.get("hex")
+
+
+def handle_spell_bitmask(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    bitmask = int(attr.get("float_value", 0))
+    for bit, name in SPELL_FLAGS.items():
+        if bitmask & bit:
+            item.setdefault("spells", []).append(name)
+            flag = name.lower().replace(" ", "_")
+            item.setdefault("spell_flags", {})[flag] = True
+
+
+def handle_killstreak_tier(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    tier = int(attr.get("float_value", 0))
+    item["killstreak_tier"] = _KILLSTREAK_TIER.get(tier)
+
+
+def handle_sheen(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    item["sheen"] = SHEENS.get(int(attr.get("float_value", 0)))
+
+
+def handle_killstreaker(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    item["killstreaker"] = KILLSTREAKERS.get(int(attr.get("float_value", 0)))
+
+
+def handle_strange_part(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    name = STRANGE_PARTS.get(attr.get("defindex"))
+    if name:
+        item.setdefault("strange_parts", []).append(name)
+
+
+def handle_festivized(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    item["is_festivized"] = bool(int(attr.get("float_value", 0)))
+
+
+def handle_unusual_effect(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
+    item["unusual_effect"] = EFFECTS.get(int(attr.get("float_value", 0)))
+
+
+ATTRIBUTE_HANDLERS.update(
+    {
+        134: handle_custom_name,
+        142: handle_paint_color,
+        730: handle_spell_bitmask,
+        2025: handle_killstreak_tier,
+        2013: handle_sheen,
+        2071: handle_killstreaker,
+        380: handle_strange_part,
+        381: handle_strange_part,
+        382: handle_strange_part,
+        383: handle_strange_part,
+        384: handle_strange_part,
+        2041: handle_festivized,
+        2042: handle_festivized,
+        2043: handle_festivized,
+        2044: handle_festivized,
+        214: handle_unusual_effect,
+    }
+)
+
+
+def _decode_attributes(asset: Dict[str, Any], item: Dict[str, Any]) -> None:
+    for attr in asset.get("attributes", []):
+        defindex = attr.get("defindex")
+        handler = ATTRIBUTE_HANDLERS.get(defindex)
+        if handler:
+            handler(item, attr)
+        else:
+            item.setdefault("misc_attrs", []).append(attr)
+    if not item.get("spells"):
+        lines, flags = _extract_spells(asset)
+        item["spells"] = lines
+        item.setdefault("spell_flags", {}).update(flags)
+
+
+def _build_display_name(base: str, quality: str, item: Dict[str, Any]) -> str:
+    """Return the final item name."""
 
     parts: List[str] = []
-    ks_tier, sheen = _extract_killstreak(asset)
-    effect = _extract_unusual_effect(asset)
+    if item.get("killstreak_tier"):
+        parts.append(item["killstreak_tier"])
 
-    if ks_tier:
-        parts.append(ks_tier)
-
-    if effect:
-        parts.append(effect)
+    if item.get("unusual_effect"):
+        parts.append(item["unusual_effect"])
         if quality not in ("Unique", "Normal", "Unusual"):
             parts.append(quality)
     else:
         if quality not in ("Unique", "Normal"):
             parts.append(quality)
 
-    parts.append(base)
+    parts.append(item.get("custom_name") or base)
 
-    if sheen:
-        parts.append(f"({sheen})")
+    if item.get("sheen"):
+        parts.append(f"({item['sheen']})")
 
     return " ".join(parts)
 
 
-def generate_badges(
-    item: Dict[str, Any], spell_flags: Dict[str, bool]
-) -> List[Dict[str, str]]:
-    """Return a list of badges for the given item."""
+def generate_badges(item: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Return a list of badge metadata."""
 
+    flags = item.get("spell_flags", {})
     badges: List[Dict[str, str]] = []
-    if item.get("paint_name"):
-        badges.append({"icon": "\U0001f3a8", "title": f"Painted: {item['paint_name']}"})
-    if item.get("killstreak_tier"):
-        badges.append({"icon": "\u2694\ufe0f", "title": item["killstreak_tier"]})
-    if item.get("killstreak_effect"):
-        badges.append(
-            {
-                "icon": "\U0001f480",
-                "title": f"Killstreaker Effect: {item['killstreak_effect']}",
-            }
-        )
-    if item.get("strange_parts"):
-        badges.append({"icon": "\U0001f4ca", "title": "Strange Parts"})
-    if item.get("unusual_effect"):
-        badges.append(
-            {"icon": "\U0001f30c", "title": f"Unusual: {item['unusual_effect']}"}
-        )
 
-    mapping = {
-        "has_exorcism": ("\U0001f47b", "Exorcism"),
-        "has_paint_spell": ("\U0001f3a8", "Paint spell"),
-        "has_footprints": ("\U0001f463", "Footprints spell"),
-        "has_pumpkin_bombs": ("\U0001f383", "Pumpkin Bombs"),
-        "has_voice_lines": ("\u2728", "Rare spell"),
-    }
-    for key, (icon, title) in mapping.items():
-        if spell_flags.get(key):
-            badges.append({"icon": icon, "title": title})
+    if item.get("paint_name"):
+        badges.append({"icon": "🎨", "title": f"Painted: {item['paint_name']}"})
+    if item.get("killstreak_tier"):
+        badges.append({"icon": "⚔️", "title": item["killstreak_tier"]})
+    if item.get("killstreaker"):
+        badges.append({"icon": "💀", "title": item["killstreaker"]})
+    if item.get("sheen"):
+        badges.append({"icon": "✨", "title": f"Sheen: {item['sheen']}"})
+    if flags.get("footprints"):
+        badges.append({"icon": "👣", "title": "Footprints spell"})
+    if flags.get("exorcism"):
+        badges.append({"icon": "👻", "title": "Exorcism"})
+    if flags.get("pumpkin_bombs"):
+        badges.append({"icon": "🎃", "title": "Pumpkin Bombs"})
+    if flags.get("voices_from_below"):
+        badges.append({"icon": "🗣", "title": "Voices From Below"})
+    if item.get("strange_parts"):
+        badges.append({"icon": "📊", "title": "Strange Parts"})
+    if item.get("is_festivized"):
+        badges.append({"icon": "🎄", "title": "Festivized"})
+    if item.get("unusual_effect"):
+        badges.append({"icon": "🔥", "title": f"Unusual: {item['unusual_effect']}"})
 
     return badges
 
@@ -310,8 +323,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
-    cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
+    schema_map = TF2_SCHEMA or schema_fetcher.SCHEMA or {}
+    cleaned_map = ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
@@ -333,18 +346,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
-        display_name = _build_item_name(base_name, q_name, asset)
 
-        ks_tier, sheen = _extract_killstreak(asset)
-        ks_effect = _extract_killstreak_effect(asset)
-        paint_name, paint_hex = _extract_paint(asset)
-        spell_lines, spell_flags = _extract_spells(asset)
-        strange_parts = _extract_strange_parts(asset)
-        unusual_effect = _extract_unusual_effect(asset)
-
-        item = {
+        item: Dict[str, Any] = {
             "defindex": defindex,
-            "name": display_name,
             "quality": q_name,
             "quality_color": q_col,
             "image_url": image_url,
@@ -375,16 +379,15 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
             "level": asset.get("level"),
             "origin": ORIGIN_MAP.get(asset.get("origin")),
-            "killstreak_tier": ks_tier,
-            "sheen": sheen,
-            "paint_name": paint_name,
-            "paint_hex": paint_hex,
-            "killstreak_effect": ks_effect,
-            "spells": spell_lines,
-            "strange_parts": strange_parts,
-            "unusual_effect": unusual_effect,
         }
-        badges = generate_badges(item, spell_flags)
+
+        _decode_attributes(asset, item)
+        if "unusual_effect" not in item:
+            item["unusual_effect"] = _extract_unusual_effect(asset)
+
+        item["name"] = _build_display_name(base_name, q_name, item)
+
+        badges = generate_badges(item)
         if badges:
             item["badges"] = badges
         items.append(item)

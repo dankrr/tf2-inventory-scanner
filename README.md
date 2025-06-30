@@ -134,3 +134,39 @@ docker run -p 5000:5000 tf2-scanner
 python app.py          # now reachable at http://<LAN_IP>:5000
 docker run -p 5000:5000 tf2-inv
 ```
+
+## 🎖 Enriched Item Fields
+
+| Key                 | Example                        | Description           |
+| ------------------- | ------------------------------ | --------------------- |
+| defindex            | `222`                          | Item definition index |
+| name                | `Professional Rocket Launcher` | Display name          |
+| quality             | `Unique`                       | Item quality string   |
+| quality_color       | `#FFD700`                      | Hex color for quality |
+| image_url           | `https://...`                  | Item icon URL         |
+| item_type_name      | `Rocket Launcher`              | Type from schema      |
+| item_name           | `Rocket Launcher`              | Raw schema name       |
+| craft_class         | `weapon`                       | Craft class           |
+| craft_material_type | `weapon`                       | Craft material        |
+| item_set            | _varies_                       | Item set name         |
+| capabilities        | _dict_                         | Capability flags      |
+| tags                | _list_                         | Schema tags           |
+| equip_regions       | _list_                         | Equip region list     |
+| item_class          | `tf_weapon_rocketlauncher`     | Class string          |
+| slot_type           | `primary`                      | Equip slot            |
+| level               | `1`                            | Item level            |
+| origin              | `Timed Drop`                   | Item origin           |
+| killstreak_tier     | `Professional`                 | Killstreak tier       |
+| sheen               | `Team Shine`                   | Killstreak sheen      |
+| killstreaker        | `Fire Horns`                   | Killstreaker effect   |
+| paint_name          | `A Deep Commitment to Purple`  | Applied paint         |
+| paint_hex           | `#7D4071`                      | Paint color           |
+| spells              | `["Exorcism"]`                 | Halloween spells      |
+| strange_parts       | `["Buildings Destroyed"]`      | Attached parts        |
+| unusual_effect      | `Burning Flames`               | Unusual effect        |
+| is_festivized       | `true`                         | Has festive lights    |
+| custom_name         | `"My Launcher"`                | Player-set name       |
+| badges              | `[{'icon': '🎨'}]`             | Badge metadata        |
+| misc_attrs          | _list_                         | Unhandled attributes  |
+
+**Emoji legend:** 🎨 paint, ⚔️ killstreak tier, 💀 killstreaker, ✨ sheen, 👣 footprints, 👻 exorcism, 🎃 pumpkin bombs, 🗣 voices from below, 📊 strange parts, 🎄 festive, 🔥 unusual effect.
