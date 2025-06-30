@@ -83,6 +83,11 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
         "strange_parts": strange_parts,
     }
 
+    for item in hybrid["items"].values():
+        large = item.get("image_url_large") or item.get("image_url_large", "")
+        small = item.get("image_url") or ""
+        item["image"] = large or small
+
     cache_file = cache_dir / "hybrid_schema.json"
     cache_file.parent.mkdir(parents=True, exist_ok=True)
     cache_file.write_text(json.dumps(hybrid))

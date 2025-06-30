@@ -178,6 +178,13 @@ button {
   color: #fff;
 }
 
+.item-title {
+  font-size: 12px;
+  text-align: center;
+  word-break: break-word;
+  color: #fff;
+}
+
 .tf2-hours { margin-left: 6px; font-size: 0.9em; }
 
 .page-footer {

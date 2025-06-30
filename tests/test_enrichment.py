@@ -45,7 +45,8 @@ def test_full_enrichment(tmp_path, monkeypatch):
 
     items = inventory_processor.enrich_inventory(data)
     assert items[0]["base_name"] == "The Revolver"
-    assert items[0]["name"] == "My Trusty Sidearm"
+    assert items[0]["custom_name"] == "My Trusty Sidearm"
+    assert items[0]["name"] != items[0]["custom_name"]
     assert items[0]["killstreak_tier"] == "Professional"
     assert items[0]["sheen"] == "Deadly Daffodil"
     assert items[0]["killstreaker"] == "Incinerator"
@@ -118,3 +119,35 @@ def test_killstreaker_lookup_list(tmp_path, monkeypatch):
         isinstance(b, dict) and b.get("icon") == "\U0001f480"
         for b in enriched_item["badges"]
     )
+
+
+def test_spell_badge_and_image(tmp_path, monkeypatch):
+    schema = {
+        "items": {"935": {"name": "Item", "image": "img.png"}},
+        "qualities": {"13": "Haunted"},
+        "qualityNames": {"haunted": "#38F3AB"},
+    }
+    cache = tmp_path / "hybrid_schema.json"
+    cache.write_text(json.dumps(schema))
+    monkeypatch.setattr(schema_manager, "HYBRID_FILE", cache)
+    monkeypatch.setattr(schema_manager, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(inventory_processor, "HYBRID_SCHEMA", None)
+
+    data = {
+        "items": [
+            {
+                "defindex": 935,
+                "quality": 13,
+                "attributes": [{"defindex": 1005, "value": 1}],
+            }
+        ]
+    }
+
+    items = inventory_processor.enrich_inventory(data)
+    it = items[0]
+    assert "Voices From Below" in it["spells"]
+    assert any(
+        isinstance(b, dict) and b.get("icon") == "\U0001f47b" for b in it["badges"]
+    )
+    assert it["image_url"]
+    assert all(i["image_url"] for i in items)
