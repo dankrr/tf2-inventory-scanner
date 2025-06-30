@@ -7,7 +7,8 @@ from typing import Any, Dict
 
 import requests
 
-CLOUD = "https://steamcommunity-a.akamaihd.net/economy/image/"
+# Base URL for item icons if the schema provides a relative path
+ICON_BASE = "https://steamcdn-a.akamaihd.net/apps/440/icons/"
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +48,7 @@ def _fetch_schema(api_key: str) -> Dict[str, Any]:
                 continue
 
             path = (
-                item.get("image_url_large")
-                or item.get("image_url")
+                item.get("image_url")
                 or item.get("icon_url_large")
                 or item.get("icon_url")
                 or ""
@@ -56,7 +56,8 @@ def _fetch_schema(api_key: str) -> Dict[str, Any]:
             if path.startswith("http"):
                 image_url = path
             elif path:
-                image_url = f"{CLOUD}{path}/360fx360f"
+                # Some schema entries only provide a relative filename
+                image_url = f"{ICON_BASE}{path.lstrip('/')}"
             else:
                 image_url = ""
 

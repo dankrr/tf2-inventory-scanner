@@ -22,7 +22,7 @@ def test_enrich_inventory():
         "111": {
             "defindex": 111,
             "item_name": "Rocket Launcher",
-            "image": "https://steamcommunity-a.akamaihd.net/economy/image/img/360fx360f",
+            "image": "https://steamcdn-a.akamaihd.net/apps/440/icons/img.png",
         }
     }
     sf.QUALITIES = {"11": "Strange"}
@@ -31,7 +31,7 @@ def test_enrich_inventory():
     assert items[0]["quality"] == "Strange"
     assert items[0]["quality_color"] == "#CF6A32"
     assert items[0]["image_url"].startswith(
-        "https://steamcommunity-a.akamaihd.net/economy/image/"
+        "https://steamcdn-a.akamaihd.net/apps/440/icons/"
     )
 
 
@@ -59,7 +59,7 @@ def test_process_inventory_handles_missing_icon():
         "1": {
             "defindex": 1,
             "item_name": "One",
-            "image": "https://steamcommunity-a.akamaihd.net/economy/image/a/360fx360f",
+            "image": "https://steamcdn-a.akamaihd.net/apps/440/icons/a.png",
         },
         "2": {"defindex": 2, "item_name": "Two", "image": ""},
     }
@@ -69,10 +69,10 @@ def test_process_inventory_handles_missing_icon():
     for item in items:
         if item["name"] == "One":
             assert item["image_url"].startswith(
-                "https://steamcommunity-a.akamaihd.net/economy/image/"
+                "https://steamcdn-a.akamaihd.net/apps/440/icons/"
             )
         else:
-            assert item["image_url"] == "/static/placeholder.png"
+            assert item["image_url"] == ""
 
 
 def test_enrich_inventory_preserves_absolute_url():
