@@ -217,7 +217,12 @@
             card.insertBefore(div, card.firstChild);
           };
           img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
-          img.addEventListener('error', () => { img.remove(); showMissing(); }, { once: true });
+          img.addEventListener('error', () => {
+            const imgSrc = img.getAttribute('src');
+            if (!imgSrc) return; // empty means we already warned
+            img.remove();
+            showMissing();
+          }, { once: true });
           if (img.complete) {
             if (img.naturalWidth) img.classList.remove('loading');
             else { img.remove(); showMissing(); }
