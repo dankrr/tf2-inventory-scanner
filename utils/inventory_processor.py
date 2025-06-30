@@ -37,6 +37,15 @@ QUALITY_MAP = {
 HYBRID_SCHEMA: Dict[str, Any] | None = None
 
 
+def _safe_int(val: Any, default: int = 0) -> int:
+    """Return ``val`` coerced to ``int`` or ``default`` on failure."""
+
+    try:
+        return int(float(val))
+    except (ValueError, TypeError):
+        return default
+
+
 def _get_hybrid_schema() -> Dict[str, Any]:
     global HYBRID_SCHEMA
     if HYBRID_SCHEMA is None:
@@ -69,7 +78,7 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 134:
-            val = str(int(attr.get("float_value", 0)))
+            val = str(_safe_int(attr.get("float_value")))
             name = local_data.EFFECT_NAMES.get(val)
             if name:
                 return name
@@ -147,7 +156,8 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     sheen_map = hybrid.get("sheens") or _SHEEN_NAMES
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        val = int(attr.get("value", attr.get("float_value", 0)))
+        raw_val = attr.get("value", attr.get("float_value", 0))
+        val = _safe_int(raw_val)
         if idx == 2014:
             tier = _KILLSTREAK_TIER.get(val)
         elif idx == 2012:
@@ -167,7 +177,7 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 142:
-            val = int(attr.get("float_value", 0))
+            val = _safe_int(attr.get("float_value"))
             return paint_map.get(val, PAINT_MAP.get(val, (None, None)))
     return None, None
 
@@ -257,7 +267,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         parts_map = hybrid.get("strange_parts", {})
         for attr in asset.get("attributes", []):
             idx = attr.get("defindex")
-            val = int(attr.get("value", attr.get("float_value", 0)))
+            raw_val = attr.get("value", attr.get("float_value", 0))
+            val = _safe_int(raw_val)
             if idx == 2013:
                 killstreaker = effect_map.get(str(val))
             elif idx == 2053:
@@ -335,7 +346,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             sheen = None
             for attr in asset.get("attributes", []):
                 idx = attr.get("defindex")
-                val = int(attr.get("float_value", 0))
+                val = _safe_int(attr.get("float_value"))
                 if idx == 2025:
                     ks = val
                 elif idx == 2014:
