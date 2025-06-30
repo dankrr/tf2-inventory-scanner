@@ -84,7 +84,12 @@ function attachItemModal() {
           ['Level', data.level],
           ['Origin', data.origin],
           ['Killstreak', data.killstreak_tier],
+          ['Sheen', data.sheen],
+          ['Killstreaker', data.killstreaker],
+          ['Festivized', data.is_festivized ? 'Yes' : null],
           ['Paint', data.paint_name],
+          ['Strange Parts', (data.strange_parts || []).join(', ')],
+          ['Spells', (data.spells || []).join(', ')],
         ];
         fields.forEach(([label, value]) => {
           if (!value) return;
