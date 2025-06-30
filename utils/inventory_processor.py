@@ -283,7 +283,11 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not (schema_entry or ig_item):
             continue
 
-        image_url = schema_map.get(defindex, {}).get("image", "")
+        entry = schema_map.get(defindex, {})
+        image_url = entry.get("image") or entry.get("image_url") or ""
+        if image_url and not image_url.startswith("http"):
+            icon = image_url.split("/")[-1].split("?")[0]
+            image_url = f"https://steamcdn-a.akamaihd.net/apps/440/icons/{icon}"
         if not image_url:
             logger.warning(
                 "No image found for %s (%s)",
