@@ -53,3 +53,32 @@ def test_full_enrichment(tmp_path, monkeypatch):
     assert items[0]["strange_parts"] == ["Players Hit"]
     for badge in ["\u2694\ufe0f", "\u2728", "\U0001f480", "\U0001f384", "\U0001f4ca"]:
         assert badge in items[0]["badges"]
+
+
+def test_string_attribute_safe_int(tmp_path, monkeypatch):
+    schema = {
+        "items": {"808": {"name": "Item", "item_type_name": "Weapon", "image_url": ""}},
+        "qualities": {"11": "Strange"},
+    }
+    cache = tmp_path / "hybrid_schema.json"
+    cache.write_text(json.dumps(schema))
+    monkeypatch.setattr(schema_manager, "HYBRID_FILE", cache)
+    monkeypatch.setattr(schema_manager, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(inventory_processor, "HYBRID_SCHEMA", None)
+
+    data = {
+        "items": [
+            {
+                "defindex": 808,
+                "quality": 11,
+                "attributes": [
+                    {"defindex": 2014, "value": 3},
+                    {"defindex": 2012, "value": 2},
+                    {"defindex": 796, "value": "10 0 -7"},
+                ],
+            }
+        ]
+    }
+
+    items = inventory_processor.enrich_inventory(data)
+    assert items[0]["killstreak_tier"] == "Professional"
