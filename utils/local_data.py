@@ -1,68 +1,105 @@
+"""Static TF2 lookup tables and helpers."""
+
+from __future__ import annotations
+
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import vdf
 
-TF2_SCHEMA: Dict[str, Any] = {}
-ITEMS_GAME_CLEANED: Dict[str, Any] = {}
-EFFECT_NAMES: Dict[str, str] = {}
+BASE_DIR = Path(__file__).resolve().parents[1]
+SCHEMA_PATH = BASE_DIR / "cache" / "tf2_schema.json"
+ITEMS_GAME_PATH = BASE_DIR / "cache" / "items_game_cleaned.json"
+SCHEMA_FILE = SCHEMA_PATH
+ITEMS_GAME_FILE = ITEMS_GAME_PATH
 
-# Common lookup tables for item enrichment
-PAINT_MAP: Dict[int, Tuple[str, str]] = {
-    3100495: ("A Color Similar to Slate", "#2F4F4F"),
-    8208497: ("A Deep Commitment to Purple", "#7D4071"),
-    8208498: ("A Distinctive Lack of Hue", "#141414"),
-    1315860: ("An Extraordinary Abundance of Tinge", "#CF7336"),
-    2960676: ("Color No. 216-190-216", "#D8BED8"),
-    8289918: ("Dark Salmon Injustice", "#8847FF"),
-    15132390: ("Drably Olive", "#808000"),
-    8421376: ("Indubitably Green", "#729E42"),
-    13595446: ("Mann Co. Orange", "#CF7336"),
-    12377523: ("Muskelmannbraun", "#A57545"),
-    5322826: ("Noble Hatter's Violet", "#51384A"),
-    15787660: ("Pink as Hell", "#FF69B4"),
-    15185211: ("A Mann's Mint", "#BCDDB3"),
+with SCHEMA_PATH.open() as f:
+    _SCHEMA = json.load(f)
+with ITEMS_GAME_PATH.open() as f:
+    _ITEMS_GAME = json.load(f)
+
+TF2_SCHEMA: Dict[str, Any] = _SCHEMA.get("items") or _SCHEMA
+ITEMS_GAME_CLEANED: Dict[str, Any] = _ITEMS_GAME
+EFFECT_NAMES: Dict[str, str] = _SCHEMA.get("effects", {})
+
+_COLOR_TABLE = {
+    "Normal": "#B2B2B2",
+    "Genuine": "#4D7455",
+    "Vintage": "#476291",
+    "Unusual": "#8650AC",
+    "Unique": "#FFD700",
+    "Strange": "#CF6A32",
+    "Haunted": "#38F3AB",
 }
 
-KILLSTREAK_TIERS = {
-    1: "Killstreak",
-    2: "Specialized Killstreak",
-    3: "Professional Killstreak",
+QUALITY_MAP: Dict[int, Dict[str, str]] = {}
+for k, v in (_SCHEMA.get("qualities") or {}).items():
+    if str(k).isdigit():
+        qid, name = int(k), str(v)
+    else:
+        qid, name = int(v), str(k)
+    QUALITY_MAP[qid] = {"name": name, "hex": _COLOR_TABLE.get(name, "#B2B2B2")}
+
+for qid, name in [
+    (0, "Normal"),
+    (1, "Genuine"),
+    (3, "Vintage"),
+    (5, "Unusual"),
+    (6, "Unique"),
+    (11, "Strange"),
+    (13, "Haunted"),
+]:
+    QUALITY_MAP.setdefault(
+        qid, {"name": name, "hex": _COLOR_TABLE.get(name, "#B2B2B2")}
+    )
+
+ORIGIN_MAP: Dict[int, str] = {
+    int(k): str(v) for k, v in (_SCHEMA.get("originNames") or {}).items()
 }
 
-SHEEN_NAMES = {
-    1: "Team Shine",
-    2: "Deadly Daffodil",
-    3: "Mandarin",
-    4: "Mean Green",
-    5: "Villainous Violet",
-    6: "Hot Rod",
+PAINTS: Dict[int, Dict[str, str]] = {
+    int(pid): {"name": info.get("name", ""), "hex": info.get("hex", "")}
+    for pid, info in (_ITEMS_GAME.get("paints") or {}).items()
 }
 
-SPELL_BITFLAGS = {
-    1: ("Fire Footprints", "footprints"),
-    2: ("Voices From Below", "voices"),
-    4: ("Pumpkin Bombs", "pumpkin"),
-    8: ("Exorcism", "exorcism"),
-    16: ("Paint Spell", "paint_spell"),
+
+def _enum(attr_id: int) -> Dict[int, str]:
+    attr = (_ITEMS_GAME.get("attributes") or {}).get(str(attr_id), {})
+    enum = attr.get("values") or attr.get("enum") or attr.get("enum_list") or {}
+    return {int(k): str(v) for k, v in enum.items()}
+
+
+SHEENS: Dict[int, str] = _enum(2014)
+KILLSTREAKERS: Dict[int, str] = _enum(2071)
+
+SPELL_FLAGS: Dict[int, str] = {
+    int(bit): name for bit, name in (_ITEMS_GAME.get("spells") or {}).items()
+}
+_DEFAULT_SPELLS = {
+    1: "Fire Footprints",
+    2: "Voices From Below",
+    4: "Pumpkin Bombs",
+    8: "Exorcism",
+    16: "Paint Spell",
+}
+for bit, name in _DEFAULT_SPELLS.items():
+    SPELL_FLAGS.setdefault(bit, name)
+
+STRANGE_PARTS: Dict[int, str] = {
+    attr_id: name
+    for attr_id, name in (
+        {
+            int(k): str(v.get("name", ""))
+            for k, v in (_ITEMS_GAME.get("attributes") or {}).items()
+        }
+    ).items()
+    if 380 <= attr_id <= 385
 }
 
-STRANGE_PARTS = {
-    380: "Heavies Killed",
-    381: "Buildings Destroyed",
-    382: "Domination Kills",
-    383: "Kills While Ubercharged",
-    384: "Kills While Explosive Jumping",
-    385: "Kills During Victory Time",
+EFFECTS: Dict[int, str] = {
+    int(k): str(v) for k, v in (_SCHEMA.get("effects") or {}).items()
 }
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2_schema.json"
-DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game_cleaned.json"
-SCHEMA_FILE = Path(os.getenv("TF2_SCHEMA_FILE", DEFAULT_SCHEMA_FILE))
-ITEMS_GAME_FILE = Path(os.getenv("TF2_ITEMS_GAME_FILE", DEFAULT_ITEMS_GAME_FILE))
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:
@@ -89,7 +126,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
 
     global TF2_SCHEMA, ITEMS_GAME_CLEANED, EFFECT_NAMES
 
-    schema_path = SCHEMA_FILE.resolve()
+    schema_path = Path(SCHEMA_FILE).resolve()
     if not schema_path.exists():
         raise RuntimeError(f"Missing {schema_path}")
     with schema_path.open() as f:
@@ -98,21 +135,6 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
     items = data.get("items") or data
     if not isinstance(items, dict) or not items:
         raise RuntimeError("tf2_schema.json is empty or invalid")
-
-    if len(items) < 5000 and auto_refetch:
-        try:
-            from . import schema_fetcher
-
-            api_key = os.getenv("STEAM_API_KEY")
-            if not api_key:
-                raise RuntimeError("STEAM_API_KEY is required for refetch")
-            fetched = schema_fetcher._fetch_schema(api_key)
-            schema_path.write_text(json.dumps(fetched))
-            data = fetched
-            items = fetched.get("items") or fetched
-            print(f"Refetched TF2 schema: {len(items)} items -> {schema_path}")
-        except Exception as exc:  # pragma: no cover - network failure
-            print(f"Failed to refetch schema: {exc}")
 
     TF2_SCHEMA = items
     EFFECT_NAMES = data.get("effects", {}) if isinstance(data, dict) else {}
@@ -123,7 +145,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
             "Consider forcing a refetch."
         )
 
-    items_game_path = ITEMS_GAME_FILE.resolve()
+    items_game_path = Path(ITEMS_GAME_FILE).resolve()
     if not items_game_path.exists():
         raise RuntimeError(f"Missing {items_game_path}")
     with items_game_path.open() as f:
@@ -138,3 +160,20 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
             "\N{WARNING SIGN} items_game_cleaned.json may be stale or incomplete. Consider a refresh."
         )
     return TF2_SCHEMA, ITEMS_GAME_CLEANED
+
+
+__all__ = [
+    "QUALITY_MAP",
+    "ORIGIN_MAP",
+    "PAINTS",
+    "SHEENS",
+    "KILLSTREAKERS",
+    "SPELL_FLAGS",
+    "STRANGE_PARTS",
+    "EFFECTS",
+    "TF2_SCHEMA",
+    "ITEMS_GAME_CLEANED",
+    "EFFECT_NAMES",
+    "clean_items_game",
+    "load_files",
+]
