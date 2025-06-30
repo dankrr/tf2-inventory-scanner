@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# ruff: noqa: F401, F403, F405
+
 import logging
 import re
 from html import unescape
@@ -7,7 +9,8 @@ from pathlib import Path
 import json
 from typing import Any, Callable, Dict, List, Tuple
 
-from . import items_game_cache, local_data, schema_fetcher, steam_api_client
+from utils.local_data import *  # noqa: F401,F403,F405
+from . import items_game_cache, schema_fetcher, steam_api_client
 
 logger = logging.getLogger(__name__)
 
@@ -20,85 +23,108 @@ if MAPPING_FILE.exists():
         WARPAINT_MAP = json.load(f)
 
 
-# Map of quality ID to (name, background color)
-QUALITY_MAP = {
-    0: ("Normal", "#B2B2B2"),
-    1: ("Genuine", "#4D7455"),
-    3: ("Vintage", "#476291"),
-    5: ("Unusual", "#8650AC"),
-    6: ("Unique", "#FFD700"),
-    11: ("Strange", "#CF6A32"),
-    13: ("Haunted", "#38F3AB"),
-}
-
-# Map of item origin ID -> human readable string
-ORIGIN_MAP = {
-    0: "Timed Drop",
-    1: "Achievement",
-    2: "Purchased",
-    3: "Traded",
-    4: "Crafted",
-    5: "Store Promotion",
-    6: "Gifted",
-    7: "Support Promotion",
-    8: "Found in Crate",
-    9: "Earned",
-    10: "Third-Party Promotion",
-    11: "Purchased",
-    12: "Halloween Drop",
-    13: "Package Item",
-    14: "Store Promotion",
-    15: "Foreign",
-}
-
-
 def handle_custom_name(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    val = attr.get("value")
-    if isinstance(val, str):
-        item["custom_name"] = val
+    val = attr.get("value") or attr.get("float_value")
+    if isinstance(val, str) and val:
+        if not item.get("custom_name"):
+            item["custom_name"] = val
 
 
 def handle_paint_color(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    val = int(attr.get("float_value", 0))
-    pair = local_data.PAINT_MAP.get(val)
-    if pair:
-        item["paint_name"], item["paint_hex"] = pair
+    value = (
+        attr.get("value") if attr.get("value") is not None else attr.get("float_value")
+    )
+    if value is None:
+        return
+    try:
+        pid = int(value)
+    except (ValueError, TypeError):
+        return
+    paint = PAINTS.get(pid)
+    if paint and not item.get("paint_name"):
+        item["paint_name"] = paint.get("name")
+        item["paint_hex"] = paint.get("hex")
+
+
+SPELL_FLAG_SLUGS = {
+    1: "footprints",
+    2: "voices",
+    4: "pumpkin",
+    8: "exorcism",
+    16: "paint_spell",
+}
 
 
 def handle_spell_bitmask(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    mask = int(attr.get("float_value", 0))
-    flags = {
-        flag: bool(mask & bit) for bit, (_, flag) in local_data.SPELL_BITFLAGS.items()
-    }
-    item["spell_flags"] = flags
-    item["spells"] = [
-        name for bit, (name, flag) in local_data.SPELL_BITFLAGS.items() if mask & bit
-    ]
+    value = (
+        attr.get("value") if attr.get("value") is not None else attr.get("float_value")
+    )
+    try:
+        mask = int(value)
+    except (ValueError, TypeError):
+        mask = 0
+    flags = {slug: bool(mask & bit) for bit, slug in SPELL_FLAG_SLUGS.items()}
+    item["spell_flags"].update(flags)
+    item.setdefault("spells", [])
+    for bit in SPELL_FLAG_SLUGS:
+        if mask & bit:
+            name = SPELL_FLAGS.get(bit)
+            if name and name not in item["spells"]:
+                item["spells"].append(name)
+
+
+KILLSTREAK_TIERS = {
+    1: "Killstreak",
+    2: "Specialized Killstreak",
+    3: "Professional Killstreak",
+}
 
 
 def handle_killstreak_tier(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    tier = local_data.KILLSTREAK_TIERS.get(int(attr.get("float_value", 0)))
-    if tier:
+    value = (
+        attr.get("value") if attr.get("value") is not None else attr.get("float_value")
+    )
+    try:
+        tier_num = int(value)
+    except (ValueError, TypeError):
+        return
+    tier = KILLSTREAK_TIERS.get(tier_num)
+    if tier and not item.get("killstreak_tier"):
         item["killstreak_tier"] = tier
 
 
 def handle_sheen(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    sheen = local_data.SHEEN_NAMES.get(int(attr.get("float_value", 0)))
-    if sheen:
+    value = (
+        attr.get("value") if attr.get("value") is not None else attr.get("float_value")
+    )
+    try:
+        idx = int(value)
+    except (ValueError, TypeError):
+        return
+    sheen = SHEENS.get(idx)
+    if sheen and not item.get("sheen"):
         item["sheen"] = sheen
 
 
 def handle_killstreaker(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    effect_id = str(int(attr.get("float_value", 0)))
-    name = local_data.EFFECT_NAMES.get(effect_id)
-    if name:
+    value = (
+        attr.get("value") if attr.get("value") is not None else attr.get("float_value")
+    )
+    try:
+        effect_id = int(value)
+    except (ValueError, TypeError):
+        return
+    name = KILLSTREAKERS.get(effect_id)
+    if name and not item.get("killstreaker"):
         item["killstreaker"] = name
 
 
 def handle_strange_part(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    name = local_data.STRANGE_PARTS.get(int(attr.get("defindex", 0)))
+    name = STRANGE_PARTS.get(int(attr.get("defindex", 0)))
     if name:
-        item.setdefault("strange_parts", []).append(name)
+        parts = item.setdefault("strange_parts", [])
+        if name not in parts:
+            parts.append(name)
 
 
 def handle_festivized(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
@@ -106,9 +132,15 @@ def handle_festivized(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
 
 
 def handle_unusual_effect(item: Dict[str, Any], attr: Dict[str, Any]) -> None:
-    effect_id = str(int(attr.get("float_value", 0)))
-    name = local_data.EFFECT_NAMES.get(effect_id)
-    if name:
+    value = (
+        attr.get("value") if attr.get("value") is not None else attr.get("float_value")
+    )
+    try:
+        effect_id = int(value)
+    except (ValueError, TypeError):
+        return
+    name = EFFECTS.get(effect_id)
+    if name and not item.get("unusual_effect"):
         item["unusual_effect"] = name
 
 
@@ -119,17 +151,22 @@ ATTRIBUTE_HANDLERS: Dict[int, Callable[[Dict[str, Any], Dict[str, Any]], None]] 
     2025: handle_killstreak_tier,
     2013: handle_sheen,
     2071: handle_killstreaker,
+    380: handle_strange_part,
+    381: handle_strange_part,
+    382: handle_strange_part,
+    383: handle_strange_part,
+    384: handle_strange_part,
+    385: handle_strange_part,
+    2041: handle_festivized,
+    2042: handle_festivized,
+    2043: handle_festivized,
+    2044: handle_festivized,
     214: handle_unusual_effect,
 }
 
-for idx in range(380, 386):
-    ATTRIBUTE_HANDLERS[idx] = handle_strange_part
-for idx in range(2041, 2045):
-    ATTRIBUTE_HANDLERS[idx] = handle_festivized
 
-
-def decode_attributes(asset: Dict[str, Any]) -> Dict[str, Any]:
-    result: Dict[str, Any] = {
+def _decode_attributes(asset: Dict[str, Any]) -> Dict[str, Any]:
+    item: Dict[str, Any] = {
         "strange_parts": [],
         "spells": [],
         "spell_flags": {},
@@ -140,17 +177,46 @@ def decode_attributes(asset: Dict[str, Any]) -> Dict[str, Any]:
         idx = int(attr.get("defindex", 0))
         handler = ATTRIBUTE_HANDLERS.get(idx)
         if handler:
-            handler(result, attr)
+            handler(item, attr)
         else:
-            result["misc_attrs"].append(attr)
-    return result
+            item["misc_attrs"].append(attr)
+
+    badges: List[Dict[str, str]] = []
+    if item.get("paint_name"):
+        badges.append({"icon": "🎨", "title": f"Painted: {item['paint_name']}"})
+    if item.get("killstreak_tier"):
+        badges.append({"icon": "⚔️", "title": item["killstreak_tier"]})
+    if item.get("killstreaker"):
+        badges.append({"icon": "💀", "title": f"Killstreaker: {item['killstreaker']}"})
+    if item.get("sheen"):
+        badges.append({"icon": "✨", "title": f"Sheen: {item['sheen']}"})
+    spell_map = {
+        "footprints": ("👣", "Fire Footprints"),
+        "exorcism": ("👻", "Exorcism"),
+        "pumpkin": ("🎃", "Pumpkin Bombs"),
+        "voices": ("🗣", "Voices From Below"),
+        "paint_spell": ("🎨", "Paint Spell"),
+    }
+    for key in ["footprints", "exorcism", "pumpkin", "voices", "paint_spell"]:
+        if item.get("spell_flags", {}).get(key):
+            icon, title = spell_map[key]
+            badges.append({"icon": icon, "title": title})
+    if item.get("strange_parts"):
+        badges.append({"icon": "📊", "title": "Strange Parts"})
+    if item.get("is_festivized"):
+        badges.append({"icon": "🎄", "title": "Festivized"})
+    if item.get("unusual_effect"):
+        badges.append({"icon": "🔥", "title": f"Unusual: {item['unusual_effect']}"})
+    if badges:
+        item["badges"] = badges
+    return item
 
 
 def parse_spell_descriptions(
     asset: Dict[str, Any]
 ) -> Tuple[List[str], Dict[str, bool]]:
     lines: List[str] = []
-    flags = {flag: False for _, flag in local_data.SPELL_BITFLAGS.values()}
+    flags = {slug: False for slug in SPELL_FLAG_SLUGS.values()}
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
@@ -182,40 +248,13 @@ def build_display_name(item: Dict[str, Any]) -> str:
     else:
         if item.get("quality") not in ("Unique", "Normal"):
             parts.append(item["quality"])
-    parts.append(item.get("base_name", ""))
+    base = item.get("base_name", "")
+    if item.get("custom_name"):
+        base = f"{item['custom_name']} | {base}"
+    parts.append(base)
     if item.get("sheen"):
         parts.append(f"({item['sheen']})")
     return " ".join(p for p in parts if p)
-
-
-def generate_badges(item: Dict[str, Any]) -> List[Dict[str, str]]:
-    badges: List[Dict[str, str]] = []
-    if item.get("paint_name"):
-        badges.append({"icon": "🎨", "title": f"Painted: {item['paint_name']}"})
-    if item.get("killstreak_tier"):
-        badges.append({"icon": "⚔️", "title": item["killstreak_tier"]})
-    if item.get("killstreaker"):
-        badges.append({"icon": "💀", "title": f"Killstreaker: {item['killstreaker']}"})
-    if item.get("sheen"):
-        badges.append({"icon": "✨", "title": f"Sheen: {item['sheen']}"})
-    if item.get("strange_parts"):
-        badges.append({"icon": "📊", "title": "Strange Parts"})
-    if item.get("is_festivized"):
-        badges.append({"icon": "🎄", "title": "Festivized"})
-    if item.get("unusual_effect"):
-        badges.append({"icon": "🔥", "title": f"Unusual: {item['unusual_effect']}"})
-
-    mapping = {
-        "footprints": ("👣", "Fire Footprints"),
-        "voices": ("🗣", "Voices From Below"),
-        "pumpkin": ("🎃", "Pumpkin Bombs"),
-        "exorcism": ("👻", "Exorcism"),
-        "paint_spell": ("🎨", "Paint Spell"),
-    }
-    for key, (icon, title) in mapping.items():
-        if item.get("spell_flags", {}).get(key):
-            badges.append({"icon": icon, "title": title})
-    return badges
 
 
 def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
@@ -237,8 +276,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
-    cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
+    schema_map = schema_fetcher.SCHEMA or {}
+    cleaned_map = items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:
         defindex = str(asset.get("defindex", "0"))
@@ -247,7 +286,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not (schema_entry or ig_item):
             continue
 
-        attr_data = decode_attributes(asset)
+        attr_data = _decode_attributes(asset)
 
         if not attr_data.get("spells"):
             lines, flags = parse_spell_descriptions(asset)
@@ -259,7 +298,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not attr_data.get("unusual_effect"):
             effect_id = asset.get("effect")
             if effect_id:
-                name = local_data.EFFECT_NAMES.get(str(effect_id))
+                name = EFFECTS.get(int(effect_id))
                 if name:
                     attr_data["unusual_effect"] = name
         if not attr_data.get("unusual_effect"):
@@ -280,9 +319,6 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             or f"Item #{defindex}"
         )
 
-        if attr_data.get("custom_name"):
-            base_name = f"{attr_data['custom_name']} | {base_name}"
-
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
 
@@ -299,10 +335,6 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         item.update(attr_data)
 
         item["name"] = build_display_name(item)
-
-        badges = generate_badges(item)
-        if badges:
-            item["badges"] = badges
 
         items.append(item)
 
