@@ -48,18 +48,14 @@ def _fetch_schema(api_key: str) -> Dict[str, Any]:
                 continue
 
             path = (
-                item.get("image_url")
+                item.get("icon_url")
+                or item.get("image_url")
+                or item.get("image_url_large")
                 or item.get("icon_url_large")
-                or item.get("icon_url")
                 or ""
             )
-            if path.startswith("http"):
-                image_url = path
-            elif path:
-                # Some schema entries only provide a relative filename
-                image_url = f"{ICON_BASE}{path.lstrip('/')}"
-            else:
-                image_url = ""
+            icon = path.split("/")[-1].split("?")[0] if path else ""
+            image_url = f"{ICON_BASE}{icon}" if icon else ""
 
             items[defindex] = {
                 "defindex": item.get("defindex"),
