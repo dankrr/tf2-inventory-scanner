@@ -27,19 +27,39 @@
       </button>
       <div class="inventory-container">
         {% for item in user.items %}
-          <div class="item-card" style="border-color: {{ item.quality_color }};">
+          <div class="item-card" style="border-color: {{ item.quality_color }};" data-item="{{ item|tojson | safe }}">
+            {% if item.paint_hex %}
+              <span class="paint-dot" style="background:{{ item.paint_hex }}"></span>
+            {% endif %}
+            {% if item.killstreak_tier %}
+              <span class="ks-mark ks-tier-{{ item.killstreak_tier }}"></span>
+            {% endif %}
             {% if item.final_url %}
               <img class="item-img" src="{{ item.final_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
             {% else %}
               <div class="missing-icon"></div>
             {% endif %}
             <div class="item-name">{{ item.name }}</div>
+            {% if item.badges %}
+              <div class="badge-row">
+                {% for badge in item.badges %}
+                  <span title="{{ badge.title }}">{{ badge.icon }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
           </div>
         {% endfor %}
       </div>
       <button class="scroll-arrow right" type="button" aria-label="Scroll right">
         <i class="fa-solid fa-chevron-right"></i>
       </button>
+    </div>
+  </div>
+  <div class="item-modal">
+    <div class="modal-bg"></div>
+    <div class="modal-content">
+      <button type="button" class="modal-close">❌</button>
+      <dl class="modal-details"></dl>
     </div>
   </div>
 </div>
