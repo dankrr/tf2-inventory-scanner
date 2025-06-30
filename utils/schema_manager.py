@@ -84,9 +84,13 @@ def build_hybrid_schema(cache_dir: Path = CACHE_DIR) -> Dict[str, Any]:
     }
 
     for item in hybrid["items"].values():
-        large = item.get("image_url_large") or item.get("image_url_large", "")
-        small = item.get("image_url") or ""
-        item["image"] = large or small
+        image = item.get("image_url_large") or item.get("image_url") or ""
+        if isinstance(image, str) and image.startswith("http"):
+            item["image"] = image
+        elif image:
+            item["image"] = f"https://steamcdn-a.akamaihd.net/{image}"
+        else:
+            item["image"] = "/static/placeholder.png"
 
     cache_file = cache_dir / "hybrid_schema.json"
     cache_file.parent.mkdir(parents=True, exist_ok=True)

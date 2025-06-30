@@ -28,11 +28,7 @@
       <div class="inventory-container">
         {% for item in user.items %}
           <div class="item-card" style="border-color: {{ item.quality_color }};" data-item='{{ item|tojson|safe }}'>
-            {% if item.image_url %}
-              <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
-            {% else %}
-              <div class="missing-icon"></div>
-            {% endif %}
+            <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.src='/static/placeholder.png';">
             <div class="badge-row">{% for b in item.badges or [] %}{{ b }}{% endfor %}</div>
             <div class="item-title">{{ item.name }}</div>
           </div>
