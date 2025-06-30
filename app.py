@@ -13,9 +13,9 @@ from utils import steam_api_client as sac
 
 load_dotenv()
 if "--refresh" in sys.argv:
-    from scripts.fetch_data import fetch_items_game
+    from scripts.fetch_data import refresh_all
 
-    fetch_items_game()
+    refresh_all()
 if not os.getenv("STEAM_API_KEY"):
     raise RuntimeError(
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
