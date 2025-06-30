@@ -17,8 +17,8 @@ SCHEMA_OVERVIEW_URL = (
     "?key={key}&format=json"
 )
 ITEMS_GAME_URL = (
-    "https://raw.githubusercontent.com/SteamDatabase/SteamTracking/master/"
-    "TeamFortress2/tf/scripts/items/items_game.txt"
+    "https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/"
+    "refs/heads/master/tf/scripts/items/items_game.txt"
 )
 INVENTORY_URL = (
     "https://steamcommunity.com/inventory/{steamid}/440/2?l=english&count=5000"
