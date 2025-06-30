@@ -79,6 +79,22 @@ function attachItemModal() {
       if (img) img.src = data.image_url || '';
       if (details) {
         details.innerHTML = '';
+        if (data.custom_name) {
+          const div = document.createElement('div');
+          div.innerHTML = '<b>Custom Name:</b> ' + data.custom_name;
+          details.appendChild(div);
+        }
+        if (data.custom_desc) {
+          const div = document.createElement('div');
+          div.style.whiteSpace = 'pre-line';
+          div.textContent = data.custom_desc;
+          details.appendChild(div);
+        }
+        if (data.spells && data.spells.length) {
+          const div = document.createElement('div');
+          div.innerHTML = '<b>Spells:</b> ' + data.spells.join(', ');
+          details.appendChild(div);
+        }
         const fields = [
           ['Type', data.item_type_name],
           ['Level', data.level],
@@ -89,7 +105,6 @@ function attachItemModal() {
           ['Festivized', data.is_festivized ? 'Yes' : null],
           ['Paint', data.paint_name],
           ['Strange Parts', (data.strange_parts || []).join(', ')],
-          ['Spells', (data.spells || []).join(', ')],
         ];
         fields.forEach(([label, value]) => {
           if (!value) return;

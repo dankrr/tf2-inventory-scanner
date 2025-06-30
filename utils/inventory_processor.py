@@ -70,6 +70,46 @@ BADGE_EMOJIS = {
     "spell": "\U0001f47b",
 }
 
+SPELL_DEF_MAP = {
+    1004: "Chromatic Corruption",
+    1005: "Voices From Below",
+    1006: "Pumpkin Bombs",
+    1007: "Exorcism",
+    1008: "Spectral Flames",
+    1009: "Putrescent Pigmentation",
+    1010: "Sinister Staining",
+    1011: "Spectral Spectrum",
+    1012: "Die Job",
+    1013: "Team Spirit Footprints",
+    1014: "Bruised Purple Footprints",
+    1015: "Corpse Gray Footprints",
+    1016: "Gangreen Footprints",
+    1017: "Headless Horseshoes",
+    1018: "Rotten Orange Footprints",
+    1019: "Violent Violet Footprints",
+    1020: "Scout's Spectral Snarl",
+    1021: "Soldier's Booming Bark",
+    1022: "Pyro's Muffled Moan",
+    1023: "Demoman's Cadaverous Croak",
+    1024: "Heavy's Bottomless Bass",
+    1025: "Engineer's Gravelly Growl",
+    1026: "Medic's Blood-curdling Bellow",
+    1027: "Sniper's Deep Downunder Drawl",
+    1028: "Spy's Creepy Croon",
+    1029: "Gourd Grenades",
+    1030: "Sentry Quad-Pumpkins",
+    1031: "Spectral Flame",
+    1032: "Squash Rockets",
+}
+
+SPELL_BITMASK_MAP = {
+    1: "Fire Footprints",
+    2: "Voices From Below",
+    4: "Pumpkin Bombs",
+    8: "Exorcism",
+    16: "Chromatic Corruption",
+}
+
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     """Return the unusual effect name from attributes or descriptions."""
@@ -243,7 +283,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not (schema_entry or ig_item):
             continue
 
-        image_url = schema_entry.get("image_url") if schema_entry else ""
+        base_info = schema_map.get(defindex, {})
+        image_url = base_info.get("image") or "/static/placeholder.png"
 
         # Prefer name from cleaned items_game if available
         base_name = (
@@ -257,8 +298,6 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         quality_id = asset.get("quality", 0)
         q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
         display_name = _build_item_name(base_name, q_name, asset)
-        if asset.get("custom_name"):
-            display_name = asset["custom_name"]
 
         ks_tier, sheen = _extract_killstreak(asset)
         paint_name, paint_hex = _extract_paint(asset)
@@ -275,17 +314,27 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         }
         parts_map = hybrid.get("strange_parts", {})
         for attr in asset.get("attributes", []):
-            idx = attr.get("defindex")
-            raw_val = attr.get("value", attr.get("float_value", 0))
-            val = _to_int(raw_val)
-            if idx == 2013:
-                killstreaker = _ks_map.get(str(val))
-            elif idx == 2053:
-                festivized = bool(val)
-            elif idx >= 382 and str(val) in parts_map:
-                strange_parts.append(parts_map[str(val)])
-            elif 1004 <= idx <= 1009:
-                spells.append(str(idx))
+            didx = attr.get("defindex")
+            val = attr.get("value", attr.get("float_value"))
+            ival = _to_int(val)
+
+            if didx in SPELL_DEF_MAP:
+                spells.append(SPELL_DEF_MAP[didx])
+                continue
+
+            if didx == 730:
+                mask = ival
+                for bit, name in SPELL_BITMASK_MAP.items():
+                    if mask & bit:
+                        spells.append(name)
+                continue
+
+            if didx == 2013:
+                killstreaker = _ks_map.get(str(ival))
+            elif didx == 2053:
+                festivized = bool(ival)
+            elif didx >= 382 and str(ival) in parts_map:
+                strange_parts.append(parts_map[str(ival)])
 
         badges: List[Dict[str, str] | str] = []
         if paint_name:
@@ -303,7 +352,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if q_name == "Strange" or strange_parts:
             badges.append(BADGE_EMOJIS["strange"])
         if spells:
-            badges.append(BADGE_EMOJIS["spell"])
+            badges.append({"icon": "\U0001f47b", "title": "Halloween Spell"})
 
         item = {
             "defindex": defindex,
@@ -347,6 +396,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "is_festivized": festivized,
             "strange_parts": strange_parts,
             "spells": spells,
+            "custom_name": asset.get("custom_name"),
+            "custom_desc": asset.get("custom_desc"),
             "badges": badges,
         }
         items.append(item)
