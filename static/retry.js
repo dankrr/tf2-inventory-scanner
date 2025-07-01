@@ -88,20 +88,16 @@ function attachItemModal() {
       if (details) {
         details.innerHTML = '';
         const attrs = document.createElement('div');
+        // ── Killstreak row ─────────────────────────
         if (data.killstreak_tier) {
+          const tierMap = {1: 'Killstreak', 2: 'Specialized', 3: 'Professional'};
+          const ksParts = [];
+          ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
+          if (data.sheen) ksParts.push(data.sheen);
+          if (data.killstreak_effect) ksParts.push(data.killstreak_effect);
           const ks = document.createElement('div');
-          ks.textContent = data.killstreak_tier;
+          ks.textContent = 'Killstreak: ' + ksParts.join(', ');
           attrs.appendChild(ks);
-          if (data.sheen) {
-            const sh = document.createElement('div');
-            sh.textContent = '\u2022 Sheen: ' + data.sheen;
-            attrs.appendChild(sh);
-          }
-          if (data.killstreak_effect) {
-            const ke = document.createElement('div');
-            ke.textContent = '\u2022 Effect: ' + data.killstreak_effect;
-            attrs.appendChild(ke);
-          }
         }
 
         [
@@ -129,6 +125,12 @@ function attachItemModal() {
             div.appendChild(sw);
           }
           div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
+          attrs.appendChild(div);
+        }
+
+        if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
+          const div = document.createElement('div');
+          div.textContent = 'Strange Parts: ' + data.strange_parts.join(', ');
           attrs.appendChild(div);
         }
 
