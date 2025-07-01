@@ -47,6 +47,21 @@
                 {% endfor %}
               </div>
             {% endif %}
+            {% set e = item.enriched if item.enriched is defined else {} %}
+            <div class="enrichment-debug">
+              {% if e.killstreak_tier %}
+                Killstreak: {{ e.killstreak_tier }}<br>
+              {% endif %}
+              {% if e.spells %}
+                Spells: {{ e.spells | join(', ') }}<br>
+              {% endif %}
+              {% if e.strange_parts %}
+                Strange Parts: {{ e.strange_parts | join(', ') }}<br>
+              {% endif %}
+              {% if e.paint_name %}
+                Paint: {{ e.paint_name }}
+              {% endif %}
+            </div>
           </div>
         {% endfor %}
       </div>
