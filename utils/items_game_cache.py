@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-from utils.local_data import DEFAULT_ITEMS_GAME_FILE
+from utils.local_data import DEFAULT_ITEMS_GAME_FILE, clean_items_game
 
 import requests
 import vdf
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 RAW_FILE = Path("cache/items_game.txt")
 JSON_FILE = Path("cache/items_game.json")
+CLEANED_FILE = DEFAULT_ITEMS_GAME_FILE
 TTL = 48 * 60 * 60  # 48 hours
 
 ITEMS_GAME: Dict[str, Any] | None = None
@@ -42,6 +43,25 @@ def update_items_game() -> Dict[str, Any]:
 
     JSON_FILE.write_text(json.dumps(reduced))
     return reduced
+
+
+def build_items_game_cleaned(force: bool = False) -> Dict[str, Any]:
+    """Return a cleaned defindex map, downloading raw file if needed."""
+
+    if force or not RAW_FILE.exists():
+        url = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-TF2/refs/heads/master/tf/scripts/items/items_game.txt"
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        RAW_FILE.parent.mkdir(parents=True, exist_ok=True)
+        RAW_FILE.write_text(r.text)
+        text = r.text
+    else:
+        text = RAW_FILE.read_text()
+
+    cleaned = clean_items_game(text)
+    CLEANED_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CLEANED_FILE.write_text(json.dumps(cleaned))
+    return cleaned
 
 
 def _populate_maps(data: Dict[str, Any]) -> None:
@@ -109,22 +129,22 @@ async def wait_until_ready(timeout: float = 10.0) -> None:
             logger.info("Using previous item schema")
 
 
-def load_items_game_cache() -> None:
-    """Load cleaned items_game.json into global ITEM_BY_DEFINDEX."""
+def load_items_game_cleaned(force_rebuild: bool = False) -> Dict[str, Any]:
+    """Load cleaned items_game into ``ITEM_BY_DEFINDEX`` and return the map."""
+
     global ITEM_BY_DEFINDEX
 
-    if ITEM_BY_DEFINDEX:
-        return  # Already loaded
+    path = CLEANED_FILE
+    if not path.exists() or force_rebuild:
+        data = build_items_game_cleaned(force=force_rebuild)
+    else:
+        with path.open() as f:
+            data = json.load(f)
 
-    if not DEFAULT_ITEMS_GAME_FILE.exists():
-        raise FileNotFoundError(f"Missing {DEFAULT_ITEMS_GAME_FILE}")
-
-    with open(DEFAULT_ITEMS_GAME_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    if not isinstance(data, dict) or not data:
-        raise ValueError(f"{DEFAULT_ITEMS_GAME_FILE} is invalid or empty")
+    if not isinstance(data, dict):
+        data = {}
 
     ITEM_BY_DEFINDEX.clear()
     for idx, meta in data.items():
         ITEM_BY_DEFINDEX[str(idx)] = meta
+    return ITEM_BY_DEFINDEX

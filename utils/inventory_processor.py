@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import steam_api_client, schema_fetcher, items_game_cache, local_data
 
-items_game_cache.load_items_game_cache()
+items_game_cache.load_items_game_cleaned()
 
 logger = logging.getLogger(__name__)
 
