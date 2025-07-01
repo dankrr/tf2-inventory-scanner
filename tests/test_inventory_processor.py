@@ -55,6 +55,44 @@ def test_enrich_inventory_skips_unknown_defindex():
     assert items[0]["name"] == "One"
 
 
+def test_enrich_inventory_builds_badges():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 0,
+                "attributes": [
+                    {
+                        "attribute_class": "set_item_tint_rgb",
+                        "float_value": 16711680,
+                        "account_info": {"personaname": "Team Spirit"},
+                    },
+                    {"attribute_class": "killstreak_tier", "float_value": 3},
+                    {
+                        "attribute_class": "spooky_spell",
+                        "account_info": {
+                            "personaname": "Halloween: Exorcism (spell only)"
+                        },
+                    },
+                    {
+                        "attribute_class": "extra",
+                        "account_info": {
+                            "personaname": "Strange Part: Robots Destroyed"
+                        },
+                    },
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {
+        "111": {"defindex": 111, "item_name": "Badge Test", "image_url": "img"}
+    }
+    sf.QUALITIES = {"0": "Normal"}
+    items = ip.enrich_inventory(data)
+    keys = {b["key"] for b in items[0]["badges"]}
+    assert {"paint", "ks3", "spell_exorcism", "strange_parts"}.issubset(keys)
+
+
 def test_get_inventories_adds_user_agent(monkeypatch):
     captured = {}
 

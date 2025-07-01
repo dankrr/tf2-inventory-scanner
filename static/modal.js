@@ -49,22 +49,29 @@ function populateModal(modal, item) {
     dl.appendChild(dd);
   }
 
-  addRow('Custom Name', item.custom_name);
+  const ks = [];
+  if (item.killstreak_tier) {
+    const map = {1: 'Killstreak', 2: 'Specialized', 3: 'Professional'};
+    ks.push(map[item.killstreak_tier] || item.killstreak_tier);
+  }
+  if (item.sheen) ks.push(item.sheen);
+  if (item.killstreaker) ks.push(item.killstreaker);
+  addRow('Killstreak', ks.join(', '));
+
   addRow('Spells', item.spells && item.spells.join(', '));
-  addRow('Killstreak Tier', item.killstreak_tier);
-  addRow('Sheen', item.sheen);
-  addRow('Killstreaker', item.killstreaker);
   if (item.paint_name) {
     const swatch = `<span class="paint-dot" style="background:${item.paint_hex}"></span>`;
     addRow('Paint', `${item.paint_name} ${swatch}`);
   }
   addRow('Strange Parts', item.strange_parts && item.strange_parts.join(', '));
-  addRow('Origin', item.origin);
-  addRow('Level', item.level);
-  addRow('Unusual Effect', item.unusual_effect);
   if (typeof item.is_festivized !== 'undefined') {
     addRow('Festivized', item.is_festivized ? 'Yes' : 'No');
   }
+  addRow('Unusual Effect', item.unusual_effect);
+  addRow('Custom Name', item.custom_name);
+  addRow('Description', item.custom_description);
+  addRow('Origin', item.origin);
+  addRow('Level', item.level);
 }
 
 if (window.attachHandlers) {

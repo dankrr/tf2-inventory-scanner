@@ -45,9 +45,15 @@
             {% endif %}
             <div class="item-name">{{ item.name }}</div>
             {% if item.badges %}
-              <div class="badge-row">
+              <div class="badge-bar">
                 {% for badge in item.badges %}
-                  <span title="{{ badge.title }}">{{ badge.icon }}</span>
+                  {% if badge.key == 'paint' %}
+                    <span class="badge badge-paint" title="{{ badge.title }}">
+                      <span class="paint-dot" style="background:{{ item.paint_hex }}"></span>
+                    </span>
+                  {% else %}
+                    <span class="badge badge-{{ badge.key }}" title="{{ badge.title }}">{{ badge.icon }}</span>
+                  {% endif %}
                 {% endfor %}
               </div>
             {% endif %}
