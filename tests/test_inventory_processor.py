@@ -55,6 +55,35 @@ def test_enrich_inventory_unusual_effect():
     assert items[0]["quality"] == "Unusual"
 
 
+@pytest.mark.parametrize(
+    "quality,expected",
+    [
+        (5, True),
+        (13, True),
+        (11, False),
+    ],
+)
+def test_effect_name_only_for_unusual_and_haunted(quality, expected):
+    data = {
+        "items": [
+            {
+                "defindex": 333,
+                "quality": quality,
+                "descriptions": [{"value": "Unusual Effect: Burning Flames"}],
+            }
+        ]
+    }
+    sf.SCHEMA = {"333": {"defindex": 333, "item_name": "Cap", "image_url": ""}}
+    sf.QUALITIES = {"5": "Unusual", "13": "Haunted", "11": "Strange"}
+    ld.EFFECT_NAMES = {"13": "Burning Flames"}
+    items = ip.enrich_inventory(data)
+    name = items[0]["name"]
+    if expected:
+        assert "Burning Flames" in name
+    else:
+        assert "Burning Flames" not in name
+
+
 def test_process_inventory_handles_missing_icon():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     sf.SCHEMA = {
@@ -93,6 +122,14 @@ def test_enrich_inventory_skips_unknown_defindex():
     items = ip.enrich_inventory(data)
     assert len(items) == 1
     assert items[0]["name"] == "One"
+
+
+def test_custom_name_overrides_display(monkeypatch):
+    data = {"items": [{"defindex": 444, "quality": 6, "custom_name": "Named"}]}
+    sf.SCHEMA = {"444": {"defindex": 444, "item_name": "Thing", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["name"] == "Named"
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
