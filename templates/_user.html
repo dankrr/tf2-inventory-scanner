@@ -30,7 +30,7 @@
           <div
             class="item-card"
             style="border-color: {{ item.quality_color }};"
-            data-item='{{ item | tojson | escape }}'
+            data-item="{{ item | tojson | safe }}"
           >
             {% if item.paint_hex %}
               <span class="paint-dot" style="background:{{ item.paint_hex }}"></span>
@@ -44,19 +44,17 @@
               <div class="missing-icon"></div>
             {% endif %}
             <div class="item-name">{{ item.name }}</div>
-            {% if item.badges %}
-              <div class="badge-bar">
-                {% for badge in item.badges %}
-                  {% if badge.key == 'paint' %}
-                    <span class="badge badge-paint" title="{{ badge.title }}">
-                      <span class="paint-dot" style="background:{{ item.paint_hex }}"></span>
-                    </span>
+            <div class="badge-bar">
+              {% for badge in item.badges %}
+                <span class="badge" title="{{ badge.title }}">
+                  {% if badge.icon == 'swatch' %}
+                    <span class="paint-dot" style="background:{{ badge.color }}"></span>
                   {% else %}
-                    <span class="badge badge-{{ badge.key }}" title="{{ badge.title }}">{{ badge.icon }}</span>
+                    {{ badge.icon }}
                   {% endif %}
-                {% endfor %}
-              </div>
-            {% endif %}
+                </span>
+              {% endfor %}
+            </div>
             {% set e = item.enriched if item.enriched is defined else {} %}
             <div class="enrichment-debug">
               {% if e.killstreak_tier %}
