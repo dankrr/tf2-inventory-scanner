@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
+from utils.local_data import DEFAULT_ITEMS_GAME_FILE
+
 import requests
 import vdf
 
@@ -105,3 +107,24 @@ async def wait_until_ready(timeout: float = 10.0) -> None:
                 cached = json.load(f)
             _populate_maps(cached)
             logger.info("Using previous item schema")
+
+
+def load_items_game_cache() -> None:
+    """Load cleaned items_game.json into global ITEM_BY_DEFINDEX."""
+    global ITEM_BY_DEFINDEX
+
+    if ITEM_BY_DEFINDEX:
+        return  # Already loaded
+
+    if not DEFAULT_ITEMS_GAME_FILE.exists():
+        raise FileNotFoundError(f"Missing {DEFAULT_ITEMS_GAME_FILE}")
+
+    with open(DEFAULT_ITEMS_GAME_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if not isinstance(data, dict) or not data:
+        raise ValueError(f"{DEFAULT_ITEMS_GAME_FILE} is invalid or empty")
+
+    ITEM_BY_DEFINDEX.clear()
+    for idx, meta in data.items():
+        ITEM_BY_DEFINDEX[str(idx)] = meta
