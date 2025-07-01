@@ -28,11 +28,12 @@ def fetch_all() -> None:
     cache = Path("cache")
     cache.mkdir(exist_ok=True)
     for endpoint, filename in PROPS.items():
+        skip_invert = endpoint == "strangeParts"
         url = f"{BASE_URL}{endpoint}"
         r = requests.get(url, timeout=20)
         r.raise_for_status()
         data = r.json()
-        mapping = _invert_map(data)
+        mapping = data if skip_invert else _invert_map(data)
         (cache / filename).write_text(json.dumps(mapping))
         print(f"Fetched {len(mapping)} {endpoint} -> {cache/filename}")
 
