@@ -127,22 +127,26 @@ def enrich_inventory(
         image_url = schema_entry.get("image_url") or desc.get("icon_url")
 
         effect_id = int(asset.get("effect") or _attr_value(attrs, 134) or 0)
-        effect_name = (
-            maps.get("effect_names", {}).get(str(effect_id)) if effect_id else None
-        )
+        effect_names = maps.get("effect_names", {})
+        effect_name = effect_names.get(str(effect_id)) if effect_id else None
 
-        ks_tier_id = int(_attr_value(attrs, 2025) or 0)
-        ks_tier = maps.get("killstreak_names", {}).get(
-            str(ks_tier_id)
-        ) or KILLSTREAK_TIER_MAP.get(ks_tier_id)
+        ks_tier_val = _attr_value(attrs, 2025)
+        ks_tier = None
+        if ks_tier_val is not None:
+            kst = (
+                int(float(ks_tier_val))
+                if isinstance(ks_tier_val, str)
+                else int(ks_tier_val)
+            )
+            ks_tier = maps.get("killstreak_names", {}).get(
+                str(kst)
+            ) or KILLSTREAK_TIER_MAP.get(kst)
 
         sheen_val = _attr_value(attrs, 2014)
         sheen = None
         if sheen_val is not None:
-            val = (
-                int(float(sheen_val)) if isinstance(sheen_val, str) else int(sheen_val)
-            )
-            sheen = maps.get("killstreak_names", {}).get(str(val)) or SHEEN_MAP.get(val)
+            sv = int(float(sheen_val)) if isinstance(sheen_val, str) else int(sheen_val)
+            sheen = maps.get("killstreak_names", {}).get(str(sv)) or SHEEN_MAP.get(sv)
 
         ks_eff_val = _attr_value(attrs, 2013)
         ks_effect = None
@@ -181,17 +185,17 @@ def enrich_inventory(
             if name and name not in parts:
                 parts.append(name)
 
-        badges: List[str] = []
+        badges: set[str] = set()
         if effect_name:
-            badges.append("🔥")
-        if ks_tier or ks_effect:
-            badges.append("🎯")
+            badges.add("🔥")
         if paint_name:
-            badges.append("🖌")
+            badges.update(["🎨", "🖌"])
         if paintkit_name or wear_name:
-            badges.append("🎨")
+            badges.add("🎨")
+        if ks_tier or ks_effect:
+            badges.add("🎯")
         if quality_id == 11 or parts:
-            badges.append("🧠")
+            badges.add("🧠")
 
         item = {
             "name": base_name,
@@ -209,7 +213,7 @@ def enrich_inventory(
             "paintkit": paintkit_name,
             "crate_series": crate_name,
             "strange_parts": parts,
-            "badges": badges,
+            "badges": list(badges),
             "raw_attributes": _collect_unmapped(
                 attrs, [134, 142, 261, 725, 834, 2025, 2014, 2013, 187]
             ),
