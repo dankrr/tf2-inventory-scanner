@@ -65,18 +65,11 @@ function attachItemModal() {
   const modal = document.getElementById('item-modal');
   if (!modal) return;
   const title = document.getElementById('modal-title');
-  const effectBox = document.getElementById('modal-effect');
-  const img = document.getElementById('modal-img');
-  const details = document.getElementById('modal-details');
-  const badgeBox = document.getElementById('modal-badges');
-
-  function closeModal() {
-    modal.style.opacity = '0';
-    setTimeout(() => modal.close(), 200);
-  }
+  const desc = document.getElementById('modal-desc');
+  const image = document.getElementById('modal-img');
 
   modal.addEventListener('click', e => {
-    if (e.target === modal) closeModal();
+    if (e.target === modal) modal.close();
   });
 
   document.querySelectorAll('.item-card').forEach(card => {
@@ -88,93 +81,49 @@ function attachItemModal() {
         data = {};
       }
 
-      if (title) title.textContent = data.custom_name || data.name || '';
+      if (title)
+        title.textContent =
+          data.custom_name ||
+          (data.unusual_effect ? `${data.unusual_effect} ${data.name}` : data.name);
 
-      if (effectBox) {
-        effectBox.textContent = data.unusual_effect || '';
-        effectBox.style.display = data.unusual_effect ? 'block' : 'none';
+      if (desc) desc.textContent = data.custom_description || '';
+
+      if (image) {
+        image.src = data.image_url || '';
+        image.style.display = data.image_url ? 'block' : 'none';
       }
 
-      if (img) img.src = data.image_url || '';
+      const modalBody = document.querySelector('#modal-body');
+      modalBody.innerHTML = '';
 
-      if (details) {
-        details.innerHTML = '';
-        if (!data || Object.keys(data).length === 0) {
-          const miss = document.createElement('div');
-          miss.className = 'missing';
-          details.appendChild(miss);
-        } else {
-          const attrs = document.createElement('div');
-
-          if (data.paintkit || data.wear) {
-            const wp = document.createElement('div');
-            if (data.paintkit) {
-              wp.textContent = 'War Paint: ' + data.paintkit;
-              if (data.wear) wp.textContent += ' (' + data.wear + ')';
-            } else if (data.wear) {
-              wp.textContent = data.wear;
-            }
-            attrs.appendChild(wp);
-          }
-
-          if (data.killstreak_tier || data.sheen || data.killstreaker) {
-            const tierMap = {1: 'Killstreak', 2: 'Specialized', 3: 'Professional'};
-            const ksParts = [];
-            if (data.killstreak_tier) {
-              ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
-            }
-            if (data.sheen) ksParts.push(data.sheen);
-            if (data.killstreaker) ksParts.push(data.killstreaker);
-            const ks = document.createElement('div');
-            ks.textContent = 'Killstreak: ' + ksParts.join(', ');
-            attrs.appendChild(ks);
-          }
-
-          if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
-            const ul = document.createElement('ul');
-            data.strange_parts.forEach(p => {
-              const li = document.createElement('li');
-              li.textContent = p;
-              ul.appendChild(li);
-            });
-            attrs.appendChild(ul);
-          }
-
-          if (Array.isArray(data.spells) && data.spells.length) {
-            const head = document.createElement('h4');
-            head.textContent = 'Spells';
-            attrs.appendChild(head);
-            const ul = document.createElement('ul');
-            data.spells.forEach(sp => {
-              const li = document.createElement('li');
-              li.textContent = sp;
-              ul.appendChild(li);
-            });
-            attrs.appendChild(ul);
-          }
-
-          details.appendChild(attrs);
-        }
+      function addRow(label, value) {
+        if (!value) return;
+        const row = document.createElement('div');
+        row.innerHTML = `<strong>${label}:</strong> ${value}`;
+        modalBody.appendChild(row);
       }
-      if (badgeBox) {
-        badgeBox.innerHTML = '';
-        (data.badges || []).forEach(b => {
-          const span = document.createElement('span');
-          span.textContent = b.icon;
-          span.title = b.title;
-          span.addEventListener('click', () => {
-            const sec = document.getElementById('modal-spells');
-            if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-          });
-          badgeBox.appendChild(span);
-        });
-      }
+
+      addRow('Unusual Effect', data.unusual_effect);
+      addRow(
+        'Killstreak Tier',
+        {
+          1: 'Basic',
+          2: 'Specialized',
+          3: 'Professional'
+        }[data.killstreak_tier]
+      );
+      addRow('Sheen', data.sheen);
+      addRow('Killstreaker', data.killstreaker);
+      addRow('Paint', data.paint);
+      if (data.paintkit && data.wear) addRow('Skin', `${data.paintkit} (${data.wear})`);
+      addRow('Strange Parts', (data.strange_parts || []).join(', '));
+      addRow('Crate Series', data.crate_series);
+
       if (typeof modal.showModal === 'function') {
         modal.showModal();
       } else {
         modal.style.display = 'block';
       }
-      modal.style.opacity = '1';
     });
   });
 }
