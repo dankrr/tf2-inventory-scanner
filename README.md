@@ -119,6 +119,18 @@ The files are stored under `cache/` as `tf2_schema.json`, `items_game.txt` and
 `items_game_cleaned.json`. Start the server normally without `--refresh` once
 the update completes.
 
+### Offline test mode
+
+You can run the app without hitting the Steam API by supplying `--test`.
+The first run prompts for a SteamID64 and caches the inventory JSON under
+`cached_inventories/`.
+
+```bash
+python app.py --test
+```
+
+If a cached inventory exists, you can choose to use it or fetch a fresh copy.
+
 ### Deploy
 
 The app can be deployed to any platform that supports Python 3.12. For Docker:

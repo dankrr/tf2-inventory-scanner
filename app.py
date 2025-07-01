@@ -2,7 +2,9 @@ import os
 import re
 import asyncio
 import time
-import sys
+from pathlib import Path
+import json
+import argparse
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -21,11 +23,16 @@ if not os.getenv("STEAM_API_KEY"):
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
     )
 
-if "--refresh" in sys.argv[1:]:
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("--refresh", action="store_true")
+parser.add_argument("--test", action="store_true")
+ARGS, _ = parser.parse_known_args()
+
+if ARGS.refresh:
     from utils import schema_fetcher, items_game_cache
 
     print(
-        "\N{anticlockwise open circle arrow} Refresh requested: refetching TF2 schema and items_game..."
+        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema and items_game..."
     )
     schema = schema_fetcher.refresh_schema()
     print(f"\N{CHECK MARK} Fetched {len(schema)} schema items")
@@ -36,6 +43,11 @@ if "--refresh" in sys.argv[1:]:
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
     raise SystemExit(0)
+
+TEST_MODE = ARGS.test
+TEST_STEAMID: str = ""
+TEST_INVENTORY_RAW: Dict[str, Any] | None = None
+TEST_INVENTORY_STATUS: str = ""
 
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
@@ -77,7 +89,13 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
 
 def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     """Fetch TF2 inventory items for a user and return items with a status."""
-    status, data = sac.fetch_inventory(steamid64)
+    global TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
+
+    if TEST_MODE and steamid64 == TEST_STEAMID and TEST_INVENTORY_RAW is not None:
+        status = TEST_INVENTORY_STATUS or "parsed"
+        data = TEST_INVENTORY_RAW
+    else:
+        status, data = sac.fetch_inventory(steamid64)
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         items = enrich_inventory(data)
@@ -132,6 +150,49 @@ def fetch_and_process_single_user(steamid64: int) -> str:
     return render_template("_user.html", user=user)
 
 
+def _setup_test_mode() -> None:
+    """Initialize test mode and preload inventory data."""
+    global TEST_STEAMID, TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
+
+    steamid = input("Enter SteamID64 for test inventory: ").strip()
+    cache_dir = Path("cached_inventories")
+    cache_dir.mkdir(exist_ok=True)
+    cache_file = cache_dir / f"{steamid}.json"
+
+    while True:
+        if cache_file.exists():
+            ans = (
+                input(
+                    f"Cached inventory found for {steamid}. Use cached version? (y/n): "
+                )
+                .strip()
+                .lower()
+            )
+            if ans.startswith("y"):
+                with cache_file.open() as f:
+                    TEST_INVENTORY_RAW = json.load(f)
+                TEST_INVENTORY_STATUS = "parsed"
+                print("Loaded cached inventory for testing.")
+                break
+        status, data = sac.fetch_inventory(steamid)
+        if status != "failed":
+            TEST_INVENTORY_RAW = data
+            TEST_INVENTORY_STATUS = status
+            with cache_file.open("w") as f:
+                json.dump(data, f)
+            break
+        print(
+            "Failed to fetch inventory. Steam may be down or unreachable. Try again later."
+        )
+        if input("Retry? (y/n): ").strip().lower() != "y":
+            raise SystemExit(1)
+
+    TEST_STEAMID = steamid
+    user = normalize_user_payload(build_user_data(steamid))
+    app.config["PRELOADED_USERS"] = [user]
+    app.config["TEST_STEAMID"] = steamid
+
+
 @app.post("/retry/<int:steamid64>")
 def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
@@ -147,6 +208,9 @@ def index():
     steamids_input = ""
     ids: List[str] = []
     invalid: List[str] = []
+    if request.method == "GET" and app.config.get("PRELOADED_USERS"):
+        users = app.config.get("PRELOADED_USERS", [])
+        steamids_input = app.config.get("TEST_STEAMID", "")
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
         tokens = re.split(r"\s+", steamids_input.strip())
@@ -169,6 +233,10 @@ def index():
         ids=ids,
         debug_ms=MAX_MERGE_MS if os.getenv("FLASK_DEBUG") else None,
     )
+
+
+if TEST_MODE:
+    _setup_test_mode()
 
 
 if __name__ == "__main__":
