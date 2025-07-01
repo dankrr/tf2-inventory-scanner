@@ -14,8 +14,42 @@ QUALITY_MAP = {
     3: "Vintage",
     5: "Unusual",
     6: "Unique",
+    7: "Community",
+    8: "Valve",
+    9: "Self-Made",
+    10: "Customized",
     11: "Strange",
     13: "Haunted",
+    14: "Collector's",
+    15: "Decorated Weapon",
+}
+
+SHEEN_MAP = {
+    1: "Team Shine",
+    2: "Deadly Daffodil",
+    3: "Mandarin",
+    4: "Mean Green",
+    5: "Villainous Violet",
+    6: "Hot Rod",
+}
+
+KILLSTREAKER_MAP = {
+    2000: "Fire Horns",
+    2001: "Cerebral Discharge",
+    2002: "Tornado",
+    2003: "Flames",
+    2004: "Singularity",
+    2005: "Incinerator",
+    2006: "Hypno-Beam",
+    2007: "Tesla Coil",
+    2008: "Hellish Inferno",
+    2009: "Fireworks",
+}
+
+KILLSTREAK_TIER_MAP = {
+    1: "Killstreak",
+    2: "Specialized Killstreak",
+    3: "Professional Killstreak",
 }
 
 
@@ -36,6 +70,19 @@ def _attr_value(attrs: Iterable[dict], idx: int) -> Any | None:
                 return attr.get("float_value")
             return attr.get("value")
     return None
+
+
+def _wear_tier(value: float) -> str:
+    """Return human readable wear tier for a 0-1 float."""
+    if value < 0.07:
+        return "Factory New"
+    if value < 0.15:
+        return "Minimal Wear"
+    if value < 0.38:
+        return "Field-Tested"
+    if value < 0.45:
+        return "Well-Worn"
+    return "Battle Scarred"
 
 
 def _collect_unmapped(attrs: Iterable[dict], known: Iterable[int]) -> dict:
@@ -85,37 +132,42 @@ def enrich_inventory(
         )
 
         ks_tier_id = int(_attr_value(attrs, 2025) or 0)
-        ks_tier = (
-            maps.get("killstreak_names", {}).get(str(ks_tier_id))
-            if ks_tier_id
-            else None
-        )
-        sheen_id = int(_attr_value(attrs, 2014) or 0)
-        sheen = (
-            maps.get("killstreak_names", {}).get(str(sheen_id)) if sheen_id else None
-        )
-        ks_effect = (
-            maps.get("killstreak_names", {}).get(
-                str(int(_attr_value(attrs, 2013) or 0))
+        ks_tier = maps.get("killstreak_names", {}).get(
+            str(ks_tier_id)
+        ) or KILLSTREAK_TIER_MAP.get(ks_tier_id)
+
+        sheen_val = _attr_value(attrs, 2014)
+        sheen = None
+        if sheen_val is not None:
+            val = (
+                int(float(sheen_val)) if isinstance(sheen_val, str) else int(sheen_val)
             )
-            if _attr_value(attrs, 2013)
-            else None
-        )
+            sheen = maps.get("killstreak_names", {}).get(str(val)) or SHEEN_MAP.get(val)
 
-        paint_id = int(_attr_value(attrs, 142) or _attr_value(attrs, 261) or 0)
-        paint_name = (
-            maps.get("paint_names", {}).get(str(paint_id)) if paint_id else None
-        )
+        ks_eff_val = _attr_value(attrs, 2013)
+        ks_effect = None
+        if ks_eff_val is not None:
+            ksv = (
+                int(float(ks_eff_val))
+                if isinstance(ks_eff_val, str)
+                else int(ks_eff_val)
+            )
+            ks_effect = maps.get("killstreak_names", {}).get(
+                str(ksv)
+            ) or KILLSTREAKER_MAP.get(ksv)
 
-        wear_id = int(_attr_value(attrs, 725) or 0)
-        wear_name = maps.get("wear_names", {}).get(str(wear_id)) if wear_id else None
+        paint_id = _attr_value(attrs, 142) or _attr_value(attrs, 261)
+        paint_name = None
+        if paint_id is not None:
+            paint_name = maps.get("paint_names", {}).get(str(int(paint_id)))
 
-        paintkit_id = int(_attr_value(attrs, 834) or 0)
-        paintkit_name = (
-            maps.get("paintkit_names", {}).get(str(paintkit_id))
-            if paintkit_id
-            else None
-        )
+        wear_val = _attr_value(attrs, 725)
+        wear_name = _wear_tier(float(wear_val)) if wear_val is not None else None
+
+        paintkit_val = _attr_value(attrs, 834)
+        paintkit_name = None
+        if paintkit_val is not None:
+            paintkit_name = maps.get("paintkit_names", {}).get(str(int(paintkit_val)))
 
         crate_id = int(_attr_value(attrs, 187) or 0)
         crate_name = (
@@ -132,10 +184,12 @@ def enrich_inventory(
         badges: List[str] = []
         if effect_name:
             badges.append("🔥")
-        if paint_name:
-            badges.append("🎨")
         if ks_tier or ks_effect:
             badges.append("🎯")
+        if paint_name:
+            badges.append("🖌")
+        if paintkit_name or wear_name:
+            badges.append("🎨")
         if quality_id == 11 or parts:
             badges.append("🧠")
 
