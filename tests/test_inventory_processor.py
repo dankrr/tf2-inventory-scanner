@@ -51,7 +51,8 @@ def test_enrich_inventory_unusual_effect():
     sf.QUALITIES = {"5": "Unusual"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
-    assert items[0]["name"] == "Burning Flames Team Captain"
+    assert items[0]["name"] == "Unusual Team Captain"
+    assert items[0]["unusual_effect"] == "Burning Flames"
     assert items[0]["quality"] == "Unusual"
 
 
@@ -59,11 +60,11 @@ def test_enrich_inventory_unusual_effect():
     "quality,expected",
     [
         (5, True),
-        (13, True),
-        (11, False),
+        (11, True),
+        (6, False),
     ],
 )
-def test_effect_name_only_for_unusual_and_haunted(quality, expected):
+def test_unusual_effect_only_for_allowed_qualities(quality, expected):
     data = {
         "items": [
             {
@@ -74,14 +75,14 @@ def test_effect_name_only_for_unusual_and_haunted(quality, expected):
         ]
     }
     sf.SCHEMA = {"333": {"defindex": 333, "item_name": "Cap", "image_url": ""}}
-    sf.QUALITIES = {"5": "Unusual", "13": "Haunted", "11": "Strange"}
+    sf.QUALITIES = {"5": "Unusual", "11": "Haunted", "6": "Unique"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
-    name = items[0]["name"]
+    effect = items[0]["unusual_effect"]
     if expected:
-        assert "Burning Flames" in name
+        assert effect == "Burning Flames"
     else:
-        assert "Burning Flames" not in name
+        assert effect is None
 
 
 def test_process_inventory_handles_missing_icon():
@@ -124,12 +125,29 @@ def test_enrich_inventory_skips_unknown_defindex():
     assert items[0]["name"] == "One"
 
 
-def test_custom_name_overrides_display(monkeypatch):
+def test_custom_name_stored_separately(monkeypatch):
     data = {"items": [{"defindex": 444, "quality": 6, "custom_name": "Named"}]}
     sf.SCHEMA = {"444": {"defindex": 444, "item_name": "Thing", "image_url": ""}}
     sf.QUALITIES = {"6": "Unique"}
     items = ip.enrich_inventory(data)
-    assert items[0]["name"] == "Named"
+    assert items[0]["name"] == "Thing"
+    assert items[0]["custom_name"] == "Named"
+
+
+def test_unusual_effect_quality_filter(monkeypatch):
+    data = {"items": [{"defindex": 500, "quality": 5, "effect": 15}]}
+    sf.SCHEMA = {"500": {"defindex": 500, "item_name": "Hat", "image_url": ""}}
+    sf.QUALITIES = {"5": "Unusual"}
+    ld.EFFECT_NAMES = {"15": "Burning Flames"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["unusual_effect"] == "Burning Flames"
+
+    # quality not allowed
+    data = {"items": [{"defindex": 501, "quality": 6, "effect": 15}]}
+    sf.SCHEMA = {"501": {"defindex": 501, "item_name": "Thing", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["unusual_effect"] is None
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
