@@ -117,7 +117,7 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         val = int(attr.get("float_value", 0))
-        if idx == 2025:
+        if idx in (2025, 2013):
             tier = _KILLSTREAK_TIER.get(val)
         elif idx == 2014:
             sheen = _SHEEN_NAMES.get(val)
@@ -138,6 +138,12 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     """Return killstreak effect string if present."""
 
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx in (2013, 2015):
+            name = attr.get("account_info", {}).get("name")
+            if name:
+                return name
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
@@ -179,6 +185,30 @@ def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
         if "voices" in ltext or "rare spell" in ltext:
             flags["has_voice_lines"] = True
     return lines, flags
+
+
+def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
+    """Return list of Strange Part names from attributes if present."""
+
+    parts: List[str] = []
+    for attr in asset.get("attributes", []):
+        info = attr.get("account_info")
+        name = None
+        if isinstance(info, dict):
+            name = info.get("name")
+        if not name:
+            defindex = str(attr.get("defindex"))
+            entry = items_game_cache.ITEM_BY_DEFINDEX.get(defindex)
+            if isinstance(entry, dict):
+                name = entry.get("name")
+        if not name:
+            continue
+        lname = name.lower()
+        if "strange part" in lname:
+            part = name.split(":", 1)[-1].strip()
+            if part and part not in parts:
+                parts.append(part)
+    return parts
 
 
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
@@ -254,6 +284,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         ks_effect = _extract_killstreak_effect(asset)
         paint_name, paint_hex = _extract_paint(asset)
         spell_lines, spell_flags = _extract_spells(asset)
+        strange_parts = _extract_strange_parts(asset)
 
         item = {
             "defindex": defindex,
@@ -294,8 +325,14 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "paint_hex": paint_hex,
             "killstreak_effect": ks_effect,
             "spells": spell_lines,
+            "strange_parts": strange_parts,
         }
         badges = []
+        effect = _extract_unusual_effect(asset)
+        if effect:
+            badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
+        if ks_effect:
+            badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
         for key, icon, title in [
             ("has_exorcism", "\U0001f47b", "Exorcism"),
             ("has_paint_spell", "\U0001f3a8", "Paint spell"),
@@ -309,22 +346,6 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             item["badges"] = badges
         items.append(item)
 
-        if len(items) <= 3:
-            effect_id = asset.get("effect")
-            ks = None
-            sheen = None
-            for attr in asset.get("attributes", []):
-                idx = attr.get("defindex")
-                val = int(attr.get("float_value", 0))
-                if idx == 2025:
-                    ks = val
-                elif idx == 2014:
-                    sheen = val
-                elif idx == 134 and effect_id is None:
-                    effect_id = val
-            print(
-                f"Parsed: {display_name} (defindex {defindex}, effect: {effect_id}, ks: {ks}, sheen: {sheen})"
-            )
     return items
 
 
