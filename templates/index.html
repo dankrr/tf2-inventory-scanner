@@ -110,7 +110,11 @@
         </div>
     </form>
 
-    <div id="user-container"></div>
+    <div id="user-container">
+        {% for user in users %}
+            {% include "_user.html" %}
+        {% endfor %}
+    </div>
 
     <dialog id="item-modal">
       <div class="modal-header">
