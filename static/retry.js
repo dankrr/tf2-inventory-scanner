@@ -65,6 +65,7 @@ function attachItemModal() {
   const modal = document.getElementById('item-modal');
   if (!modal) return;
   const title = document.getElementById('modal-title');
+  const effectBox = document.getElementById('modal-effect');
   const img = document.getElementById('modal-img');
   const details = document.getElementById('modal-details');
   const badgeBox = document.getElementById('modal-badges');
@@ -83,7 +84,8 @@ function attachItemModal() {
       let data = card.dataset.item;
       if (!data) return;
       try { data = JSON.parse(data); } catch (e) { return; }
-      if (title) title.textContent = data.name || '';
+      if (title) title.textContent = data.custom_name || data.name || '';
+      if (effectBox) effectBox.textContent = data.unusual_effect || '';
       if (img) img.src = data.image_url || '';
       if (details) {
         details.innerHTML = '';
@@ -125,11 +127,6 @@ function attachItemModal() {
             div.appendChild(sw);
           }
           div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
-  if (data.custom_name) {
-    const cn = document.createElement("div");
-    cn.textContent = "Custom Name: " + data.custom_name;
-    attrs.appendChild(cn);
-  }
 
   if (data.custom_description) {
     const cd = document.createElement("div");
