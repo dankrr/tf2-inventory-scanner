@@ -109,14 +109,14 @@ pre-commit install
 ### Updating item cache
 
 Run the application with the `--refresh` flag to download the latest TF2 schema
-and `items_game.txt`:
+and rebuild `items_game_cleaned.json`:
 
 ```bash
 python app.py --refresh
 ```
 
 The files are stored under `cache/` as `tf2_schema.json`, `items_game.txt` and
-`items_game_cleaned.json`. Start the server normally without `--refresh` after
+`items_game_cleaned.json`. Start the server normally without `--refresh` once
 the update completes.
 
 ### Deploy
