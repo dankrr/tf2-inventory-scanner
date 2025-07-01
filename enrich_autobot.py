@@ -27,14 +27,23 @@ def _invert_map(data: dict) -> dict:
 def fetch_all() -> None:
     cache = Path("cache")
     cache.mkdir(exist_ok=True)
-    for endpoint, filename in PROPS.items():
-        url = f"{BASE_URL}{endpoint}"
-        r = requests.get(url, timeout=20)
-        r.raise_for_status()
-        data = r.json()
-        mapping = _invert_map(data)
-        (cache / filename).write_text(json.dumps(mapping))
-        print(f"Fetched {len(mapping)} {endpoint} -> {cache/filename}")
+    endpoints = list(PROPS.items())
+    for name, filename in endpoints:
+        # Use override for strangeParts
+        if name == "strangeParts":
+            url = f"https://schema.autobot.tf/properties/{name}"
+        else:
+            url = f"https://schema.autobot.tf/{name}"
+
+        try:
+            resp = requests.get(url, headers={"accept": "*/*"})
+            resp.raise_for_status()
+            data = resp.json()
+            dest = Path("cache") / filename
+            dest.write_text(json.dumps(data, indent=2))
+            print(f"Fetched {len(data)} {name} -> {dest}")
+        except Exception as e:
+            print(f"\N{WARNING SIGN} Failed to fetch {name}: {e}")
 
 
 if __name__ == "__main__":
