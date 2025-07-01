@@ -28,3 +28,35 @@ def test_user_template_does_not_error(app, context):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context.get("user", {}))
         render_template_string(HTML, **context)
+
+
+def test_item_card_has_valid_json(app):
+    with app.app_context():
+        app_module = importlib.import_module("app")
+        user = {
+            "items": [
+                {"name": "Foo", "final_url": "", "quality_color": "#fff", "badges": []}
+            ]
+        }
+        user_ns = app_module.normalize_user_payload(user)
+        html = render_template_string(HTML, user=user_ns)
+
+        from html.parser import HTMLParser
+
+        class Parser(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.data = None
+
+            def handle_starttag(self, tag, attrs):
+                if tag == "div":
+                    attr = dict(attrs)
+                    cls = attr.get("class", "")
+                    if "item-card" in cls.split():
+                        self.data = attr.get("data-item")
+
+        parser = Parser()
+        parser.feed(html)
+        import json
+
+        json.loads(parser.data)
