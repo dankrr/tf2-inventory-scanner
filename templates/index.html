@@ -76,8 +76,13 @@
         }
         #item-modal .modal-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+        }
+        .modal-effect {
+            font-weight: bold;
+            color: #8650AC;
         }
         #modal-details div { margin-top: 2px; }
         .item-badges { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; }
@@ -109,6 +114,7 @@
 
     <dialog id="item-modal">
       <div class="modal-header">
+        <div id="modal-effect" class="modal-effect"></div>
         <h3 id="modal-title"></h3>
         <div id="modal-badges" class="item-badges"></div>
       </div>
