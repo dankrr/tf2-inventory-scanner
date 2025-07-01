@@ -91,9 +91,9 @@ def test_enrich_inventory_builds_badges():
     items = ip.enrich_inventory(data)
     badges = items[0]["badges"]
     keys = {b["key"] for b in badges}
-    assert {"paint", "ks3", "spell_exorcism", "strange_parts"}.issubset(keys)
+    assert {"paint", "killstreak", "spell_exorcism", "strange_parts"}.issubset(keys)
     paint = next(b for b in badges if b["key"] == "paint")
-    assert paint.get("color") == "#ff0000"
+    assert paint.get("icon") == "#ff0000"
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
