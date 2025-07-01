@@ -125,6 +125,17 @@ function attachItemModal() {
             div.appendChild(sw);
           }
           div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
+  if (data.custom_name) {
+    const cn = document.createElement("div");
+    cn.textContent = "Custom Name: " + data.custom_name;
+    attrs.appendChild(cn);
+  }
+
+  if (data.custom_description) {
+    const cd = document.createElement("div");
+    cd.textContent = "Custom Desc: " + data.custom_description;
+    attrs.appendChild(cd);
+  }
           attrs.appendChild(div);
         }
 
