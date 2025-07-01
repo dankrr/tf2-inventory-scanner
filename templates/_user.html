@@ -27,94 +27,25 @@
       </button>
       <div class="inventory-container">
         {% for item in user.items %}
-          {# ↑ keep border-color for quality #}
           <div class="item-card"
                style="border-color: {{ item.quality_color }};"
-               data-item='{{ {
-                 "name": item.name|default(None),
-                 "image_url": item.image_url|default(None),
-                 "custom_name": item.custom_name|default(None),
-                 "custom_description": item.custom_desc|default(None),
-                 "unusual_effect": item.unusual_effect|default(None),
-                 "wear": item.wear|default(None),
-                 "paintkit": item.paintkit|default(None),
-                 "killstreak_tier": item.killstreak_tier|default(None),
-                 "sheen": item.sheen|default(None),
-                 "killstreaker": item.killstreaker|default(None),
-                 "strange_parts": item.strange_parts|default([]),
-                 "spells": item.spells|default([]),
-                 "badges": item.badges|default([])
-               } | tojson | safe }}'>
+               data-item='{{ item | tojson | safe }}'>
+            {% set tier = item.killstreak_tier %}
+            {% set chevrons = "›" * tier if tier else "" %}
 
-            {# badge bar (bottom-right) #}
-            {% if item.badges %}
-            <div class="item-badges">
-              {% for badge in item.badges %}
-
-<span class="badge"
-
-{% if badge.color %} style="color:{{ badge.color }}"{% endif %}
-
-title="{{ badge.title }}">{{ badge.icon }}</span>
-
-
-<span class="badge"
-
-{% if badge.color %} style="color:{{ badge.color }}"{% endif %}
-
-title="{{ badge.title }}">{{ badge.icon }}</span>
-              {% endfor %}
+            <div class="item-name">
+              {% if item.unusual_effect %}
+                {{ item.unusual_effect }} {{ item.name }}
+              {% else %}
+                {{ item.name }}
+              {% endif %}
             </div>
+
+            {% if chevrons %}
+              <div class="item-badges">
+                <span class="badge" title="Killstreak Tier">{{ chevrons }}</span>
+              </div>
             {% endif %}
-            {% if item.image_url %}
-              <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
-            {% else %}
-              <div class="missing-icon"></div>
-            {% endif %}
-              <div class="item-name">{{ item.name }}</div>
-
-<div class="item-details">
-     {% if item.custom_name %}<div class="custom-name">"{{ item.custom_name }}"</div>{% endif %}
-     {% if item.custom_desc %}<div class="custom-desc">{{ item.custom_desc }}</div>{% endif %}
-     {% if item.level %}<div class="item-level">Level {{ item.level }}</div>{% endif %}
-     {% if item.paint %}<div class="item-paint">Painted: {{ item.paint }}</div>{% endif %}
-
-{% if item.paintkit %}<div class="item-paintkit">War Paint: {{ item.paintkit }}{% if item.wear %} ({{ item.wear }}){% endif %}</div>{% endif %}
-
-{% if item.unusual_effect %}<div class="item-effect">Effect: {{ item.unusual_effect }}</div>{% endif %}
-
-{% if item.killstreak_tier %}<div class="item-ks">Killstreak: {{ item.killstreak_tier }}</div>{% endif %}
-
-{% if item.sheen %}<div class="item-sheen">Sheen: {{ item.sheen }}</div>{% endif %}
-
-{% if item.killstreaker %}<div class="item-ks-effect">Killstreaker: {{ item.killstreaker }}</div>{% endif %}
-
-{% if item.strange_parts and item.strange_parts|length > 0 %}
-
-<div class="item-parts">
-
-Strange Parts:
-
-<ul>
-
-{% for part in item.strange_parts %}
-
-<li>{{ part }}</li>
-
-{% endfor %}
-
-</ul>
-
-</div>
-
-{% endif %}
-
-{% if item.spells and item.spells|length > 0 %}
-
-<div class="item-spells">Spells: {{ item.spells | join(", ") }}</div>
-
-{% endif %}
- </div>
           </div>
         {% endfor %}
       </div>
