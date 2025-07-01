@@ -214,24 +214,16 @@ def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
 
 
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
-    """Return the display name prefixed with quality/effect."""
+    """Return the display name prefixed with quality and killstreak info."""
 
     parts: List[str] = []
     ks_tier, sheen = _extract_killstreak(asset)
-    effect = _extract_unusual_effect(asset)
 
     if ks_tier:
         parts.append(ks_tier)
 
-    quality_id = asset.get("quality")
-
-    if effect and quality_id in (5, 13):
-        parts.append(effect)
-        if quality not in ("Unique", "Normal", "Unusual"):
-            parts.append(quality)
-    else:
-        if quality not in ("Unique", "Normal"):
-            parts.append(quality)
+    if quality not in ("Unique", "Normal"):
+        parts.append(quality)
 
     parts.append(base)
 
@@ -292,7 +284,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         badges: List[Dict[str, str]] = []
         effect = _extract_unusual_effect(asset)
-        if effect:
+        if effect and quality_id in (5, 11):
             badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
         if ks_effect:
             badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
@@ -306,7 +298,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             if spell_flags.get(key):
                 badges.append({"icon": icon, "title": title})
 
-        item_name = asset.get("custom_name") or display_name
+        item_name = display_name
 
         item = {
             "defindex": defindex,
@@ -343,6 +335,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "origin": ORIGIN_MAP.get(asset.get("origin")),
             "custom_name": asset.get("custom_name"),
             "custom_description": asset.get("custom_desc"),
+            "unusual_effect": effect if quality_id in (5, 11) else None,
             "killstreak_tier": ks_tier,
             "sheen": sheen,
             "paint_name": paint_name,
