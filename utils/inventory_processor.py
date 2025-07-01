@@ -181,19 +181,37 @@ def _build_badges(info: Dict[str, Any]) -> List[Dict[str, str]]:
     """Convert parsed attributes to overlay badges."""
 
     badges: List[Dict[str, str]] = []
-    spells = info.get("spells", [])
+    spells = [s.lower() for s in info.get("spells", [])]
+
+    if info.get("paint_hex"):
+        badges.append({"key": "paint", "icon": "🎨", "title": "Painted"})
+
+    if any("footprint" in s for s in spells):
+        badges.append({"key": "spell_footprints", "icon": "👣", "title": "Footprints"})
+    if any("pumpkin" in s for s in spells):
+        badges.append({"key": "spell_pumpkin", "icon": "🎃", "title": "Pumpkin Bombs"})
+    if any("exorcism" in s for s in spells):
+        badges.append({"key": "spell_exorcism", "icon": "👻", "title": "Exorcism"})
+    if any("voices" in s for s in spells):
+        badges.append({"key": "spell_voices", "icon": "🗣", "title": "Voices"})
+
     if info.get("strange_parts"):
-        badges.append({"icon": "\u2699", "title": "Strange Part"})
-    if any("footprint" in s.lower() for s in spells):
-        badges.append({"icon": "\ud83d\udc63", "title": "Footprint Spell"})
-    if any("pumpkin bombs" in s.lower() for s in spells):
-        badges.append({"icon": "\ud83c\udf83", "title": "Pumpkin Bombs Spell"})
-    if any("exorcism" in s.lower() for s in spells):
-        badges.append({"icon": "\ud83d\udc7b", "title": "Exorcism"})
+        badges.append({"key": "strange_parts", "icon": "🔧", "title": "Strange Parts"})
+
+    tier = info.get("killstreak_tier")
+    if tier == 1:
+        badges.append({"key": "ks1", "icon": "›", "title": "Killstreak"})
+    elif tier == 2:
+        badges.append({"key": "ks2", "icon": "≫", "title": "Specialized"})
+    elif tier == 3:
+        badges.append({"key": "ks3", "icon": "≡", "title": "Professional"})
+
     if info.get("is_festivized"):
-        badges.append({"icon": "\u2728", "title": "Festivized"})
+        badges.append({"key": "festivized", "icon": "🎄", "title": "Festivized"})
+
     if info.get("unusual_effect"):
-        badges.append({"icon": "\ud83d\udd25", "title": info["unusual_effect"]})
+        badges.append({"key": "unusual", "icon": "💎", "title": info["unusual_effect"]})
+
     return badges
 
 
