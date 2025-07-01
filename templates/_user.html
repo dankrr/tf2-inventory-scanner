@@ -30,7 +30,21 @@
           {# ↑ keep border-color for quality #}
           <div class="item-card"
                style="border-color: {{ item.quality_color }};"
-               data-item='{{ item|tojson|safe }}'>
+               data-item='{{ {
+                 "name": item.name|default(None),
+                 "image_url": item.image_url|default(None),
+                 "custom_name": item.custom_name|default(None),
+                 "custom_description": item.custom_desc|default(None),
+                 "unusual_effect": item.unusual_effect|default(None),
+                 "wear": item.wear|default(None),
+                 "paintkit": item.paintkit|default(None),
+                 "killstreak_tier": item.killstreak_tier|default(None),
+                 "sheen": item.sheen|default(None),
+                 "killstreaker": item.killstreaker|default(None),
+                 "strange_parts": item.strange_parts|default([]),
+                 "spells": item.spells|default([]),
+                 "badges": item.badges|default([])
+               } | tojson | safe }}'>
 
             {# badge bar (bottom-right) #}
             {% if item.badges %}
