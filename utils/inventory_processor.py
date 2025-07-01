@@ -120,7 +120,9 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         idx = attr.get("defindex")
         val = int(attr.get("float_value", 0))
         if idx in (2025, 2013):
-            tier = _KILLSTREAK_TIER.get(val)
+            tier = local_data.KILLSTREAK_NAMES.get(str(val)) or _KILLSTREAK_TIER.get(
+                val
+            )
         elif idx == 2014:
             sheen = _SHEEN_NAMES.get(val)
     return tier, sheen
@@ -133,8 +135,45 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         idx = attr.get("defindex")
         if idx == 142:
             val = int(attr.get("float_value", 0))
-            return PAINT_MAP.get(val, (None, None))
+            name = local_data.PAINT_NAMES.get(str(val))
+            hex_color = PAINT_MAP.get(val, (None, None))[1]
+            if not name:
+                name = PAINT_MAP.get(val, (None, None))[0]
+            return name, hex_color
     return None, None
+
+
+def _extract_wear(asset: Dict[str, Any]) -> str | None:
+    """Return wear tier name if present."""
+
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx == 725:
+            val = int(attr.get("float_value", 0))
+            return local_data.WEAR_NAMES.get(str(val))
+    return None
+
+
+def _extract_paintkit(asset: Dict[str, Any]) -> str | None:
+    """Return paintkit name if present."""
+
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx == 834:
+            val = int(attr.get("float_value", 0))
+            return local_data.PAINTKIT_NAMES.get(str(val))
+    return None
+
+
+def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
+    """Return crate series name if present."""
+
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        if idx == 187:
+            val = int(attr.get("float_value", 0))
+            return local_data.CRATE_SERIES_NAMES.get(str(val))
+    return None
 
 
 def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
@@ -203,6 +242,8 @@ def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
             entry = items_game_cache.ITEM_BY_DEFINDEX.get(defindex)
             if isinstance(entry, dict):
                 name = entry.get("name")
+            if not name:
+                name = local_data.STRANGE_PART_NAMES.get(defindex)
         if not name:
             continue
         lname = name.lower()
@@ -279,6 +320,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         ks_tier, sheen = _extract_killstreak(asset)
         ks_effect = _extract_killstreak_effect(asset)
         paint_name, paint_hex = _extract_paint(asset)
+        wear_name = _extract_wear(asset)
+        paintkit_name = _extract_paintkit(asset)
+        crate_series_name = _extract_crate_series(asset)
         spell_lines, spell_flags = _extract_spells(asset)
         strange_parts = _extract_strange_parts(asset)
 
@@ -340,6 +384,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "sheen": sheen,
             "paint_name": paint_name,
             "paint_hex": paint_hex,
+            "wear_name": wear_name,
+            "paintkit_name": paintkit_name,
+            "crate_series_name": crate_series_name,
             "killstreak_effect": ks_effect,
             "spells": spell_lines,
             "badges": badges,  # always present, may be empty
