@@ -184,7 +184,14 @@ def _build_badges(info: Dict[str, Any]) -> List[Dict[str, str]]:
     spells = [s.lower() for s in info.get("spells", [])]
 
     if info.get("paint_hex"):
-        badges.append({"key": "paint", "icon": "🎨", "title": "Painted"})
+        badges.append(
+            {
+                "key": "paint",
+                "icon": "swatch",
+                "title": info.get("paint_name", "Painted"),
+                "color": info["paint_hex"],
+            }
+        )
 
     if any("footprint" in s for s in spells):
         badges.append({"key": "spell_footprints", "icon": "👣", "title": "Footprints"})
