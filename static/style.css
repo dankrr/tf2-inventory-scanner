@@ -151,11 +151,24 @@ button {
   border-radius: 8px;
   overflow: hidden;
   background-color: #1e1e1e;
+  position: relative; /* ensure badges overlay */
 }
 
 .item-card:hover {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+.item-badges{
+  position:absolute;
+  right:2px;
+  bottom:2px;
+  display:flex;
+  gap:2px;
+  pointer-events:none;
+  font-size:14px;
+}
+.item-badges .badge{
+  filter:drop-shadow(0 0 2px #0008);
 }
 .item-img {
   max-width: 64px;

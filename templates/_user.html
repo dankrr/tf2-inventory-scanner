@@ -27,12 +27,21 @@
       </button>
       <div class="inventory-container">
         {% for item in user.items %}
-          <div class="item-card" style="border-color: {{ item.quality_color }};" data-item='{{ item|tojson|safe }}'>
+          {# ↑ keep border-color for quality #}
+          <div class="item-card"
+               style="border-color: {{ item.quality_color }};"
+               data-item='{{ item|tojson|safe }}'>
+
+            {# badge bar (bottom-right) #}
+            {% if item.badges %}
             <div class="item-badges">
-              {% for badge in item.badges or [] %}
-                <span title="{{ badge.title }}">{{ badge.icon }}</span>
+              {% for badge in item.badges %}
+                <span class="badge"
+                      {% if badge.color %} style="color:{{ badge.color }}"{% endif %}
+                      title="{{ badge.title }}">{{ badge.icon }}</span>
               {% endfor %}
             </div>
+            {% endif %}
             {% if item.image_url %}
               <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
             {% else %}
