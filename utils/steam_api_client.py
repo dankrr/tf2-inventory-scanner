@@ -3,10 +3,23 @@ from typing import Any, Dict, Iterator, List, Tuple
 
 import logging
 import requests
+from dotenv import load_dotenv
+
+# Ensure .env values are available even when this module is imported early.
+load_dotenv()
 
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
 logger = logging.getLogger(__name__)
+
+
+def _require_key() -> str:
+    """Return the Steam API key or raise an error if missing."""
+    if not STEAM_API_KEY:
+        raise RuntimeError(
+            "STEAM_API_KEY is required. Set it in the environment or .env file."
+        )
+    return STEAM_API_KEY
 
 
 def _chunks(seq: List[str], size: int) -> Iterator[List[str]]:
@@ -18,9 +31,10 @@ def get_player_summaries(steamids: List[str]) -> List[Dict[str, Any]]:
     """Return player summary data for all provided SteamIDs."""
     results: List[Dict[str, Any]] = []
     for chunk in _chunks(steamids, 100):
+        key = _require_key()
         url = (
             "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
-            f"?key={STEAM_API_KEY}&steamids={','.join(chunk)}"
+            f"?key={key}&steamids={','.join(chunk)}"
         )
         r = requests.get(url, timeout=10)
         r.raise_for_status()
@@ -35,9 +49,10 @@ def get_inventories(steamids: List[str]) -> Dict[str, Any]:
     headers = {"User-Agent": "Mozilla/5.0"}
     for chunk in _chunks(steamids, 20):
         for sid in chunk:
+            key = _require_key()
             url = (
                 "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
-                f"?key={STEAM_API_KEY}&steamid={sid}"
+                f"?key={key}&steamid={sid}"
             )
             r = requests.get(url, headers=headers, timeout=10)
             r.raise_for_status()
@@ -49,9 +64,10 @@ def fetch_inventory(steamid: str) -> Tuple[str, Dict[str, Any]]:
     """Fetch a user's inventory and classify visibility."""
 
     headers = {"User-Agent": "Mozilla/5.0"}
+    key = _require_key()
     url = (
         "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
-        f"?key={STEAM_API_KEY}&steamid={steamid}"
+        f"?key={key}&steamid={steamid}"
     )
 
     try:
@@ -121,9 +137,10 @@ def convert_to_steam64(id_str: str) -> str:
             z = int(match.group(1))
             return str(z + 76561197960265728)
 
+    key = _require_key()
     url = (
         "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
-        f"?key={STEAM_API_KEY}&vanityurl={id_str}"
+        f"?key={key}&vanityurl={id_str}"
     )
     r = requests.get(url, timeout=10)
     r.raise_for_status()
@@ -136,8 +153,9 @@ def convert_to_steam64(id_str: str) -> str:
 def get_tf2_playtime_hours(steamid: str) -> float:
     """Return TF2 playtime in hours for a Steam user."""
     url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
+    key = _require_key()
     params = {
-        "key": STEAM_API_KEY,
+        "key": key,
         "steamid": steamid,
         "include_played_free_games": 1,
         "format": "json",
