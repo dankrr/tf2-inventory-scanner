@@ -304,9 +304,11 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             if spell_flags.get(key):
                 badges.append({"icon": icon, "title": title})
 
+        item_name = asset.get("custom_name") or display_name
+
         item = {
             "defindex": defindex,
-            "name": display_name,
+            "name": item_name,
             "quality": q_name,
             "quality_color": q_col,
             "image_url": image_url,
@@ -337,10 +339,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
             "level": asset.get("level"),
             "origin": ORIGIN_MAP.get(asset.get("origin")),
-    "custom_name": asset.get("custom_name"),
-    "custom_description": asset.get("custom_desc"),
-    "custom_name": asset.get("custom_name"),
-    "custom_description": asset.get("custom_desc"),
+            "custom_name": asset.get("custom_name"),
+            "custom_description": asset.get("custom_desc"),
             "killstreak_tier": ks_tier,
             "sheen": sheen,
             "paint_name": paint_name,
