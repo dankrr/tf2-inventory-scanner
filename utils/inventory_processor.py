@@ -187,9 +187,8 @@ def _build_badges(info: Dict[str, Any]) -> List[Dict[str, str]]:
         badges.append(
             {
                 "key": "paint",
-                "icon": "swatch",
+                "icon": info["paint_hex"],
                 "title": info.get("paint_name", "Painted"),
-                "color": info["paint_hex"],
             }
         )
 
@@ -206,12 +205,20 @@ def _build_badges(info: Dict[str, Any]) -> List[Dict[str, str]]:
         badges.append({"key": "strange_parts", "icon": "🔧", "title": "Strange Parts"})
 
     tier = info.get("killstreak_tier")
-    if tier == 1:
-        badges.append({"key": "ks1", "icon": "›", "title": "Killstreak"})
-    elif tier == 2:
-        badges.append({"key": "ks2", "icon": "≫", "title": "Specialized"})
-    elif tier == 3:
-        badges.append({"key": "ks3", "icon": "≡", "title": "Professional"})
+    if tier:
+        titles = {
+            1: "Killstreak",
+            2: "Specialized Killstreak",
+            3: "Professional Killstreak",
+        }
+        icons = {1: "›", 2: "≫", 3: "🔥"}
+        badges.append(
+            {
+                "key": "killstreak",
+                "icon": icons.get(tier, "✔"),
+                "title": titles.get(tier, f"Killstreak Tier {tier}"),
+            }
+        )
 
     if info.get("is_festivized"):
         badges.append({"key": "festivized", "icon": "🎄", "title": "Festivized"})
@@ -296,8 +303,15 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "quality_color": q_col,
             "image_url": image_path,
             "final_url": final_url,
+            "custom_name": asset.get("custom_name"),
             "killstreak_tier": extra.get("killstreak_tier"),
+            "sheen": extra.get("sheen"),
+            "killstreaker": extra.get("killstreaker"),
+            "paint_name": extra.get("paint_name"),
             "paint_hex": extra.get("paint_hex"),
+            "spells": extra.get("spells", []),
+            "strange_parts": extra.get("strange_parts", []),
+            "unusual_effect": extra.get("unusual_effect"),
             "badges": _build_badges(extra),
             "enriched": enriched,
         }
