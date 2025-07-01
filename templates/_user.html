@@ -38,8 +38,8 @@
             {% if item.killstreak_tier %}
               <span class="ks-mark ks-tier-{{ item.killstreak_tier }}"></span>
             {% endif %}
-            {% if item.final_url %}
-              <img class="item-img" src="{{ item.final_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
+            {% if item.image_url %}
+              <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" loading="lazy" onerror="this.style.display='none';">
             {% else %}
               <div class="missing-icon"></div>
             {% endif %}

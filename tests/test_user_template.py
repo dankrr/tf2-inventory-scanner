@@ -18,7 +18,7 @@ def app(monkeypatch):
 @pytest.mark.parametrize(
     "context",
     [
-        {"user": {"items": [{"name": "Foo", "final_url": ""}]}},
+        {"user": {"items": [{"name": "Foo", "final_url": "", "image_url": ""}]}},
         {"user": {"items": []}},
         {"user": {}},
     ],
@@ -35,7 +35,13 @@ def test_item_card_has_valid_json(app):
         app_module = importlib.import_module("app")
         user = {
             "items": [
-                {"name": "Foo", "final_url": "", "quality_color": "#fff", "badges": []}
+                {
+                    "name": "Foo",
+                    "final_url": "",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                    "badges": [],
+                }
             ]
         }
         user_ns = app_module.normalize_user_payload(user)
