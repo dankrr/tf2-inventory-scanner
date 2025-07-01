@@ -8,12 +8,32 @@ import vdf
 TF2_SCHEMA: Dict[str, Any] = {}
 ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 EFFECT_NAMES: Dict[str, str] = {}
+PAINT_NAMES: Dict[str, str] = {}
+WEAR_NAMES: Dict[str, str] = {}
+KILLSTREAK_NAMES: Dict[str, str] = {}
+STRANGE_PART_NAMES: Dict[str, str] = {}
+PAINTKIT_NAMES: Dict[str, str] = {}
+CRATE_SERIES_NAMES: Dict[str, str] = {}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2_schema.json"
 DEFAULT_ITEMS_GAME_FILE = BASE_DIR / "cache" / "items_game_cleaned.json"
 SCHEMA_FILE = Path(os.getenv("TF2_SCHEMA_FILE", DEFAULT_SCHEMA_FILE))
 ITEMS_GAME_FILE = Path(os.getenv("TF2_ITEMS_GAME_FILE", DEFAULT_ITEMS_GAME_FILE))
+DEFAULT_EFFECT_FILE = BASE_DIR / "cache" / "effect_names.json"
+DEFAULT_PAINT_FILE = BASE_DIR / "cache" / "paint_names.json"
+DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "wear_names.json"
+DEFAULT_KILLSTREAK_FILE = BASE_DIR / "cache" / "killstreak_names.json"
+DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
+DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "paintkit_names.json"
+DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
+EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
+PAINT_FILE = Path(os.getenv("TF2_PAINT_FILE", DEFAULT_PAINT_FILE))
+WEAR_FILE = Path(os.getenv("TF2_WEAR_FILE", DEFAULT_WEAR_FILE))
+KILLSTREAK_FILE = Path(os.getenv("TF2_KILLSTREAK_FILE", DEFAULT_KILLSTREAK_FILE))
+STRANGE_PART_FILE = Path(os.getenv("TF2_STRANGE_PART_FILE", DEFAULT_STRANGE_PART_FILE))
+PAINTKIT_FILE = Path(os.getenv("TF2_PAINTKIT_FILE", DEFAULT_PAINTKIT_FILE))
+CRATE_SERIES_FILE = Path(os.getenv("TF2_CRATE_SERIES_FILE", DEFAULT_CRATE_SERIES_FILE))
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:
@@ -35,10 +55,25 @@ def clean_items_game(raw: dict | str) -> Dict[str, Any]:
     return cleaned
 
 
+def _load_json_map(path: Path) -> Dict[str, str]:
+    """Return a JSON dictionary from ``path`` or an empty dict."""
+
+    if not path.exists():
+        return {}
+    try:
+        with path.open() as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            return {str(k): str(v) for k, v in data.items()}
+    except Exception:
+        pass
+    return {}
+
+
 def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Load local schema files and populate globals."""
 
-    global TF2_SCHEMA, ITEMS_GAME_CLEANED, EFFECT_NAMES
+    global TF2_SCHEMA, ITEMS_GAME_CLEANED, EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
 
     schema_path = SCHEMA_FILE.resolve()
     if not schema_path.exists():
@@ -88,4 +123,24 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
         print(
             "\N{WARNING SIGN} items_game_cleaned.json may be stale or incomplete. Consider a refresh."
         )
+
+    EFFECT_NAMES = _load_json_map(EFFECT_FILE)
+    PAINT_NAMES = _load_json_map(PAINT_FILE)
+    WEAR_NAMES = _load_json_map(WEAR_FILE)
+    KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
+    STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
+    PAINTKIT_NAMES = _load_json_map(PAINTKIT_FILE)
+    CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
+
+    for label, mapping, path in [
+        ("effects", EFFECT_NAMES, EFFECT_FILE),
+        ("paints", PAINT_NAMES, PAINT_FILE),
+        ("wears", WEAR_NAMES, WEAR_FILE),
+        ("killstreaks", KILLSTREAK_NAMES, KILLSTREAK_FILE),
+        ("strange parts", STRANGE_PART_NAMES, STRANGE_PART_FILE),
+        ("paintkits", PAINTKIT_NAMES, PAINTKIT_FILE),
+        ("crate series", CRATE_SERIES_NAMES, CRATE_SERIES_FILE),
+    ]:
+        if mapping:
+            print(f"\N{CHECK MARK} Loaded {len(mapping)} {label} from {path}")
     return TF2_SCHEMA, ITEMS_GAME_CLEANED
