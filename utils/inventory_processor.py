@@ -283,7 +283,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not (schema_entry or ig_item):
             continue
 
-        image_url = schema_map.get(defindex, {}).get("image", "/static/placeholder.png")
+        image_url = (
+            schema_map.get(defindex, {}).get("image") or "/static/placeholder.png"
+        )
 
         # Prefer name from cleaned items_game if available
         base_name = (

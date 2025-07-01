@@ -27,8 +27,8 @@
       </button>
       <div class="inventory-container">
         {% for item in user.items %}
-          <div class="item-card" style="border-color: {{ item.quality_color }};" data-item='{{ item|tojson|safe }}'>
-            <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.src='/static/placeholder.png';">
+          <div class="item-card" style="border-color: {{ item.quality_color }};" data-item="{{ item | tojson | safe }}">
+            <img src="{{ item.image_url }}">
             <div class="badge-row">{% for b in item.badges or [] %}{{ b }}{% endfor %}</div>
             <div class="item-title">{{ item.name }}</div>
           </div>

@@ -74,7 +74,12 @@ function attachItemModal() {
     card.addEventListener('click', () => {
       let data = card.dataset.item;
       if (!data) return;
-      try { data = JSON.parse(data); } catch (e) { return; }
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        console.error('Invalid item data', e, data);
+        return;
+      }
       if (title) title.textContent = data.name || '';
       if (img) img.src = data.image_url || '';
       if (details) {
