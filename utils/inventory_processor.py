@@ -286,6 +286,22 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         spell_lines, spell_flags = _extract_spells(asset)
         strange_parts = _extract_strange_parts(asset)
 
+        badges: List[Dict[str, str]] = []
+        effect = _extract_unusual_effect(asset)
+        if effect:
+            badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
+        if ks_effect:
+            badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
+        for key, icon, title in [
+            ("has_exorcism", "\U0001f47b", "Exorcism"),
+            ("has_paint_spell", "\U0001f3a8", "Paint spell"),
+            ("has_footprints", "\U0001f463", "Footprints spell"),
+            ("has_pumpkin_bombs", "\U0001f383", "Pumpkin Bombs"),
+            ("has_voice_lines", "\u2728", "Rare spell"),
+        ]:
+            if spell_flags.get(key):
+                badges.append({"icon": icon, "title": title})
+
         item = {
             "defindex": defindex,
             "name": display_name,
@@ -325,25 +341,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "paint_hex": paint_hex,
             "killstreak_effect": ks_effect,
             "spells": spell_lines,
+            "badges": badges,  # always present, may be empty
             "strange_parts": strange_parts,
         }
-        badges = []
-        effect = _extract_unusual_effect(asset)
-        if effect:
-            badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
-        if ks_effect:
-            badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
-        for key, icon, title in [
-            ("has_exorcism", "\U0001f47b", "Exorcism"),
-            ("has_paint_spell", "\U0001f3a8", "Paint spell"),
-            ("has_footprints", "\U0001f463", "Footprints spell"),
-            ("has_pumpkin_bombs", "\U0001f383", "Pumpkin Bombs"),
-            ("has_voice_lines", "\u2728", "Rare spell"),
-        ]:
-            if spell_flags.get(key):
-                badges.append({"icon": icon, "title": title})
-        if badges:
-            item["badges"] = badges
         items.append(item)
 
     return items
