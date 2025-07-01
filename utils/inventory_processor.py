@@ -10,7 +10,7 @@ from . import steam_api_client, schema_fetcher
 logger = logging.getLogger(__name__)
 
 # Base URL for item images
-CLOUD = "https://steamcommunity-a.akamaihd.net/economy/image/"
+ICON_CDN = "https://steamcdn-a.akamaihd.net/apps/440/icons/"
 
 # Mapping of defindex -> human readable name for warpaints
 MAPPING_FILE = Path(__file__).with_name("warpaint_mapping.json")
@@ -230,20 +230,16 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             from_items = ITEMS_GAME.get(defindex, {})
             icon_url = from_items.get("icon")
 
-        if icon_url:
-            image_path = icon_url
-            if icon_url.startswith("//"):
-                final_url = "https:" + icon_url
-            elif icon_url.startswith("http"):
-                final_url = icon_url
-            else:
-                final_url = f"{CLOUD}{icon_url}/360fx360f"
+        image_path = (
+            icon_url or entry.get("image_url") or entry.get("image_url_large") or ""
+        )
+        if not image_path:
+            logger.warning("Missing icon filename for defindex %s", defindex)
+
+        if image_path.startswith("http"):
+            final_url = image_path
         else:
-            image_path = entry.get("image_url") or entry.get("image_url_large") or ""
-            if image_path.startswith("http"):
-                final_url = image_path
-            else:
-                final_url = f"{CLOUD}{image_path}" if image_path else ""
+            final_url = f"{ICON_CDN}{image_path}" if image_path else ""
 
         name = (
             WARPAINT_MAP.get(defindex)

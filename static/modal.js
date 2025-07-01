@@ -1,7 +1,13 @@
 function attachModalHandlers() {
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => {
-      const item = JSON.parse(card.dataset.item);
+      let item = null;
+      try {
+        item = JSON.parse(card.dataset.item);
+      } catch (err) {
+        console.warn('Bad data-item JSON', err, card.dataset.item);
+        return;
+      }
       const modal = card.closest('.user-card').querySelector('.item-modal');
       if (!modal) return;
       populateModal(modal, item);

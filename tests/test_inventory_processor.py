@@ -15,7 +15,7 @@ def test_enrich_inventory():
     assert items[0]["quality"] == "Normal"
     assert items[0]["quality_color"] == "#B2B2B2"
     assert items[0]["final_url"].startswith(
-        "https://steamcommunity-a.akamaihd.net/economy/image/"
+        "https://steamcdn-a.akamaihd.net/apps/440/icons/"
     )
 
 
@@ -31,7 +31,7 @@ def test_process_inventory_handles_missing_icon():
     for item in items:
         if item["name"] == "One":
             assert item["final_url"].startswith(
-                "https://steamcommunity-a.akamaihd.net/economy/image/"
+                "https://steamcdn-a.akamaihd.net/apps/440/icons/"
             )
         else:
             assert item["final_url"] == ""
