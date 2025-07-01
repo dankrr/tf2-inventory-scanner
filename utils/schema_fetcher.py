@@ -107,3 +107,23 @@ def ensure_schema_cached(api_key: str | None = None) -> Dict[str, Any]:
         )
 
     return SCHEMA
+
+
+def refresh_schema(api_key: str | None = None) -> Dict[str, Any]:
+    """Force download of the latest schema and update the cache."""
+
+    if api_key is None:
+        api_key = os.getenv("STEAM_API_KEY")
+
+    fetched = _fetch_schema(api_key)
+    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CACHE_FILE.write_text(json.dumps(fetched))
+    global SCHEMA, QUALITIES
+    SCHEMA = fetched["items"]
+    QUALITIES = fetched.get("qualities", {})
+    logger.info(
+        "\N{CHECK MARK} Fetched and cached full schema with %s items → %s",
+        len(SCHEMA),
+        CACHE_FILE,
+    )
+    return SCHEMA
