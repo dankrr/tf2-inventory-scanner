@@ -223,7 +223,9 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     if ks_tier:
         parts.append(ks_tier)
 
-    if effect:
+    quality_id = asset.get("quality")
+
+    if effect and quality_id in (5, 13):
         parts.append(effect)
         if quality not in ("Unique", "Normal", "Unusual"):
             parts.append(quality)
@@ -337,10 +339,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
             "level": asset.get("level"),
             "origin": ORIGIN_MAP.get(asset.get("origin")),
-    "custom_name": asset.get("custom_name"),
-    "custom_description": asset.get("custom_desc"),
-    "custom_name": asset.get("custom_name"),
-    "custom_description": asset.get("custom_desc"),
+            "custom_name": asset.get("custom_name"),
+            "custom_description": asset.get("custom_desc"),
             "killstreak_tier": ks_tier,
             "sheen": sheen,
             "paint_name": paint_name,
