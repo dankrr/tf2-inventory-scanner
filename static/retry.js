@@ -81,79 +81,79 @@ function attachItemModal() {
 
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => {
-      let data = card.dataset.item;
-      if (!data) return;
-      try { data = JSON.parse(data); } catch (e) { return; }
+      let data = {};
+      try {
+        data = JSON.parse(card.dataset.item || '{}');
+      } catch (e) {
+        data = {};
+      }
+
       if (title) title.textContent = data.custom_name || data.name || '';
-      if (effectBox) effectBox.textContent = data.unusual_effect || '';
+
+      if (effectBox) {
+        effectBox.textContent = data.unusual_effect || '';
+        effectBox.style.display = data.unusual_effect ? 'block' : 'none';
+      }
+
       if (img) img.src = data.image_url || '';
+
       if (details) {
         details.innerHTML = '';
-        const attrs = document.createElement('div');
-        // ── Killstreak row ─────────────────────────
-        if (data.killstreak_tier) {
-          const tierMap = {1: 'Killstreak', 2: 'Specialized', 3: 'Professional'};
-          const ksParts = [];
-          ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
-          if (data.sheen) ksParts.push(data.sheen);
-          if (data.killstreak_effect) ksParts.push(data.killstreak_effect);
-          const ks = document.createElement('div');
-          ks.textContent = 'Killstreak: ' + ksParts.join(', ');
-          attrs.appendChild(ks);
-        }
+        if (!data || Object.keys(data).length === 0) {
+          const miss = document.createElement('div');
+          miss.className = 'missing';
+          details.appendChild(miss);
+        } else {
+          const attrs = document.createElement('div');
 
-        [
-          ['Type', data.item_type_name],
-          ['Level', data.level],
-          ['Origin', data.origin]
-        ].forEach(([label, value]) => {
-          if (!value) return;
-          const div = document.createElement('div');
-          div.textContent = label + ': ' + value;
-          attrs.appendChild(div);
-        });
-
-        if (data.paint_name) {
-          const div = document.createElement('div');
-          if (data.paint_hex) {
-            const sw = document.createElement('span');
-            sw.style.display = 'inline-block';
-            sw.style.width = '12px';
-            sw.style.height = '12px';
-            sw.style.marginRight = '4px';
-            sw.style.border = '1px solid #333';
-            sw.style.borderRadius = '50%';
-            sw.style.background = data.paint_hex;
-            div.appendChild(sw);
+          if (data.paintkit || data.wear) {
+            const wp = document.createElement('div');
+            if (data.paintkit) {
+              wp.textContent = 'War Paint: ' + data.paintkit;
+              if (data.wear) wp.textContent += ' (' + data.wear + ')';
+            } else if (data.wear) {
+              wp.textContent = data.wear;
+            }
+            attrs.appendChild(wp);
           }
-          div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
 
-  if (data.custom_description) {
-    const cd = document.createElement("div");
-    cd.textContent = "Custom Desc: " + data.custom_description;
-    attrs.appendChild(cd);
-  }
-          attrs.appendChild(div);
-        }
+          if (data.killstreak_tier || data.sheen || data.killstreaker) {
+            const tierMap = {1: 'Killstreak', 2: 'Specialized', 3: 'Professional'};
+            const ksParts = [];
+            if (data.killstreak_tier) {
+              ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
+            }
+            if (data.sheen) ksParts.push(data.sheen);
+            if (data.killstreaker) ksParts.push(data.killstreaker);
+            const ks = document.createElement('div');
+            ks.textContent = 'Killstreak: ' + ksParts.join(', ');
+            attrs.appendChild(ks);
+          }
 
-        if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
-          const div = document.createElement('div');
-          div.textContent = 'Strange Parts: ' + data.strange_parts.join(', ');
-          attrs.appendChild(div);
-        }
+          if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
+            const ul = document.createElement('ul');
+            data.strange_parts.forEach(p => {
+              const li = document.createElement('li');
+              li.textContent = p;
+              ul.appendChild(li);
+            });
+            attrs.appendChild(ul);
+          }
 
-        details.appendChild(attrs);
+          if (Array.isArray(data.spells) && data.spells.length) {
+            const head = document.createElement('h4');
+            head.textContent = 'Spells';
+            attrs.appendChild(head);
+            const ul = document.createElement('ul');
+            data.spells.forEach(sp => {
+              const li = document.createElement('li');
+              li.textContent = sp;
+              ul.appendChild(li);
+            });
+            attrs.appendChild(ul);
+          }
 
-        if (Array.isArray(data.spells) && data.spells.length) {
-          const head = document.createElement('h4');
-          head.textContent = 'Spells';
-          head.id = 'modal-spells';
-          details.appendChild(head);
-          data.spells.forEach(sp => {
-            const sdiv = document.createElement('div');
-            sdiv.textContent = sp;
-            details.appendChild(sdiv);
-          });
+          details.appendChild(attrs);
         }
       }
       if (badgeBox) {
