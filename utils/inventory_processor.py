@@ -223,7 +223,9 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     if ks_tier:
         parts.append(ks_tier)
 
-    if effect:
+    quality_id = asset.get("quality")
+
+    if effect and quality_id in (5, 13):
         parts.append(effect)
         if quality not in ("Unique", "Normal", "Unusual"):
             parts.append(quality)
