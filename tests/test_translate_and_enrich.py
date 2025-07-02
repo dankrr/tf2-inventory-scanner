@@ -14,7 +14,7 @@ def test_decorated_flamethrower_enrichment():
                 "attributes": [
                     {"defindex": 2025, "value": "3"},
                     {"defindex": 2014, "value": "3"},
-                    {"defindex": 2013, "value": "2000"},
+                    {"defindex": 2013, "value": "2002"},
                     {"defindex": 142, "value": "3100495"},
                     {"defindex": 725, "float_value": 0.2},
                     {"defindex": 834, "value": "350"},
@@ -44,7 +44,7 @@ def test_decorated_flamethrower_enrichment():
 
     assert item["quality"] == "Decorated Weapon"
     assert item["killstreak_tier"] == "Professional Killstreak"
-    assert item["sheen"] == "Mandarin"
+    assert item["sheen"] == "Manndarin"
     assert item["killstreaker"] == "Fire Horns"
     assert item["wear"] == "Field-Tested"
     assert item["paintkit"] == "Warhawk"

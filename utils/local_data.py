@@ -15,16 +15,16 @@ STRANGE_PART_NAMES: Dict[str, str] = {}
 PAINTKIT_NAMES: Dict[str, str] = {}
 CRATE_SERIES_NAMES: Dict[str, str] = {}
 KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
-    "2000": "Fire Horns",
-    "2001": "Cerebral Discharge",
-    "2002": "Tornado",
-    "2003": "Flames",
-    "2004": "Singularity",
-    "2005": "Incinerator",
-    "2006": "Hypno-Beam",
-    "2007": "Tesla Coil",
-    "2008": "Hellish Inferno",
-    "2009": "Fireworks",
+    "2002": "Fire Horns",
+    "2003": "Cerebral Discharge",
+    "2004": "Tornado",
+    "2005": "Flames",
+    "2006": "Singularity",
+    "2007": "Incinerator",
+    "2008": "Hypno-Beam",
+    "2009": "Tesla Coil",
+    "2010": "Hellish Inferno",
+    "2011": "Fireworks",
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
