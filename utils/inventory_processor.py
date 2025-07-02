@@ -156,6 +156,8 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
             hex_color = PAINT_MAP.get(val, (None, None))[1]
             if not name:
                 name = PAINT_MAP.get(val, (None, None))[0]
+            if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
+                hex_color = None
             return name, hex_color
     return None, None
 
@@ -234,10 +236,12 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
-    """Return spell lines and boolean flags for badge mapping."""
+def _extract_spells(
+    asset: Dict[str, Any]
+) -> Tuple[List[Dict[str, str]], Dict[str, bool]]:
+    """Return spell details and boolean flags for badge mapping."""
 
-    lines: List[str] = []
+    spells: List[Dict[str, str]] = []
     flags = {
         "has_exorcism": False,
         "has_paint_spell": False,
@@ -245,14 +249,29 @@ def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
         "has_pumpkin_bombs": False,
         "has_voice_lines": False,
     }
+
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
         text = unescape(desc.get("value", ""))
         text = re.sub(r"<[^>]+>", "", text).strip()
+        if not text:
+            continue
+
         ltext = text.lower()
         if "halloween" in ltext or "spell" in ltext:
-            lines.append(text)
+            name = text.split(":", 1)[-1].strip()
+            category: str | None = None
+            if "exorcism" in ltext or "pumpkin" in ltext:
+                category = "weapon"
+            elif "paint" in ltext and "spell" in ltext:
+                category = "paint"
+            elif "footprints" in ltext:
+                category = "footprint"
+            elif "voices" in ltext or "rare spell" in ltext:
+                category = "vocal"
+            if category:
+                spells.append({"category": category, "name": name})
         if "exorcism" in ltext:
             flags["has_exorcism"] = True
         if "paint" in ltext and "spell" in ltext:
@@ -263,7 +282,8 @@ def _extract_spells(asset: Dict[str, Any]) -> Tuple[List[str], Dict[str, bool]]:
             flags["has_pumpkin_bombs"] = True
         if "voices" in ltext or "rare spell" in ltext:
             flags["has_voice_lines"] = True
-    return lines, flags
+
+    return spells, flags
 
 
 def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
@@ -354,7 +374,7 @@ def _process_item(
     wear_name = _extract_wear(asset)
     paintkit_name = _extract_paintkit(asset)
     crate_series_name = _extract_crate_series(asset)
-    spell_lines, spell_flags = _extract_spells(asset)
+    spells, spell_flags = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
 
     badges: List[Dict[str, str]] = []
@@ -363,15 +383,29 @@ def _process_item(
         badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
     if ks_effect:
         badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
-    for key, icon, title in [
-        ("has_exorcism", "\U0001f47b", "Exorcism"),
-        ("has_paint_spell", "\U0001f3a8", "Paint spell"),
-        ("has_footprints", "\U0001f463", "Footprints spell"),
-        ("has_pumpkin_bombs", "\U0001f383", "Pumpkin Bombs"),
-        ("has_voice_lines", "\u2728", "Rare spell"),
-    ]:
-        if spell_flags.get(key):
-            badges.append({"icon": icon, "title": title})
+    category_flags = {
+        "weapon": spell_flags.get("has_exorcism")
+        or spell_flags.get("has_pumpkin_bombs"),
+        "paint": spell_flags.get("has_paint_spell"),
+        "footprint": spell_flags.get("has_footprints"),
+        "vocal": spell_flags.get("has_voice_lines"),
+    }
+    for cat, present in category_flags.items():
+        if not present:
+            continue
+        icon_map = {
+            "weapon": "\U0001f47b",
+            "vocal": "\U0001f5e3\ufe0f",
+            "paint": "\U0001fa9f",
+            "footprint": "\U0001f463",
+        }
+        title_map = {
+            "weapon": "Weapon spell",
+            "vocal": "Vocal spell",
+            "paint": "Paint spell",
+            "footprint": "Footprints spell",
+        }
+        badges.append({"icon": icon_map[cat], "title": title_map[cat]})
 
     item = {
         "defindex": defindex,
@@ -414,7 +448,7 @@ def _process_item(
         "paintkit_name": paintkit_name,
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
-        "spells": spell_lines,
+        "spells": spells,
         "badges": badges,  # always present, may be empty
         "strange_parts": strange_parts,
     }
@@ -431,9 +465,22 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
     cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
+    icon_map = {
+        "weapon": "\U0001f47b",
+        "vocal": "\U0001f5e3\ufe0f",
+        "paint": "\U0001fa9f",
+        "footprint": "\U0001f463",
+    }
+
     for asset in items_raw:
         item = _process_item(asset, schema_map, cleaned_map)
         if item:
+            modal_spells = [
+                f"{icon_map.get(spell.get('category'), '')} {spell.get('name')}"
+                for spell in item.get("spells", [])
+            ]
+            item["modal_spells"] = modal_spells
+            item["spells"] = modal_spells  # backward compatibility for JS
             items.append(item)
 
     return items
