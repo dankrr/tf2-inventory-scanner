@@ -1,8 +1,10 @@
-# TF2 Inventory Scanner ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) [![coverage](https://codecov.io/gh/dankrr/tf2-inventory-scanner/branch/main/graph/badge.svg)](https://codecov.io/gh/dankrr/tf2-inventory-scanner)
+# TF2 Inventory Scanner ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg)
 
 ## Overview
 
-A Flask web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema.
+This Flask app scans the Team Fortress 2 inventories for one or more Steam users. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to 64-bit IDs and enriches inventory data with the Steam Web API and cached item schema.
+
+![User panel screenshot](docs/images/user_panel.png)
 
 ## Setup
 
@@ -12,42 +14,42 @@ A Flask web app that inspects one or more Steam users' Team Fortress 2 inventori
    source venv/bin/activate
    pip install -r requirements.txt -r requirements-test.txt
    ```
-2. Copy the example environment file and set your API key:
+2. Copy `.env.example` and set `STEAM_API_KEY`:
    ```bash
    cp .env.example .env
    # edit .env and set STEAM_API_KEY=<your key>
    ```
-   The app uses **python-dotenv** to load variables at runtime.
+   Environment variables are loaded with **python-dotenv**.
 
 ## Usage
 
-Run the application locally and open `http://localhost:5000` in your browser:
+Run the app locally and open `http://localhost:5000` in your browser:
 ```bash
 python app.py
 ```
-Submit any supported SteamID format. Each user panel shows the avatar, TF2 playtime, and an item grid.
+Submit any supported SteamID (SteamID64, SteamID3, SteamID2, or vanity URL). Each user panel shows the avatar, TF2 playtime, and an item grid.
 
 ## Development
 
-- Templates live under `templates/`; `index.html` includes `_user.html` for each user.
-- Item schema is cached automatically. Update it with:
+- Templates live under `templates/`.
+- The TF2 item schema is cached automatically; refresh it with:
   ```bash
   python app.py --refresh
   ```
-- Use `--test` to run offline against cached data.
+- Use `--test` to load a cached inventory for offline mode.
 
 ## Testing
 
-Run linting and tests before committing:
+Run formatting and tests:
 ```bash
 pre-commit run --all-files
 pytest --cov=utils --cov=app
 ```
-HTML coverage is written to `htmlcov/`.
+HTML coverage reports are written to `htmlcov/`.
 
 ## Docker / Deployment
 
-Build and run the container locally:
+Build and run a container locally:
 ```bash
 docker build -t tf2-scanner .
 docker run -p 5000:5000 tf2-scanner
