@@ -28,6 +28,7 @@ QUALITY_MAP = {
     6: ("Unique", "#FFD700"),
     11: ("Strange", "#CF6A32"),
     13: ("Haunted", "#38F3AB"),
+    15: ("Decorated Weapon", "#FAFAFA"),
 }
 
 
@@ -339,6 +340,43 @@ def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
     return data, status
 
 
+def _is_placeholder_name(name: str) -> bool:
+    """Return True if ``name`` looks like an internal placeholder."""
+
+    lname = name.lower()
+    if "tf_" in lname or "tf-" in lname or "weapon" in lname and " " not in name:
+        return True
+    if "_" in name:
+        return True
+    if lname in {"rifle", "smg", "pistol", "shotgun", "decoder ring"}:
+        return True
+    if name.isupper():
+        return True
+    return False
+
+
+def _preferred_base_name(
+    defindex: str, schema_entry: Dict[str, Any] | None, ig_item: Dict[str, Any]
+) -> str:
+    """Return human readable base item name."""
+
+    if defindex in WARPAINT_MAP:
+        return WARPAINT_MAP[defindex]
+
+    ig_name = ig_item.get("name")
+    schema_name = None
+    if schema_entry:
+        schema_name = schema_entry.get("item_name") or schema_entry.get("name")
+
+    if ig_name and not _is_placeholder_name(ig_name):
+        return ig_name
+
+    if schema_name:
+        return schema_name
+
+    return ig_name or f"Item #{defindex}"
+
+
 def _process_item(
     asset: Dict[str, Any], schema_map: Dict[str, Any], cleaned_map: Dict[str, Any]
 ) -> Dict[str, Any] | None:
@@ -352,13 +390,11 @@ def _process_item(
 
     image_url = schema_entry.get("image_url") if schema_entry else ""
 
-    base_name = (
-        WARPAINT_MAP.get(defindex)
-        or ig_item.get("name")
-        or (schema_entry.get("item_name") if schema_entry else None)
-        or (schema_entry.get("name") if schema_entry else None)
-        or f"Item #{defindex}"
-    )
+    paintkit_name = _extract_paintkit(asset)
+
+    base_name = _preferred_base_name(defindex, schema_entry, ig_item)
+    if paintkit_name:
+        base_name = f"{base_name} ({paintkit_name})"
 
     quality_id = asset.get("quality", 0)
     q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
@@ -368,7 +404,6 @@ def _process_item(
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)
     wear_name = _extract_wear(asset)
-    paintkit_name = _extract_paintkit(asset)
     crate_series_name = _extract_crate_series(asset)
     spells, spell_flags = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
