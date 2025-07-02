@@ -382,7 +382,7 @@ def _process_item(
     if effect and quality_id in (5, 11):
         badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
     if ks_effect:
-        badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
+        badges.append({"icon": "🎯", "title": f"Killstreaker: {ks_effect}"})
     category_flags = {
         "weapon": spell_flags.get("has_exorcism")
         or spell_flags.get("has_pumpkin_bombs"),
