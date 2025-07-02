@@ -117,23 +117,18 @@ function attachItemModal() {
           const div = document.createElement('div');
           if (data.paint_hex) {
             const sw = document.createElement('span');
-            sw.style.display = 'inline-block';
-            sw.style.width = '12px';
-            sw.style.height = '12px';
-            sw.style.marginRight = '4px';
-            sw.style.border = '1px solid #333';
-            sw.style.borderRadius = '50%';
+            sw.classList.add('paint-dot');
             sw.style.background = data.paint_hex;
             div.appendChild(sw);
           }
           div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
-
-  if (data.custom_description) {
-    const cd = document.createElement("div");
-    cd.textContent = "Custom Desc: " + data.custom_description;
-    attrs.appendChild(cd);
-  }
           attrs.appendChild(div);
+        }
+
+        if (data.custom_description) {
+          const cd = document.createElement('div');
+          cd.textContent = 'Custom Desc: ' + data.custom_description;
+          attrs.appendChild(cd);
         }
 
         if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
