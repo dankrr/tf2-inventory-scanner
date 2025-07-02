@@ -392,7 +392,7 @@ def _process_item(
         icon_map = {
             "weapon": "\U0001f47b",
             "vocal": "\U0001f5e3\ufe0f",
-            "paint": "\U0001fa9f",
+            "paint": "\U0001fadf",
             "footprint": "\U0001f463",
         }
         title_map = {
