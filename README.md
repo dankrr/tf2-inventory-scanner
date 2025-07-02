@@ -1,4 +1,4 @@
-# TF2 Inventory Web App ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey.svg)
+# TF2 Inventory Web App ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) [![coverage](https://codecov.io/gh/dankrr/tf2-inventory-scanner/branch/main/graph/badge.svg)](https://codecov.io/gh/dankrr/tf2-inventory-scanner)
 
 This project provides a small Flask application for inspecting the Team Fortress
 2 inventory of one or more Steam users. It accepts SteamIDs in several formats
