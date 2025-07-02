@@ -12,7 +12,7 @@ TF2.
 ```bash
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-test.txt
 ```
 
 ### Quick start
@@ -43,7 +43,7 @@ The application uses **python-dotenv** to load these values at runtime.
 ```bash
 cp .env.example .env   # then edit keys
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-test.txt
 python app.py
 ```
 
@@ -96,7 +96,7 @@ test suite:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-test.txt
 pre-commit run --all-files
 pytest --cov=utils --cov=app
 ```
