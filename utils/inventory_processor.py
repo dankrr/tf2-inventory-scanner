@@ -223,7 +223,13 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 2014:
-            val = int(attr.get("float_value", 0))
+            raw = attr.get("float_value")
+            if raw is None:
+                raw = attr.get("value")
+            try:
+                val = int(float(raw))
+            except (TypeError, ValueError):
+                continue
             name = local_data.KILLSTREAK_EFFECT_NAMES.get(str(val))
             if name:
                 return name
