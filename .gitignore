@@ -1,6 +1,5 @@
 .env
 __pycache__/
 data/
-!data/items_game_cleaned.json
 cache/
 .venv/
