@@ -70,15 +70,6 @@ function attachItemModal() {
   const details = document.getElementById('modal-details');
   const badgeBox = document.getElementById('modal-badges');
 
-  function closeModal() {
-    modal.style.opacity = '0';
-    setTimeout(() => modal.close(), 200);
-  }
-
-  modal.addEventListener('click', e => {
-    if (e.target === modal) closeModal();
-  });
-
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => {
       let data = card.dataset.item;
@@ -185,12 +176,9 @@ function attachItemModal() {
           badgeBox.appendChild(span);
         });
       }
-      if (typeof modal.showModal === 'function') {
-        modal.showModal();
-      } else {
-        modal.style.display = 'block';
+      if (window.modal && typeof window.modal.openModal === 'function') {
+        window.modal.openModal();
       }
-      modal.style.opacity = '1';
     });
   });
 }
@@ -205,4 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUsers(window.initialIds);
   }
   attachItemModal();
+  if (window.modal && typeof window.modal.initModal === 'function') {
+    window.modal.initModal();
+  }
 });
