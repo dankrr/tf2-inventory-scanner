@@ -149,6 +149,9 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return paint name and hex color if present."""
 
+    # Debug: show raw values so we can confirm paint IDs like 15158332
+    print("Paint attr IDs:", [a.get("value") for a in asset.get("attributes", [])])
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx in (142, 261):
@@ -500,6 +503,7 @@ def _process_item(
     ks_tier, sheen = _extract_killstreak(asset)
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)
+    print("Resolved Paint:", paint_name, paint_hex)
     wear_name = _extract_wear(asset)
     crate_series_name = _extract_crate_series(asset)
     spells, spell_flags = _extract_spells(asset)

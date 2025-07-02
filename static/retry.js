@@ -84,6 +84,7 @@ function attachItemModal() {
       let data = card.dataset.item;
       if (!data) return;
       try { data = JSON.parse(data); } catch (e) { return; }
+      console.log('Paint HEX for', data.market_hash_name, data.paint_hex);
       if (title) title.textContent = data.custom_name || data.name || '';
       if (effectBox) effectBox.textContent = data.unusual_effect || '';
       if (img) img.src = data.image_url || '';
