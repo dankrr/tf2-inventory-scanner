@@ -88,6 +88,22 @@ pip-audit
 
 Always run `pip-audit` to check for known vulnerabilities after upgrading.
 
+### Running tests
+
+Create a virtual environment and install dependencies before executing the
+test suite:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pre-commit run --all-files
+pytest --cov=utils --cov=app
+```
+
+Running `pre-commit` ensures formatting and linting follow the guidelines in
+`AGENTS.md`.
+
 ### Lint & Test
 
 ```bash
