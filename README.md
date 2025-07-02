@@ -1,164 +1,55 @@
-# TF2 Inventory Web App ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) [![coverage](https://codecov.io/gh/dankrr/tf2-inventory-scanner/branch/main/graph/badge.svg)](https://codecov.io/gh/dankrr/tf2-inventory-scanner)
+# TF2 Inventory Scanner ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) [![coverage](https://codecov.io/gh/dankrr/tf2-inventory-scanner/branch/main/graph/badge.svg)](https://codecov.io/gh/dankrr/tf2-inventory-scanner)
 
-This project provides a small Flask application for inspecting the Team Fortress
-2 inventory of one or more Steam users. It accepts SteamIDs in several formats
-(SteamID64, SteamID2, SteamID3 or vanity URLs) separated by spaces, commas or newlines.
-The app converts everything to SteamID64 before fetching profile and inventory data.
-It also shows each player's Steam profile name, avatar, and total time spent in
-TF2.
+## Overview
+
+A Flask web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema.
 
 ## Setup
 
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt -r requirements-test.txt
-```
-
-### Quick start
-
-Run the Flask server locally:
-
-```bash
-export FLASK_DEBUG=1
-python app.py
-```
-
-Copy `.env.example` to `.env` and fill in your API keys:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` to set your credentials:
-
-```
-STEAM_API_KEY=your_steam_key
-```
-
-The application uses **python-dotenv** to load these values at runtime.
-
-## Running locally
-
-```bash
-cp .env.example .env   # then edit keys
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt -r requirements-test.txt
-python app.py
-```
+1. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt -r requirements-test.txt
+   ```
+2. Copy the example environment file and set your API key:
+   ```bash
+   cp .env.example .env
+   # edit .env and set STEAM_API_KEY=<your key>
+   ```
+   The app uses **python-dotenv** to load variables at runtime.
 
 ## Usage
 
+Run the application locally and open `http://localhost:5000` in your browser:
 ```bash
 python app.py
 ```
+Submit any supported SteamID format. Each user panel shows the avatar, TF2 playtime, and an item grid.
 
-Navigate to `http://localhost:5000` and paste text containing one or more
-SteamIDs (any supported format). The app will display each user's avatar,
-profile name, TF2 playtime, and a list of TF2 items with icons.
+## Development
 
-## Example
+- Templates live under `templates/`; `index.html` includes `_user.html` for each user.
+- Item schema is cached automatically. Update it with:
+  ```bash
+  python app.py --refresh
+  ```
+- Use `--test` to run offline against cached data.
 
-```
-#    431 "Bread"             [U:1:1602028086]    00:48       83    0 active
-steamid : [A:1:903510047:45685] (90268209031837727)
-account : not logged in  (No account specified)
-tags    : ctf,hidden
-map     : ctf_doublecross at: 0 x, 0 y, 0 z
-```
+## Testing
 
-Only the SteamID3 token is used:
-
-```
-[U:1:1602028086]
-```
-
-The application converts the ID to SteamID64 and fetches the inventory.
-
-## Dependency Management
-
-Dependencies are pinned in `requirements.txt` and locked with
-`requirements.lock`. To update packages securely:
-
+Run linting and tests before committing:
 ```bash
-pip install -r requirements.txt --upgrade
-pip-compile --generate-hashes -o requirements.lock requirements.txt
-pip-audit
-```
-
-Always run `pip-audit` to check for known vulnerabilities after upgrading.
-
-### Running tests
-
-Create a virtual environment and install dependencies before executing the
-test suite:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt -r requirements-test.txt
 pre-commit run --all-files
 pytest --cov=utils --cov=app
 ```
+HTML coverage is written to `htmlcov/`.
 
-Running `pre-commit` ensures formatting and linting follow the guidelines in
-`AGENTS.md`.
+## Docker / Deployment
 
-### Lint & Test
-
-```bash
-ruff check .
-black --check .
-pytest --cov=utils --cov=app
-```
-
-The HTML coverage report is written to `htmlcov/`.
-
-### Pre-commit
-
-Install hooks once:
-
-```bash
-pre-commit install
-```
-
-### Updating item cache
-
-Run the application with the `--refresh` flag to download the latest TF2 schema
-and rebuild `items_game_cleaned.json`:
-
-```bash
-python app.py --refresh
-```
-
-The files are stored under `cache/` as `tf2_schema.json`, `items_game.txt` and
-`items_game_cleaned.json`. Start the server normally without `--refresh` once
-the update completes.
-
-### Offline test mode
-
-You can run the app without hitting the Steam API by supplying `--test`.
-The first run prompts for a SteamID64 and caches the inventory JSON under
-`cached_inventories/`.
-
-```bash
-python app.py --test
-```
-
-If a cached inventory exists, you can choose to use it or fetch a fresh copy.
-
-### Deploy
-
-The app can be deployed to any platform that supports Python 3.12. For Docker:
-
+Build and run the container locally:
 ```bash
 docker build -t tf2-scanner .
 docker run -p 5000:5000 tf2-scanner
 ```
-
-### LAN testing
-
-```bash
-python app.py          # now reachable at http://<LAN_IP>:5000
-docker run -p 5000:5000 tf2-inv
-```
+The server can also be accessed on your LAN.
