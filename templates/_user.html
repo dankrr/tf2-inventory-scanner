@@ -35,9 +35,8 @@
             {# ─── Badge row ─────────────────────────────────────────────── #}
             <div class="item-badges">
               {# Paint dot (uses hex) #}
-              {% if item.paint_name %}
-                <span class="paint-dot" style="background-color: {{ item.paint_hex }};"></span>
-                {{ item.paint_name }}
+              {% if item.paint_hex %}
+                <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
               {% endif %}
 
               {# All the *other* badges. Skip the old paint icons (🎨 / 🖌) #}
