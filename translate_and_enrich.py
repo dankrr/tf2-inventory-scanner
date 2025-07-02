@@ -27,23 +27,24 @@ QUALITY_MAP = {
 SHEEN_MAP = {
     1: "Team Shine",
     2: "Deadly Daffodil",
-    3: "Mandarin",
+    3: "Manndarin",
     4: "Mean Green",
-    5: "Villainous Violet",
-    6: "Hot Rod",
+    5: "Agonizing Emerald",
+    6: "Villainous Violet",
+    7: "Hot Rod",
 }
 
 KILLSTREAKER_MAP = {
-    2000: "Fire Horns",
-    2001: "Cerebral Discharge",
-    2002: "Tornado",
-    2003: "Flames",
-    2004: "Singularity",
-    2005: "Incinerator",
-    2006: "Hypno-Beam",
-    2007: "Tesla Coil",
-    2008: "Hellish Inferno",
-    2009: "Fireworks",
+    2002: "Fire Horns",
+    2003: "Cerebral Discharge",
+    2004: "Tornado",
+    2005: "Flames",
+    2006: "Singularity",
+    2007: "Incinerator",
+    2008: "Hypno-Beam",
+    2009: "Tesla Coil",
+    2010: "Hellish Inferno",
+    2011: "Fireworks",
 }
 
 KILLSTREAK_TIER_MAP = {
