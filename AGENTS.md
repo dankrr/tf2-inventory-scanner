@@ -142,6 +142,16 @@ is formatted, linted, and scanned for secrets.
 
 ---
 
+## 📚 Documentation
+
+When updating Markdown files:
+
+- Use `#` headings for all levels and fenced code blocks for examples.
+- Place screenshots or diagrams in `docs/images/` and reference them with relative paths.
+- Run `pre-commit` after editing documentation to lint and format the changes.
+
+---
+
 ## 📖 Role of This Document
 
 `AGENTS.md` acts as a central style and architecture guide for both humans and
