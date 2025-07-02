@@ -254,8 +254,17 @@ def test_paint_and_paintkit_badges(monkeypatch):
     items = ip.enrich_inventory(data)
     badges = items[0]["badges"]
 
-    assert {"icon": "\U0001f3a8", "title": "Paint: Test Paint"} in badges
-    assert {"icon": "\U0001f58c", "title": "Warpaint: Test Kit"} in badges
+    assert {
+        "icon": "\U0001f3a8",
+        "title": "Paint: Test Paint",
+        "color": "#2F4F4F",
+        "type": "paint",
+    } in badges
+    assert {
+        "icon": "\U0001f58c",
+        "title": "Warpaint: Test Kit",
+        "type": "warpaint",
+    } in badges
 
 
 def test_schema_name_used_for_key():

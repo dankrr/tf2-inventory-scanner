@@ -153,10 +153,20 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         idx = attr.get("defindex")
         if idx in (142, 261):
             val = int(attr.get("float_value", 0))
-            name = local_data.PAINT_NAMES.get(str(val))
-            hex_color = PAINT_MAP.get(val, (None, None))[1]
-            if not name:
-                name = PAINT_MAP.get(val, (None, None))[0]
+            entry = local_data.PAINT_NAMES.get(str(val))
+            name = None
+            hex_color = None
+            if isinstance(entry, dict):
+                name = entry.get("name") or entry.get("value")
+                hex_color = entry.get("color") or entry.get("hex")
+            elif isinstance(entry, str):
+                name = entry
+            if val in PAINT_MAP:
+                base_name, base_hex = PAINT_MAP[val]
+                if not name:
+                    name = base_name
+                if not hex_color:
+                    hex_color = base_hex
             if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
                 hex_color = None
             return name, hex_color
@@ -310,6 +320,86 @@ def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
     return parts
 
 
+def _generate_badges(item: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Return a list of badge dictionaries for ``item``."""
+
+    badges: List[Dict[str, str]] = []
+
+    effect = item.get("unusual_effect")
+    if effect:
+        badges.append(
+            {
+                "icon": "★",
+                "title": effect,
+                "color": "#8650AC",
+                "type": "unusual",
+            }
+        )
+
+    if item.get("killstreak_effect"):
+        badges.append(
+            {
+                "icon": "🎯",
+                "title": f"Killstreaker: {item['killstreak_effect']}",
+                "type": "killstreaker",
+            }
+        )
+
+    if item.get("sheen"):
+        badges.append(
+            {
+                "icon": "✨",
+                "title": f"Sheen: {item['sheen']}",
+                "type": "sheen",
+            }
+        )
+
+    if item.get("killstreak_tier"):
+        badges.append(
+            {"icon": "🔪", "title": item["killstreak_tier"], "type": "killstreak"}
+        )
+
+    flags = item.get("spell_flags") or {}
+    if flags.get("has_footprints"):
+        badges.append({"icon": "👣", "title": "Footprints spell", "type": "footprint"})
+    if flags.get("has_paint_spell"):
+        badges.append({"icon": "🧪", "title": "Paint spell", "type": "paint_spell"})
+    if flags.get("has_exorcism") or flags.get("has_pumpkin_bombs"):
+        badges.append({"icon": "👻", "title": "Weapon spell", "type": "weapon_spell"})
+    if flags.get("has_voice_lines"):
+        badges.append({"icon": "🗣️", "title": "Vocal spell", "type": "vocal_spell"})
+
+    if item.get("paint_name"):
+        badge = {
+            "icon": "🎨",
+            "title": f"Paint: {item['paint_name']}",
+            "type": "paint",
+        }
+        if item.get("paint_hex"):
+            badge["color"] = item["paint_hex"]
+        badges.append(badge)
+
+    if item.get("paintkit_name"):
+        badges.append(
+            {
+                "icon": "🖌",
+                "title": f"Warpaint: {item['paintkit_name']}",
+                "type": "warpaint",
+            }
+        )
+
+    for part in item.get("strange_parts", []):
+        badges.append(
+            {
+                "icon": "🔢",
+                "title": f"Strange Part: {part}",
+                "type": "strange_part",
+            }
+        )
+
+    return badges
+
+
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     """Return the display name prefixed with quality and killstreak info."""
 
@@ -408,43 +498,10 @@ def _process_item(
     crate_series_name = _extract_crate_series(asset)
     spells, spell_flags = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
-
-    badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
-    if effect and quality_id in (5, 11):
-        badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
-    if ks_effect:
-        badges.append({"icon": "🎯", "title": f"Killstreaker: {ks_effect}"})
-    category_flags = {
-        "weapon": spell_flags.get("has_exorcism")
-        or spell_flags.get("has_pumpkin_bombs"),
-        "paint": spell_flags.get("has_paint_spell"),
-        "footprint": spell_flags.get("has_footprints"),
-        "vocal": spell_flags.get("has_voice_lines"),
-    }
-    for cat, present in category_flags.items():
-        if not present:
-            continue
-        icon_map = {
-            "weapon": "\U0001f47b",
-            "vocal": "\U0001f5e3\ufe0f",
-            "paint": "\U0001fadf",
-            "footprint": "\U0001f463",
-        }
-        title_map = {
-            "weapon": "Weapon spell",
-            "vocal": "Vocal spell",
-            "paint": "Paint spell",
-            "footprint": "Footprints spell",
-        }
-        badges.append({"icon": icon_map[cat], "title": title_map[cat]})
-
-    if paint_name:
-        badges.append({"icon": "\U0001f3a8", "title": f"Paint: {paint_name}"})
-    if paintkit_name:
-        badges.append({"icon": "\U0001f58c", "title": f"Warpaint: {paintkit_name}"})
 
     item = {
+        "id": str(asset.get("id")) if asset.get("id") is not None else "",
         "defindex": defindex,
         "name": display_name,
         "quality": q_name,
@@ -486,9 +543,11 @@ def _process_item(
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,
-        "badges": badges,  # always present, may be empty
+        "spell_flags": spell_flags,
+        "attributes": asset.get("attributes", []),
         "strange_parts": strange_parts,
     }
+    item["badges"] = _generate_badges(item)
     return item
 
 
@@ -526,6 +585,31 @@ def process_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
     items = enrich_inventory(data)
     return sorted(items, key=lambda i: i["name"])
+
+
+def standardize_item(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Return ``item`` transformed into the standard output structure."""
+
+    return {
+        "id": item.get("id", ""),
+        "name": item.get("name", ""),
+        "image_url": item.get("image_url", ""),
+        "badges": _generate_badges(item),
+        "paint_name": item.get("paint_name"),
+        "paint_hex": item.get("paint_hex"),
+        "killstreaker": item.get("killstreak_effect"),
+        "sheen": item.get("sheen"),
+        "wear": item.get("wear_name"),
+        "quality": item.get("quality"),
+        "defindex": item.get("defindex"),
+        "attributes": item.get("attributes"),
+    }
+
+
+def enrich_and_standardize(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Return inventory items enriched and converted to the standard schema."""
+
+    return [standardize_item(i) for i in enrich_inventory(data)]
 
 
 def run_enrichment_test(path: str | None = None) -> None:
