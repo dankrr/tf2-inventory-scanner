@@ -75,6 +75,19 @@ Only the SteamID3 token is used:
 
 The application converts the ID to SteamID64 and fetches the inventory.
 
+## Architecture
+
+The front end now separates modal handling into two scripts:
+
+```
+retry.js  → fetches updated user cards and prepares item detail HTML
+modal.js  → manages dialog state and injects the provided HTML
+```
+
+`retry.js` imports functions from `modal.js` to open and close the item details
+dialog. Backend responses are unchanged and still embed item data in the
+`data-item` attribute used by the modal.
+
 ## Dependency Management
 
 Dependencies are pinned in `requirements.txt` and locked with
