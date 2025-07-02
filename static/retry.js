@@ -125,6 +125,24 @@ function attachItemModal() {
           attrs.appendChild(div);
         }
 
+        if (data.wear_name) {
+          const div = document.createElement('div');
+          div.textContent = 'Wear: ' + data.wear_name;
+          attrs.appendChild(div);
+        }
+
+        if (data.paintkit_name) {
+          const div = document.createElement('div');
+          div.textContent = 'Paintkit: ' + data.paintkit_name;
+          attrs.appendChild(div);
+        }
+
+        if (data.crate_series_name) {
+          const div = document.createElement('div');
+          div.textContent = 'Crate series: ' + data.crate_series_name;
+          attrs.appendChild(div);
+        }
+
         if (data.custom_description) {
           const cd = document.createElement('div');
           cd.textContent = 'Custom Desc: ' + data.custom_description;
