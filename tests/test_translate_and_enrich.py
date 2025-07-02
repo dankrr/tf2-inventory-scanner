@@ -1,4 +1,8 @@
 from translate_and_enrich import enrich_inventory
+from utils import inventory_processor as ip
+from utils import schema_fetcher as sf
+from utils import local_data as ld
+from utils import items_game_cache as ig
 
 
 def test_decorated_flamethrower_enrichment():
@@ -47,3 +51,48 @@ def test_decorated_flamethrower_enrichment():
     assert "🎯" in item["badges"]
     assert "🖌" in item["badges"]
     assert "🎨" in item["badges"]
+
+
+def test_extract_spells_and_badges(monkeypatch):
+    sf.SCHEMA = {"501": {"defindex": 501, "item_name": "Gun", "image_url": ""}}
+    ld.TF2_SCHEMA = {}
+    ld.ITEMS_GAME_CLEANED = {}
+    monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
+    monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
+
+    asset = {
+        "defindex": 501,
+        "quality": 6,
+        "attributes": [],
+        "descriptions": [
+            {"value": "Halloween: Exorcism (spell only active during event)"},
+            {"value": "Paint Spell: Chromatic Corruption"},
+            {"value": "Halloween: Team Spirit Footprints"},
+            {"value": "Halloween: Pumpkin Bombs"},
+            {"value": "Rare Spell: Voices From Below"},
+        ],
+    }
+
+    spells, flags = ip._extract_spells(asset)
+    expected_spells = [
+        "Exorcism",
+        "Chromatic Corruption",
+        "Team Spirit Footprints",
+        "Pumpkin Bombs",
+        "Voices From Below",
+    ]
+    assert spells == expected_spells
+    assert flags == {
+        "has_exorcism": True,
+        "has_paint_spell": True,
+        "has_footprints": True,
+        "has_pumpkin_bombs": True,
+        "has_voice_lines": True,
+    }
+
+    item = ip._process_item(asset, sf.SCHEMA, {})
+    icons = {b["icon"] for b in item["badges"]}
+    assert {"👻", "🫟", "👣", "🗣️"} <= icons
+
+    items = ip.enrich_inventory({"items": [asset]})
+    assert items[0]["modal_spells"] == expected_spells
