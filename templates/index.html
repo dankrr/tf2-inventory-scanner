@@ -141,6 +141,7 @@
     <script>
       window.initialIds = {{ ids|tojson|safe }};
     </script>
+    <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
     <script>
       function attachScrollButtons() {
