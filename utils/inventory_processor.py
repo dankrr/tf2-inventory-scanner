@@ -237,7 +237,7 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
 
 
 def _extract_spells(
-    asset: Dict[str, Any]
+    asset: Dict[str, Any],
 ) -> Tuple[List[Dict[str, str]], Dict[str, bool]]:
     """Return spell details and boolean flags for badge mapping."""
 
@@ -406,6 +406,11 @@ def _process_item(
             "footprint": "Footprints spell",
         }
         badges.append({"icon": icon_map[cat], "title": title_map[cat]})
+
+    if paint_name:
+        badges.append({"icon": "\U0001f3a8", "title": f"Paint: {paint_name}"})
+    if paintkit_name:
+        badges.append({"icon": "\U0001f58c", "title": f"Warpaint: {paintkit_name}"})
 
     item = {
         "defindex": defindex,
