@@ -183,14 +183,13 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 
 def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return paint name and hex color if present."""
-
     for attr in asset.get("attributes", []):
-        if attr.get("defindex") in PAINT_IDS:
-            try:
-                paint_id = int(attr.get("value"))
-            except (TypeError, ValueError):
-                continue
-            return PAINT_MAP.get(paint_id, (None, None))
+        try:
+            paint_id = int(attr.get("value"))
+            if paint_id in PAINT_MAP:
+                return PAINT_MAP[paint_id]
+        except (TypeError, ValueError):
+            continue
     return None, None
 
 
