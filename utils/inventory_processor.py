@@ -323,6 +323,104 @@ def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
     return data, status
 
 
+def _process_item(
+    asset: Dict[str, Any], schema_map: Dict[str, Any], cleaned_map: Dict[str, Any]
+) -> Dict[str, Any] | None:
+    """Return an enriched item dictionary for a single asset."""
+
+    defindex = str(asset.get("defindex", "0"))
+    schema_entry = schema_map.get(defindex)
+    ig_item = cleaned_map.get(defindex) or {}
+    if not (schema_entry or ig_item):
+        return None
+
+    image_url = schema_entry.get("image_url") if schema_entry else ""
+
+    base_name = (
+        WARPAINT_MAP.get(defindex)
+        or ig_item.get("name")
+        or (schema_entry.get("item_name") if schema_entry else None)
+        or (schema_entry.get("name") if schema_entry else None)
+        or f"Item #{defindex}"
+    )
+
+    quality_id = asset.get("quality", 0)
+    q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
+    display_name = _build_item_name(base_name, q_name, asset)
+
+    ks_tier, sheen = _extract_killstreak(asset)
+    ks_effect = _extract_killstreak_effect(asset)
+    paint_name, paint_hex = _extract_paint(asset)
+    wear_name = _extract_wear(asset)
+    paintkit_name = _extract_paintkit(asset)
+    crate_series_name = _extract_crate_series(asset)
+    spell_lines, spell_flags = _extract_spells(asset)
+    strange_parts = _extract_strange_parts(asset)
+
+    badges: List[Dict[str, str]] = []
+    effect = _extract_unusual_effect(asset)
+    if effect and quality_id in (5, 11):
+        badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
+    if ks_effect:
+        badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
+    for key, icon, title in [
+        ("has_exorcism", "\U0001f47b", "Exorcism"),
+        ("has_paint_spell", "\U0001f3a8", "Paint spell"),
+        ("has_footprints", "\U0001f463", "Footprints spell"),
+        ("has_pumpkin_bombs", "\U0001f383", "Pumpkin Bombs"),
+        ("has_voice_lines", "\u2728", "Rare spell"),
+    ]:
+        if spell_flags.get(key):
+            badges.append({"icon": icon, "title": title})
+
+    item = {
+        "defindex": defindex,
+        "name": display_name,
+        "quality": q_name,
+        "quality_color": q_col,
+        "image_url": image_url,
+        "item_type_name": (
+            schema_entry.get("item_type_name")
+            if schema_entry
+            else ig_item.get("item_type_name")
+        ),
+        "item_name": schema_entry.get("name") if schema_entry else ig_item.get("name"),
+        "craft_class": (
+            schema_entry.get("craft_class")
+            if schema_entry
+            else ig_item.get("craft_class")
+        ),
+        "craft_material_type": (
+            schema_entry.get("craft_material_type")
+            if schema_entry
+            else ig_item.get("craft_material_type")
+        ),
+        "item_set": schema_entry.get("item_set"),
+        "capabilities": schema_entry.get("capabilities"),
+        "tags": schema_entry.get("tags"),
+        "equip_regions": ig_item.get("equip_regions") or ig_item.get("equip_region"),
+        "item_class": ig_item.get("item_class"),
+        "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
+        "level": asset.get("level"),
+        "origin": ORIGIN_MAP.get(asset.get("origin")),
+        "custom_name": asset.get("custom_name"),
+        "custom_description": asset.get("custom_desc"),
+        "unusual_effect": effect if quality_id in (5, 11) else None,
+        "killstreak_tier": ks_tier,
+        "sheen": sheen,
+        "paint_name": paint_name,
+        "paint_hex": paint_hex,
+        "wear_name": wear_name,
+        "paintkit_name": paintkit_name,
+        "crate_series_name": crate_series_name,
+        "killstreak_effect": ks_effect,
+        "spells": spell_lines,
+        "badges": badges,  # always present, may be empty
+        "strange_parts": strange_parts,
+    }
+    return item
+
+
 def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info."""
     items_raw = data.get("items")
@@ -334,103 +432,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
     for asset in items_raw:
-        defindex = str(asset.get("defindex", "0"))
-        schema_entry = schema_map.get(defindex)
-        ig_item = cleaned_map.get(defindex) or {}
-        if not (schema_entry or ig_item):
-            continue
-
-        image_url = schema_entry.get("image_url") if schema_entry else ""
-
-        # Prefer name from cleaned items_game if available
-        base_name = (
-            WARPAINT_MAP.get(defindex)
-            or ig_item.get("name")
-            or (schema_entry.get("item_name") if schema_entry else None)
-            or (schema_entry.get("name") if schema_entry else None)
-            or f"Item #{defindex}"
-        )
-
-        quality_id = asset.get("quality", 0)
-        q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
-        display_name = _build_item_name(base_name, q_name, asset)
-
-        ks_tier, sheen = _extract_killstreak(asset)
-        ks_effect = _extract_killstreak_effect(asset)
-        paint_name, paint_hex = _extract_paint(asset)
-        wear_name = _extract_wear(asset)
-        paintkit_name = _extract_paintkit(asset)
-        crate_series_name = _extract_crate_series(asset)
-        spell_lines, spell_flags = _extract_spells(asset)
-        strange_parts = _extract_strange_parts(asset)
-
-        badges: List[Dict[str, str]] = []
-        effect = _extract_unusual_effect(asset)
-        if effect and quality_id in (5, 11):
-            badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
-        if ks_effect:
-            badges.append({"icon": "⚔", "title": f"Killstreaker: {ks_effect}"})
-        for key, icon, title in [
-            ("has_exorcism", "\U0001f47b", "Exorcism"),
-            ("has_paint_spell", "\U0001f3a8", "Paint spell"),
-            ("has_footprints", "\U0001f463", "Footprints spell"),
-            ("has_pumpkin_bombs", "\U0001f383", "Pumpkin Bombs"),
-            ("has_voice_lines", "\u2728", "Rare spell"),
-        ]:
-            if spell_flags.get(key):
-                badges.append({"icon": icon, "title": title})
-
-        item_name = display_name
-
-        item = {
-            "defindex": defindex,
-            "name": item_name,
-            "quality": q_name,
-            "quality_color": q_col,
-            "image_url": image_url,
-            "item_type_name": (
-                schema_entry.get("item_type_name")
-                if schema_entry
-                else ig_item.get("item_type_name")
-            ),
-            "item_name": (
-                schema_entry.get("name") if schema_entry else ig_item.get("name")
-            ),
-            "craft_class": (
-                schema_entry.get("craft_class")
-                if schema_entry
-                else ig_item.get("craft_class")
-            ),
-            "craft_material_type": (
-                schema_entry.get("craft_material_type")
-                if schema_entry
-                else ig_item.get("craft_material_type")
-            ),
-            "item_set": schema_entry.get("item_set"),
-            "capabilities": schema_entry.get("capabilities"),
-            "tags": schema_entry.get("tags"),
-            "equip_regions": ig_item.get("equip_regions")
-            or ig_item.get("equip_region"),
-            "item_class": ig_item.get("item_class"),
-            "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
-            "level": asset.get("level"),
-            "origin": ORIGIN_MAP.get(asset.get("origin")),
-            "custom_name": asset.get("custom_name"),
-            "custom_description": asset.get("custom_desc"),
-            "unusual_effect": effect if quality_id in (5, 11) else None,
-            "killstreak_tier": ks_tier,
-            "sheen": sheen,
-            "paint_name": paint_name,
-            "paint_hex": paint_hex,
-            "wear_name": wear_name,
-            "paintkit_name": paintkit_name,
-            "crate_series_name": crate_series_name,
-            "killstreak_effect": ks_effect,
-            "spells": spell_lines,
-            "badges": badges,  # always present, may be empty
-            "strange_parts": strange_parts,
-        }
-        items.append(item)
+        item = _process_item(asset, schema_map, cleaned_map)
+        if item:
+            items.append(item)
 
     return items
 
