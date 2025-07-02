@@ -20,6 +20,17 @@ def app(monkeypatch):
     "context",
     [
         {"user": {"items": [{"name": "Foo", "image_url": ""}]}},
+        {
+            "user": {
+                "items": [
+                    {
+                        "name": "Foo",
+                        "image_url": "",
+                        "badges": [{"icon": "★", "title": "Star"}],
+                    }
+                ]
+            }
+        },
         {"user": {"items": []}},
         {"user": {}},
     ],
@@ -29,3 +40,22 @@ def test_user_template_does_not_error(app, context):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context.get("user", {}))
         render_template_string(HTML, **context)
+
+
+def test_user_template_renders_badge_icon(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Bar",
+                    "image_url": "",
+                    "badges": [{"icon": "★", "title": "Star"}],
+                }
+            ]
+        }
+    }
+    with app.app_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    assert "★" in html
