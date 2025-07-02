@@ -7,6 +7,13 @@ repos:
     rev: v0.4.4
     hooks:
       - id: ruff
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
 # Temporarily disabled due to network blocks
 # - repo: https://github.com/awslabs/git-secrets
 #   rev: 1.3.0
