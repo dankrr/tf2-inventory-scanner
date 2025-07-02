@@ -267,6 +267,28 @@ def test_paint_and_paintkit_badges(monkeypatch):
     } in badges
 
 
+def test_paint_extracted_from_value(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 9000,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 142, "value": 15158332},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {"9000": {"defindex": 9000, "item_name": "Painted", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    monkeypatch.setattr(ld, "PAINT_NAMES", {}, False)
+
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["paint_name"] == "Australium Gold"
+    assert item["paint_hex"] == "#E7B53B"
+
+
 def test_schema_name_used_for_key():
     data = {"items": [{"defindex": 5021, "quality": 6}]}
     sf.SCHEMA = {"5021": {"defindex": 5021, "item_name": "Mann Co. Supply Crate Key"}}

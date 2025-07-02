@@ -152,7 +152,13 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx in (142, 261):
-            val = int(attr.get("float_value", 0))
+            raw = attr.get("float_value")
+            if raw is None:
+                raw = attr.get("value")
+            try:
+                val = int(raw)
+            except (TypeError, ValueError):
+                continue
             entry = local_data.PAINT_NAMES.get(str(val))
             name = None
             hex_color = None
