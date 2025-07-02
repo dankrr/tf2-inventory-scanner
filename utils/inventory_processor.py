@@ -128,6 +128,41 @@ PAINT_MAP = {
     16341610: ("A Color Most Splendid", "#FFB000"),
 }
 
+# Set of attribute defindex values that correspond to applied paints.
+# These are the raw 32-bit integer representations of the paint float IDs.
+PAINT_IDS = {
+    1235263648,
+    1238792840,
+    1241758248,
+    1244968080,
+    1245527356,
+    1248623756,
+    1250205302,
+    1252159636,
+    1255316084,
+    1256537220,
+    1257822382,
+    1257930976,
+    1257930978,
+    1257930980,
+    1257930982,
+    1258093820,
+    1258323968,
+    1258324700,
+    1261975611,
+    1262280115,
+    1262709805,
+    1262858129,
+    1263067360,
+    1263498038,
+    1265034982,
+    1265060924,
+    1265087803,
+    1265690210,
+    1265690252,
+    1266244202,
+}
+
 
 def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return killstreak tier and sheen names if present."""
@@ -149,36 +184,13 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return paint name and hex color if present."""
 
-    # Debug: show raw values so we can confirm paint IDs like 15158332
-    print("Paint attr IDs:", [a.get("value") for a in asset.get("attributes", [])])
-
     for attr in asset.get("attributes", []):
-        idx = attr.get("defindex")
-        if idx in (142, 261):
-            raw = attr.get("float_value")
-            if raw is None:
-                raw = attr.get("value")
+        if attr.get("defindex") in PAINT_IDS:
             try:
-                val = int(raw)
+                paint_id = int(attr.get("value"))
             except (TypeError, ValueError):
                 continue
-            entry = local_data.PAINT_NAMES.get(str(val))
-            name = None
-            hex_color = None
-            if isinstance(entry, dict):
-                name = entry.get("name") or entry.get("value")
-                hex_color = entry.get("color") or entry.get("hex")
-            elif isinstance(entry, str):
-                name = entry
-            if val in PAINT_MAP:
-                base_name, base_hex = PAINT_MAP[val]
-                if not name:
-                    name = base_name
-                if not hex_color:
-                    hex_color = base_hex
-            if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
-                hex_color = None
-            return name, hex_color
+            return PAINT_MAP.get(paint_id, (None, None))
     return None, None
 
 

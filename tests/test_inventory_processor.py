@@ -240,7 +240,7 @@ def test_paint_and_paintkit_badges(monkeypatch):
                 "defindex": 9000,
                 "quality": 6,
                 "attributes": [
-                    {"defindex": 142, "float_value": 3100495},
+                    {"defindex": 1257930978, "value": 3100495},
                     {"defindex": 834, "float_value": 350},
                 ],
             }
@@ -248,7 +248,6 @@ def test_paint_and_paintkit_badges(monkeypatch):
     }
     sf.SCHEMA = {"9000": {"defindex": 9000, "item_name": "Painted", "image_url": ""}}
     sf.QUALITIES = {"6": "Unique"}
-    monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Test Paint"}, False)
     monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Test Kit"}, False)
 
     items = ip.enrich_inventory(data)
@@ -256,7 +255,7 @@ def test_paint_and_paintkit_badges(monkeypatch):
 
     assert {
         "icon": "\U0001f3a8",
-        "title": "Paint: Test Paint",
+        "title": "Paint: A Color Similar to Slate",
         "color": "#2F4F4F",
         "type": "paint",
     } in badges
@@ -274,7 +273,8 @@ def test_paint_extracted_from_value(monkeypatch):
                 "defindex": 9000,
                 "quality": 6,
                 "attributes": [
-                    {"defindex": 142, "value": 15158332},
+                    {"defindex": 1234, "float_value": 1065353216},
+                    {"defindex": 1256537220, "value": 15158332},
                 ],
             }
         ]
