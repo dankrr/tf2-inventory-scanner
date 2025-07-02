@@ -468,11 +468,20 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     for asset in items_raw:
         item = _process_item(asset, schema_map, cleaned_map)
-        if item:
-            modal_spells = item.get("spells", [])
-            item["modal_spells"] = modal_spells
-            item["spells"] = modal_spells  # backward compatibility for JS
-            items.append(item)
+        if not item:
+            continue
+
+        spells_raw = item.get("spells", [])
+        if isinstance(spells_raw, dict):
+            spells_list = spells_raw.get("list", [])
+        elif isinstance(spells_raw, list):
+            spells_list = spells_raw
+        else:
+            spells_list = []
+
+        item["modal_spells"] = spells_list
+        item["spells"] = spells_list  # backward compatibility for JS
+        items.append(item)
 
     return items
 
