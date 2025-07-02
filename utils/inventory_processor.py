@@ -146,7 +146,7 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 142:
+        if idx in (142, 261):
             val = int(attr.get("float_value", 0))
             name = local_data.PAINT_NAMES.get(str(val))
             hex_color = PAINT_MAP.get(val, (None, None))[1]
@@ -156,14 +156,35 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     return None, None
 
 
+def _wear_tier(value: float) -> str:
+    """Return a wear tier name for ``value`` between 0 and 1."""
+
+    if value < 0.07:
+        return "Factory New"
+    if value < 0.15:
+        return "Minimal Wear"
+    if value < 0.38:
+        return "Field-Tested"
+    if value < 0.45:
+        return "Well-Worn"
+    return "Battle Scarred"
+
+
 def _extract_wear(asset: Dict[str, Any]) -> str | None:
     """Return wear tier name if present."""
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         if idx == 725:
-            val = int(attr.get("float_value", 0))
-            return local_data.WEAR_NAMES.get(str(val))
+            raw = attr.get("float_value")
+            if raw is None:
+                raw = attr.get("value")
+            try:
+                val = float(raw)
+            except (TypeError, ValueError):
+                continue
+            name = local_data.WEAR_NAMES.get(str(int(val)))
+            return name or _wear_tier(val)
     return None
 
 
@@ -414,3 +435,33 @@ def process_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
     items = enrich_inventory(data)
     return sorted(items, key=lambda i: i["name"])
+
+
+def run_enrichment_test(path: str | None = None) -> None:
+    """Load a local inventory JSON file, enrich it, and print the result.
+
+    This helper is intended for manual debugging of the enrichment logic. It
+    loads ``converted.json`` next to this module (or the file provided via
+    ``path``), processes the inventory with :func:`process_inventory`, and
+    prints the enriched items as pretty JSON.
+    """
+
+    if path is None:
+        file_path = Path(__file__).with_name("converted.json")
+    else:
+        file_path = Path(path)
+
+    if not file_path.exists():
+        print(f"File not found: {file_path}")
+        return
+
+    local_data.load_files()
+    with file_path.open() as f:
+        raw = json.load(f)
+
+    items = process_inventory(raw)
+    print(json.dumps(items, indent=2))
+
+
+if __name__ == "__main__":  # pragma: no cover - manual debug helper
+    run_enrichment_test()
