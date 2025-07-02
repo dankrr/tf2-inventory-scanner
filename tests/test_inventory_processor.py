@@ -292,3 +292,29 @@ def test_paintkit_appended_to_name(monkeypatch):
     sf.QUALITIES = {"15": "Decorated Weapon"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Decorated Weapon Flamethrower (Warhawk)"
+
+
+def test_kill_eater_fields(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 11,
+                "attributes": [
+                    {"defindex": 214, "value": 10},
+                    {"defindex": 292, "float_value": 64},
+                    {"defindex": 379, "value": 5},
+                    {"defindex": 380, "float_value": 70},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Thing", "image_url": ""}}
+    sf.QUALITIES = {"11": "Strange"}
+    monkeypatch.setattr(
+        ld, "STRANGE_PART_NAMES", {"64": "Kills", "70": "Robots"}, False
+    )
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["strange_count"] == 10
+    assert item["score_type"] == "Kills"
