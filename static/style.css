@@ -191,6 +191,17 @@ button {
   color: #fff;
 }
 
+/* ───── Paint colour dot (used in card & modal) ───────────────────── */
+.paint-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  border: 1px solid #333;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
 .tf2-hours { margin-left: 6px; font-size: 0.9em; }
 
 .page-footer {
