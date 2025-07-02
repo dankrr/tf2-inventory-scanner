@@ -34,7 +34,13 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   ```bash
   python app.py --refresh
   ```
-- Use `--test` to run offline against cached data.
+ - Use `--test` to run offline against cached data.
+
+## Modals
+
+All modal behaviour is centralized in `static/modal.js`. Other scripts, such as
+`retry.js`, call its `openModal`, `closeModal`, and `updateModal` functions to
+control dialog windows.
 
 ## Testing
 
