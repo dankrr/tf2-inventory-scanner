@@ -311,6 +311,45 @@ def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
     return parts
 
 
+def _extract_kill_eater_info(
+    asset: Dict[str, Any],
+) -> Tuple[Dict[int, int], Dict[int, int]]:
+    """Return maps of kill-eater counts and score types keyed by index."""
+
+    counts: Dict[int, int] = {}
+    types: Dict[int, int] = {}
+
+    for attr in asset.get("attributes", []):
+        idx_raw = attr.get("defindex")
+        try:
+            idx = int(idx_raw)
+        except (TypeError, ValueError):
+            continue
+
+        val_raw = (
+            attr.get("float_value") if "float_value" in attr else attr.get("value")
+        )
+        try:
+            val = int(float(val_raw))
+        except (TypeError, ValueError):
+            continue
+
+        if idx == 214:
+            counts[1] = val
+            continue
+        if idx == 292:
+            types[1] = val
+            continue
+
+        if idx >= 379:
+            if idx % 2:  # odd -> kill_eater_X
+                counts[(idx - 379) // 2 + 2] = val
+            else:  # even -> score_type_X
+                types[(idx - 380) // 2 + 2] = val
+
+    return counts, types
+
+
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     """Return the display name prefixed with quality and killstreak info."""
 
@@ -409,6 +448,7 @@ def _process_item(
     crate_series_name = _extract_crate_series(asset)
     spells, spell_flags = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
+    kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
     badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
@@ -489,6 +529,12 @@ def _process_item(
         "spells": spells,
         "badges": badges,  # always present, may be empty
         "strange_parts": strange_parts,
+        "strange_count": kill_eater_counts.get(1),
+        "score_type": (
+            local_data.STRANGE_PART_NAMES.get(str(score_types.get(1)))
+            if score_types.get(1) is not None
+            else None
+        ),
     }
     return item
 
