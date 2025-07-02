@@ -92,7 +92,7 @@ def test_extract_spells_and_badges(monkeypatch):
 
     item = ip._process_item(asset, sf.SCHEMA, {})
     icons = {b["icon"] for b in item["badges"]}
-    assert {"👻", "🫟", "👣", "🗣️"} <= icons
+    assert {"👻", "🧪", "👣", "🗣️"} <= icons
 
     items = ip.enrich_inventory({"items": [asset]})
     assert items[0]["modal_spells"] == expected_spells
