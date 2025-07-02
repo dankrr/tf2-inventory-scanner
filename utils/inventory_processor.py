@@ -137,11 +137,11 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         val = int(attr.get("float_value", 0))
-        if idx in (2025, 2013):
+        if idx == 2025:
             tier = local_data.KILLSTREAK_NAMES.get(str(val)) or _KILLSTREAK_TIER.get(
                 val
             )
-        elif idx == 2014:
+        elif idx == 2013:
             sheen = _SHEEN_NAMES.get(val)
     return tier, sheen
 
@@ -222,8 +222,15 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx in (2013, 2015):
-            name = attr.get("account_info", {}).get("name")
+        if idx == 2014:
+            raw = attr.get("float_value")
+            if raw is None:
+                raw = attr.get("value")
+            try:
+                val = int(float(raw))
+            except (TypeError, ValueError):
+                continue
+            name = local_data.KILLSTREAK_EFFECT_NAMES.get(str(val))
             if name:
                 return name
     for desc in asset.get("descriptions", []):
