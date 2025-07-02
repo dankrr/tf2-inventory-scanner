@@ -75,6 +75,18 @@ Only the SteamID3 token is used:
 
 The application converts the ID to SteamID64 and fetches the inventory.
 
+## Architecture Overview
+
+The backend renders each user card while the browser handles any updates.
+`retry.js` fetches refreshed card HTML and builds the markup for item details.
+All dialog behaviour now lives in `modal.js`, which exposes `openModal()` and
+`closeModal()` helpers. After generating the HTML, `retry.js` simply calls
+`openModal(itemHtml)`.
+
+Backend responses still embed the item data in the `data-item` attribute. See
+`docs/MODAL_REFACTOR_PLAN.md` for the migration steps and
+`docs/ENRICHMENT_PIPELINE.md` for the payload schema.
+
 ## Dependency Management
 
 Dependencies are pinned in `requirements.txt` and locked with
@@ -162,3 +174,9 @@ docker run -p 5000:5000 tf2-scanner
 python app.py          # now reachable at http://<LAN_IP>:5000
 docker run -p 5000:5000 tf2-inv
 ```
+
+## Documentation
+
+Further design notes and the pull request checklist live in the `docs/`
+directory. Start with `docs/MODAL_REFACTOR_PLAN.md` and
+`docs/PR_CHECKLIST.md` when working on modal updates.
