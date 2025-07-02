@@ -41,7 +41,7 @@
 
               {# All the *other* badges. Skip the old paint icons (🎨 / 🖌) #}
               {% for badge in item.badges %}
-                {% if badge not in ["🎨", "🖌"] %}
+                {% if badge.icon not in ['🎨', '🖌'] %}
                   <span class="badge"
                         {% if badge.color %} style="color:{{ badge.color }}"{% endif %}
                         title="{{ badge.title }}">{{ badge.icon }}</span>
