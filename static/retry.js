@@ -96,9 +96,12 @@ function attachItemModal() {
           const ksParts = [];
           ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
           if (data.sheen) ksParts.push(data.sheen);
-          if (data.killstreak_effect) ksParts.push(data.killstreak_effect);
           const ks = document.createElement('div');
-          ks.textContent = 'Killstreak: ' + ksParts.join(', ');
+          let ksHtml = 'Killstreak: ' + ksParts.join(', ');
+          if (data.killstreak_effect) {
+            ksHtml += ', <span class="ks-effect">' + data.killstreak_effect + '</span>';
+          }
+          ks.innerHTML = ksHtml;
           attrs.appendChild(ks);
         }
 
