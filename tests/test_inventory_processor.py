@@ -256,3 +256,39 @@ def test_paint_and_paintkit_badges(monkeypatch):
 
     assert {"icon": "\U0001f3a8", "title": "Paint: Test Paint"} in badges
     assert {"icon": "\U0001f58c", "title": "Warpaint: Test Kit"} in badges
+
+
+def test_schema_name_used_for_key():
+    data = {"items": [{"defindex": 5021, "quality": 6}]}
+    sf.SCHEMA = {"5021": {"defindex": 5021, "item_name": "Mann Co. Supply Crate Key"}}
+    ld.ITEMS_GAME_CLEANED = {"5021": {"name": "Decoder Ring"}}
+    sf.QUALITIES = {"6": "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["name"] == "Mann Co. Supply Crate Key"
+
+
+def test_placeholder_name_falls_back_to_schema():
+    data = {"items": [{"defindex": 1001, "quality": 6}]}
+    sf.SCHEMA = {"1001": {"defindex": 1001, "item_name": "Sniper Rifle"}}
+    ld.ITEMS_GAME_CLEANED = {"1001": {"name": "rifle"}}
+    sf.QUALITIES = {"6": "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["name"] == "Sniper Rifle"
+
+
+def test_paintkit_appended_to_name(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    sf.SCHEMA = {"15141": {"defindex": 15141, "item_name": "Flamethrower"}}
+    ld.ITEMS_GAME_CLEANED = {"15141": {"name": "tf_weapon_flamethrower"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Warhawk"}, False)
+    sf.QUALITIES = {"15": "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["name"] == "Decorated Weapon Flamethrower (Warhawk)"
