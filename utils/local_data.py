@@ -14,6 +14,18 @@ KILLSTREAK_NAMES: Dict[str, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
 PAINTKIT_NAMES: Dict[str, str] = {}
 CRATE_SERIES_NAMES: Dict[str, str] = {}
+KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
+    "2000": "Fire Horns",
+    "2001": "Cerebral Discharge",
+    "2002": "Tornado",
+    "2003": "Flames",
+    "2004": "Singularity",
+    "2005": "Incinerator",
+    "2006": "Hypno-Beam",
+    "2007": "Tesla Coil",
+    "2008": "Hellish Inferno",
+    "2009": "Fireworks",
+}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEMA_FILE = BASE_DIR / "cache" / "tf2_schema.json"
@@ -24,6 +36,7 @@ DEFAULT_EFFECT_FILE = BASE_DIR / "cache" / "effect_names.json"
 DEFAULT_PAINT_FILE = BASE_DIR / "cache" / "paint_names.json"
 DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "wear_names.json"
 DEFAULT_KILLSTREAK_FILE = BASE_DIR / "cache" / "killstreak_names.json"
+DEFAULT_KS_EFFECT_FILE = BASE_DIR / "cache" / "killstreak_effect_names.json"
 DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
 DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "paintkit_names.json"
 DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
@@ -31,6 +44,7 @@ EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
 PAINT_FILE = Path(os.getenv("TF2_PAINT_FILE", DEFAULT_PAINT_FILE))
 WEAR_FILE = Path(os.getenv("TF2_WEAR_FILE", DEFAULT_WEAR_FILE))
 KILLSTREAK_FILE = Path(os.getenv("TF2_KILLSTREAK_FILE", DEFAULT_KILLSTREAK_FILE))
+KILLSTREAK_EFFECT_FILE = Path(os.getenv("TF2_KS_EFFECT_FILE", DEFAULT_KS_EFFECT_FILE))
 STRANGE_PART_FILE = Path(os.getenv("TF2_STRANGE_PART_FILE", DEFAULT_STRANGE_PART_FILE))
 PAINTKIT_FILE = Path(os.getenv("TF2_PAINTKIT_FILE", DEFAULT_PAINTKIT_FILE))
 CRATE_SERIES_FILE = Path(os.getenv("TF2_CRATE_SERIES_FILE", DEFAULT_CRATE_SERIES_FILE))
@@ -128,6 +142,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
     PAINT_NAMES = _load_json_map(PAINT_FILE)
     WEAR_NAMES = _load_json_map(WEAR_FILE)
     KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
+    KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
     PAINTKIT_NAMES = _load_json_map(PAINTKIT_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
@@ -137,6 +152,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[str, Any], Dict[str,
         ("paints", PAINT_NAMES, PAINT_FILE),
         ("wears", WEAR_NAMES, WEAR_FILE),
         ("killstreaks", KILLSTREAK_NAMES, KILLSTREAK_FILE),
+        ("killstreak effects", KILLSTREAK_EFFECT_NAMES, KILLSTREAK_EFFECT_FILE),
         ("strange parts", STRANGE_PART_NAMES, STRANGE_PART_FILE),
         ("paintkits", PAINTKIT_NAMES, PAINTKIT_FILE),
         ("crate series", CRATE_SERIES_NAMES, CRATE_SERIES_FILE),
