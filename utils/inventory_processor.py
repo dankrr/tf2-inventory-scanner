@@ -238,10 +238,14 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
 
 def _extract_spells(
     asset: Dict[str, Any],
-) -> Tuple[List[Dict[str, str]], Dict[str, bool]]:
-    """Return spell details and boolean flags for badge mapping."""
+) -> Tuple[List[str], Dict[str, bool]]:
+    """Return spell names and boolean flags for badge mapping.
 
-    spells: List[Dict[str, str]] = []
+    The names are cleaned strings such as ``"Exorcism"`` or
+    ``"Team Spirit Footprints"`` extracted from item descriptions.
+    """
+
+    spells: List[str] = []
     flags = {
         "has_exorcism": False,
         "has_paint_spell": False,
@@ -261,17 +265,9 @@ def _extract_spells(
         ltext = text.lower()
         if "halloween" in ltext or "spell" in ltext:
             name = text.split(":", 1)[-1].strip()
-            category: str | None = None
-            if "exorcism" in ltext or "pumpkin" in ltext:
-                category = "weapon"
-            elif "paint" in ltext and "spell" in ltext:
-                category = "paint"
-            elif "footprints" in ltext:
-                category = "footprint"
-            elif "voices" in ltext or "rare spell" in ltext:
-                category = "vocal"
-            if category:
-                spells.append({"category": category, "name": name})
+            name = re.sub(r"\(.*?\)$", "", name).strip()
+            if name and name not in spells:
+                spells.append(name)
         if "exorcism" in ltext:
             flags["has_exorcism"] = True
         if "paint" in ltext and "spell" in ltext:
@@ -470,20 +466,10 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
     cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
 
-    icon_map = {
-        "weapon": "\U0001f47b",
-        "vocal": "\U0001f5e3\ufe0f",
-        "paint": "\U0001fa9f",
-        "footprint": "\U0001f463",
-    }
-
     for asset in items_raw:
         item = _process_item(asset, schema_map, cleaned_map)
         if item:
-            modal_spells = [
-                f"{icon_map.get(spell.get('category'), '')} {spell.get('name')}"
-                for spell in item.get("spells", [])
-            ]
+            modal_spells = item.get("spells", [])
             item["modal_spells"] = modal_spells
             item["spells"] = modal_spells  # backward compatibility for JS
             items.append(item)
