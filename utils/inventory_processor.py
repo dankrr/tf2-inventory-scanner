@@ -68,10 +68,11 @@ _KILLSTREAK_TIER = {
 _SHEEN_NAMES = {
     1: "Team Shine",
     2: "Deadly Daffodil",
-    3: "Mandarin",
+    3: "Manndarin",
     4: "Mean Green",
-    5: "Villainous Violet",
-    6: "Hot Rod",
+    5: "Agonizing Emerald",
+    6: "Villainous Violet",
+    7: "Hot Rod",
 }
 
 # Map of item origin ID -> human readable string
@@ -141,7 +142,7 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
             tier = local_data.KILLSTREAK_NAMES.get(str(val)) or _KILLSTREAK_TIER.get(
                 val
             )
-        elif idx == 2013:
+        elif idx == 2014:
             sheen = _SHEEN_NAMES.get(val)
     return tier, sheen
 
@@ -222,7 +223,7 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 2014:
+        if idx == 2013:
             val = int(attr.get("float_value", 0))
             name = local_data.KILLSTREAK_EFFECT_NAMES.get(str(val))
             if name:
