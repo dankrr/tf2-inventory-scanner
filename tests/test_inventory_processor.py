@@ -231,3 +231,28 @@ def test_user_template_safe(monkeypatch, status):
 
     with app.app.app_context():
         app.render_template("_user.html", user=user)
+
+
+def test_paint_and_paintkit_badges(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 9000,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 142, "float_value": 3100495},
+                    {"defindex": 834, "float_value": 350},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {"9000": {"defindex": 9000, "item_name": "Painted", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Test Paint"}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Test Kit"}, False)
+
+    items = ip.enrich_inventory(data)
+    badges = items[0]["badges"]
+
+    assert {"icon": "\U0001f3a8", "title": "Paint: Test Paint"} in badges
+    assert {"icon": "\U0001f58c", "title": "Warpaint: Test Kit"} in badges
