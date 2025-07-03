@@ -17,6 +17,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--refresh-schema", action="store_true")
+    parser.add_argument("steamid", nargs="?", default="76561198177872379")
     args, _ = parser.parse_known_args()
 
     if args.refresh_schema:
@@ -24,7 +25,7 @@ def main() -> None:
         print("\N{CHECK MARK} Schema refreshed")
         return
 
-    steamid = "76561198177872379"  # hardcoded ID for testing
+    steamid = args.steamid
 
     try:
         schema = SchemaProvider()
