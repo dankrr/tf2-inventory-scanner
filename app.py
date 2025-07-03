@@ -9,13 +9,14 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
 from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 from utils import items_game_cache
 from utils import local_data
+from utils import constants as consts
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -197,6 +198,20 @@ def _setup_test_mode() -> None:
 def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
     return fetch_and_process_single_user(steamid64)
+
+
+@app.get("/api/constants")
+def api_constants():
+    """Return static constant mappings for client usage."""
+    return jsonify(
+        {
+            "paint_colors": consts.PAINT_COLORS,
+            "sheen_names": consts.SHEEN_NAMES,
+            "killstreak_tiers": consts.KILLSTREAK_TIERS,
+            "killstreak_effects": consts.KILLSTREAK_EFFECTS,
+            "origin_map": consts.ORIGIN_MAP,
+        }
+    )
 
 
 # --- Flask routes -----------------------------------------------------------

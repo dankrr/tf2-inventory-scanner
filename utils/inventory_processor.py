@@ -8,6 +8,13 @@ from pathlib import Path
 import struct
 
 from . import steam_api_client, schema_fetcher, items_game_cache, local_data
+from .constants import (
+    KILLSTREAK_TIERS,
+    SHEEN_NAMES,
+    ORIGIN_MAP,
+    PAINT_COLORS,
+    KILLSTREAK_EFFECTS,
+)
 
 items_game_cache.load_items_game_cleaned()
 
@@ -60,77 +67,6 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-_KILLSTREAK_TIER = {
-    1: "Killstreak",
-    2: "Specialized Killstreak",
-    3: "Professional Killstreak",
-}
-
-_SHEEN_NAMES = {
-    1: "Team Shine",
-    2: "Deadly Daffodil",
-    3: "Manndarin",
-    4: "Mean Green",
-    5: "Agonizing Emerald",
-    6: "Villainous Violet",
-    7: "Hot Rod",
-}
-
-# Map of item origin ID -> human readable string
-ORIGIN_MAP = {
-    0: "Timed Drop",
-    1: "Achievement",
-    2: "Purchased",
-    3: "Traded",
-    4: "Crafted",
-    5: "Store Promotion",
-    6: "Gifted",
-    7: "Support Promotion",
-    8: "Found in Crate",
-    9: "Earned",
-    10: "Third-Party Promotion",
-    11: "Purchased",
-    12: "Halloween Drop",
-    13: "Package Item",
-    14: "Store Promotion",
-    15: "Foreign",
-}
-
-# Map of paint ID -> (name, hex color)
-PAINT_MAP = {
-    3100495: ("A Color Similar to Slate", "#2F4F4F"),
-    8208497: ("A Deep Commitment to Purple", "#7D4071"),
-    8208498: ("A Distinctive Lack of Hue", "#141414"),
-    15185211: ("A Mann's Mint", "#BCDDB3"),
-    12955537: ("After Eight", "#2D2D24"),
-    8289918: ("Dark Salmon Injustice", "#E9967A"),
-    8421376: ("Indubitably Green", "#729E42"),
-    13595446: ("Mann Co. Orange", "#CF7336"),
-    12377523: ("Muskelmannbraun", "#A57545"),
-    5322826: ("Noble Hatter's Violet", "#51384A"),
-    15787660: ("Pink as Hell", "#FF69B4"),
-    8154199: ("Peculiarly Drab Tincture", "#C5AF91"),
-    4345659: ("Radigan Conagher Brown", "#694D3A"),
-    2960676: ("Color No. 216-190-216", "#D8BED8"),
-    7511618: ("The Bitter Taste of Defeat and Lime", "#32CD32"),
-    15132390: ("Drably Olive", "#808000"),
-    8422108: ("The Color of a Gentlemann's Business Pants", "#FBE85C"),
-    12807213: ("Ye Olde Rustic Colour", "#7C6C57"),
-    1315860: ("An Extraordinary Abundance of Tinge", "#E6E6E6"),
-    12073019: ("Team Spirit", "#B8383B"),
-    15787618: ("An Air of Debonair", "#654740"),
-    8208496: ("Balaclavas Are Forever", "#3B1F23"),
-    8208499: ("Cream Spirit", "#C36C2D"),
-    1757009: ("Operator's Overalls", "#483838"),
-    6901050: ("Waterlogged Lab Coat", "#A9B4C2"),
-    2158218: ("Zepheniah's Greed", "#424F3B"),
-    3874595: ("The Value of Teamwork", "#FFD700"),
-    16341610: ("A Color Most Splendid", "#FFB000"),
-    15158332: ("Australium Gold", "#E7B53B"),
-    13164768: ("Aged Moustache Grey", "#7E7E7E"),
-}
-
-
 def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return killstreak tier and sheen names if present."""
 
@@ -140,11 +76,11 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         idx = attr.get("defindex")
         val = int(attr.get("float_value", 0))
         if idx == 2025:
-            tier = local_data.KILLSTREAK_NAMES.get(str(val)) or _KILLSTREAK_TIER.get(
+            tier = local_data.KILLSTREAK_NAMES.get(str(val)) or KILLSTREAK_TIERS.get(
                 val
             )
         elif idx == 2014:
-            sheen = _SHEEN_NAMES.get(val)
+            sheen = SHEEN_NAMES.get(val)
     return tier, sheen
 
 
@@ -156,9 +92,9 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
         if idx in (142, 261):
             val = int(attr.get("float_value", 0))
             name = local_data.PAINT_NAMES.get(str(val))
-            hex_color = PAINT_MAP.get(val, (None, None))[1]
+            hex_color = PAINT_COLORS.get(val, (None, None))[1]
             if not name:
-                name = PAINT_MAP.get(val, (None, None))[0]
+                name = PAINT_COLORS.get(val, (None, None))[0]
             if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
                 hex_color = None
             return name, hex_color
@@ -262,7 +198,9 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
         idx = attr.get("defindex")
         if idx == 2013:
             val = int(attr.get("float_value", 0))
-            name = local_data.KILLSTREAK_EFFECT_NAMES.get(str(val))
+            name = local_data.KILLSTREAK_EFFECT_NAMES.get(
+                str(val)
+            ) or KILLSTREAK_EFFECTS.get(val)
             if name:
                 return name
     for desc in asset.get("descriptions", []):
