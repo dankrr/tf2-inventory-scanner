@@ -12,6 +12,7 @@ from .constants import (
     SPELL_BADGE_ICONS,
 )
 from .item_enricher import ItemEnricher
+from .inventory_provider import InventoryProvider
 
 __all__ = [
     "PAINT_COLORS",
@@ -26,4 +27,5 @@ __all__ = [
     "WEAPON_SPELLS",
     "SPELL_BADGE_ICONS",
     "ItemEnricher",
+    "InventoryProvider",
 ]
