@@ -13,7 +13,8 @@ window.document.body.appendChild(script);
 
 const modal = window.modal;
 modal.initModal();
-modal.openModal('<p>Hello</p>');
+modal.populateModal('<p>Hello</p>');
+modal.openModal();
 if (!window.document.getElementById('item-modal').classList.contains('open')) {
   throw new Error('Modal should have open class');
 }
