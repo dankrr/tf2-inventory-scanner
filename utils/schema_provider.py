@@ -199,6 +199,10 @@ class SchemaProvider:
     def get_strangeParts(self, *, force: bool = False) -> Dict[int, Any]:
         return self.get_parts(force=force)
 
+    def get_strange_parts(self, *, force: bool = False) -> Dict[int, Any]:
+        """Alias for :meth:`get_parts`."""
+        return self.get_parts(force=force)
+
     def get_item_by_defindex(self, defindex: int) -> Dict[str, Any] | None:
         items = self.get_items()
         item = items.get(defindex)
