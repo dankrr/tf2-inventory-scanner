@@ -26,3 +26,16 @@ def test_main_prints_item_count(monkeypatch, capsys):
     inventory_scanner.main(["123"])
     out = capsys.readouterr().out
     assert "Found 1 items in inventory for 123" in out
+
+
+def test_refresh_schema(monkeypatch, capsys):
+    called = {"refresh": False}
+    monkeypatch.setattr(
+        inventory_scanner.SchemaProvider,
+        "refresh_all",
+        lambda self: called.__setitem__("refresh", True),
+    )
+    inventory_scanner.main(["--refresh-schema"])
+    out = capsys.readouterr().out
+    assert "Schema refreshed" in out
+    assert called["refresh"]
