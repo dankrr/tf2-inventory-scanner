@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Any, Dict
@@ -13,24 +14,26 @@ class SchemaProvider:
 
     TTL = 48 * 60 * 60  # 48 hours
     ENDPOINTS = {
-        "items": "/items",
+        "items": "/raw/schema/items",
         "attributes": "/attributes",
         "effects": "/effects",
         "paints": "/paints",
         "origins": "/origins",
         "parts": "/parts",
         "qualities": "/qualities",
+        "defindexes": "/properties/defindexes",
     }
 
     def __init__(
         self,
         base_url: str = "https://schema.autobot.tf",
-        cache_dir: str | Path = "cache/schema",
+        cache_dir: str | Path = "schema",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._session = requests.Session()
+        self._logger = logging.getLogger(__name__)
         self.items_by_defindex: Dict[int, Any] | None = None
         self.attributes_by_defindex: Dict[int, Any] | None = None
         self.effects_by_index: Dict[int, str] | None = None
@@ -38,6 +41,7 @@ class SchemaProvider:
         self.origins_by_index: Dict[int, str] | None = None
         self.parts_by_defindex: Dict[int, str] | None = None
         self.qualities_by_index: Dict[int, str] | None = None
+        self.defindex_names: Dict[int, str] | None = None
 
     # ------------------------------------------------------------------
     def _fetch(self, endpoint: str) -> Any:
@@ -71,7 +75,7 @@ class SchemaProvider:
                 self,
                 (
                     f"{key}_by_defindex"
-                    if key in {"items", "attributes", "paints", "parts"}
+                    if key in {"items", "attributes", "paints", "parts", "defindexes"}
                     else f"{key}_by_index"
                 ),
                 None,
@@ -90,9 +94,28 @@ class SchemaProvider:
     def get_items(self, *, force: bool = False) -> Dict[int, Any]:
         if self.items_by_defindex is None or force:
             data = self._load("items", self.ENDPOINTS["items"], force)
-            self.items_by_defindex = (
-                self._to_int_map(data) if isinstance(data, dict) else {}
-            )
+            if isinstance(data, dict) and "value" in data:
+                data = data["value"]
+
+            mapping: Dict[int, Any] = {}
+            if isinstance(data, list):
+                for item in data:
+                    try:
+                        idx = int(item.get("defindex", -1))
+                    except (TypeError, ValueError):
+                        continue
+                    if idx >= 0:
+                        mapping[idx] = item
+            elif isinstance(data, dict):
+                for k, v in data.items():
+                    try:
+                        idx = int(k)
+                    except (TypeError, ValueError):
+                        idx = int(v.get("defindex", -1)) if isinstance(v, dict) else -1
+                    if idx >= 0:
+                        mapping[idx] = v
+
+            self.items_by_defindex = mapping
         return self.items_by_defindex
 
     def get_attributes(self, *, force: bool = False) -> Dict[int, Any]:
@@ -154,10 +177,27 @@ class SchemaProvider:
 
     # Compatibility helpers -------------------------------------------------
     def get_defindexes(self, *, force: bool = False) -> Dict[int, Any]:
-        return self.get_items(force=force)
+        if self.defindex_names is None or force:
+            data = self._load("defindexes", self.ENDPOINTS["defindexes"], force)
+            if isinstance(data, dict):
+                self.defindex_names = self._from_name_map(data)
+            else:
+                # fallback to extracting names from items metadata
+                self.defindex_names = {
+                    idx: info.get("item_name") or info.get("name") or ""
+                    for idx, info in self.get_items(force=force).items()
+                }
+        return self.defindex_names
 
     def get_strangeParts(self, *, force: bool = False) -> Dict[int, str]:
         return self.get_parts(force=force)
+
+    def get_item_by_defindex(self, defindex: int) -> Dict[str, Any] | None:
+        items = self.get_items()
+        item = items.get(defindex)
+        if item is None:
+            self._logger.warning("Defindex %s not found in schema", defindex)
+        return item
 
     # Stub helpers kept for backward compatibility --------------------------
     def get_paintkits(self, *, force: bool = False) -> Dict[int, str]:

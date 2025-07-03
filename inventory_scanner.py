@@ -1,6 +1,8 @@
 import os
-import requests
 import sys
+import argparse
+import requests
+from utils.schema_provider import SchemaProvider
 
 API_URL_TEMPLATE = (
     "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
@@ -24,11 +26,21 @@ def fetch_inventory(steamid: str) -> dict:
 
 
 def main(args: list[str]) -> None:
-    if not args:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--refresh-schema", action="store_true")
+    parser.add_argument("steamid", nargs="?")
+    opts = parser.parse_args(args)
+
+    if opts.refresh_schema:
+        SchemaProvider().refresh_all()
+        print("\N{CHECK MARK} Schema refreshed")
+        return
+
+    if not opts.steamid:
         print("Usage: python inventory_scanner.py <steamid>")
         sys.exit(1)
 
-    steamid = args[0]
+    steamid = opts.steamid
     data = fetch_inventory(steamid)
     items = data.get("items", [])
     print(f"Found {len(items)} items in inventory for {steamid}")
