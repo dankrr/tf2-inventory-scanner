@@ -68,11 +68,11 @@ def test_extract_spells_and_badges(monkeypatch):
         "defindex": 501,
         "quality": 6,
         "attributes": [
-            {"defindex": 1009, "value": 1},  # Exorcism
-            {"defindex": 2001, "value": 3},  # Chromatic Corruption
-            {"defindex": 2000, "value": 1},  # Team Spirit Footprints
-            {"defindex": 3001, "value": 1},  # Pumpkin Bombs
-            {"defindex": 1010, "value": 9},  # Spy's Creepy Croon
+            {"defindex": 1007, "value": 1},  # Exorcism
+            {"defindex": 134, "value": 701},  # Chromatic Corruption
+            {"defindex": 134, "value": 3002},  # Team Spirit Footprints
+            {"defindex": 1005, "value": 1},  # Pumpkin Bombs
+            {"defindex": 1004, "value": 9},  # Voices From Below
         ],
     }
 
@@ -82,7 +82,7 @@ def test_extract_spells_and_badges(monkeypatch):
         "Chromatic Corruption",
         "Team Spirit Footprints",
         "Pumpkin Bombs",
-        "Spy's Creepy Croon",
+        "Voices From Below",
     ]
     assert set(names) == set(expected_spells)
 

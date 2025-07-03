@@ -39,9 +39,9 @@
                 <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
               {% endif %}
 
-              {# All the *other* badges. Skip the old paint icons (🎨 / 🖌) #}
+              {# All the *other* badges. Skip the regular paint icon only #}
               {% for badge in item.badges %}
-                {% if badge.icon not in ['🎨', '🖌'] %}
+                {% if badge.icon not in ['🎨'] %}
                   <span class="badge" data-icon="{{ badge.icon }}"
                         {% if badge.color %} style="color:{{ badge.color }}"{% endif %}
                         title="{{ badge.title }}">{{ badge.icon }}</span>
