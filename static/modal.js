@@ -43,6 +43,18 @@
     if (body) body.innerHTML = html;
   }
 
+  function renderBadges(badges) {
+    const box = document.getElementById('modal-badges');
+    if (!box) return;
+    box.innerHTML = '';
+    (badges || []).forEach(b => {
+      const span = document.createElement('span');
+      span.textContent = b.icon;
+      span.title = b.title || '';
+      box.appendChild(span);
+    });
+  }
+
   function initModal() {
     if (initialized) return;
     const modal = getModal();
@@ -56,5 +68,5 @@
     initialized = true;
   }
 
-  global.modal = { initModal, openModal, closeModal, updateModal };
+  global.modal = { initModal, openModal, closeModal, updateModal, renderBadges };
 })(window);
