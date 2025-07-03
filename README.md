@@ -35,7 +35,12 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   ```bash
   python app.py --refresh
   # refresh simplified schema
-  python main.py --refresh-schema
+python main.py --refresh-schema
+```
+- Inspect a single user's inventory from the command line (defaults to a demo
+  ID if omitted):
+  ```bash
+  python main.py <steamid>
   ```
 - Use `--test` to run offline against cached data.
 - Access schema properties directly:
