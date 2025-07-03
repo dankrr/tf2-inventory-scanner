@@ -36,6 +36,14 @@ if (!window.document.getElementById('item-modal').classList.contains('open')) {
 if (window.document.querySelector('.modal-body').innerHTML.trim() !== '<p>Hello</p>') {
   throw new Error('Modal body not restored after reopen');
 }
+modal.closeModal();
+modal.showItemModal('<p>Hello again</p>');
+if (!window.document.getElementById('item-modal').classList.contains('open')) {
+  throw new Error('showItemModal should open the modal');
+}
+if (!window.document.querySelector('.modal-body').innerHTML.includes('Hello again')) {
+  throw new Error('showItemModal should populate modal HTML');
+}
 modal.renderBadges([{ icon: '🌈', title: 'Weapon color spell' }]);
 if (!window.document.querySelector('#modal-badges').textContent.includes('🌈')) {
   throw new Error('Badge not rendered');
