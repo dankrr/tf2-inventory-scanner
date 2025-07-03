@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 import os
 
+from dotenv import load_dotenv
 from utils.item_enricher import ItemEnricher
 from utils.inventory_provider import InventoryProvider
 from utils.schema_provider import SchemaProvider
+
+load_dotenv()
 
 
 def main() -> None:
