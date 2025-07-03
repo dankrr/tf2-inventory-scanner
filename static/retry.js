@@ -64,10 +64,6 @@ function loadUsers(ids) {
 function attachItemModal() {
   const modal = document.getElementById('item-modal');
   if (!modal) return;
-  const title = document.getElementById('modal-title');
-  const effectBox = document.getElementById('modal-effect');
-  const img = document.getElementById('modal-img');
-  const details = document.getElementById('modal-details');
   const badgeBox = document.getElementById('modal-badges');
 
   document.querySelectorAll('.item-card').forEach(card => {
@@ -75,93 +71,17 @@ function attachItemModal() {
       let data = card.dataset.item;
       if (!data) return;
       try { data = JSON.parse(data); } catch (e) { return; }
-      if (title) title.textContent = data.custom_name || data.name || '';
-      if (effectBox) effectBox.textContent = data.unusual_effect || '';
-      if (img) img.src = data.image_url || '';
-      if (details) {
-        details.innerHTML = '';
-        const attrs = document.createElement('div');
-        // ── Killstreak row ─────────────────────────
-        if (data.killstreak_tier) {
-          const tierMap = {1: 'Killstreak', 2: 'Specialized', 3: 'Professional'};
-          const ksParts = [];
-          ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
-          if (data.sheen) ksParts.push(data.sheen);
-          const ks = document.createElement('div');
-          let ksHtml = 'Killstreak: ' + ksParts.join(', ');
-          if (data.killstreak_effect) {
-            ksHtml += ', <span class="ks-effect">' + data.killstreak_effect + '</span>';
-          }
-          ks.innerHTML = ksHtml;
-          attrs.appendChild(ks);
-        }
-
-        [
-          ['Type', data.item_type_name],
-          ['Level', data.level],
-          ['Origin', data.origin]
-        ].forEach(([label, value]) => {
-          if (!value) return;
-          const div = document.createElement('div');
-          div.textContent = label + ': ' + value;
-          attrs.appendChild(div);
-        });
-
-        if (data.paint_name) {
-          const div = document.createElement('div');
-          if (data.paint_hex) {
-            const sw = document.createElement('span');
-            sw.classList.add('paint-dot');
-            sw.style.background = data.paint_hex;
-            div.appendChild(sw);
-          }
-          div.appendChild(document.createTextNode('Paint: ' + data.paint_name));
-          attrs.appendChild(div);
-        }
-
-        if (data.wear_name) {
-          const div = document.createElement('div');
-          div.textContent = 'Wear: ' + data.wear_name;
-          attrs.appendChild(div);
-        }
-
-        if (data.paintkit_name) {
-          const div = document.createElement('div');
-          div.textContent = 'Paintkit: ' + data.paintkit_name;
-          attrs.appendChild(div);
-        }
-
-        if (data.crate_series_name) {
-          const div = document.createElement('div');
-          div.textContent = 'Crate series: ' + data.crate_series_name;
-          attrs.appendChild(div);
-        }
-
-        if (data.custom_description) {
-          const cd = document.createElement('div');
-          cd.textContent = 'Custom Desc: ' + data.custom_description;
-          attrs.appendChild(cd);
-        }
-
-        if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
-          const div = document.createElement('div');
-          div.textContent = 'Strange Parts: ' + data.strange_parts.join(', ');
-          attrs.appendChild(div);
-        }
-
-        details.appendChild(attrs);
-
-        if (Array.isArray(data.spells) && data.spells.length) {
-          const head = document.createElement('h4');
-          head.textContent = 'Spells';
-          head.id = 'modal-spells';
-          details.appendChild(head);
-          data.spells.forEach(sp => {
-            const sdiv = document.createElement('div');
-            sdiv.textContent = sp;
-            details.appendChild(sdiv);
-          });
-        }
+      if (window.modal && typeof window.modal.updateHeader === 'function') {
+        window.modal.updateHeader(data);
+      } else {
+        const t = document.getElementById('modal-title');
+        const eBox = document.getElementById('modal-effect');
+        if (t) t.textContent = data.custom_name || data.name || '';
+        if (eBox) eBox.textContent = data.unusual_effect || '';
+      }
+      if (window.modal && typeof window.modal.generateModalHTML === 'function') {
+        const html = window.modal.generateModalHTML(data);
+        window.modal.populateModal(html);
       }
       if (window.modal && typeof window.modal.renderBadges === 'function') {
         window.modal.renderBadges(data.badges);
