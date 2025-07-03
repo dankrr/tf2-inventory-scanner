@@ -9,33 +9,15 @@ from .schema_provider import SchemaProvider
 class ItemEnricher:
     """Simple inventory enrichment using :class:`SchemaProvider`."""
 
-    SPELL_NAMES = {
-        "Halloween Fire",
-        "Exorcism",
-        "Pumpkin Bombs",
-        "Gourd Grenades",
-        "Squash Rockets",
-        "Sentry Quad-Pumpkins",
-    }
-
     def __init__(self, provider: SchemaProvider | None = None) -> None:
         self.provider = provider or SchemaProvider()
+        self.items = self.provider.get_items()
         self.attrs = self.provider.get_attributes()
         self.effects = self.provider.get_effects()
         self.parts = self.provider.get_strange_parts()
         self.paints_val = {v: k for k, v in self.provider.get_paints().items()}
-        self.qualities_map = {v: k for k, v in self.provider.get_qualities().items()}
-        self._spell_effect_ids: set[int] | None = None
+        self.qualities = {v: k for k, v in self.provider.get_qualities().items()}
         self._logger = logging.getLogger(__name__)
-
-    # ------------------------------------------------------------------
-    def _load_spell_effect_ids(self) -> set[int]:
-        if self._spell_effect_ids is None:
-            mapping = self.provider.get_effects()
-            self._spell_effect_ids = {
-                eid for eid, name in mapping.items() if name in self.SPELL_NAMES
-            }
-        return self._spell_effect_ids
 
     # ------------------------------------------------------------------
     def _wear_label(self, wear: float) -> str:
@@ -60,10 +42,7 @@ class ItemEnricher:
             "sheen": None,
             "killstreaker": None,
             "strange_parts": [],
-            "paintkit": None,
         }
-
-        spell_ids = self._load_spell_effect_ids()
 
         for attr in attributes or []:
             try:
@@ -86,8 +65,7 @@ class ItemEnricher:
             if cls == "set_item_tint_rgb" and isinstance(val, int):
                 result["paint"] = self.paints_val.get(val)
             elif cls.startswith("set_attached_particle") and isinstance(val, int):
-                if val not in spell_ids:
-                    result["unusual_effect"] = self.effects.get(val)
+                result["unusual_effect"] = self.effects.get(val)
             elif name == "killstreak tier":
                 tier_map = {
                     1: "Killstreak",
@@ -113,15 +91,16 @@ class ItemEnricher:
     def enrich_inventory(self, raw_items: List[dict]) -> List[Dict[str, Any]]:
         """Return list of item dicts enriched with schema data."""
 
-        defindexes = self.provider.get_defindexes()
-        qualities = self.qualities_map
+        defindexes = self.items
+        qualities = self.qualities
 
         enriched: List[Dict[str, Any]] = []
         for item in raw_items:
             defindex = int(item.get("defindex", 0))
             quality = int(item.get("quality", 0))
             attrs = item.get("attributes", [])
-            name = defindexes.get(defindex) or defindexes.get(str(defindex))
+            entry = defindexes.get(defindex) or {}
+            name = entry.get("item_name") or entry.get("name")
             if name is None:
                 self._logger.warning("Unknown defindex %s", defindex)
             quality_name = qualities.get(quality) or qualities.get(str(quality))

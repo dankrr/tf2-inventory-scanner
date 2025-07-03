@@ -15,12 +15,12 @@ class SchemaProvider:
     TTL = 48 * 60 * 60  # 48 hours
     ENDPOINTS = {
         "items": "/raw/schema/items",
-        "attributes": "/raw/schema/attributes",
-        "effects": "/properties/effects",
-        "paints": "/properties/paints",
-        "origins": "/raw/schema/originNames",
-        "parts": "/properties/strangeParts",
-        "qualities": "/properties/qualities",
+        "attributes": "/attributes",
+        "effects": "/effects",
+        "paints": "/paints",
+        "origins": "/origins",
+        "parts": "/parts",
+        "qualities": "/qualities",
         "defindexes": "/properties/defindexes",
     }
 
@@ -41,6 +41,7 @@ class SchemaProvider:
         self.paints_map: Dict[str, int] | None = None
         self.qualities_map: Dict[str, int] | None = None
         self.defindex_names: Dict[int, str] | None = None
+        self.origins_by_index: Dict[int, str] | None = None
 
     # ------------------------------------------------------------------
     def _fetch(self, endpoint: str) -> Any:
@@ -83,7 +84,16 @@ class SchemaProvider:
                 for e in data
                 if isinstance(e, dict) and key_field in e
             }
-        return {int(k): v for k, v in data.items() if str(k).isdigit()}
+        if isinstance(data, dict):
+            numeric = {int(k): v for k, v in data.items() if str(k).isdigit()}
+            if numeric:
+                return numeric
+            return {
+                int(v[key_field]): v
+                for v in data.values()
+                if isinstance(v, dict) and key_field in v
+            }
+        return {}
 
     # ------------------------------------------------------------------
     def refresh_all(self) -> None:
@@ -142,9 +152,18 @@ class SchemaProvider:
             data = self._load("paints", self.ENDPOINTS["paints"], force)
             if isinstance(data, dict) and "value" in data:
                 data = data["value"]
-            self.paints_map = {
-                str(name): int(val) for name, val in data.items() if str(val).isdigit()
-            }
+            if isinstance(data, list):
+                self.paints_map = {
+                    str(e["name"]): int(e["id"])
+                    for e in data
+                    if isinstance(e, dict) and "name" in e and "id" in e
+                }
+            else:
+                self.paints_map = {
+                    str(name): int(val)
+                    for name, val in data.items()
+                    if str(val).isdigit()
+                }
         return self.paints_map
 
     def get_origins(self, *, force: bool = False) -> Dict[int, str]:
@@ -177,9 +196,18 @@ class SchemaProvider:
             data = self._load("qualities", self.ENDPOINTS["qualities"], force)
             if isinstance(data, dict) and "value" in data:
                 data = data["value"]
-            self.qualities_map = {
-                str(name): int(val) for name, val in data.items() if str(val).isdigit()
-            }
+            if isinstance(data, list):
+                self.qualities_map = {
+                    str(e["name"]): int(e["id"])
+                    for e in data
+                    if isinstance(e, dict) and "name" in e and "id" in e
+                }
+            else:
+                self.qualities_map = {
+                    str(name): int(val)
+                    for name, val in data.items()
+                    if str(val).isdigit()
+                }
         return self.qualities_map
 
     # Compatibility helpers -------------------------------------------------
