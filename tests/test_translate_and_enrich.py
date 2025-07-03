@@ -72,7 +72,7 @@ def test_extract_spells_and_badges(monkeypatch):
             {"defindex": 134, "value": 701},  # Chromatic Corruption
             {"defindex": 134, "value": 3002},  # Team Spirit Footprints
             {"defindex": 1005, "value": 1},  # Pumpkin Bombs
-            {"defindex": 1004, "value": 9},  # Voices From Below
+            {"defindex": 1004, "value": 9},  # Voices from Below
         ],
     }
 
@@ -82,7 +82,7 @@ def test_extract_spells_and_badges(monkeypatch):
         "Chromatic Corruption",
         "Team Spirit Footprints",
         "Pumpkin Bombs",
-        "Voices From Below",
+        "Voices from Below",
     ]
     assert set(names) == set(expected_spells)
 

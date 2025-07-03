@@ -7,7 +7,7 @@ def test_weapon_and_cosmetic_spells():
             {"defindex": 1005, "value": 1},  # Pumpkin Bombs
             {"defindex": 134, "value": 701},  # Chromatic Corruption
             {"defindex": 134, "value": 3005},  # Bruised Purple Footprints
-            {"defindex": 1004, "value": 2},  # Voices From Below
+            {"defindex": 1004, "value": 2},  # Voices from Below
             {"defindex": 2043, "value": 3100495},  # Die Job
         ]
     }
@@ -16,7 +16,7 @@ def test_weapon_and_cosmetic_spells():
         "Pumpkin Bombs",
         "Chromatic Corruption",
         "Bruised Purple Footprints",
-        "Voices From Below",
+        "Voices from Below",
         "Die Job",
     }
     assert set(names) == want
