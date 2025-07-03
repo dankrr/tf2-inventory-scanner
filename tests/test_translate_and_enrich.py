@@ -76,19 +76,13 @@ def test_extract_spells_and_badges(monkeypatch):
         ],
     }
 
-    badges, names = ip._extract_spells(asset)
-    expected_spells = [
-        "Exorcism",
-        "Chromatic Corruption",
-        "Team Spirit Footprints",
-        "Pumpkin Bombs",
-        "Voices from Below",
-    ]
-    assert set(names) == set(expected_spells)
+    badges, names = ip._extract_spells(asset, is_weapon=True)
+    expected_spells = ["Exorcism", "Pumpkin Bombs"]
+    assert names == expected_spells
 
     item = ip._process_item(asset, sf.SCHEMA, {})
     icons = {b["icon"] for b in item["badges"]}
-    assert {"👻", "🖌", "👣", "🎤", "🎃"} <= icons
+    assert {"🎃"} <= icons
 
     items = ip.enrich_inventory({"items": [asset]})
-    assert set(items[0]["modal_spells"]) == set(expected_spells)
+    assert items[0]["modal_spells"] == expected_spells

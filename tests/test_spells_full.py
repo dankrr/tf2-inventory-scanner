@@ -11,13 +11,6 @@ def test_weapon_and_cosmetic_spells():
             {"defindex": 2043, "value": 3100495},  # Die Job
         ]
     }
-    badges, names = _extract_spells(dummy)
-    want = {
-        "Pumpkin Bombs",
-        "Chromatic Corruption",
-        "Bruised Purple Footprints",
-        "Voices from Below",
-        "Die Job",
-    }
-    assert set(names) == want
-    assert len(badges) == len(want)
+    badges, names = _extract_spells(dummy, is_weapon=False)
+    assert names == ["Chromatic Corruption", "Bruised Purple Footprints"]
+    assert len(badges) == 2

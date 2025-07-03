@@ -223,40 +223,51 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
-    """Return (badges, names) – includes weapon & cosmetic spells."""
+def _extract_spells(
+    asset: Dict[str, Any], *, is_weapon: bool
+) -> tuple[list[dict], list[str]]:
+    """Return (badges, names) from spell attributes with type filter."""
 
     from . import constants as C
 
     badges: list[dict] = []
     names: list[str] = []
 
+    def _add(spell_name: str | None) -> None:
+        if spell_name and spell_name not in names and len(names) < 2:
+            icon = C.SPELL_BADGE_ICONS.get(spell_name, "✨")
+            badges.append({"icon": icon, "title": spell_name, "color": "#A156D6"})
+            names.append(spell_name)
+
     for attr in asset.get("attributes", []):
         aid = attr.get("defindex")
-        val_raw = attr.get("value")
+        raw = attr.get("value")
 
         try:
-            val = int(float(val_raw)) if isinstance(val_raw, str) else int(val_raw)
+            val = int(float(raw)) if isinstance(raw, str) else int(raw)
         except (ValueError, TypeError):
-            print(f"[spell] Skipping invalid value for defindex {aid}: {val_raw}")
             continue
 
-        name = None
-        if aid in C.WEAPON_SPELLS:
-            name = C.WEAPON_SPELLS[aid]
-        elif aid == 134:
-            name = C.FOOTPRINT_PARTICLE_MAP.get(val) or C.PAINT_PARTICLE_MAP.get(val)
-        elif aid == 2043 and val in C.PAINT_SPELLS_RGB:
-            name = C.PAINT_SPELLS_RGB[val]
-        elif aid == 1004:
-            name = "Voices from Below"
+        if is_weapon and aid in C.WEAPON_SPELLS:
+            _add(C.WEAPON_SPELLS[aid])
+            continue
 
-        if name and name not in names:
-            icon = C.SPELL_BADGE_ICONS.get(name, "✨")
-            badges.append({"icon": icon, "title": name, "color": "#A156D6"})
-            names.append(name)
+        if not is_weapon and aid in C.WEAPON_SPELLS:
+            continue
 
-    return badges, names
+        if not is_weapon and aid == 134:
+            _add(C.PAINT_PARTICLE_MAP.get(val) or C.FOOTPRINT_PARTICLE_MAP.get(val))
+            continue
+
+        if not is_weapon and aid == C.VOICE_SPELL_ATTR and val >= 1:
+            _add("Voices From Below")
+            continue
+
+        if not is_weapon and aid == C.DIE_JOB_ATTR and val == C.DIE_JOB_VAL:
+            _add("Die Job")
+            continue
+
+    return badges[:2], names[:2]
 
 
 def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
@@ -398,6 +409,25 @@ def _preferred_base_name(
     return ig_name or f"Item #{defindex}"
 
 
+def _is_weapon(definfo: Dict[str, Any]) -> bool:
+    """Return True if schema entry represents a weapon."""
+
+    slot = definfo.get("item_slot")
+    return definfo.get("craft_class") == "weapon" or slot not in [
+        "misc",
+        "head",
+        "feet",
+        "back",
+        "taunt",
+    ]
+
+
+def _is_cosmetic(definfo: Dict[str, Any]) -> bool:
+    """Return True if schema entry is not a weapon."""
+
+    return not _is_weapon(definfo)
+
+
 def _process_item(
     asset: Dict[str, Any], schema_map: Dict[str, Any], cleaned_map: Dict[str, Any]
 ) -> Dict[str, Any] | None:
@@ -432,7 +462,8 @@ def _process_item(
     wear_name = _extract_wear(asset)
     pattern_seed = _extract_pattern_seed(asset)
     crate_series_name = _extract_crate_series(asset)
-    spell_badges, spell_names = _extract_spells(asset)
+    definfo = schema_entry or {}
+    spell_badges, spell_names = _extract_spells(asset, is_weapon=_is_weapon(definfo))
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
@@ -450,7 +481,7 @@ def _process_item(
     badges.extend(spell_badges)
 
     paint_badge = {"icon": "\U0001f3a8", "title": paint_name} if paint_name else None
-    if paint_badge and paint_badge["title"] in spell_names:
+    if paint_badge and "Die Job" in spell_names:
         paint_badge = None
     if paint_badge:
         badges.append(paint_badge)

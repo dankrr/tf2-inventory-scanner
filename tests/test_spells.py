@@ -11,13 +11,9 @@ def test_all_spell_types():
             {"defindex": 3002, "value": 1},  # Squash Rockets
         ]
     }
-    badges, names = _extract_spells(dummy)
-    assert "Exorcism" in names
-    assert "Spectral Spectrum" in names
-    assert "Bruised Purple Footprints" in names
-    assert "Voices from Below" in names
-    assert "Squash Rockets" in names
-    assert any(b["icon"] == "👻" for b in badges)
+    badges, names = _extract_spells(dummy, is_weapon=True)
+    assert set(names) == {"Exorcism", "Squash Rockets"}
+    assert any(b["icon"] == "🎃" for b in badges)
 
 
 def test_invalid_spell_values():
@@ -27,6 +23,6 @@ def test_invalid_spell_values():
             {"defindex": 1005, "value": 1},
         ]
     }
-    badges, names = _extract_spells(dummy)
+    badges, names = _extract_spells(dummy, is_weapon=True)
     assert "Pumpkin Bombs" in names
     assert len(names) == 1

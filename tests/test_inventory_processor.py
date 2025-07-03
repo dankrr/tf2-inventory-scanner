@@ -276,7 +276,7 @@ def test_die_job_spell_no_duplicate(monkeypatch):
     monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Die Job"}, False)
     items = ip.enrich_inventory(data)
     badges = [b["title"] for b in items[0]["badges"]]
-    assert "Die Job" not in badges
+    assert "Die Job" in badges
 
 
 def test_schema_name_used_for_key():

@@ -123,7 +123,7 @@ PARTICLE_SPELLS = {
 }
 
 # ---- VOICE SPELL (defindex 1004, value >= 1) ----
-VOICE_SPELL = {1004: "Voices from Below"}
+VOICE_SPELL_ATTR = 1004  # attribute id used for voice spell
 
 # ---- WEAPON-ONLY SPELL ATTRIBUTES  ----
 WEAPON_SPELLS = {
@@ -145,38 +145,15 @@ PAINT_SPELLS_RGB = {
 }
 
 # ---- Badge Icons ----------------------------------------------------------
-SPELL_BADGE_ICONS = {
-    # particle paint
-    **{
-        n: "🖌"
-        for n in [
-            "Chromatic Corruption",
-            "Spectral Spectrum",
-            "Putrescent Pigmentation",
-            "Sinister Staining",
-            "Die Job",
-        ]
-    },
-    # footprints
-    **{
-        n: "👣"
-        for n in [
-            "Corpse Gray Footprints",
-            "Team Spirit Footprints",
-            "Violent Violet Footprints",
-            "Rotten Orange Footprints",
-            "Bruised Purple Footprints",
-            "Gangreen Footprints",
-            "Headless Horseshoes",
-        ]
-    },
-    # voice
-    "Voices from Below": "🎤",
-    # weapon
-    "Pumpkin Bombs": "🎃",
-    "Gourd Grenades": "🎃",
-    "Squash Rockets": "🎃",
-    "Sentry Quad-Pumpkins": "🎃",
-    "Halloween Fire": "🔥",
-    "Exorcism": "👻",
-}
+SPELL_BADGE_ICONS = {}
+
+# Populate after defining spell lists
+SPELL_BADGE_ICONS.update(
+    {
+        **{n: "🎃" for n in WEAPON_SPELLS.values()},
+        **{n: "🖌" for n in PAINT_PARTICLE_MAP.values()},
+        **{n: "👣" for n in FOOTPRINT_PARTICLE_MAP.values()},
+        "Voices From Below": "🎤",
+        "Die Job": "🖌",
+    }
+)
