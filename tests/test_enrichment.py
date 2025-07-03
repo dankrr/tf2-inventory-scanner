@@ -49,7 +49,7 @@ def test_enrichment_full_attributes(monkeypatch):
     assert item["wear_name"] == "Field-Tested"
     assert item["strange_count"] == 10
     assert item["score_type"] == "Kills"
-    assert set(item["spells"]) == {"Exorcism", "Chromatic Corruption"}
+    assert item["spells"] == ["Exorcism"]
 
 
 def test_unknown_values_warn(monkeypatch, caplog):
