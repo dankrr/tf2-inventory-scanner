@@ -55,3 +55,31 @@ def test_schema_provider(monkeypatch, tmp_path):
 
     for endpoint in payloads:
         assert calls[endpoint] == 1
+
+
+def test_schema_provider_list_payload(monkeypatch, tmp_path):
+    provider = sp.SchemaProvider(base_url="https://example.com", cache_dir=tmp_path)
+
+    payloads = {
+        "/raw/schema/items": {"value": [{"defindex": 5021, "item_name": "Key"}]},
+        "/attributes": {"value": [{"defindex": 2025, "name": "Killstreak Tier"}]},
+        "/effects": {"value": [{"id": 13, "name": "Burning Flames"}]},
+        "/paints": {"value": [{"id": 3100495, "name": "A Color Similar to Slate"}]},
+        "/origins": {"value": [{"id": 0, "name": "Timed Drop"}]},
+        "/parts": {"value": [{"id": 64, "name": "Kills"}]},
+        "/qualities": {"value": [{"id": 0, "name": "Normal"}]},
+    }
+
+    def fake_get(self, url, timeout=20):
+        endpoint = url.replace(provider.base_url, "")
+        return DummyResp(payloads[endpoint])
+
+    monkeypatch.setattr(sp.requests.Session, "get", fake_get)
+
+    assert provider.get_items() == {5021: {"defindex": 5021, "item_name": "Key"}}
+    assert provider.get_attributes() == {2025: "Killstreak Tier"}
+    assert provider.get_effects() == {13: "Burning Flames"}
+    assert provider.get_paints() == {3100495: "A Color Similar to Slate"}
+    assert provider.get_origins() == {0: "Timed Drop"}
+    assert provider.get_parts() == {64: "Kills"}
+    assert provider.get_qualities() == {0: "Normal"}
