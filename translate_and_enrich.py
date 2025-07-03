@@ -8,7 +8,12 @@ import struct
 import argparse
 import json
 
-from utils.constants import KILLSTREAK_EFFECTS, KILLSTREAK_TIERS, SHEEN_NAMES
+from utils.constants import (
+    KILLSTREAK_EFFECTS,
+    KILLSTREAK_TIERS,
+    SHEEN_NAMES,
+    KILLSTREAK_BADGE_ICONS,
+)
 
 
 QUALITY_MAP = {
@@ -193,8 +198,11 @@ def enrich_inventory(
             badges.update(["🎨", "🖌"])
         if paintkit_name or wear_name:
             badges.add("🎨")
-        if ks_tier or ks_effect:
-            badges.add("🎯")
+        if ks_tier_val is not None:
+            tier_id = int(float(ks_tier_val))
+            badge_icon = KILLSTREAK_BADGE_ICONS.get(tier_id)
+            if badge_icon:
+                badges.add(badge_icon)
         if quality_id == 11 or parts:
             badges.add("🧠")
 

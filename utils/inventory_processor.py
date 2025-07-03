@@ -14,6 +14,7 @@ from .constants import (
     ORIGIN_MAP,
     PAINT_COLORS,
     KILLSTREAK_EFFECTS,
+    KILLSTREAK_BADGE_ICONS,
 )
 
 items_game_cache.load_items_game_cleaned()
@@ -439,6 +440,11 @@ def _process_item(
 
     ks_tier, sheen = _extract_killstreak(asset)
     ks_effect = _extract_killstreak_effect(asset)
+    ks_tier_val = None
+    for attr in asset.get("attributes", []):
+        if attr.get("defindex") == 2025:
+            ks_tier_val = attr.get("float_value") or attr.get("value")
+            break
     paint_name, paint_hex = _extract_paint(asset)
     wear_name = _extract_wear(asset)
     pattern_seed = _extract_pattern_seed(asset)
@@ -451,8 +457,12 @@ def _process_item(
     effect = _extract_unusual_effect(asset)
     if effect and quality_id in (5, 11):
         badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
-    if ks_effect:
-        badges.append({"icon": "🎯", "title": f"Killstreaker: {ks_effect}"})
+    if ks_tier_val:
+        tier_id = int(float(ks_tier_val))
+        icon = KILLSTREAK_BADGE_ICONS.get(tier_id)
+        if icon:
+            title = KILLSTREAK_TIERS[tier_id]
+            badges.append({"icon": icon, "title": title, "color": "#ff7e30"})
     category_flags = {
         "weapon": spell_flags.get("has_exorcism")
         or spell_flags.get("has_pumpkin_bombs"),

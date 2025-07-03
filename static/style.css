@@ -170,8 +170,15 @@ button {
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
 }
-.badge[data-icon="🎯"],
 .badge[data-icon="⚔"]{
+  color:#ff7e30;
+  filter:drop-shadow(0 0 3px #ff7e30);
+}
+
+/* Killstreak chevrons */
+.badge[data-icon="›"],
+.badge[data-icon="»"],
+.badge[data-icon="»»"]{
   color:#ff7e30;
   filter:drop-shadow(0 0 3px #ff7e30);
 }
