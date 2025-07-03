@@ -49,7 +49,9 @@ def main() -> None:
         except Exception as exc:  # network errors, private inventory, etc.
             print(f"Failed to fetch inventory for {steamid}: {exc}")
             return
-        if input("Cache inventory? [y/N] ").strip().lower().startswith("y"):
+        if not args.steamid and input(
+            "Cache inventory? [y/N] "
+        ).strip().lower().startswith("y"):
             from pathlib import Path
 
             cache_dir = Path("cached_inventories")
