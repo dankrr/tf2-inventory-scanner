@@ -1,5 +1,6 @@
 (function (global) {
   let initialized = false;
+  let closeTimer = null;
 
   function getModal() {
     return document.getElementById('item-modal');
@@ -13,6 +14,10 @@
   function openModal() {
     const modal = getModal();
     if (!modal) return;
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+    }
     if (typeof modal.showModal === 'function') {
       modal.showModal();
     } else {
@@ -30,15 +35,16 @@
     const modal = getModal();
     if (!modal) return;
     modal.classList.remove('open');
-    setTimeout(() => {
+    closeTimer = setTimeout(() => {
       if (typeof modal.close === 'function') {
         modal.close();
       } else {
         modal.style.display = 'none';
       }
+      const body = getBody();
+      if (body) body.innerHTML = '';
+      closeTimer = null;
     }, 200);
-    const body = getBody();
-    if (body) body.innerHTML = '';
   }
 
   function updateModal(html) {
