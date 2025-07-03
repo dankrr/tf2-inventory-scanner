@@ -1,10 +1,11 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Iterable
 import logging
 import re
 from html import unescape
 
 import json
 from pathlib import Path
+import struct
 
 from . import steam_api_client, schema_fetcher, items_game_cache, local_data
 
@@ -178,6 +179,36 @@ def _wear_tier(value: float) -> str:
     return "Battle Scarred"
 
 
+def _decode_seed_info(attrs: Iterable[dict]) -> tuple[float | None, int | None]:
+    """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
+
+    lo = hi = None
+    for attr in attrs:
+        idx = attr.get("defindex")
+        if idx == 866:
+            lo = int(attr.get("value") or 0)
+        elif idx == 867:
+            hi = int(attr.get("value") or 0)
+    if lo is None or hi is None:
+        return None, None
+
+    wear = struct.unpack("<f", struct.pack("<I", hi))[0]
+    seed = lo
+    if not (0 <= wear <= 1):
+        wear = struct.unpack("<f", struct.pack("<I", lo))[0]
+        seed = hi
+    if not (0 <= wear <= 1):
+        wear = None
+    return wear, seed
+
+
+def _extract_pattern_seed(asset: Dict[str, Any]) -> int | None:
+    """Return pattern seed if present."""
+
+    _, seed = _decode_seed_info(asset.get("attributes", []))
+    return seed
+
+
 def _extract_wear(asset: Dict[str, Any]) -> str | None:
     """Return wear tier name if present."""
 
@@ -193,6 +224,12 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
                 continue
             name = local_data.WEAR_NAMES.get(str(int(val)))
             return name or _wear_tier(val)
+
+    wear_float, _ = _decode_seed_info(asset.get("attributes", []))
+    if wear_float is not None:
+        name = local_data.WEAR_NAMES.get(str(int(wear_float)))
+        return name or _wear_tier(wear_float)
+
     return None
 
 
@@ -445,6 +482,7 @@ def _process_item(
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)
     wear_name = _extract_wear(asset)
+    pattern_seed = _extract_pattern_seed(asset)
     crate_series_name = _extract_crate_series(asset)
     spells, spell_flags = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
@@ -523,6 +561,7 @@ def _process_item(
         "paint_name": paint_name,
         "paint_hex": paint_hex,
         "wear_name": wear_name,
+        "pattern_seed": pattern_seed,
         "paintkit_name": paintkit_name,
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,

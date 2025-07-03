@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
+import struct
 import argparse
 import json
 
@@ -84,6 +85,29 @@ def _wear_tier(value: float) -> str:
     if value < 0.45:
         return "Well-Worn"
     return "Battle Scarred"
+
+
+def _decode_seed_info(attrs: Iterable[dict]) -> tuple[float | None, int | None]:
+    """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
+
+    lo = hi = None
+    for attr in attrs:
+        idx = int(attr.get("defindex", -1))
+        if idx == 866:
+            lo = int(attr.get("value") or 0)
+        elif idx == 867:
+            hi = int(attr.get("value") or 0)
+    if lo is None or hi is None:
+        return None, None
+
+    wear = struct.unpack("<f", struct.pack("<I", hi))[0]
+    seed = lo
+    if not (0 <= wear <= 1):
+        wear = struct.unpack("<f", struct.pack("<I", lo))[0]
+        seed = hi
+    if not (0 <= wear <= 1):
+        wear = None
+    return wear, seed
 
 
 def _collect_unmapped(attrs: Iterable[dict], known: Iterable[int]) -> dict:
@@ -168,6 +192,9 @@ def enrich_inventory(
 
         wear_val = _attr_value(attrs, 725)
         wear_name = _wear_tier(float(wear_val)) if wear_val is not None else None
+        wear_float, pattern_seed = _decode_seed_info(attrs)
+        if wear_val is None and wear_float is not None:
+            wear_name = _wear_tier(wear_float)
 
         paintkit_val = _attr_value(attrs, 834)
         paintkit_name = None
@@ -212,11 +239,12 @@ def enrich_inventory(
             "paint": paint_name,
             "wear": wear_name,
             "paintkit": paintkit_name,
+            "pattern_seed": pattern_seed,
             "crate_series": crate_name,
             "strange_parts": parts,
             "badges": list(badges),
             "raw_attributes": _collect_unmapped(
-                attrs, [134, 142, 261, 725, 834, 2025, 2014, 2013, 187]
+                attrs, [134, 142, 261, 725, 834, 2025, 2014, 2013, 187, 866, 867]
             ),
         }
         result.append(item)
