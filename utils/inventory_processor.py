@@ -230,6 +230,7 @@ def _extract_spells(
         "has_footprints": False,
         "has_pumpkin_bombs": False,
         "has_voice_lines": False,
+        "has_weapon_color": False,
     }
 
     for desc in asset.get("descriptions", []):
@@ -256,6 +257,12 @@ def _extract_spells(
             flags["has_pumpkin_bombs"] = True
         if "voices" in ltext or "rare spell" in ltext:
             flags["has_voice_lines"] = True
+        if "weapon color" in ltext or "weapon colour" in ltext:
+            flags["has_weapon_color"] = True
+            name = text.split(":", 1)[-1].strip()
+            name = re.sub(r"\(.*?\)$", "", name).strip()
+            if name and name not in spells:
+                spells.append(name)
 
     return spells, flags
 
@@ -438,6 +445,7 @@ def _process_item(
         "paint": spell_flags.get("has_paint_spell"),
         "footprint": spell_flags.get("has_footprints"),
         "vocal": spell_flags.get("has_voice_lines"),
+        "weapon_color": spell_flags.get("has_weapon_color"),
     }
     for cat, present in category_flags.items():
         if not present:
@@ -447,12 +455,14 @@ def _process_item(
             "vocal": "\U0001f5e3\ufe0f",
             "paint": "\U0001fadf",
             "footprint": "\U0001f463",
+            "weapon_color": "\U0001f308",
         }
         title_map = {
             "weapon": "Weapon spell",
             "vocal": "Vocal spell",
             "paint": "Paint spell",
             "footprint": "Footprints spell",
+            "weapon_color": "Weapon color spell",
         }
         badges.append({"icon": icon_map[cat], "title": title_map[cat]})
 
@@ -504,6 +514,8 @@ def _process_item(
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,
+        "has_footprints": spell_flags.get("has_footprints"),
+        "has_weapon_color": spell_flags.get("has_weapon_color"),
         "badges": badges,  # always present, may be empty
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),

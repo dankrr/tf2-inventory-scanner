@@ -163,17 +163,14 @@ function attachItemModal() {
           });
         }
       }
-      if (badgeBox) {
-        badgeBox.innerHTML = '';
-        (data.badges || []).forEach(b => {
-          const span = document.createElement('span');
-          span.textContent = b.icon;
-          span.title = b.title;
+      if (window.modal && typeof window.modal.renderBadges === 'function') {
+        window.modal.renderBadges(data.badges);
+        const spans = badgeBox ? badgeBox.querySelectorAll('span') : [];
+        spans.forEach(span => {
           span.addEventListener('click', () => {
             const sec = document.getElementById('modal-spells');
             if (sec) sec.scrollIntoView({ behavior: 'smooth' });
           });
-          badgeBox.appendChild(span);
         });
       }
       if (window.modal && typeof window.modal.openModal === 'function') {
