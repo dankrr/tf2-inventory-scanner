@@ -9,6 +9,11 @@ repos:
       - id: ruff
   - repo: local
     hooks:
+      - id: validate-attributes
+        name: validate attributes
+        entry: bash -c 'PYTHONPATH=. python scripts/validate_attributes.py'
+        language: system
+        pass_filenames: false
       - id: pytest
         name: pytest
         entry: bash -c 'STEAM_API_KEY=test pytest'
