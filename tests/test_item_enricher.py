@@ -5,7 +5,9 @@ from utils.schema_provider import SchemaProvider
 def test_enrich_inventory(monkeypatch):
     provider = SchemaProvider(base_url="https://example.com")
 
-    monkeypatch.setattr(provider, "get_defindexes", lambda: {100: "Rocket"})
+    monkeypatch.setattr(
+        provider, "get_items", lambda: {100: {"defindex": 100, "item_name": "Rocket"}}
+    )
     monkeypatch.setattr(provider, "get_qualities", lambda: {"Unique": 6})
     monkeypatch.setattr(provider, "get_paints", lambda: {"Team Spirit": 1})
     monkeypatch.setattr(
