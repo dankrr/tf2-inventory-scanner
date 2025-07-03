@@ -109,8 +109,11 @@
 
     let spells = '';
     if (Array.isArray(data.spells) && data.spells.length) {
-      spells += '<h4 id="modal-spells">Spells</h4>';
-      spells += data.spells.map(sp => '<div>' + esc(sp) + '</div>').join('');
+      spells += '<h4 id="modal-spells">Spells</h4><ul>';
+      data.spells.forEach(sp => {
+        spells += '<li>' + esc(sp) + '</li>';
+      });
+      spells += '</ul>';
     }
 
     const details = attrs.join('') + spells;
