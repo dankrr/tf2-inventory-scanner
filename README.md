@@ -34,6 +34,8 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   `utils/schema_provider.py`. Pass `base_url` to use a mirror. Update it with:
   ```bash
   python app.py --refresh
+  # refresh simplified schema
+  python main.py --refresh-schema
   ```
 - Use `--test` to run offline against cached data.
 - Access schema properties directly:

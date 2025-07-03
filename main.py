@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 
+import argparse
 from dotenv import load_dotenv
 from utils.item_enricher import ItemEnricher
 from utils.inventory_provider import InventoryProvider
@@ -13,6 +14,15 @@ load_dotenv()
 
 def main() -> None:
     """Demonstrate inventory enrichment for a single Steam user."""
+
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--refresh-schema", action="store_true")
+    args, _ = parser.parse_known_args()
+
+    if args.refresh_schema:
+        SchemaProvider().refresh_all()
+        print("\N{CHECK MARK} Schema refreshed")
+        return
 
     steamid = "76561198177872379"  # hardcoded ID for testing
 
