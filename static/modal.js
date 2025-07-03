@@ -10,17 +10,20 @@
     return modal ? modal.querySelector('.modal-body') : null;
   }
 
-  function openModal(html) {
+  function openModal() {
     const modal = getModal();
     if (!modal) return;
-    const body = getBody();
-    if (body && html !== undefined) body.innerHTML = html;
     if (typeof modal.showModal === 'function') {
       modal.showModal();
     } else {
       modal.style.display = 'block';
     }
     modal.classList.add('open');
+  }
+
+  function populateModal(html) {
+    const body = getBody();
+    if (body) body.innerHTML = html;
   }
 
   function closeModal() {
@@ -39,8 +42,7 @@
   }
 
   function updateModal(html) {
-    const body = getBody();
-    if (body) body.innerHTML = html;
+    populateModal(html);
   }
 
   function renderBadges(badges) {
@@ -68,5 +70,11 @@
     initialized = true;
   }
 
-  global.modal = { initModal, openModal, closeModal, updateModal, renderBadges };
+  global.modal = {
+    initModal,
+    openModal,
+    closeModal,
+    populateModal,
+    renderBadges,
+  };
 })(window);
