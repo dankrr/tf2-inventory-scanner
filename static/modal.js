@@ -109,7 +109,10 @@
 
     let spells = '';
     if (Array.isArray(data.spells) && data.spells.length) {
-      spells += '<h4 id="modal-spells">Spells</h4><ul>';
+      spells +=
+        '<h4 id="modal-spells">Spells (' +
+        data.spells.length +
+        ')</h4><ul class="spell-list">';
       data.spells.forEach(sp => {
         spells += '<li>' + esc(sp) + '</li>';
       });

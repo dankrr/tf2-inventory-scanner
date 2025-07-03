@@ -93,60 +93,73 @@ KILLSTREAK_EFFECTS = {
     2011: "Fireworks",
 }
 
-# Footprint Spells (attr 2000)
-FOOTPRINT_SPELLS = {
-    1: "Team Spirit Footprints",
-    2: "Headless Horseshoes",
-    3: "Gangreen Footprints",
-    4: "Bruised Purple Footprints",
-    5: "Rotten Orange Footprints",
-    6: "Violent Violet Footprints",
-    7: "Corpse Gray Footprints",
+# ---- PARTICLE-BASED COSMETIC SPELLS (defindex 134) ----
+PARTICLE_SPELLS = {
+    # Paint Spells
+    701: "Chromatic Corruption",
+    702: "Spectral Spectrum",
+    703: "Putrescent Pigmentation",
+    704: "Sinister Staining",
+    # Footprint Spells
+    3001: "Corpse Gray Footprints",
+    3002: "Team Spirit Footprints",
+    3003: "Violent Violet Footprints",
+    3004: "Rotten Orange Footprints",
+    3005: "Bruised Purple Footprints",
+    3006: "Gangreen Footprints",
+    3009: "Headless Horseshoes",
 }
 
-# Paint Spells (attr 2001)
-PAINT_SPELLS = {
-    1: "Sinister Staining",
-    2: "Putrescent Pigmentation",
-    3: "Chromatic Corruption",
-    4: "Die Job",
-    5: "Spectral Spectrum",
-}
+# ---- VOICE SPELL (defindex 1004, value >= 1) ----
+VOICE_SPELL = {1004: "Voices From Below"}
 
-# Voice Spells (attr 1010)
-VOCAL_SPELLS = {
-    1: "Scout's Spectral Snarl",
-    2: "Soldier's Booming Bark",
-    3: "Pyro's Muffled Moan",
-    4: "Demoman's Cadaverous Croak",
-    5: "Heavy's Bottomless Bass",
-    6: "Engineer's Gravelly Growl",
-    7: "Medic's Blood Curdling Bellow",
-    8: "Sniper's Deep Downunder Drawl",
-    9: "Spy's Creepy Croon",
-}
-
-# Weapon Spells (unique defindex-based)
+# ---- WEAPON-ONLY SPELL ATTRIBUTES  ----
 WEAPON_SPELLS = {
-    1008: "Halloween Fire",
-    1009: "Exorcism",
-    3001: "Pumpkin Bombs",
-    3002: "Gourd Grenades",
-    3003: "Squash Rockets",
-    3004: "Sentry Quad-Pumpkins",
+    1005: "Pumpkin Bombs",
+    1006: "Halloween Fire",
+    1007: "Exorcism",
+    3001: "Gourd Grenades",
+    3002: "Squash Rockets",
+    3003: "Sentry Quad-Pumpkins",
 }
 
-# Badge icons
+# ---- PAINT SPELL SPECIAL CASE (defindex 2043 == Die Job) ----
+DIE_JOB_ATTR = 2043
+DIE_JOB_VAL = 3100495  # packed RGB of dark-slate-gray
+
+# ---- Badge Icons ----------------------------------------------------------
 SPELL_BADGE_ICONS = {
-    **{name: "👣" for name in FOOTPRINT_SPELLS.values()},
-    **{name: "🖌" for name in PAINT_SPELLS.values()},
-    **{name: "🎤" for name in VOCAL_SPELLS.values()},
+    # particle paint
     **{
-        "Halloween Fire": "🔥",
-        "Exorcism": "👻",
-        "Pumpkin Bombs": "🎃",
-        "Gourd Grenades": "🎃",
-        "Squash Rockets": "🎃",
-        "Sentry Quad-Pumpkins": "🎃",
+        n: "🖌"
+        for n in [
+            "Chromatic Corruption",
+            "Spectral Spectrum",
+            "Putrescent Pigmentation",
+            "Sinister Staining",
+            "Die Job",
+        ]
     },
+    # footprints
+    **{
+        n: "👣"
+        for n in [
+            "Corpse Gray Footprints",
+            "Team Spirit Footprints",
+            "Violent Violet Footprints",
+            "Rotten Orange Footprints",
+            "Bruised Purple Footprints",
+            "Gangreen Footprints",
+            "Headless Horseshoes",
+        ]
+    },
+    # voice
+    "Voices From Below": "🎤",
+    # weapon
+    "Pumpkin Bombs": "🎃",
+    "Gourd Grenades": "🎃",
+    "Squash Rockets": "🎃",
+    "Sentry Quad-Pumpkins": "🎃",
+    "Halloween Fire": "🔥",
+    "Exorcism": "👻",
 }

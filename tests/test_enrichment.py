@@ -28,8 +28,8 @@ def test_enrichment_full_attributes(monkeypatch):
                     {"defindex": 292, "value": 64},
                     {"defindex": 379, "value": 5},
                     {"defindex": 380, "value": 70},
-                    {"defindex": 1009, "value": 1},
-                    {"defindex": 2001, "value": 3},
+                    {"defindex": 1007, "value": 1},
+                    {"defindex": 134, "value": 701},
                 ],
             }
         ]

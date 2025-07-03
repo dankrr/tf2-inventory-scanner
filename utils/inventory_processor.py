@@ -224,7 +224,7 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
 
 
 def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
-    """Return badge dictionaries and spell names extracted from attributes."""
+    """Return (badges, names) – includes weapon & cosmetic spells."""
 
     from . import constants as C
 
@@ -233,24 +233,28 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
 
     for attr in asset.get("attributes", []):
         aid = attr.get("defindex")
-        val_raw = attr.get("value", 0)
-        try:
-            val = int(val_raw)
-        except (TypeError, ValueError):
-            logger.warning("Invalid spell value: %r", val_raw)
-            continue
+        val = int(attr.get("value", 0))
 
-        name = None
+        # ---------- Weapon spell by attribute defindex ----------
         if aid in C.WEAPON_SPELLS:
             name = C.WEAPON_SPELLS[aid]
-        elif aid == 2000:
-            name = C.FOOTPRINT_SPELLS.get(val)
-        elif aid == 2001:
-            name = C.PAINT_SPELLS.get(val)
-        elif aid == 1010:
-            name = C.VOCAL_SPELLS.get(val)
 
-        if name:
+        # ---------- Cosmetic particle spells ----------
+        elif aid == 134:
+            name = C.PARTICLE_SPELLS.get(val)
+
+        # ---------- Voice spell ----------
+        elif aid == 1004 and val >= 1:
+            name = "Voices From Below"
+
+        # ---------- Die Job paint spell ----------
+        elif aid == C.DIE_JOB_ATTR and val == C.DIE_JOB_VAL:
+            name = "Die Job"
+
+        else:
+            name = None
+
+        if name and name not in names:
             icon = C.SPELL_BADGE_ICONS.get(name, "✨")
             badges.append({"icon": icon, "title": name, "color": "#A156D6"})
             names.append(name)
@@ -431,7 +435,7 @@ def _process_item(
     wear_name = _extract_wear(asset)
     pattern_seed = _extract_pattern_seed(asset)
     crate_series_name = _extract_crate_series(asset)
-    spell_badges, spells = _extract_spells(asset)
+    spell_badges, spell_names = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
@@ -445,10 +449,14 @@ def _process_item(
         if icon:
             title = KILLSTREAK_TIERS[tier_id]
             badges.append({"icon": icon, "title": title, "color": "#ff7e30"})
+
     badges.extend(spell_badges)
 
-    if paint_name:
-        badges.append({"icon": "\U0001f3a8", "title": f"Paint: {paint_name}"})
+    paint_badge = {"icon": "\U0001f3a8", "title": paint_name} if paint_name else None
+    if paint_badge and paint_badge["title"] in spell_names:
+        paint_badge = None
+    if paint_badge:
+        badges.append(paint_badge)
     if paintkit_name:
         badges.append({"icon": "\U0001f58c", "title": f"Warpaint: {paintkit_name}"})
 
@@ -494,7 +502,7 @@ def _process_item(
         "paintkit_name": paintkit_name,
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
-        "spells": spells,
+        "spells": spell_names,
         "badges": badges,  # always present, may be empty
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),
