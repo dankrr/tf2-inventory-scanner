@@ -15,12 +15,12 @@ class SchemaProvider:
     TTL = 48 * 60 * 60  # 48 hours
     ENDPOINTS = {
         "items": "/raw/schema/items",
-        "attributes": "/attributes",
-        "effects": "/effects",
-        "paints": "/paints",
-        "origins": "/origins",
-        "parts": "/parts",
-        "qualities": "/qualities",
+        "attributes": "/raw/schema/attributes",
+        "effects": "/properties/effects",
+        "paints": "/properties/paints",
+        "origins": "/raw/schema/originNames",
+        "parts": "/properties/strangeParts",
+        "qualities": "/properties/qualities",
         "defindexes": "/properties/defindexes",
     }
 
