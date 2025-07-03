@@ -62,39 +62,26 @@ function loadUsers(ids) {
 }
 
 function attachItemModal() {
-  const modal = document.getElementById('item-modal');
-  if (!modal) return;
-  const badgeBox = document.getElementById('modal-badges');
-
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => {
       let data = card.dataset.item;
       if (!data) return;
-      try { data = JSON.parse(data); } catch (e) { return; }
+      try {
+        data = JSON.parse(data);
+      } catch (e) {
+        return;
+      }
       if (window.modal && typeof window.modal.updateHeader === 'function') {
         window.modal.updateHeader(data);
-      } else {
-        const t = document.getElementById('modal-title');
-        const eBox = document.getElementById('modal-effect');
-        if (t) t.textContent = data.custom_name || data.name || '';
-        if (eBox) eBox.textContent = data.unusual_effect || '';
       }
       if (window.modal && typeof window.modal.generateModalHTML === 'function') {
         const html = window.modal.generateModalHTML(data);
-        window.modal.populateModal(html);
+        if (window.modal.showItemModal) {
+          window.modal.showItemModal(html);
+        }
       }
       if (window.modal && typeof window.modal.renderBadges === 'function') {
         window.modal.renderBadges(data.badges);
-        const spans = badgeBox ? badgeBox.querySelectorAll('span') : [];
-        spans.forEach(span => {
-          span.addEventListener('click', () => {
-            const sec = document.getElementById('modal-spells');
-            if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-          });
-        });
-      }
-      if (window.modal && typeof window.modal.openModal === 'function') {
-        window.modal.openModal();
       }
     });
   });

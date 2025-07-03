@@ -38,9 +38,9 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
 
 ## Modals
 
-All modal behaviour is centralized in `static/modal.js`. Other scripts, such as
-`retry.js`, call its `openModal`, `closeModal`, and `updateModal` functions to
-control dialog windows.
+All modal behaviour is centralized in `static/modal.js`. Other scripts use
+its helper functions and should never manipulate the modal DOM directly.
+Use `showItemModal(html)` to populate and display the dialog.
 
 ## Testing
 
