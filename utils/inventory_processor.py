@@ -79,8 +79,12 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
             tier = local_data.KILLSTREAK_NAMES.get(str(val)) or KILLSTREAK_TIERS.get(
                 val
             )
+            if tier is None:
+                logger.warning("Unknown killstreak tier id: %s", val)
         elif idx == 2014:
             sheen = SHEEN_NAMES.get(val)
+            if sheen is None:
+                logger.warning("Unknown sheen id: %s", val)
     return tier, sheen
 
 
@@ -157,7 +161,10 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
             try:
                 val = float(raw)
             except (TypeError, ValueError):
+                logger.warning("Invalid wear value: %r", raw)
                 continue
+            if not 0 <= val <= 1:
+                logger.warning("Wear value out of range: %s", val)
             name = local_data.WEAR_NAMES.get(str(int(val)))
             return name or _wear_tier(val)
 
@@ -203,6 +210,7 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
             ) or KILLSTREAK_EFFECTS.get(val)
             if name:
                 return name
+            logger.warning("Unknown killstreak effect id: %s", val)
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
@@ -306,6 +314,7 @@ def _extract_kill_eater_info(
         try:
             idx = int(idx_raw)
         except (TypeError, ValueError):
+            logger.warning("Invalid kill-eater defindex: %r", idx_raw)
             continue
 
         val_raw = (
@@ -314,6 +323,7 @@ def _extract_kill_eater_info(
         try:
             val = int(float(val_raw))
         except (TypeError, ValueError):
+            logger.warning("Invalid kill-eater value for %s: %r", idx, val_raw)
             continue
 
         if idx == 214:
@@ -328,6 +338,10 @@ def _extract_kill_eater_info(
                 counts[(idx - 379) // 2 + 2] = val
             else:  # even -> score_type_X
                 types[(idx - 380) // 2 + 2] = val
+        elif idx in (214, 292):
+            pass
+        else:
+            logger.warning("Unknown kill-eater index: %s", idx)
 
     return counts, types
 
