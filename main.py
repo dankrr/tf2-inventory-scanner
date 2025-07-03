@@ -14,7 +14,7 @@ load_dotenv()
 def main() -> None:
     """Demonstrate inventory enrichment for a single Steam user."""
 
-    steamid = "765611980343"  # hardcoded ID for testing
+    steamid = "76561198177872379"  # hardcoded ID for testing
 
     try:
         schema = SchemaProvider()
