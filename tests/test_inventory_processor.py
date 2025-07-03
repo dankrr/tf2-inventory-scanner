@@ -3,6 +3,7 @@ from utils import schema_fetcher as sf
 from utils import steam_api_client as sac
 from utils import items_game_cache as ig
 from utils import local_data as ld
+import logging
 import requests
 import responses
 import pytest
@@ -318,3 +319,37 @@ def test_kill_eater_fields(monkeypatch):
     item = items[0]
     assert item["strange_count"] == 10
     assert item["score_type"] == "Kills"
+
+
+def test_unknown_sheen_warning(monkeypatch, caplog):
+    data = {
+        "items": [
+            {
+                "defindex": 1,
+                "quality": 6,
+                "attributes": [{"defindex": 2014, "float_value": 99}],
+            }
+        ]
+    }
+    sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    caplog.set_level(logging.WARNING)
+    ip.enrich_inventory(data)
+    assert "Unknown attr 2014 value 99" in caplog.text
+
+
+def test_unknown_killstreak_effect_warning(monkeypatch, caplog):
+    data = {
+        "items": [
+            {
+                "defindex": 1,
+                "quality": 6,
+                "attributes": [{"defindex": 2013, "float_value": 999}],
+            }
+        ]
+    }
+    sf.SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    caplog.set_level(logging.WARNING)
+    ip.enrich_inventory(data)
+    assert "Unknown attr 2013 value 999" in caplog.text

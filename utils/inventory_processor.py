@@ -143,8 +143,12 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
             tier = local_data.KILLSTREAK_NAMES.get(str(val)) or _KILLSTREAK_TIER.get(
                 val
             )
+            if tier is None:
+                logger.warning("Unknown attr %s value %s", idx, val)
         elif idx == 2014:
             sheen = _SHEEN_NAMES.get(val)
+            if sheen is None:
+                logger.warning("Unknown attr %s value %s", idx, val)
     return tier, sheen
 
 
@@ -161,7 +165,10 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
                 name = PAINT_MAP.get(val, (None, None))[0]
             if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
                 hex_color = None
-            return name, hex_color
+            if name or hex_color:
+                return name, hex_color
+            logger.warning("Unknown attr %s value %s", idx, val)
+            return None, None
     return None, None
 
 
@@ -223,12 +230,18 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
             except (TypeError, ValueError):
                 continue
             name = local_data.WEAR_NAMES.get(str(int(val)))
-            return name or _wear_tier(val)
+            if name is None:
+                logger.warning("Unknown attr %s value %s", idx, val)
+                return _wear_tier(val)
+            return name
 
     wear_float, _ = _decode_seed_info(asset.get("attributes", []))
     if wear_float is not None:
         name = local_data.WEAR_NAMES.get(str(int(wear_float)))
-        return name or _wear_tier(wear_float)
+        if name is None:
+            logger.warning("Unknown attr %s value %s", 725, wear_float)
+            return _wear_tier(wear_float)
+        return name
 
     return None
 
@@ -240,7 +253,10 @@ def _extract_paintkit(asset: Dict[str, Any]) -> str | None:
         idx = attr.get("defindex")
         if idx == 834:
             val = int(attr.get("float_value", 0))
-            return local_data.PAINTKIT_NAMES.get(str(val))
+            name = local_data.PAINTKIT_NAMES.get(str(val))
+            if name is None:
+                logger.warning("Unknown attr %s value %s", idx, val)
+            return name
     return None
 
 
@@ -251,7 +267,10 @@ def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
         idx = attr.get("defindex")
         if idx == 187:
             val = int(attr.get("float_value", 0))
-            return local_data.CRATE_SERIES_NAMES.get(str(val))
+            name = local_data.CRATE_SERIES_NAMES.get(str(val))
+            if name is None:
+                logger.warning("Unknown attr %s value %s", idx, val)
+            return name
     return None
 
 
@@ -265,6 +284,7 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
             name = local_data.KILLSTREAK_EFFECT_NAMES.get(str(val))
             if name:
                 return name
+            logger.warning("Unknown attr %s value %s", idx, val)
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
