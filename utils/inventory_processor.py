@@ -573,8 +573,8 @@ def _process_item(
         ),
     }
 
-    if item.get("paint_name") == "Die Job" and "Die Job" in item.get("spells", []):
-        item["badges"] = [b for b in item["badges"] if b.get("title") != "Die Job"]
+    if "Die Job" in item.get("spells", []):
+        item["badges"] = [b for b in item["badges"] if b.get("icon") != "\U0001f3a8"]
     return item
 
 

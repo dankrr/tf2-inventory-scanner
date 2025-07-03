@@ -279,6 +279,35 @@ def test_die_job_spell_no_duplicate(monkeypatch):
     assert "Die Job" in badges
 
 
+def test_die_job_spell_hides_paint_badge(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 9002,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 142, "float_value": 12345},
+                    {"defindex": 2043, "value": 3100495},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {
+        "9002": {
+            "defindex": 9002,
+            "item_name": "Thing",
+            "image_url": "",
+            "item_slot": "misc",
+        }
+    }
+    sf.QUALITIES = {"6": "Unique"}
+    monkeypatch.setattr(ld, "PAINT_NAMES", {"12345": "Test Paint"}, False)
+    items = ip.enrich_inventory(data)
+    titles = [b["title"] for b in items[0]["badges"]]
+    assert "Die Job" in titles
+    assert "Test Paint" not in titles
+
+
 def test_schema_name_used_for_key():
     data = {"items": [{"defindex": 5021, "quality": 6}]}
     sf.SCHEMA = {"5021": {"defindex": 5021, "item_name": "Mann Co. Supply Crate Key"}}
