@@ -73,6 +73,7 @@ def test_extract_spells_and_badges(monkeypatch):
             {"value": "Halloween: Team Spirit Footprints"},
             {"value": "Halloween: Pumpkin Bombs"},
             {"value": "Rare Spell: Voices From Below"},
+            {"value": "Weapon Color: Indubitably Green"},
         ],
     }
 
@@ -83,6 +84,7 @@ def test_extract_spells_and_badges(monkeypatch):
         "Team Spirit Footprints",
         "Pumpkin Bombs",
         "Voices From Below",
+        "Indubitably Green",
     ]
     assert spells == expected_spells
     assert flags == {
@@ -91,11 +93,12 @@ def test_extract_spells_and_badges(monkeypatch):
         "has_footprints": True,
         "has_pumpkin_bombs": True,
         "has_voice_lines": True,
+        "has_weapon_color": True,
     }
 
     item = ip._process_item(asset, sf.SCHEMA, {})
     icons = {b["icon"] for b in item["badges"]}
-    assert {"👻", "🫟", "👣", "🗣️"} <= icons
+    assert {"👻", "🫟", "👣", "🗣️", "🌈"} <= icons
 
     items = ip.enrich_inventory({"items": [asset]})
     assert items[0]["modal_spells"] == expected_spells
