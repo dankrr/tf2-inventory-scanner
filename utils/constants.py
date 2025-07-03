@@ -10,8 +10,8 @@ KILLSTREAK_TIERS = {
 # Map of killstreak tier id -> badge icon
 KILLSTREAK_BADGE_ICONS = {
     1: "›",
-    2: "»",
-    3: "»»",
+    2: "››",
+    3: "›››",
 }
 
 # Map of sheen id -> name
