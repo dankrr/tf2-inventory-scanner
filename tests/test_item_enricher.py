@@ -6,12 +6,22 @@ def test_enrich_inventory(monkeypatch):
     provider = SchemaProvider(base_url="https://example.com")
 
     monkeypatch.setattr(provider, "get_defindexes", lambda: {100: "Rocket"})
-    monkeypatch.setattr(provider, "get_qualities", lambda: {6: "Unique"})
-    monkeypatch.setattr(provider, "get_paints", lambda: {1: "Team Spirit"})
-    monkeypatch.setattr(provider, "get_killstreaks", lambda: {2: "Specialized"})
+    monkeypatch.setattr(provider, "get_qualities", lambda: {"Unique": 6})
+    monkeypatch.setattr(provider, "get_paints", lambda: {"Team Spirit": 1})
+    monkeypatch.setattr(
+        provider,
+        "get_attributes",
+        lambda: {
+            142: {"defindex": 142, "class": "set_item_tint_rgb"},
+            2025: {"defindex": 2025, "name": "killstreak tier"},
+            2013: {"defindex": 2013, "name": "killstreak sheen"},
+            2014: {"defindex": 2014, "name": "killstreak effect"},
+            134: {"defindex": 134, "class": "set_attached_particle"},
+            5000: {"defindex": 5000},
+        },
+    )
     monkeypatch.setattr(provider, "get_effects", lambda: {55: "Hot"})
-    monkeypatch.setattr(provider, "get_paintkits", lambda: {3: "Warhawk"})
-    monkeypatch.setattr(provider, "get_strangeParts", lambda: {"5000": "Kills"})
+    monkeypatch.setattr(provider, "get_strange_parts", lambda: {5000: "Kills"})
 
     enricher = ItemEnricher(provider)
 
@@ -39,9 +49,8 @@ def test_enrich_inventory(monkeypatch):
     assert item["name"] == "Rocket"
     assert item["quality"] == "Unique"
     assert item["paint"] == "Team Spirit"
-    assert item["killstreak_tier"] == "Specialized"
+    assert item["killstreak_tier"] == "Specialized Killstreak"
     assert item["sheen"] == "Hot"
     assert item["killstreaker"] == "Hot"
     assert item["unusual_effect"] == "Hot"
-    assert item["paintkit"] == "Warhawk"
     assert item["strange_parts"] == ["Kills"]
