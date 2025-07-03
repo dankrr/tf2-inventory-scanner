@@ -8,7 +8,7 @@ def test_all_spell_types():
             {"defindex": 134, "value": 3005},  # Bruised Purple Footprints
             {"defindex": 134, "value": 702},  # Spectral Spectrum
             {"defindex": 1004, "value": 9},  # Voices from Below
-            {"defindex": 3002, "value": 1},  # Squash Rockets
+            {"defindex": 1009, "value": 1},  # Squash Rockets
         ]
     }
     badges, names = _extract_spells(dummy, is_weapon=True)

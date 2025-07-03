@@ -130,9 +130,9 @@ WEAPON_SPELLS = {
     1005: "Pumpkin Bombs",
     1006: "Halloween Fire",
     1007: "Exorcism",
-    3001: "Gourd Grenades",
-    3002: "Squash Rockets",
-    3003: "Sentry Quad-Pumpkins",
+    1008: "Gourd Grenades",
+    1009: "Squash Rockets",
+    1010: "Sentry Quad-Pumpkins",
 }
 
 # ---- PAINT SPELL SPECIAL CASE (defindex 2043 == Die Job) ----
