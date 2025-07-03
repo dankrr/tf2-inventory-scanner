@@ -62,10 +62,16 @@ class SchemaProvider:
                 with path.open() as f:
                     data = json.load(f)
         if data is None:
-            data = self._fetch(endpoint)
+            fetched = self._fetch(endpoint)
+            if isinstance(fetched, dict) and "value" in fetched:
+                data = fetched["value"]
+            else:
+                data = fetched
             path.write_text(json.dumps(data))
-        if isinstance(data, dict) and "value" in data:
+        elif isinstance(data, dict) and "value" in data:
+            # migrate old cache format that stores entire API response
             data = data["value"]
+            path.write_text(json.dumps(data))
         return data
 
     # ------------------------------------------------------------------
@@ -96,8 +102,6 @@ class SchemaProvider:
     def get_items(self, *, force: bool = False) -> Dict[int, Any]:
         if self.items_by_defindex is None or force:
             data = self._load("items", self.ENDPOINTS["items"], force)
-            if isinstance(data, dict) and "value" in data:
-                data = data["value"]
 
             mapping: Dict[int, Any] = {}
             if isinstance(data, list):
