@@ -223,57 +223,39 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-def _extract_spells(
-    asset: Dict[str, Any],
-) -> Tuple[List[str], Dict[str, bool]]:
-    """Return spell names and boolean flags for badge mapping.
+def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
+    """Return badge dictionaries and spell names extracted from attributes."""
 
-    The names are cleaned strings such as ``"Exorcism"`` or
-    ``"Team Spirit Footprints"`` extracted from item descriptions.
-    """
+    from . import constants as C
 
-    spells: List[str] = []
-    flags = {
-        "has_exorcism": False,
-        "has_paint_spell": False,
-        "has_footprints": False,
-        "has_pumpkin_bombs": False,
-        "has_voice_lines": False,
-        "has_weapon_color": False,
-    }
+    badges: list[dict] = []
+    names: list[str] = []
 
-    for desc in asset.get("descriptions", []):
-        if not isinstance(desc, dict):
-            continue
-        text = unescape(desc.get("value", ""))
-        text = re.sub(r"<[^>]+>", "", text).strip()
-        if not text:
+    for attr in asset.get("attributes", []):
+        aid = attr.get("defindex")
+        val_raw = attr.get("value", 0)
+        try:
+            val = int(val_raw)
+        except (TypeError, ValueError):
+            logger.warning("Invalid spell value: %r", val_raw)
             continue
 
-        ltext = text.lower()
-        if "halloween" in ltext or "spell" in ltext:
-            name = text.split(":", 1)[-1].strip()
-            name = re.sub(r"\(.*?\)$", "", name).strip()
-            if name and name not in spells:
-                spells.append(name)
-        if "exorcism" in ltext:
-            flags["has_exorcism"] = True
-        if "paint" in ltext and "spell" in ltext:
-            flags["has_paint_spell"] = True
-        if "footprints" in ltext:
-            flags["has_footprints"] = True
-        if "pumpkin" in ltext:
-            flags["has_pumpkin_bombs"] = True
-        if "voices" in ltext or "rare spell" in ltext:
-            flags["has_voice_lines"] = True
-        if "weapon color" in ltext or "weapon colour" in ltext:
-            flags["has_weapon_color"] = True
-            name = text.split(":", 1)[-1].strip()
-            name = re.sub(r"\(.*?\)$", "", name).strip()
-            if name and name not in spells:
-                spells.append(name)
+        name = None
+        if aid in C.WEAPON_SPELLS:
+            name = C.WEAPON_SPELLS[aid]
+        elif aid == 2000:
+            name = C.FOOTPRINT_SPELLS.get(val)
+        elif aid == 2001:
+            name = C.PAINT_SPELLS.get(val)
+        elif aid == 1010:
+            name = C.VOCAL_SPELLS.get(val)
 
-    return spells, flags
+        if name:
+            icon = C.SPELL_BADGE_ICONS.get(name, "✨")
+            badges.append({"icon": icon, "title": name, "color": "#A156D6"})
+            names.append(name)
+
+    return badges, names
 
 
 def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
@@ -449,7 +431,7 @@ def _process_item(
     wear_name = _extract_wear(asset)
     pattern_seed = _extract_pattern_seed(asset)
     crate_series_name = _extract_crate_series(asset)
-    spells, spell_flags = _extract_spells(asset)
+    spell_badges, spells = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
@@ -463,32 +445,7 @@ def _process_item(
         if icon:
             title = KILLSTREAK_TIERS[tier_id]
             badges.append({"icon": icon, "title": title, "color": "#ff7e30"})
-    category_flags = {
-        "weapon": spell_flags.get("has_exorcism")
-        or spell_flags.get("has_pumpkin_bombs"),
-        "paint": spell_flags.get("has_paint_spell"),
-        "footprint": spell_flags.get("has_footprints"),
-        "vocal": spell_flags.get("has_voice_lines"),
-        "weapon_color": spell_flags.get("has_weapon_color"),
-    }
-    for cat, present in category_flags.items():
-        if not present:
-            continue
-        icon_map = {
-            "weapon": "\U0001f47b",
-            "vocal": "\U0001f5e3\ufe0f",
-            "paint": "\U0001fadf",
-            "footprint": "\U0001f463",
-            "weapon_color": "\U0001f308",
-        }
-        title_map = {
-            "weapon": "Weapon spell",
-            "vocal": "Vocal spell",
-            "paint": "Paint spell",
-            "footprint": "Footprints spell",
-            "weapon_color": "Weapon color spell",
-        }
-        badges.append({"icon": icon_map[cat], "title": title_map[cat]})
+    badges.extend(spell_badges)
 
     if paint_name:
         badges.append({"icon": "\U0001f3a8", "title": f"Paint: {paint_name}"})
@@ -538,8 +495,6 @@ def _process_item(
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,
-        "has_footprints": spell_flags.get("has_footprints"),
-        "has_weapon_color": spell_flags.get("has_weapon_color"),
         "badges": badges,  # always present, may be empty
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),
