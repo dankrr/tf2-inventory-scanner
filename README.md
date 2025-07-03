@@ -30,11 +30,19 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
 ## Development
 
 - Templates live under `templates/`; `index.html` includes `_user.html` for each user.
-- Item schema is cached automatically. Update it with:
+- Item schema is cached automatically via `SchemaProvider` in
+  `utils/schema_provider.py`. Pass `base_url` to use a mirror. Update it with:
   ```bash
   python app.py --refresh
   ```
- - Use `--test` to run offline against cached data.
+- Use `--test` to run offline against cached data.
+- Access schema properties directly:
+  ```python
+  from utils.schema_provider import SchemaProvider
+
+  provider = SchemaProvider()
+  qualities = provider.get_qualities()
+  ```
 
 ## Modals
 
