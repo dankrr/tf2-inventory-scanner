@@ -20,12 +20,12 @@ class ItemEnricher:
 
     def __init__(self, provider: SchemaProvider | None = None) -> None:
         self.provider = provider or SchemaProvider()
-        self.items = self.provider.get_items()
         self.attrs = self.provider.get_attributes()
         self.effects = self.provider.get_effects()
         self.parts = self.provider.get_strange_parts()
         self.paints_val = {v: k for k, v in self.provider.get_paints().items()}
         self.qualities_map = {v: k for k, v in self.provider.get_qualities().items()}
+        self._spell_effect_ids: set[int] | None = None
         self._logger = logging.getLogger(__name__)
 
     # ------------------------------------------------------------------
@@ -114,7 +114,7 @@ class ItemEnricher:
         """Return list of item dicts enriched with schema data."""
 
         defindexes = self.provider.get_defindexes()
-        qualities = self.provider.get_qualities()
+        qualities = self.qualities_map
 
         enriched: List[Dict[str, Any]] = []
         for item in raw_items:
