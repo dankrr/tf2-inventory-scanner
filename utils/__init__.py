@@ -11,6 +11,7 @@ from .constants import (
     WEAPON_SPELLS,
     SPELL_BADGE_ICONS,
 )
+from .item_enricher import ItemEnricher
 
 __all__ = [
     "PAINT_COLORS",
@@ -24,4 +25,5 @@ __all__ = [
     "VOCAL_SPELLS",
     "WEAPON_SPELLS",
     "SPELL_BADGE_ICONS",
+    "ItemEnricher",
 ]
