@@ -4,6 +4,7 @@ from .constants import (
     KILLSTREAK_TIERS,
     KILLSTREAK_EFFECTS,
     ORIGIN_MAP,
+    KILLSTREAK_BADGE_ICONS,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "KILLSTREAK_TIERS",
     "KILLSTREAK_EFFECTS",
     "ORIGIN_MAP",
+    "KILLSTREAK_BADGE_ICONS",
 ]

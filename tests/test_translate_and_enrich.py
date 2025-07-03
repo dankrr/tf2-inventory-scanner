@@ -51,7 +51,7 @@ def test_decorated_flamethrower_enrichment():
     assert item["wear"] == "Field-Tested"
     assert item["paintkit"] == "Warhawk"
     assert item["pattern_seed"] == 123
-    assert "🎯" in item["badges"]
+    assert "»»" in item["badges"]
     assert "🖌" in item["badges"]
     assert "🎨" in item["badges"]
 
