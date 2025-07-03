@@ -94,13 +94,12 @@ KILLSTREAK_EFFECTS = {
 }
 
 # ---- PARTICLE-BASED COSMETIC SPELLS (defindex 134) ----
-PARTICLE_SPELLS = {
-    # Paint Spells
-    701: "Chromatic Corruption",
-    702: "Spectral Spectrum",
-    703: "Putrescent Pigmentation",
-    704: "Sinister Staining",
-    # Footprint Spells
+
+# Maps of particle IDs to spell names. These are split into footprint and
+# paint spells to simplify lookup logic when extracting spells from item
+# attributes.
+
+FOOTPRINT_PARTICLE_MAP = {
     3001: "Corpse Gray Footprints",
     3002: "Team Spirit Footprints",
     3003: "Violent Violet Footprints",
@@ -110,8 +109,21 @@ PARTICLE_SPELLS = {
     3009: "Headless Horseshoes",
 }
 
+PAINT_PARTICLE_MAP = {
+    701: "Chromatic Corruption",
+    702: "Spectral Spectrum",
+    703: "Putrescent Pigmentation",
+    704: "Sinister Staining",
+}
+
+# Legacy combined map kept for backward compatibility
+PARTICLE_SPELLS = {
+    **PAINT_PARTICLE_MAP,
+    **FOOTPRINT_PARTICLE_MAP,
+}
+
 # ---- VOICE SPELL (defindex 1004, value >= 1) ----
-VOICE_SPELL = {1004: "Voices From Below"}
+VOICE_SPELL = {1004: "Voices from Below"}
 
 # ---- WEAPON-ONLY SPELL ATTRIBUTES  ----
 WEAPON_SPELLS = {
@@ -126,6 +138,11 @@ WEAPON_SPELLS = {
 # ---- PAINT SPELL SPECIAL CASE (defindex 2043 == Die Job) ----
 DIE_JOB_ATTR = 2043
 DIE_JOB_VAL = 3100495  # packed RGB of dark-slate-gray
+
+# Map of packed RGB value -> spell name for paint spells that use a color value
+PAINT_SPELLS_RGB = {
+    3100495: "Die Job",
+}
 
 # ---- Badge Icons ----------------------------------------------------------
 SPELL_BADGE_ICONS = {
@@ -154,7 +171,7 @@ SPELL_BADGE_ICONS = {
         ]
     },
     # voice
-    "Voices From Below": "🎤",
+    "Voices from Below": "🎤",
     # weapon
     "Pumpkin Bombs": "🎃",
     "Gourd Grenades": "🎃",

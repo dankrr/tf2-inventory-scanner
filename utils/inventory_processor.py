@@ -233,26 +233,23 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
 
     for attr in asset.get("attributes", []):
         aid = attr.get("defindex")
-        val = int(attr.get("value", 0))
+        val_raw = attr.get("value")
 
-        # ---------- Weapon spell by attribute defindex ----------
+        try:
+            val = int(float(val_raw)) if isinstance(val_raw, str) else int(val_raw)
+        except (ValueError, TypeError):
+            print(f"[spell] Skipping invalid value for defindex {aid}: {val_raw}")
+            continue
+
+        name = None
         if aid in C.WEAPON_SPELLS:
             name = C.WEAPON_SPELLS[aid]
-
-        # ---------- Cosmetic particle spells ----------
         elif aid == 134:
-            name = C.PARTICLE_SPELLS.get(val)
-
-        # ---------- Voice spell ----------
-        elif aid == 1004 and val >= 1:
-            name = "Voices From Below"
-
-        # ---------- Die Job paint spell ----------
-        elif aid == C.DIE_JOB_ATTR and val == C.DIE_JOB_VAL:
-            name = "Die Job"
-
-        else:
-            name = None
+            name = C.FOOTPRINT_PARTICLE_MAP.get(val) or C.PAINT_PARTICLE_MAP.get(val)
+        elif aid == 2043 and val in C.PAINT_SPELLS_RGB:
+            name = C.PAINT_SPELLS_RGB[val]
+        elif aid == 1004:
+            name = "Voices from Below"
 
         if name and name not in names:
             icon = C.SPELL_BADGE_ICONS.get(name, "✨")
@@ -512,6 +509,9 @@ def _process_item(
             else None
         ),
     }
+
+    if item.get("paint_name") == "Die Job" and "Die Job" in item.get("spells", []):
+        item["badges"] = [b for b in item["badges"] if b.get("title") != "Die Job"]
     return item
 
 

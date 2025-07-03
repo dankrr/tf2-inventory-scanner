@@ -254,8 +254,29 @@ def test_paint_and_paintkit_badges(monkeypatch):
     items = ip.enrich_inventory(data)
     badges = items[0]["badges"]
 
-    assert {"icon": "\U0001f3a8", "title": "Paint: Test Paint"} in badges
+    assert {"icon": "\U0001f3a8", "title": "Test Paint"} in badges
     assert {"icon": "\U0001f58c", "title": "Warpaint: Test Kit"} in badges
+
+
+def test_die_job_spell_no_duplicate(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 9001,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 142, "float_value": 3100495},
+                    {"defindex": 2043, "value": 3100495},
+                ],
+            }
+        ]
+    }
+    sf.SCHEMA = {"9001": {"defindex": 9001, "item_name": "Thing", "image_url": ""}}
+    sf.QUALITIES = {"6": "Unique"}
+    monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Die Job"}, False)
+    items = ip.enrich_inventory(data)
+    badges = [b["title"] for b in items[0]["badges"]]
+    assert "Die Job" not in badges
 
 
 def test_schema_name_used_for_key():
