@@ -3,15 +3,18 @@ from __future__ import annotations
 import json
 import os
 
+from dotenv import load_dotenv
 from utils.item_enricher import ItemEnricher
 from utils.inventory_provider import InventoryProvider
 from utils.schema_provider import SchemaProvider
+
+load_dotenv()
 
 
 def main() -> None:
     """Demonstrate inventory enrichment for a single Steam user."""
 
-    steamid = "76561198034324614"  # hardcoded ID for testing
+    steamid = "76561198177872379"  # hardcoded ID for testing
 
     try:
         schema = SchemaProvider()
