@@ -17,11 +17,11 @@ def test_schema_provider(monkeypatch, tmp_path):
 
     payloads = {
         "/raw/schema/items": {"5021": {"item_name": "Key"}},
-        "/attributes": {"2025": "Killstreak Tier"},
-        "/effects": {"Burning Flames": 13},
+        "/attributes": {"2025": {"name": "Killstreak Tier"}},
+        "/effects": {"Burning Flames": {"id": 13, "name": "Burning Flames"}},
         "/paints": {"A Color Similar to Slate": 3100495},
         "/origins": {"0": "Timed Drop"},
-        "/parts": {"Kills": 64},
+        "/parts": {"Kills": {"id": 64, "name": "Kills"}},
         "/qualities": {"Normal": 0},
         "/properties/defindexes": {"5021": "Key"},
     }
@@ -36,12 +36,12 @@ def test_schema_provider(monkeypatch, tmp_path):
 
     assert provider.get_items() == {5021: {"item_name": "Key"}}
     assert provider.get_item_by_defindex(5021) == {"item_name": "Key"}
-    assert provider.get_attributes() == {2025: "Killstreak Tier"}
-    assert provider.get_effects() == {13: "Burning Flames"}
-    assert provider.get_paints() == {3100495: "A Color Similar to Slate"}
+    assert provider.get_attributes() == {2025: {"name": "Killstreak Tier"}}
+    assert provider.get_effects() == {13: {"id": 13, "name": "Burning Flames"}}
+    assert provider.get_paints() == {"A Color Similar to Slate": 3100495}
     assert provider.get_origins() == {0: "Timed Drop"}
-    assert provider.get_parts() == {64: "Kills"}
-    assert provider.get_qualities() == {0: "Normal"}
+    assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
+    assert provider.get_qualities() == {"Normal": 0}
     assert provider.get_defindexes() == {5021: "Key"}
 
     # second calls should hit cache and not increase call counts
@@ -77,9 +77,11 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     monkeypatch.setattr(sp.requests.Session, "get", fake_get)
 
     assert provider.get_items() == {5021: {"defindex": 5021, "item_name": "Key"}}
-    assert provider.get_attributes() == {2025: "Killstreak Tier"}
-    assert provider.get_effects() == {13: "Burning Flames"}
-    assert provider.get_paints() == {3100495: "A Color Similar to Slate"}
+    assert provider.get_attributes() == {
+        2025: {"defindex": 2025, "name": "Killstreak Tier"}
+    }
+    assert provider.get_effects() == {13: {"id": 13, "name": "Burning Flames"}}
+    assert provider.get_paints() == {"A Color Similar to Slate": 3100495}
     assert provider.get_origins() == {0: "Timed Drop"}
-    assert provider.get_parts() == {64: "Kills"}
-    assert provider.get_qualities() == {0: "Normal"}
+    assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
+    assert provider.get_qualities() == {"Normal": 0}
