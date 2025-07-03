@@ -39,7 +39,7 @@ def main() -> None:
 
     enriched = enricher.enrich_inventory(raw_items)
 
-    for item in enriched[:55]:
+    for item in enriched[:100]:
         print(json.dumps(item, indent=2))
 
 
