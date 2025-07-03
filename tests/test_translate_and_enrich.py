@@ -16,8 +16,10 @@ def test_decorated_flamethrower_enrichment():
                     {"defindex": 2014, "value": "3"},
                     {"defindex": 2013, "value": "2002"},
                     {"defindex": 142, "value": "3100495"},
-                    {"defindex": 725, "float_value": 0.2},
                     {"defindex": 834, "value": "350"},
+                    {"defindex": 866, "value": "123"},
+                    {"defindex": 867, "value": "1045220557"},
+                    {"defindex": 725, "float_value": 0.2},
                 ],
             }
         ],
@@ -48,6 +50,7 @@ def test_decorated_flamethrower_enrichment():
     assert item["killstreaker"] == "Fire Horns"
     assert item["wear"] == "Field-Tested"
     assert item["paintkit"] == "Warhawk"
+    assert item["pattern_seed"] == 123
     assert "🎯" in item["badges"]
     assert "🖌" in item["badges"]
     assert "🎨" in item["badges"]
