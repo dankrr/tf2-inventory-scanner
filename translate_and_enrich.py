@@ -8,6 +8,8 @@ import struct
 import argparse
 import json
 
+from utils.constants import KILLSTREAK_EFFECTS, KILLSTREAK_TIERS, SHEEN_NAMES
+
 
 QUALITY_MAP = {
     0: "Normal",
@@ -23,35 +25,6 @@ QUALITY_MAP = {
     13: "Haunted",
     14: "Collector's",
     15: "Decorated Weapon",
-}
-
-SHEEN_MAP = {
-    1: "Team Shine",
-    2: "Deadly Daffodil",
-    3: "Manndarin",
-    4: "Mean Green",
-    5: "Agonizing Emerald",
-    6: "Villainous Violet",
-    7: "Hot Rod",
-}
-
-KILLSTREAKER_MAP = {
-    2002: "Fire Horns",
-    2003: "Cerebral Discharge",
-    2004: "Tornado",
-    2005: "Flames",
-    2006: "Singularity",
-    2007: "Incinerator",
-    2008: "Hypno-Beam",
-    2009: "Tesla Coil",
-    2010: "Hellish Inferno",
-    2011: "Fireworks",
-}
-
-KILLSTREAK_TIER_MAP = {
-    1: "Killstreak",
-    2: "Specialized Killstreak",
-    3: "Professional Killstreak",
 }
 
 
@@ -165,13 +138,13 @@ def enrich_inventory(
             )
             ks_tier = maps.get("killstreak_names", {}).get(
                 str(kst)
-            ) or KILLSTREAK_TIER_MAP.get(kst)
+            ) or KILLSTREAK_TIERS.get(kst)
 
         sheen_val = _attr_value(attrs, 2014)
         sheen = None
         if sheen_val is not None:
             sv = int(float(sheen_val)) if isinstance(sheen_val, str) else int(sheen_val)
-            sheen = maps.get("killstreak_names", {}).get(str(sv)) or SHEEN_MAP.get(sv)
+            sheen = maps.get("killstreak_names", {}).get(str(sv)) or SHEEN_NAMES.get(sv)
 
         ks_eff_val = _attr_value(attrs, 2013)
         ks_effect = None
@@ -183,7 +156,7 @@ def enrich_inventory(
             )
             ks_effect = maps.get("killstreak_names", {}).get(
                 str(ksv)
-            ) or KILLSTREAKER_MAP.get(ksv)
+            ) or KILLSTREAK_EFFECTS.get(ksv)
 
         paint_id = _attr_value(attrs, 142) or _attr_value(attrs, 261)
         paint_name = None
