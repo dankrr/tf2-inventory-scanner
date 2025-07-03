@@ -20,7 +20,12 @@ class ItemEnricher:
 
     def __init__(self, provider: SchemaProvider | None = None) -> None:
         self.provider = provider or SchemaProvider()
-        self._spell_effect_ids: set[int] | None = None
+        self.items = self.provider.get_items()
+        self.attrs = self.provider.get_attributes()
+        self.effects = self.provider.get_effects()
+        self.parts = self.provider.get_strange_parts()
+        self.paints_val = {v: k for k, v in self.provider.get_paints().items()}
+        self.qualities_map = {v: k for k, v in self.provider.get_qualities().items()}
         self._logger = logging.getLogger(__name__)
 
     # ------------------------------------------------------------------
@@ -31,6 +36,18 @@ class ItemEnricher:
                 eid for eid, name in mapping.items() if name in self.SPELL_NAMES
             }
         return self._spell_effect_ids
+
+    # ------------------------------------------------------------------
+    def _wear_label(self, wear: float) -> str:
+        if wear < 0.07:
+            return "Factory New"
+        if wear < 0.15:
+            return "Minimal Wear"
+        if wear < 0.38:
+            return "Field-Tested"
+        if wear < 0.45:
+            return "Well-Worn"
+        return "Battle Scarred"
 
     # ------------------------------------------------------------------
     def _enrich_attributes(self, attributes: list) -> Dict[str, Any]:
@@ -46,59 +63,49 @@ class ItemEnricher:
             "paintkit": None,
         }
 
-        paints = self.provider.get_paints()
-        killstreaks = self.provider.get_killstreaks()
-        effects = self.provider.get_effects()
-        paintkits = self.provider.get_paintkits()
-        strange_parts = self.provider.get_strangeParts()
         spell_ids = self._load_spell_effect_ids()
 
         for attr in attributes or []:
             try:
-                idx = int(attr.get("defindex", 0))
+                aid = int(attr.get("defindex", 0))
             except (TypeError, ValueError):
                 continue
 
-            val_raw = (
-                attr.get("float_value") if "float_value" in attr else attr.get("value")
-            )
-            try:
-                val = int(float(val_raw)) if val_raw is not None else None
-            except (TypeError, ValueError):
-                val = None
+            val = attr.get("float_value") or attr.get("value")
 
-            if idx == 142 and val is not None:
-                result["paint"] = paints.get(val) or paints.get(str(val))
-                if val and result["paint"] is None:
-                    self._logger.warning("Unknown paint id: %s", val)
-            elif idx == 2025 and val is not None:
-                result["killstreak_tier"] = killstreaks.get(val) or killstreaks.get(
-                    str(val)
-                )
-                if val and result["killstreak_tier"] is None:
-                    self._logger.warning("Unknown killstreak tier id: %s", val)
-            elif idx == 2013 and val is not None:
-                result["sheen"] = effects.get(val) or effects.get(str(val))
-                if val and result["sheen"] is None:
-                    self._logger.warning("Unknown sheen effect id: %s", val)
-            elif idx == 2014 and val is not None:
-                result["killstreaker"] = effects.get(val) or effects.get(str(val))
-                if val and result["killstreaker"] is None:
-                    self._logger.warning("Unknown killstreaker id: %s", val)
-            elif idx == 134 and val is not None:
+            info = self.attrs.get(aid, {})
+            cls = info.get("class", "")
+            name = info.get("name", "")
+
+            if aid in self.parts:
+                part = self.parts[aid]
+                if part not in result["strange_parts"]:
+                    result["strange_parts"].append(part)
+                continue
+
+            if cls == "set_item_tint_rgb" and isinstance(val, int):
+                result["paint"] = self.paints_val.get(val)
+            elif cls.startswith("set_attached_particle") and isinstance(val, int):
                 if val not in spell_ids:
-                    result["unusual_effect"] = effects.get(val) or effects.get(str(val))
-                    if val and result["unusual_effect"] is None:
-                        self._logger.warning("Unknown unusual effect id: %s", val)
-            elif idx == 834 and val is not None:
-                result["paintkit"] = paintkits.get(val) or paintkits.get(str(val))
-                if val and result["paintkit"] is None:
-                    self._logger.warning("Unknown paintkit id: %s", val)
-
-            if str(idx) in strange_parts:
-                name = strange_parts[str(idx)]
-                if name not in result["strange_parts"]:
-                    result["strange_parts"].append(name)
+                    result["unusual_effect"] = self.effects.get(val)
+            elif name == "killstreak tier":
+                tier_map = {
+                    1: "Killstreak",
+                    2: "Specialized Killstreak",
+                    3: "Professional Killstreak",
+                }
+                result["killstreak_tier"] = tier_map.get(int(val), f"Tier {val}")
+            elif name == "killstreak sheen":
+                result["sheen"] = self.effects.get(int(val)) or f"Sheen {val}"
+            elif name == "killstreak effect":
+                result["killstreaker"] = self.effects.get(int(val))
+            elif cls == "set_item_texture_wear":
+                try:
+                    w = float(val)
+                except (TypeError, ValueError):
+                    continue
+                result["wear_float"] = round(w, 3)
+                result["wear_label"] = self._wear_label(w)
 
         return result
 

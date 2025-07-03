@@ -36,11 +36,10 @@ class SchemaProvider:
         self._logger = logging.getLogger(__name__)
         self.items_by_defindex: Dict[int, Any] | None = None
         self.attributes_by_defindex: Dict[int, Any] | None = None
-        self.effects_by_index: Dict[int, str] | None = None
-        self.paints_by_defindex: Dict[int, str] | None = None
-        self.origins_by_index: Dict[int, str] | None = None
-        self.parts_by_defindex: Dict[int, str] | None = None
-        self.qualities_by_index: Dict[int, str] | None = None
+        self.effects_by_index: Dict[int, Any] | None = None
+        self.parts_by_defindex: Dict[int, Any] | None = None
+        self.paints_map: Dict[str, int] | None = None
+        self.qualities_map: Dict[str, int] | None = None
         self.defindex_names: Dict[int, str] | None = None
 
     # ------------------------------------------------------------------
@@ -75,6 +74,18 @@ class SchemaProvider:
         return data
 
     # ------------------------------------------------------------------
+    def _unwrap_and_index(self, data: Any, key_field: str) -> Dict[int, Any]:
+        if isinstance(data, dict) and "value" in data:
+            data = data["value"]
+        if isinstance(data, list):
+            return {
+                int(e[key_field]): e
+                for e in data
+                if isinstance(e, dict) and key_field in e
+            }
+        return {int(k): v for k, v in data.items() if str(k).isdigit()}
+
+    # ------------------------------------------------------------------
     def refresh_all(self) -> None:
         """Force refresh of all schema files."""
         for key, ep in self.ENDPOINTS.items():
@@ -102,44 +113,13 @@ class SchemaProvider:
     def get_items(self, *, force: bool = False) -> Dict[int, Any]:
         if self.items_by_defindex is None or force:
             data = self._load("items", self.ENDPOINTS["items"], force)
-
-            mapping: Dict[int, Any] = {}
-            if isinstance(data, list):
-                for item in data:
-                    try:
-                        idx = int(item.get("defindex", -1))
-                    except (TypeError, ValueError):
-                        continue
-                    if idx >= 0:
-                        mapping[idx] = item
-            elif isinstance(data, dict):
-                for k, v in data.items():
-                    try:
-                        idx = int(k)
-                    except (TypeError, ValueError):
-                        idx = int(v.get("defindex", -1)) if isinstance(v, dict) else -1
-                    if idx >= 0:
-                        mapping[idx] = v
-
-            self.items_by_defindex = mapping
+            self.items_by_defindex = self._unwrap_and_index(data, "defindex")
         return self.items_by_defindex
 
     def get_attributes(self, *, force: bool = False) -> Dict[int, Any]:
         if self.attributes_by_defindex is None or force:
             data = self._load("attributes", self.ENDPOINTS["attributes"], force)
-            mapping: Dict[int, Any] = {}
-            if isinstance(data, list):
-                for attr in data:
-                    try:
-                        idx = int(attr.get("defindex", -1))
-                    except (TypeError, ValueError):
-                        continue
-                    if idx >= 0:
-                        name = attr.get("name")
-                        mapping[idx] = name if name is not None else attr
-            elif isinstance(data, dict):
-                mapping = self._to_int_map(data)
-            self.attributes_by_defindex = mapping
+            self.attributes_by_defindex = self._unwrap_and_index(data, "defindex")
         return self.attributes_by_defindex
 
     def _from_name_map(self, data: dict) -> Dict[int, str]:
@@ -151,43 +131,21 @@ class SchemaProvider:
                 mapping[int(v)] = str(k)
         return mapping
 
-    def get_effects(self, *, force: bool = False) -> Dict[int, str]:
+    def get_effects(self, *, force: bool = False) -> Dict[int, Any]:
         if self.effects_by_index is None or force:
             data = self._load("effects", self.ENDPOINTS["effects"], force)
-            mapping: Dict[int, str] = {}
-            if isinstance(data, list):
-                for effect in data:
-                    try:
-                        idx = int(effect.get("id", -1))
-                    except (TypeError, ValueError):
-                        continue
-                    if idx >= 0:
-                        name = effect.get("name") or effect.get("effect")
-                        if name is not None:
-                            mapping[idx] = str(name)
-            elif isinstance(data, dict):
-                mapping = self._from_name_map(data)
-            self.effects_by_index = mapping
+            self.effects_by_index = self._unwrap_and_index(data, "id")
         return self.effects_by_index
 
-    def get_paints(self, *, force: bool = False) -> Dict[int, str]:
-        if self.paints_by_defindex is None or force:
+    def get_paints(self, *, force: bool = False) -> Dict[str, int]:
+        if self.paints_map is None or force:
             data = self._load("paints", self.ENDPOINTS["paints"], force)
-            mapping: Dict[int, str] = {}
-            if isinstance(data, list):
-                for paint in data:
-                    try:
-                        idx = int(paint.get("id", -1))
-                    except (TypeError, ValueError):
-                        continue
-                    if idx >= 0:
-                        name = paint.get("name")
-                        if name is not None:
-                            mapping[idx] = str(name)
-            elif isinstance(data, dict):
-                mapping = self._from_name_map(data)
-            self.paints_by_defindex = mapping
-        return self.paints_by_defindex
+            if isinstance(data, dict) and "value" in data:
+                data = data["value"]
+            self.paints_map = {
+                str(name): int(val) for name, val in data.items() if str(val).isdigit()
+            }
+        return self.paints_map
 
     def get_origins(self, *, force: bool = False) -> Dict[int, str]:
         if self.origins_by_index is None or force:
@@ -208,43 +166,21 @@ class SchemaProvider:
             self.origins_by_index = mapping
         return self.origins_by_index
 
-    def get_parts(self, *, force: bool = False) -> Dict[int, str]:
+    def get_parts(self, *, force: bool = False) -> Dict[int, Any]:
         if self.parts_by_defindex is None or force:
             data = self._load("parts", self.ENDPOINTS["parts"], force)
-            mapping: Dict[int, str] = {}
-            if isinstance(data, list):
-                for part in data:
-                    try:
-                        idx = int(part.get("id", -1))
-                    except (TypeError, ValueError):
-                        continue
-                    if idx >= 0:
-                        name = part.get("name")
-                        if name is not None:
-                            mapping[idx] = str(name)
-            elif isinstance(data, dict):
-                mapping = self._from_name_map(data)
-            self.parts_by_defindex = mapping
+            self.parts_by_defindex = self._unwrap_and_index(data, "id")
         return self.parts_by_defindex
 
-    def get_qualities(self, *, force: bool = False) -> Dict[int, str]:
-        if self.qualities_by_index is None or force:
+    def get_qualities(self, *, force: bool = False) -> Dict[str, int]:
+        if self.qualities_map is None or force:
             data = self._load("qualities", self.ENDPOINTS["qualities"], force)
-            mapping: Dict[int, str] = {}
-            if isinstance(data, list):
-                for qual in data:
-                    try:
-                        idx = int(qual.get("id", -1))
-                    except (TypeError, ValueError):
-                        continue
-                    if idx >= 0:
-                        name = qual.get("name")
-                        if name is not None:
-                            mapping[idx] = str(name)
-            elif isinstance(data, dict):
-                mapping = self._from_name_map(data)
-            self.qualities_by_index = mapping
-        return self.qualities_by_index
+            if isinstance(data, dict) and "value" in data:
+                data = data["value"]
+            self.qualities_map = {
+                str(name): int(val) for name, val in data.items() if str(val).isdigit()
+            }
+        return self.qualities_map
 
     # Compatibility helpers -------------------------------------------------
     def get_defindexes(self, *, force: bool = False) -> Dict[int, Any]:
@@ -260,7 +196,7 @@ class SchemaProvider:
                 }
         return self.defindex_names
 
-    def get_strangeParts(self, *, force: bool = False) -> Dict[int, str]:
+    def get_strangeParts(self, *, force: bool = False) -> Dict[int, Any]:
         return self.get_parts(force=force)
 
     def get_item_by_defindex(self, defindex: int) -> Dict[str, Any] | None:
