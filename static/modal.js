@@ -127,8 +127,21 @@
       const span = document.createElement('span');
       span.textContent = b.icon;
       span.title = b.title || '';
+      span.addEventListener('click', () => {
+        const sec = document.getElementById('modal-spells');
+        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+      });
       box.appendChild(span);
     });
+  }
+
+  function showItemModal(html) {
+    if (!html) {
+      console.warn('Empty modal HTML!');
+      return;
+    }
+    populateModal(html);
+    openModal();
   }
 
   function initModal() {
@@ -150,6 +163,7 @@
     closeModal,
     populateModal,
     renderBadges,
+    showItemModal,
     generateModalHTML,
     updateHeader,
   };
