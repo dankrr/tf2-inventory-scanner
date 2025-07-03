@@ -99,3 +99,42 @@ def test_extract_spells_and_badges(monkeypatch):
 
     items = ip.enrich_inventory({"items": [asset]})
     assert items[0]["modal_spells"] == expected_spells
+
+
+def test_attribute_spells(monkeypatch):
+    sf.SCHEMA = {"1": {"defindex": 1, "item_name": "Gun", "image_url": ""}}
+    ld.TF2_SCHEMA = {}
+    ld.ITEMS_GAME_CLEANED = {}
+    monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
+    monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
+
+    asset = {
+        "defindex": 1,
+        "quality": 6,
+        "attributes": [
+            {"defindex": 1008},
+            {"defindex": 1009},
+            {"defindex": 2000},
+            {"defindex": 2001},
+        ],
+        "descriptions": [],
+    }
+
+    spells, flags = ip._extract_spells(asset)
+    assert set(spells) == {
+        "Pumpkin Flames",
+        "Exorcism",
+        "Footprints",
+        "Weapon Color",
+    }
+    assert flags == {
+        "has_exorcism": True,
+        "has_paint_spell": True,
+        "has_footprints": True,
+        "has_pumpkin_bombs": False,
+        "has_voice_lines": False,
+    }
+
+    item = ip._process_item(asset, sf.SCHEMA, {})
+    icons = {b["icon"] for b in item["badges"]}
+    assert {"👻", "🫟", "👣"} <= icons

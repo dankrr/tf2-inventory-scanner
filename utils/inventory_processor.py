@@ -319,6 +319,30 @@ def _extract_spells(
         if "voices" in ltext or "rare spell" in ltext:
             flags["has_voice_lines"] = True
 
+    # also check specific attributes for spells
+    for attr in asset.get("attributes", []):
+        try:
+            idx = int(attr.get("defindex"))
+        except (TypeError, ValueError):
+            continue
+
+        if idx == 1008:
+            if "Pumpkin Flames" not in spells:
+                spells.append("Pumpkin Flames")
+            flags["has_exorcism"] = True
+        elif idx == 1009:
+            if "Exorcism" not in spells:
+                spells.append("Exorcism")
+            flags["has_exorcism"] = True
+        elif idx == 2000:
+            if "Footprints" not in spells:
+                spells.append("Footprints")
+            flags["has_footprints"] = True
+        elif idx == 2001:
+            if "Weapon Color" not in spells:
+                spells.append("Weapon Color")
+            flags["has_paint_spell"] = True
+
     return spells, flags
 
 
