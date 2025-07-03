@@ -25,9 +25,6 @@ modal.closeModal();
 if (window.document.getElementById('item-modal').classList.contains('open')) {
   throw new Error('Modal should be closed');
 }
-if (window.document.querySelector('.modal-body').innerHTML !== '') {
-  throw new Error('Modal body should be cleared');
-}
 modal.populateModal('<p>Hello</p>');
 modal.openModal();
 if (!window.document.getElementById('item-modal').classList.contains('open')) {
@@ -48,5 +45,15 @@ modal.renderBadges([{ icon: '🌈', title: 'Weapon color spell' }]);
 if (!window.document.querySelector('#modal-badges').textContent.includes('🌈')) {
   throw new Error('Badge not rendered');
 }
-console.log('Modal tests passed');
+modal.closeModal();
+modal.showItemModal('<p>Race</p>');
+setTimeout(() => {
+  if (!window.document.getElementById('item-modal').classList.contains('open')) {
+    throw new Error('Modal should stay open after quick reopen');
+  }
+  if (!window.document.querySelector('.modal-body').innerHTML.includes('Race')) {
+    throw new Error('Modal body lost content after quick reopen');
+  }
+  console.log('Modal tests passed');
+}, 250);
 
