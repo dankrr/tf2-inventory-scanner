@@ -239,6 +239,15 @@ def _extract_spells(
             badges.append({"icon": icon, "title": spell_name, "color": "#A156D6"})
             names.append(spell_name)
 
+    defindex_raw = asset.get("defindex")
+    try:
+        defindex = int(defindex_raw)
+    except (TypeError, ValueError):
+        defindex = 0
+    is_weapon = bool(
+        is_weapon or is_definitely_weapon(defindex, asset.get("item_class"))
+    )
+
     for attr in asset.get("attributes", []):
         aid = attr.get("defindex")
         raw = attr.get("value")
@@ -248,15 +257,14 @@ def _extract_spells(
         except (ValueError, TypeError):
             continue
 
-        if is_weapon and aid in C.WEAPON_SPELLS:
-            _add(C.WEAPON_SPELLS[aid])
-            continue
-
-        if not is_weapon and aid in C.WEAPON_SPELLS:
+        if aid in C.WEAPON_SPELLS:
+            if is_weapon:
+                _add(C.WEAPON_SPELLS[aid])
             continue
 
         if not is_weapon and aid == 134:
-            _add(C.PAINT_PARTICLE_MAP.get(val) or C.FOOTPRINT_PARTICLE_MAP.get(val))
+            _add(C.PAINT_PARTICLE_MAP.get(val))
+            _add(C.FOOTPRINT_PARTICLE_MAP.get(val))
             continue
 
         if not is_weapon and aid == C.VOICE_SPELL_ATTR and val >= 1:
@@ -426,6 +434,30 @@ def _is_cosmetic(definfo: Dict[str, Any]) -> bool:
     """Return True if schema entry is not a weapon."""
 
     return not _is_weapon(definfo)
+
+
+def is_definitely_weapon(defindex: int, classname: str | None) -> bool:
+    """Return ``True`` if schema data indicates the item is a weapon."""
+
+    lookup = (
+        items_game_cache.ITEM_BY_DEFINDEX.get(str(defindex))
+        or local_data.ITEMS_GAME_CLEANED.get(str(defindex))
+        or local_data.TF2_SCHEMA.get(str(defindex))
+        or {}
+    )
+
+    cls = classname or lookup.get("item_class")
+    if isinstance(cls, str) and cls.startswith("tf_weapon"):
+        return True
+
+    if lookup.get("craft_class") == "weapon":
+        return True
+
+    slot = lookup.get("item_slot")
+    if slot and slot not in ["misc", "head", "feet", "back", "taunt"]:
+        return True
+
+    return False
 
 
 def _process_item(
