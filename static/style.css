@@ -182,6 +182,15 @@ button {
   color:#ff7e30;
   filter:drop-shadow(0 0 3px #ff7e30);
 }
+.badge[data-icon="🖌"],
+.badge[data-icon="👣"],
+.badge[data-icon="🎤"],
+.badge[data-icon="🔥"],
+.badge[data-icon="👻"],
+.badge[data-icon="🎃"]{
+  color:#A156D6;
+  filter:drop-shadow(0 0 2px #A156D6);
+}
 .ks-effect{color:#ff7e30;font-weight:bold;}
 .item-img {
   max-width: 64px;

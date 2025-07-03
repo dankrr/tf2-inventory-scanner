@@ -28,10 +28,8 @@ def test_enrichment_full_attributes(monkeypatch):
                     {"defindex": 292, "value": 64},
                     {"defindex": 379, "value": 5},
                     {"defindex": 380, "value": 70},
-                ],
-                "descriptions": [
-                    {"value": "Halloween: Exorcism"},
-                    {"value": "Paint Spell: Chromatic Corruption"},
+                    {"defindex": 1009, "value": 1},
+                    {"defindex": 2001, "value": 3},
                 ],
             }
         ]
@@ -51,7 +49,7 @@ def test_enrichment_full_attributes(monkeypatch):
     assert item["wear_name"] == "Field-Tested"
     assert item["strange_count"] == 10
     assert item["score_type"] == "Kills"
-    assert item["spells"] == ["Exorcism", "Chromatic Corruption"]
+    assert set(item["spells"]) == {"Exorcism", "Chromatic Corruption"}
 
 
 def test_unknown_values_warn(monkeypatch, caplog):

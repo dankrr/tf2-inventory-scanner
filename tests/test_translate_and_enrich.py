@@ -51,9 +51,10 @@ def test_decorated_flamethrower_enrichment():
     assert item["wear"] == "Field-Tested"
     assert item["paintkit"] == "Warhawk"
     assert item["pattern_seed"] == 123
-    assert "»»" in item["badges"]
-    assert "🖌" in item["badges"]
-    assert "🎨" in item["badges"]
+    icons = {b.get("icon") if isinstance(b, dict) else b for b in item["badges"]}
+    assert "›››" in icons
+    assert "🖌" in icons
+    assert "🎨" in icons
 
 
 def test_extract_spells_and_badges(monkeypatch):
@@ -66,39 +67,28 @@ def test_extract_spells_and_badges(monkeypatch):
     asset = {
         "defindex": 501,
         "quality": 6,
-        "attributes": [],
-        "descriptions": [
-            {"value": "Halloween: Exorcism (spell only active during event)"},
-            {"value": "Paint Spell: Chromatic Corruption"},
-            {"value": "Halloween: Team Spirit Footprints"},
-            {"value": "Halloween: Pumpkin Bombs"},
-            {"value": "Rare Spell: Voices From Below"},
-            {"value": "Weapon Color: Indubitably Green"},
+        "attributes": [
+            {"defindex": 1009, "value": 1},  # Exorcism
+            {"defindex": 2001, "value": 3},  # Chromatic Corruption
+            {"defindex": 2000, "value": 1},  # Team Spirit Footprints
+            {"defindex": 3001, "value": 1},  # Pumpkin Bombs
+            {"defindex": 1010, "value": 9},  # Spy's Creepy Croon
         ],
     }
 
-    spells, flags = ip._extract_spells(asset)
+    badges, names = ip._extract_spells(asset)
     expected_spells = [
         "Exorcism",
         "Chromatic Corruption",
         "Team Spirit Footprints",
         "Pumpkin Bombs",
-        "Voices From Below",
-        "Indubitably Green",
+        "Spy's Creepy Croon",
     ]
-    assert spells == expected_spells
-    assert flags == {
-        "has_exorcism": True,
-        "has_paint_spell": True,
-        "has_footprints": True,
-        "has_pumpkin_bombs": True,
-        "has_voice_lines": True,
-        "has_weapon_color": True,
-    }
+    assert set(names) == set(expected_spells)
 
     item = ip._process_item(asset, sf.SCHEMA, {})
     icons = {b["icon"] for b in item["badges"]}
-    assert {"👻", "🫟", "👣", "🗣️", "🌈"} <= icons
+    assert {"👻", "🖌", "👣", "🎤", "🎃"} <= icons
 
     items = ip.enrich_inventory({"items": [asset]})
-    assert items[0]["modal_spells"] == expected_spells
+    assert set(items[0]["modal_spells"]) == set(expected_spells)
