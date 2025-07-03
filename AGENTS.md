@@ -93,7 +93,7 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
 
 - Structure all logic in `app.py`
 - Template in `templates/index.html`
-- Do **not modify** `static/` or unrelated template files
+- Do **not modify** 'image_url' or unrelated template files
 - Use `requests` with timeouts and error handling
 - Raise `ValueError` early if required API keys are missing
 - Cache `prices` during each POST cycle to avoid duplicate fetches
