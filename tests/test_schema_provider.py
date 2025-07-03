@@ -12,21 +12,17 @@ class DummyResp:
         return self.payload
 
 
-def test_schema_provider(monkeypatch):
-    provider = sp.SchemaProvider(base_url="https://example.com")
+def test_schema_provider(monkeypatch, tmp_path):
+    provider = sp.SchemaProvider(base_url="https://example.com", cache_dir=tmp_path)
 
     payloads = {
-        "/properties/effects": {"Burning Flames": 13},
-        "/properties/paints": {"A Color Similar to Slate": 3100495},
-        "/properties/paintkits": {"Warhawk": 350},
-        "/properties/killstreaks": {"1": "Alpha"},
-        "/properties/wears": {"0": "Factory New"},
-        "/properties/qualities": {"Normal": 0},
-        "/properties/defindexes": {"5021": "Key"},
-        "/properties/crateseries": {"1": "100"},
-        "/properties/strangeParts": {"Kills": "64"},
-        "/properties/craftWeapons": ["1101;foo"],
-        "/properties/uncraftWeapons": ["2202;bar"],
+        "/items": {"5021": "Key"},
+        "/attributes": {"2025": "Killstreak Tier"},
+        "/effects": {"Burning Flames": 13},
+        "/paints": {"A Color Similar to Slate": 3100495},
+        "/origins": {"0": "Timed Drop"},
+        "/parts": {"Kills": 64},
+        "/qualities": {"Normal": 0},
     }
     calls = {key: 0 for key in payloads}
 
@@ -37,30 +33,22 @@ def test_schema_provider(monkeypatch):
 
     monkeypatch.setattr(sp.requests.Session, "get", fake_get)
 
+    assert provider.get_items() == {5021: "Key"}
+    assert provider.get_attributes() == {2025: "Killstreak Tier"}
     assert provider.get_effects() == {13: "Burning Flames"}
     assert provider.get_paints() == {3100495: "A Color Similar to Slate"}
-    assert provider.get_paintkits() == {350: "Warhawk"}
-    assert provider.get_killstreaks() == {1: "Alpha"}
-    assert provider.get_wears() == {0: "Factory New"}
+    assert provider.get_origins() == {0: "Timed Drop"}
+    assert provider.get_parts() == {64: "Kills"}
     assert provider.get_qualities() == {0: "Normal"}
-    assert provider.get_defindexes() == {5021: "Key"}
-    assert provider.get_crateseries() == {1: 100}
-    assert provider.get_strangeParts() == {"64": "Kills"}
-    assert provider.get_craftWeapons() == {1101: "1101;foo"}
-    assert provider.get_uncraftWeapons() == {2202: "2202;bar"}
 
     # second calls should hit cache and not increase call counts
+    provider.get_items()
+    provider.get_attributes()
     provider.get_effects()
     provider.get_paints()
-    provider.get_paintkits()
-    provider.get_killstreaks()
-    provider.get_wears()
+    provider.get_origins()
+    provider.get_parts()
     provider.get_qualities()
-    provider.get_defindexes()
-    provider.get_crateseries()
-    provider.get_strangeParts()
-    provider.get_craftWeapons()
-    provider.get_uncraftWeapons()
 
     for endpoint in payloads:
         assert calls[endpoint] == 1
