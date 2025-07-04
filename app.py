@@ -51,7 +51,7 @@ STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 app = Flask(__name__)
 
 MAX_MERGE_MS = 0
-local_data.load_files(auto_refetch=True)
+local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 
 # --- Utility functions ------------------------------------------------------
 
