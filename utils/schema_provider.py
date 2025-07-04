@@ -97,19 +97,25 @@ class SchemaProvider:
         return {}
 
     # ------------------------------------------------------------------
-    def refresh_all(self) -> None:
+    def refresh_all(self, verbose: bool = False) -> None:
         """Force refresh of all schema files."""
+        fetched = []
         for key, ep in self.ENDPOINTS.items():
             self._load(key, ep, force=True)
-            setattr(
-                self,
-                (
-                    f"{key}_by_defindex"
-                    if key in {"items", "attributes", "paints", "parts", "defindexes"}
-                    else f"{key}_by_index"
-                ),
-                None,
-            )
+            fetched.append(self._cache_file(key))
+
+        if verbose:
+            for path in fetched:
+                self._logger.info("Fetched %s", path)
+
+        self.items_by_defindex = None
+        self.attributes_by_defindex = None
+        self.paints_map = None
+        self.parts_by_defindex = None
+        self.defindex_names = None
+        self.qualities_map = None
+        self.effects_by_index = None
+        self.origins_by_index = None
 
     def _to_int_map(self, data: dict) -> Dict[int, Any]:
         mapping: Dict[int, Any] = {}

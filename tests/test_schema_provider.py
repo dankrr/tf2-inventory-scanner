@@ -89,3 +89,43 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
+
+
+def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
+    provider = sp.SchemaProvider(base_url="https://example.com", cache_dir=tmp_path)
+
+    monkeypatch.setattr(
+        sp.requests.Session,
+        "get",
+        lambda self, url, timeout=20: DummyResp({}),
+    )
+
+    provider.items_by_defindex = {}
+    provider.attributes_by_defindex = {}
+    provider.paints_map = {}
+    provider.parts_by_defindex = {}
+    provider.defindex_names = {}
+    provider.qualities_map = {}
+    provider.effects_by_index = {}
+    provider.origins_by_index = {}
+
+    logs: list[str] = []
+    monkeypatch.setattr(provider._logger, "info", lambda msg, *a: logs.append(msg % a))
+
+    provider.refresh_all(verbose=True)
+
+    for key in provider.ENDPOINTS:
+        assert (tmp_path / f"{key}.json").exists()
+
+    assert provider.items_by_defindex is None
+    assert provider.attributes_by_defindex is None
+    assert provider.paints_map is None
+    assert provider.parts_by_defindex is None
+    assert provider.defindex_names is None
+    assert provider.qualities_map is None
+    assert provider.effects_by_index is None
+    assert provider.origins_by_index is None
+
+    for key in provider.ENDPOINTS:
+        fname = f"{tmp_path / key}.json"
+        assert any(fname in msg for msg in logs)
