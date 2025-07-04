@@ -35,12 +35,9 @@ def test_enrichment_full_attributes(monkeypatch):
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {
-                "description_string": "Exorcism",
-                "attribute_class": "halloween_death_ghosts",
-            },
+            1009: {"name": "Exorcism", "attribute_class": "halloween_death_ghosts"},
             2001: {
-                "description_string": "Chromatic Corruption",
+                "name": "Chromatic Corruption",
                 "attribute_class": "halloween_green_flames",
             },
         },
