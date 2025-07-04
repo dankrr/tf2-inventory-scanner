@@ -176,10 +176,12 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
             for e in raw_quals
             if isinstance(e, dict) and "id" in e and "name" in e
         }
+    elif isinstance(raw_quals, dict):
+        by_key = {int(k): str(v) for k, v in raw_quals.items() if str(k).isdigit()}
+        by_value = {int(v): str(k) for k, v in raw_quals.items() if str(v).isdigit()}
+        QUALITIES_BY_INDEX = by_key or by_value
     else:
-        QUALITIES_BY_INDEX = {
-            int(k): str(v) for k, v in raw_quals.items() if str(k).isdigit()
-        }
+        QUALITIES_BY_INDEX = {}
     print(f"\N{CHECK MARK} Loaded {len(QUALITIES_BY_INDEX)} qualities from {qual_path}")
 
     particle_path = required["particles"]
