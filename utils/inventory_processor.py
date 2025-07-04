@@ -775,6 +775,37 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not item:
             continue
 
+        quality_flag = item.get("quality")
+        if (
+            quality_flag == 11
+            or quality_flag == "Strange"
+            or asset.get("quality") == 11
+        ):
+            attrs = item.get("attributes")
+            if not isinstance(attrs, list):
+                attrs = asset.get("attributes", [])
+            parts_found: set[str] = set()
+            for attr in attrs:
+                if attr.get("defindex") == 214:
+                    try:
+                        idx = int(attr.get("value"))
+                    except (TypeError, ValueError):
+                        continue
+                    name = _PARTS_BY_ID.get(idx)
+                    if name:
+                        parts_found.add(name)
+            if parts_found:
+                badges = item.setdefault("badges", [])
+                if "🔧" not in badges and not any(
+                    isinstance(b, dict) and b.get("icon") == "🔧" for b in badges
+                ):
+                    badges.append("🔧")
+                existing = item.get("strange_parts", [])
+                if not isinstance(existing, list):
+                    existing = []
+                all_parts = set(existing) | parts_found
+                item["strange_parts"] = sorted(all_parts)
+
         spells_raw = item.get("spells", [])
         if isinstance(spells_raw, dict):
             spells_list = spells_raw.get("list", [])
