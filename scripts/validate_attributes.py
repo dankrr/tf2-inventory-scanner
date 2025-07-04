@@ -20,6 +20,8 @@ REQUIRED_ATTRS = {
     187: "Crate Series",
     866: "Paintkit Seed Lo",
     867: "Paintkit Seed Hi",
+    # Spells
+    **{idx: "Spell" for idx in range(8900, 8926)},
 }
 
 
