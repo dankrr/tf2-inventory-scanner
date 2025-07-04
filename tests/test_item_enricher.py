@@ -1,4 +1,8 @@
-from utils.item_enricher import ItemEnricher, _decode_float_bits_to_int
+from utils.item_enricher import (
+    ItemEnricher,
+    _decode_float_bits_to_int,
+    _build_spell_map,
+)
 from utils.schema_provider import SchemaProvider
 import struct
 
@@ -159,3 +163,25 @@ def test_spell_extraction(monkeypatch):
 def test_decode_float_bits_to_int():
     val = struct.unpack("<f", struct.pack("<I", 7))[0]
     assert _decode_float_bits_to_int(val) == 7
+
+
+def test_build_spell_map():
+    attrs = {
+        8901: {
+            "name": "SPELL: Die Job",
+            "attribute_class": "set_item_tint_rgb_override",
+        },
+        8902: {
+            "description_string": "#Attrib_Halloween_Footstep_Type",
+            "attribute_class": "halloween_footstep_type",
+        },
+        8903: {"name": "SPELL: Halloween voice modulation"},
+        100: {"name": "Not a spell"},
+    }
+
+    mapping = _build_spell_map(attrs)
+
+    assert mapping[8901] == {"name": "Die Job", "type": "paint"}
+    assert mapping[8902] == {"name": "Halloween Footstep Type", "type": "footprint"}
+    assert mapping[8903] == {"name": "Halloween voice modulation", "type": "voices"}
+    assert 100 not in mapping
