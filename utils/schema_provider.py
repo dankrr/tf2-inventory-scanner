@@ -16,6 +16,7 @@ class SchemaProvider:
     ENDPOINTS = {
         "items": "/raw/schema/items",
         "attributes": "/raw/schema/attributes",
+        "particles": "/raw/schema/attribute_controlled_attached_particles",
         "effects": "/properties/effects",
         "paints": "/properties/paints",
         "origins": "/raw/schema/originNames",
