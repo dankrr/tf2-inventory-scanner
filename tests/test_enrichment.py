@@ -24,14 +24,23 @@ def test_enrichment_full_attributes(monkeypatch):
                     {"defindex": 292, "value": 64},
                     {"defindex": 379, "value": 5},
                     {"defindex": 380, "value": 70},
-                    {"defindex": 1009, "value": 1},
-                    {"defindex": 2001, "value": 3},
+                    {"defindex": 1009},
+                    {"defindex": 2001},
                 ],
             }
         ]
     }
     ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
+    monkeypatch.setattr(
+        ld,
+        "SCHEMA_ATTRIBUTES",
+        {
+            1009: {"description_string": "Exorcism"},
+            2001: {"description_string": "Chromatic Corruption"},
+        },
+        False,
+    )
     monkeypatch.setattr(
         ld, "STRANGE_PART_NAMES", {"64": "Kills", "70": "Robots"}, False
     )
