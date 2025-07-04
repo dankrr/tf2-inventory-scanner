@@ -8,6 +8,7 @@ from pathlib import Path
 import struct
 
 from . import steam_api_client, local_data
+from .local_data import SPELL_DISPLAY_NAMES
 from .constants import (
     KILLSTREAK_TIERS,
     SHEEN_NAMES,
@@ -442,26 +443,14 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
         if attr_class not in SPELL_CLASSES:
             continue
 
-        # Prefer a human readable name or display_name
-        name = info.get("display_name") or info.get("name")
-        placeholder = info.get("description_string")
+        display = SPELL_DISPLAY_NAMES.get(
+            attr_class,
+            str(info.get("name", "")).replace("SPELL: ", "").strip(),
+        )
 
-        if name and "%s" in name:
-            logger.debug("Skipping unresolved spell name for %s: %s", idx, name)
-            name = None
-        if not name and placeholder and "%s" not in placeholder:
-            name = placeholder
-
-        if not name:
-            name = f"Unknown Spell (defindex {idx})"
-
-        if "%s" in name:
-            # unresolved placeholder even after fallback
-            continue
-
-        icon = _spell_icon(name)
-        badges.append({"icon": icon, "title": name, "color": "#A156D6"})
-        names.append(name)
+        icon = _spell_icon(display)
+        badges.append({"icon": icon, "title": display, "color": "#A156D6"})
+        names.append(display)
 
     return badges, names
 
