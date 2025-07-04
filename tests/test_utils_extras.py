@@ -1,7 +1,6 @@
 from utils import steam_api_client as sac
 from utils import inventory_processor as ip
-from utils import schema_fetcher as sf
-from utils import items_game_cache as ig
+from utils import local_data as ld
 import pytest
 
 
@@ -11,20 +10,16 @@ def test_convert_to_steam64():
 
 
 @pytest.fixture(autouse=True)
-def no_items_game(monkeypatch):
-    monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
-    monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
-    from utils import local_data as ld
-
+def reset_data():
     ld.TF2_SCHEMA = {}
 
 
 def test_process_inventory_sorting():
     data = {"items": [{"defindex": 2}, {"defindex": 1}]}
-    sf.SCHEMA = {
+    ld.TF2_SCHEMA = {
         "1": {"defindex": 1, "item_name": "A", "image_url": "b"},
         "2": {"defindex": 2, "item_name": "B", "image_url": "a"},
     }
-    sf.QUALITIES = {}
+    ld.QUALITIES_BY_INDEX = {}
     items = ip.process_inventory(data)
     assert [item["name"] for item in items] == ["A", "B"]

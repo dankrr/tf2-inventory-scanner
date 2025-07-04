@@ -17,11 +17,11 @@ def main() -> None:
     """Demonstrate inventory enrichment for a single Steam user."""
 
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--refresh-schema", action="store_true")
+    parser.add_argument("--refresh", action="store_true")
     parser.add_argument("steamid", nargs="?")
     args, _ = parser.parse_known_args()
 
-    if args.refresh_schema:
+    if args.refresh:
         SchemaProvider().refresh_all()
         print("\N{CHECK MARK} Schema refreshed")
         return

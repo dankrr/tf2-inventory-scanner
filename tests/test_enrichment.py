@@ -1,14 +1,10 @@
 import pytest
 from utils import inventory_processor as ip
-from utils import schema_fetcher as sf
-from utils import items_game_cache as ig
 from utils import local_data as ld
 
 
 @pytest.fixture(autouse=True)
-def no_items_game(monkeypatch):
-    monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
-    monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
+def reset_schema(monkeypatch):
     ld.TF2_SCHEMA = {}
     ld.ITEMS_GAME_CLEANED = {}
 
@@ -34,8 +30,8 @@ def test_enrichment_full_attributes(monkeypatch):
             }
         ]
     }
-    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
-    sf.QUALITIES = {"11": "Strange"}
+    ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
+    ld.QUALITIES_BY_INDEX = {11: "Strange"}
     monkeypatch.setattr(
         ld, "STRANGE_PART_NAMES", {"64": "Kills", "70": "Robots"}, False
     )
@@ -71,8 +67,8 @@ def test_unknown_values_warn(monkeypatch, caplog):
             }
         ]
     }
-    sf.SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
-    sf.QUALITIES = {"11": "Strange"}
+    ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
+    ld.QUALITIES_BY_INDEX = {11: "Strange"}
 
     ip.enrich_inventory(data)
 

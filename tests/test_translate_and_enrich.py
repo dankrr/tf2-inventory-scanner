@@ -1,8 +1,6 @@
 from translate_and_enrich import enrich_inventory
 from utils import inventory_processor as ip
-from utils import schema_fetcher as sf
 from utils import local_data as ld
-from utils import items_game_cache as ig
 
 
 def test_decorated_flamethrower_enrichment():
@@ -58,11 +56,8 @@ def test_decorated_flamethrower_enrichment():
 
 
 def test_extract_spells_and_badges(monkeypatch):
-    sf.SCHEMA = {"501": {"defindex": 501, "item_name": "Gun", "image_url": ""}}
-    ld.TF2_SCHEMA = {}
+    ld.TF2_SCHEMA = {"501": {"defindex": 501, "item_name": "Gun", "image_url": ""}}
     ld.ITEMS_GAME_CLEANED = {}
-    monkeypatch.setattr(ig, "ensure_items_game_cached", lambda: {})
-    monkeypatch.setattr(ig, "ITEM_BY_DEFINDEX", {}, False)
 
     asset = {
         "defindex": 501,
@@ -86,7 +81,7 @@ def test_extract_spells_and_badges(monkeypatch):
     ]
     assert set(names) == set(expected_spells)
 
-    item = ip._process_item(asset, sf.SCHEMA, {})
+    item = ip._process_item(asset, ld.TF2_SCHEMA, {})
     icons = {b["icon"] for b in item["badges"]}
     assert {"👻", "🖌", "👣", "🎤", "🎃"} <= icons
 
