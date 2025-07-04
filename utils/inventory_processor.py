@@ -442,8 +442,21 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
         if attr_class not in SPELL_CLASSES:
             continue
 
-        name = info.get("description_string") or info.get("name")
+        # Prefer a human readable name or display_name
+        name = info.get("display_name") or info.get("name")
+        placeholder = info.get("description_string")
+
+        if name and "%s" in name:
+            logger.debug("Skipping unresolved spell name for %s: %s", idx, name)
+            name = None
+        if not name and placeholder and "%s" not in placeholder:
+            name = placeholder
+
         if not name:
+            name = f"Unknown Spell (defindex {idx})"
+
+        if "%s" in name:
+            # unresolved placeholder even after fallback
             continue
 
         icon = _spell_icon(name)

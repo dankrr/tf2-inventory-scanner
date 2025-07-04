@@ -62,24 +62,21 @@ def test_extract_spells_and_badges(monkeypatch):
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {
-                "description_string": "Exorcism",
-                "attribute_class": "halloween_death_ghosts",
-            },
+            1009: {"name": "Exorcism", "attribute_class": "halloween_death_ghosts"},
             2001: {
-                "description_string": "Chromatic Corruption",
+                "name": "Chromatic Corruption",
                 "attribute_class": "halloween_green_flames",
             },
             2000: {
-                "description_string": "Team Spirit Footprints",
+                "name": "Team Spirit Footprints",
                 "attribute_class": "halloween_footstep_type",
             },
             3001: {
-                "description_string": "Pumpkin Bombs",
+                "name": "Pumpkin Bombs",
                 "attribute_class": "halloween_pumpkin_explosions",
             },
             1010: {
-                "description_string": "Spy's Creepy Croon",
+                "name": "Spy's Creepy Croon",
                 "attribute_class": "halloween_voice_modulation",
             },
         },
