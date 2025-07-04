@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
-import struct
 import argparse
 import json
 
@@ -14,6 +13,7 @@ from utils.constants import (
     SHEEN_NAMES,
     KILLSTREAK_BADGE_ICONS,
 )
+from utils.wear_helpers import _wear_tier, _decode_seed_info
 
 
 QUALITY_MAP = {
@@ -50,42 +50,6 @@ def _attr_value(attrs: Iterable[dict], idx: int) -> Any | None:
                 return attr.get("float_value")
             return attr.get("value")
     return None
-
-
-def _wear_tier(value: float) -> str:
-    """Return human readable wear tier for a 0-1 float."""
-    if value < 0.07:
-        return "Factory New"
-    if value < 0.15:
-        return "Minimal Wear"
-    if value < 0.38:
-        return "Field-Tested"
-    if value < 0.45:
-        return "Well-Worn"
-    return "Battle Scarred"
-
-
-def _decode_seed_info(attrs: Iterable[dict]) -> tuple[float | None, int | None]:
-    """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
-
-    lo = hi = None
-    for attr in attrs:
-        idx = int(attr.get("defindex", -1))
-        if idx == 866:
-            lo = int(attr.get("value") or 0)
-        elif idx == 867:
-            hi = int(attr.get("value") or 0)
-    if lo is None or hi is None:
-        return None, None
-
-    wear = struct.unpack("<f", struct.pack("<I", hi))[0]
-    seed = lo
-    if not (0 <= wear <= 1):
-        wear = struct.unpack("<f", struct.pack("<I", lo))[0]
-        seed = hi
-    if not (0 <= wear <= 1):
-        wear = None
-    return wear, seed
 
 
 def _collect_unmapped(attrs: Iterable[dict], known: Iterable[int]) -> dict:
