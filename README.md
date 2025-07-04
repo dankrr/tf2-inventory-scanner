@@ -49,12 +49,25 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   provider = SchemaProvider()
   qualities = provider.get_qualities()
   ```
+Before enriching inventories, load the cached schema to populate
+`ITEMS_BY_DEFINDEX`:
+```python
+from utils import local_data
+
+local_data.load_files()
+```
 You can also enrich raw inventory items using `ItemEnricher`:
 ```python
 from utils.item_enricher import ItemEnricher
 
 enricher = ItemEnricher(provider)
 items = enricher.enrich_inventory(raw_items)
+```
+Or manually apply schema info via `ITEMS_BY_DEFINDEX`:
+```python
+for asset in raw_items:
+    entry = local_data.ITEMS_BY_DEFINDEX.get(int(asset["defindex"]), {})
+    asset["name"] = entry.get("item_name") or entry.get("name")
 ```
 
 ## Modals
