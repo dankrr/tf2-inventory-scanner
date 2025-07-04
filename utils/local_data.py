@@ -35,6 +35,16 @@ KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
     "2011": "Fireworks",
 }
 
+# Map of attribute class -> in-game spell name
+SPELL_DISPLAY_NAMES: Dict[str, str] = {
+    "halloween_voice_modulation": "Voices From Below",
+    "halloween_pumpkin_explosions": "Pumpkin Bombs",
+    "halloween_green_flames": "Halloween Fire",
+    "halloween_death_ghosts": "Exorcism",
+    "halloween_footstep_type": "Halloween Footprints",
+    "set_item_tint_rgb_override": "Die Job (Purple/Green Paint)",
+}
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 # schema.autobot.tf cache files
 DEFAULT_ATTRIBUTES_FILE = BASE_DIR / "cache" / "schema" / "attributes.json"

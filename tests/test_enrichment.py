@@ -35,11 +35,23 @@ def test_enrichment_full_attributes(monkeypatch):
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {"name": "Exorcism", "attribute_class": "halloween_death_ghosts"},
+            1009: {
+                "name": "SPELL: Halloween ghosts",
+                "attribute_class": "halloween_death_ghosts",
+            },
             2001: {
-                "name": "Chromatic Corruption",
+                "name": "SPELL: Halloween fire",
                 "attribute_class": "halloween_green_flames",
             },
+        },
+        False,
+    )
+    monkeypatch.setattr(
+        ld,
+        "SPELL_DISPLAY_NAMES",
+        {
+            "halloween_death_ghosts": "Exorcism",
+            "halloween_green_flames": "Halloween Fire",
         },
         False,
     )
@@ -56,7 +68,7 @@ def test_enrichment_full_attributes(monkeypatch):
     assert item["wear_name"] == "Field-Tested"
     assert item["strange_count"] == 10
     assert item["score_type"] == "Kills"
-    assert set(item["spells"]) == {"Exorcism", "Chromatic Corruption"}
+    assert set(item["spells"]) == {"Exorcism", "Halloween Fire"}
 
 
 def test_unknown_values_warn(monkeypatch, caplog):
