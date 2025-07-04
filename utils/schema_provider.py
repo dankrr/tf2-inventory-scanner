@@ -105,9 +105,8 @@ class SchemaProvider:
             count = len(data) if hasattr(data, "__len__") else 0
             fetched.append((self._cache_file(key), count))
 
-        if verbose:
-            for path, count in fetched:
-                print(f"{path} - {count} entries")
+        for path, count in fetched:
+            print(f"{path} - {count} entries")
 
         self.items_by_defindex = None
         self.attributes_by_defindex = None
