@@ -1,13 +1,13 @@
-from typing import Any, Dict, List, Tuple, Iterable
+from typing import Any, Dict, List, Tuple
 import logging
 import re
 from html import unescape
 
 import json
 from pathlib import Path
-import struct
 
 from . import steam_api_client, local_data
+from .wear_helpers import _wear_tier, _decode_seed_info
 from .local_data import SPELL_DISPLAY_NAMES, FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .constants import (
     KILLSTREAK_TIERS,
@@ -218,51 +218,6 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
                 hex_color = None
             return name, hex_color
     return None, None
-
-
-def _wear_tier(value: float) -> str:
-    """Return a wear tier name for ``value`` between 0 and 1."""
-
-    if value < 0.07:
-        return "Factory New"
-    if value < 0.15:
-        return "Minimal Wear"
-    if value < 0.38:
-        return "Field-Tested"
-    if value < 0.45:
-        return "Well-Worn"
-    return "Battle Scarred"
-
-
-def _decode_seed_info(attrs: Iterable[dict]) -> tuple[float | None, int | None]:
-    """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
-
-    _refresh_attr_classes()
-    lo = hi = None
-    for attr in attrs:
-        idx = attr.get("defindex")
-        attr_class = _get_attr_class(idx)
-        if attr_class in PATTERN_SEED_LO_CLASSES:
-            lo = int(attr.get("value") or 0)
-        elif attr_class in PATTERN_SEED_HI_CLASSES:
-            hi = int(attr.get("value") or 0)
-        elif idx in (866, 867):
-            logger.warning("Using numeric fallback for pattern seed index %s", idx)
-            if idx == 866:
-                lo = int(attr.get("value") or 0)
-            else:
-                hi = int(attr.get("value") or 0)
-    if lo is None or hi is None:
-        return None, None
-
-    wear = struct.unpack("<f", struct.pack("<I", hi))[0]
-    seed = lo
-    if not (0 <= wear <= 1):
-        wear = struct.unpack("<f", struct.pack("<I", lo))[0]
-        seed = hi
-    if not (0 <= wear <= 1):
-        wear = None
-    return wear, seed
 
 
 def _extract_pattern_seed(asset: Dict[str, Any]) -> int | None:
