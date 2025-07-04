@@ -5,10 +5,11 @@ from html import unescape
 
 import json
 from pathlib import Path
+import struct
 
 from . import steam_api_client, local_data
 from .wear_helpers import _wear_tier, _decode_seed_info
-from .local_data import SPELL_DISPLAY_NAMES, FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
+from .local_data import SPELL_DISPLAY_NAMES
 from .constants import (
     KILLSTREAK_TIERS,
     SHEEN_NAMES,
@@ -25,6 +26,97 @@ logger = logging.getLogger(__name__)
 SCHEMA_DIR = Path("cache/schema")
 with open(SCHEMA_DIR / "parts.json") as fp:
     _PARTS_BY_ID = {int(v[2:]): k for k, v in json.load(fp).items()}
+
+
+_LOOKUPS = None
+_DEFNAMES = None
+_SPELL_MAP: dict[int, tuple[str, str]] | None = None
+
+
+def _load_json(name: str) -> dict | list | None:
+    path = SCHEMA_DIR / f"{name}.json"
+    if not path.exists():
+        return None
+    try:
+        with path.open() as fp:
+            return json.load(fp)
+    except Exception:
+        return None
+
+
+def _extract_hint(token: str, kind: str) -> str:
+    token = token.lstrip("#").lower()
+    words = re.split(r"[_\s]+", token)
+    ignore = {
+        "tf",
+        "halloweenspell",
+        "spell",
+        "paint",
+        "footprints",
+        "footprint",
+        "footstep",
+        "set",
+        "item",
+        "tint",
+        "rgb",
+        "override",
+        "type",
+        "attrib",
+        "attr",
+        "desc",
+        "name",
+        "halloween",
+        "color",
+        "unusual",
+        "texture",
+        "wear",
+    }
+    words = [w for w in words if w and w not in ignore and not w.isdigit()]
+    return " ".join(w.capitalize() for w in words)
+
+
+def _build_spell_map() -> None:
+    global _LOOKUPS, _DEFNAMES, _SPELL_MAP
+    if _SPELL_MAP is not None:
+        return
+
+    _LOOKUPS = _load_json("string_lookups")
+    _DEFNAMES = _load_json("defindexes")
+    if not isinstance(_LOOKUPS, list) or not isinstance(_DEFNAMES, dict):
+        _SPELL_MAP = {}
+        return
+
+    mapping: dict[int, tuple[str, str]] = {}
+    for table in _LOOKUPS:
+        if not isinstance(table, dict):
+            continue
+        name = str(table.get("table_name", ""))
+        if name not in {
+            "SPELL: set item tint RGB",
+            "SPELL: set Halloween footstep type",
+        }:
+            continue
+        kind = "paint" if "tint" in name else "footprint"
+        for s in table.get("strings", []):
+            if not isinstance(s, dict) or "index" not in s or "string" not in s:
+                continue
+            try:
+                idx = int(s["index"])
+            except (TypeError, ValueError):
+                continue
+            raw_token = str(s["string"])
+            hint = _extract_hint(raw_token, kind)
+            pretty = next(
+                (
+                    v.replace("Halloween Spell: ", "")
+                    for v in _DEFNAMES.values()
+                    if hint and hint in v
+                ),
+                None,
+            )
+            if pretty:
+                mapping[idx] = (kind, pretty)
+    _SPELL_MAP = mapping
 
 
 # ---------------------------------------------------------------------------
@@ -389,6 +481,8 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
     badges: list[dict] = []
     names: list[str] = []
 
+    _build_spell_map()
+
     attr_map = local_data.SCHEMA_ATTRIBUTES or {}
 
     for attr in asset.get("attributes", []):
@@ -397,6 +491,33 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
             idx = int(idx_raw)
         except (TypeError, ValueError):
             logger.warning("Invalid spell defindex: %r", idx_raw)
+            continue
+
+        if idx in (1004, 1006) and _SPELL_MAP:
+            raw = (
+                attr.get("float_value") if "float_value" in attr else attr.get("value")
+            )
+            if raw is not None:
+                try:
+                    val = int(float(raw))
+                except (TypeError, ValueError):
+                    try:
+                        raw_int = int(raw)
+                        val = int(struct.unpack("f", struct.pack("I", raw_int))[0])
+                    except Exception:
+                        val = None
+                if val is not None and val in _SPELL_MAP:
+                    kind, name = _SPELL_MAP[val]
+                    badges.append(
+                        {
+                            "icon": "🎨" if kind == "paint" else "👣",
+                            "title": f"Halloween Spell: {name}",
+                            "color": "#A156D6",
+                            "label": f"Halloween Spell: {name}",
+                            "type": f"spell.{kind}",
+                        }
+                    )
+                    names.append(f"Halloween Spell: {name}")
             continue
 
         info = attr_map.get(idx)
@@ -412,31 +533,26 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
             str(info.get("name", "")).replace("SPELL: ", "").strip(),
         )
 
-        if attr_class == "halloween_footstep_type":
-            val_raw = (
-                attr.get("float_value") if "float_value" in attr else attr.get("value")
-            )
-            try:
-                val = int(float(val_raw))
-            except (TypeError, ValueError):
-                logger.warning("Invalid footprint spell value for %s: %r", idx, val_raw)
-            else:
-                display = FOOTPRINT_SPELL_MAP.get(val, display)
-        elif attr_class in {
+        if attr_class == "halloween_footstep_type" or attr_class in {
             "set_item_tint_rgb_override",
             "set_item_tint_rgb_unusual",
             "set_item_texture_wear_override",
             "set_item_color_wear_override",
         }:
-            val_raw = (
+            raw = (
                 attr.get("float_value") if "float_value" in attr else attr.get("value")
             )
             try:
-                val = int(float(val_raw))
+                val = int(float(raw))
             except (TypeError, ValueError):
-                logger.warning("Invalid paint spell value for %s: %r", idx, val_raw)
-            else:
-                display = PAINT_SPELL_MAP.get(val, display)
+                try:
+                    raw_int = int(raw)
+                    val = int(struct.unpack("f", struct.pack("I", raw_int))[0])
+                except Exception:
+                    val = None
+            if val is not None and _SPELL_MAP and val in _SPELL_MAP:
+                kind, name = _SPELL_MAP[val]
+                display = name
 
         icon = _spell_icon(display)
         badges.append(
