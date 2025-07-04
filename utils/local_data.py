@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Dict, Tuple
+import logging
 
 import vdf
 from .schema_provider import SchemaProvider
@@ -117,7 +118,9 @@ def _load_json_map(path: Path) -> Dict[str, str]:
     return {}
 
 
-def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int, Any]]:
+def load_files(
+    *, auto_refetch: bool = False, verbose: bool = False
+) -> Tuple[Dict[int, Any], Dict[int, Any]]:
     """Load local schema files from the schema.autobot.tf cache."""
 
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
@@ -139,14 +142,20 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
         provider = SchemaProvider(cache_dir=required["attributes"].parent)
         for key, path in missing.items():
             provider._load(key, provider.ENDPOINTS[key], force=True)
-            print(f"\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded {path}")
+            if verbose:
+                logging.info(
+                    "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
+                )
 
     optional_missing = {k: p for k, p in optional.items() if not p.exists()}
     if optional_missing and auto_refetch:
         for key, path in optional_missing.items():
             provider = SchemaProvider(cache_dir=path.parent)
             provider._load(key, provider.ENDPOINTS[key], force=True)
-            print(f"\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded {path}")
+            if verbose:
+                logging.info(
+                    "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
+                )
 
     attr_path = required["attributes"]
     with attr_path.open() as f:
@@ -165,7 +174,12 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
     elif isinstance(raw_attrs, dict):
         mapping = {int(k): v for k, v in raw_attrs.items() if str(k).isdigit()}
     SCHEMA_ATTRIBUTES = mapping
-    print(f"\N{CHECK MARK} Loaded {len(SCHEMA_ATTRIBUTES)} attributes from {attr_path}")
+    if verbose:
+        logging.info(
+            "\N{CHECK MARK} Loaded %d attributes from %s",
+            len(SCHEMA_ATTRIBUTES),
+            attr_path,
+        )
 
     items_path = required["items"]
     if not items_path.exists():
@@ -186,11 +200,14 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
     elif isinstance(raw_items, dict):
         items_map = {int(k): v for k, v in raw_items.items() if str(k).isdigit()}
     ITEMS_BY_DEFINDEX = items_map
-    print(f"\N{CHECK MARK} Loaded {len(ITEMS_BY_DEFINDEX)} items from {items_path}")
-    if len(ITEMS_BY_DEFINDEX) < 5000:
-        print(
-            "\N{WARNING SIGN} items.json may be stale or incomplete. Consider a refresh."
+    if verbose:
+        logging.info(
+            "\N{CHECK MARK} Loaded %d items from %s", len(ITEMS_BY_DEFINDEX), items_path
         )
+        if len(ITEMS_BY_DEFINDEX) < 5000:
+            logging.info(
+                "\N{WARNING SIGN} items.json may be stale or incomplete. Consider a refresh."
+            )
 
     qual_path = required["qualities"]
     if not qual_path.exists():
@@ -210,7 +227,12 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
         QUALITIES_BY_INDEX = by_key or by_value
     else:
         QUALITIES_BY_INDEX = {}
-    print(f"\N{CHECK MARK} Loaded {len(QUALITIES_BY_INDEX)} qualities from {qual_path}")
+    if verbose:
+        logging.info(
+            "\N{CHECK MARK} Loaded %d qualities from %s",
+            len(QUALITIES_BY_INDEX),
+            qual_path,
+        )
 
     particle_path = required["particles"]
     if not particle_path.exists():
@@ -223,7 +245,12 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
         for e in raw_parts
         if isinstance(e, dict) and "id" in e and "name" in e
     }
-    print(f"\N{CHECK MARK} Loaded {len(PARTICLE_NAMES)} particles from {particle_path}")
+    if verbose:
+        logging.info(
+            "\N{CHECK MARK} Loaded %d particles from %s",
+            len(PARTICLE_NAMES),
+            particle_path,
+        )
 
     EFFECT_NAMES = _load_json_map(EFFECT_FILE)
     PAINT_NAMES = _load_json_map(PAINT_FILE)
@@ -272,7 +299,12 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
 
     if FOOTPRINT_SPELL_MAP or PAINT_SPELL_MAP:
         total = len(FOOTPRINT_SPELL_MAP) + len(PAINT_SPELL_MAP)
-        print(f"\N{CHECK MARK} Loaded {total} spell lookups from {STRING_LOOKUPS_FILE}")
+        if verbose:
+            logging.info(
+                "\N{CHECK MARK} Loaded %d spell lookups from %s",
+                total,
+                STRING_LOOKUPS_FILE,
+            )
 
     for label, mapping, path in [
         ("effects", EFFECT_NAMES, EFFECT_FILE),
@@ -284,6 +316,11 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
         ("paintkits", PAINTKIT_NAMES, PAINTKIT_FILE),
         ("crate series", CRATE_SERIES_NAMES, CRATE_SERIES_FILE),
     ]:
-        if mapping:
-            print(f"\N{CHECK MARK} Loaded {len(mapping)} {label} from {path}")
+        if mapping and verbose:
+            logging.info(
+                "\N{CHECK MARK} Loaded %d %s from %s",
+                len(mapping),
+                label,
+                path,
+            )
     return SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX
