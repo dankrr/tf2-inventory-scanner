@@ -7,11 +7,26 @@ def test_all_spell_types(monkeypatch):
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {"description_string": "Exorcism"},
-            2000: {"description_string": "Bruised Purple Footprints"},
-            2001: {"description_string": "Spectral Spectrum"},
-            1010: {"description_string": "Spy's Creepy Croon"},
-            3003: {"description_string": "Squash Rockets"},
+            1009: {
+                "description_string": "Exorcism",
+                "attribute_class": "halloween_death_ghosts",
+            },
+            2000: {
+                "description_string": "Bruised Purple Footprints",
+                "attribute_class": "halloween_footstep_type",
+            },
+            2001: {
+                "description_string": "Spectral Spectrum",
+                "attribute_class": "halloween_green_flames",
+            },
+            1010: {
+                "description_string": "Spy's Creepy Croon",
+                "attribute_class": "halloween_voice_modulation",
+            },
+            3003: {
+                "description_string": "Squash Rockets",
+                "attribute_class": "halloween_pumpkin_explosions",
+            },
         },
         False,
     )
