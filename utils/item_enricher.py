@@ -43,7 +43,10 @@ def _build_spell_map(schema_attributes: Dict[int, Any]) -> Dict[int, Dict[str, s
 
 
 def _decode_float_bits_to_int(value: Any) -> int | None:
-    """Return integer decoded from float bits or None."""
+    """Return integer decoded from float bits or None.
+
+    Values are interpreted in little-endian order.
+    """
     try:
         num = float(value)
     except (TypeError, ValueError):
