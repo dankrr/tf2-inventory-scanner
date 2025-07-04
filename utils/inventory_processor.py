@@ -21,6 +21,67 @@ from .constants import (
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# attribute class helpers
+
+# Sets derived from ``local_data.SCHEMA_ATTRIBUTES``. They may be empty if
+# schema data has not been loaded yet.
+UNUSUAL_CLASSES: set[str] = set()
+KILLSTREAK_TIER_CLASSES: set[str] = set()
+KILLSTREAK_SHEEN_CLASSES: set[str] = set()
+KILLSTREAK_EFFECT_CLASSES: set[str] = set()
+PAINT_CLASSES: set[str] = set()
+WEAR_CLASSES: set[str] = set()
+PATTERN_SEED_LO_CLASSES: set[str] = set()
+PATTERN_SEED_HI_CLASSES: set[str] = set()
+PAINTKIT_CLASSES: set[str] = set()
+CRATE_SERIES_CLASSES: set[str] = set()
+
+
+def _refresh_attr_classes() -> None:
+    """Populate attribute class sets from ``local_data.SCHEMA_ATTRIBUTES``."""
+
+    mapping = local_data.SCHEMA_ATTRIBUTES or {}
+
+    def cls(idx: int) -> str | None:
+        info = mapping.get(idx)
+        if isinstance(info, dict):
+            return info.get("attribute_class")
+        return None
+
+    global UNUSUAL_CLASSES, KILLSTREAK_TIER_CLASSES, KILLSTREAK_SHEEN_CLASSES
+    global KILLSTREAK_EFFECT_CLASSES, PAINT_CLASSES, WEAR_CLASSES
+    global PATTERN_SEED_LO_CLASSES, PATTERN_SEED_HI_CLASSES
+    global PAINTKIT_CLASSES, CRATE_SERIES_CLASSES
+
+    UNUSUAL_CLASSES = {cls(134)} - {None}
+    KILLSTREAK_TIER_CLASSES = {cls(2025)} - {None}
+    KILLSTREAK_SHEEN_CLASSES = {cls(2014)} - {None}
+    KILLSTREAK_EFFECT_CLASSES = {cls(2013)} - {None}
+    PAINT_CLASSES = {cls(142), cls(261)} - {None}
+    WEAR_CLASSES = {cls(725)} - {None}
+    PATTERN_SEED_LO_CLASSES = {cls(866)} - {None}
+    PATTERN_SEED_HI_CLASSES = {cls(867)} - {None}
+    PAINTKIT_CLASSES = {cls(834)} - {None}
+    CRATE_SERIES_CLASSES = {cls(187)} - {None}
+
+
+_refresh_attr_classes()
+
+
+def _get_attr_class(idx: Any) -> str | None:
+    """Return the attribute class string for ``idx`` using the cached schema."""
+
+    try:
+        idx_int = int(idx)
+    except (TypeError, ValueError):
+        return None
+    info = local_data.SCHEMA_ATTRIBUTES.get(idx_int)
+    if isinstance(info, dict):
+        return info.get("attribute_class")
+    return None
+
+
 # Mapping of defindex -> human readable name for warpaints
 MAPPING_FILE = Path(__file__).with_name("warpaint_mapping.json")
 WARPAINT_MAP: Dict[str, str] = {}
@@ -52,6 +113,8 @@ SPELL_CLASSES = {
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     """Return the unusual effect name from attributes or descriptions."""
 
+    _refresh_attr_classes()
+
     if "effect" in asset:
         name = local_data.EFFECT_NAMES.get(str(asset["effect"]))
         if name:
@@ -59,7 +122,14 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 134:
+        attr_class = _get_attr_class(idx)
+        if attr_class in UNUSUAL_CLASSES:
+            val = str(int(attr.get("float_value", 0)))
+            name = local_data.EFFECT_NAMES.get(val)
+            if name:
+                return name
+        elif idx == 134:
+            logger.warning("Using numeric fallback for unusual effect index %s", idx)
             val = str(int(attr.get("float_value", 0)))
             name = local_data.EFFECT_NAMES.get(val)
             if name:
@@ -79,30 +149,56 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
 def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return killstreak tier and sheen names if present."""
 
+    _refresh_attr_classes()
     tier = None
     sheen = None
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         val = int(attr.get("float_value", 0))
-        if idx == 2025:
+        attr_class = _get_attr_class(idx)
+        if attr_class in KILLSTREAK_TIER_CLASSES:
             tier = local_data.KILLSTREAK_NAMES.get(str(val)) or KILLSTREAK_TIERS.get(
                 val
             )
             if tier is None:
                 logger.warning("Unknown killstreak tier id: %s", val)
-        elif idx == 2014:
+        elif attr_class in KILLSTREAK_SHEEN_CLASSES:
             sheen = SHEEN_NAMES.get(val)
             if sheen is None:
                 logger.warning("Unknown sheen id: %s", val)
+        elif idx in (2025, 2014):
+            logger.warning("Using numeric fallback for killstreak index %s", idx)
+            if idx == 2025:
+                tier = local_data.KILLSTREAK_NAMES.get(
+                    str(val)
+                ) or KILLSTREAK_TIERS.get(val)
+                if tier is None:
+                    logger.warning("Unknown killstreak tier id: %s", val)
+            else:
+                sheen = SHEEN_NAMES.get(val)
+                if sheen is None:
+                    logger.warning("Unknown sheen id: %s", val)
     return tier, sheen
 
 
 def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return paint name and hex color if present."""
 
+    _refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx in (142, 261):
+        attr_class = _get_attr_class(idx)
+        if attr_class in PAINT_CLASSES:
+            val = int(attr.get("float_value", 0))
+            name = local_data.PAINT_NAMES.get(str(val))
+            hex_color = PAINT_COLORS.get(val, (None, None))[1]
+            if not name:
+                name = PAINT_COLORS.get(val, (None, None))[0]
+            if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
+                hex_color = None
+            return name, hex_color
+        elif idx in (142, 261):
+            logger.warning("Using numeric fallback for paint index %s", idx)
             val = int(attr.get("float_value", 0))
             name = local_data.PAINT_NAMES.get(str(val))
             hex_color = PAINT_COLORS.get(val, (None, None))[1]
@@ -131,13 +227,21 @@ def _wear_tier(value: float) -> str:
 def _decode_seed_info(attrs: Iterable[dict]) -> tuple[float | None, int | None]:
     """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
 
+    _refresh_attr_classes()
     lo = hi = None
     for attr in attrs:
         idx = attr.get("defindex")
-        if idx == 866:
+        attr_class = _get_attr_class(idx)
+        if attr_class in PATTERN_SEED_LO_CLASSES:
             lo = int(attr.get("value") or 0)
-        elif idx == 867:
+        elif attr_class in PATTERN_SEED_HI_CLASSES:
             hi = int(attr.get("value") or 0)
+        elif idx in (866, 867):
+            logger.warning("Using numeric fallback for pattern seed index %s", idx)
+            if idx == 866:
+                lo = int(attr.get("value") or 0)
+            else:
+                hi = int(attr.get("value") or 0)
     if lo is None or hi is None:
         return None, None
 
@@ -161,9 +265,25 @@ def _extract_pattern_seed(asset: Dict[str, Any]) -> int | None:
 def _extract_wear(asset: Dict[str, Any]) -> str | None:
     """Return wear tier name if present."""
 
+    _refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 725:
+        attr_class = _get_attr_class(idx)
+        if attr_class in WEAR_CLASSES:
+            raw = attr.get("float_value")
+            if raw is None:
+                raw = attr.get("value")
+            try:
+                val = float(raw)
+            except (TypeError, ValueError):
+                logger.warning("Invalid wear value: %r", raw)
+                continue
+            if not 0 <= val <= 1:
+                logger.warning("Wear value out of range: %s", val)
+            name = local_data.WEAR_NAMES.get(str(int(val)))
+            return name or _wear_tier(val)
+        elif idx == 725:
+            logger.warning("Using numeric fallback for wear index %s", idx)
             raw = attr.get("float_value")
             if raw is None:
                 raw = attr.get("value")
@@ -188,9 +308,15 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
 def _extract_paintkit(asset: Dict[str, Any]) -> str | None:
     """Return paintkit name if present."""
 
+    _refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 834:
+        attr_class = _get_attr_class(idx)
+        if attr_class in PAINTKIT_CLASSES:
+            val = int(attr.get("float_value", 0))
+            return local_data.PAINTKIT_NAMES.get(str(val))
+        elif idx == 834:
+            logger.warning("Using numeric fallback for paintkit index %s", idx)
             val = int(attr.get("float_value", 0))
             return local_data.PAINTKIT_NAMES.get(str(val))
     return None
@@ -199,9 +325,15 @@ def _extract_paintkit(asset: Dict[str, Any]) -> str | None:
 def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
     """Return crate series name if present."""
 
+    _refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 187:
+        attr_class = _get_attr_class(idx)
+        if attr_class in CRATE_SERIES_CLASSES:
+            val = int(attr.get("float_value", 0))
+            return local_data.CRATE_SERIES_NAMES.get(str(val))
+        elif idx == 187:
+            logger.warning("Using numeric fallback for crate series index %s", idx)
             val = int(attr.get("float_value", 0))
             return local_data.CRATE_SERIES_NAMES.get(str(val))
     return None
@@ -210,9 +342,20 @@ def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
 def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     """Return killstreak effect string if present."""
 
+    _refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        if idx == 2013:
+        attr_class = _get_attr_class(idx)
+        if attr_class in KILLSTREAK_EFFECT_CLASSES:
+            val = int(attr.get("float_value", 0))
+            name = local_data.KILLSTREAK_EFFECT_NAMES.get(
+                str(val)
+            ) or KILLSTREAK_EFFECTS.get(val)
+            if name:
+                return name
+            logger.warning("Unknown killstreak effect id: %s", val)
+        elif idx == 2013:
+            logger.warning("Using numeric fallback for killstreak effect index %s", idx)
             val = int(attr.get("float_value", 0))
             name = local_data.KILLSTREAK_EFFECT_NAMES.get(
                 str(val)
