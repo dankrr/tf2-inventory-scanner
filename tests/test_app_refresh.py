@@ -21,7 +21,7 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     monkeypatch.setattr(
         "utils.schema_provider.SchemaProvider.refresh_all", fake_refresh
     )
-    monkeypatch.setattr(sys, "argv", ["app.py", "--refresh", "--verbose"])
+    monkeypatch.setattr(sys, "argv", ["app.py", "--refresh"])
     sys.modules.pop("app", None)
     with pytest.raises(SystemExit):
         importlib.import_module("app")

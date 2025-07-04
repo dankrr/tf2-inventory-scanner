@@ -97,7 +97,7 @@ class SchemaProvider:
         return {}
 
     # ------------------------------------------------------------------
-    def refresh_all(self, verbose: bool = False) -> None:
+    def refresh_all(self, verbose: bool = True) -> None:
         """Force refresh of all schema files."""
         fetched: list[tuple[Path, int]] = []
         for key, ep in self.ENDPOINTS.items():

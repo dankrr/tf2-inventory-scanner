@@ -24,7 +24,6 @@ if not os.getenv("STEAM_API_KEY"):
 
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--refresh", action="store_true")
-parser.add_argument("--verbose", action="store_true")
 parser.add_argument("--test", action="store_true")
 ARGS, _ = parser.parse_known_args()
 
@@ -35,7 +34,7 @@ if ARGS.refresh:
         "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
     )
     provider = SchemaProvider(cache_dir="cache/schema")
-    provider.refresh_all(verbose=ARGS.verbose)
+    provider.refresh_all(verbose=True)
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
