@@ -109,8 +109,8 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     provider.effects_by_index = {}
     provider.origins_by_index = {}
 
-    logs: list[str] = []
-    monkeypatch.setattr(provider._logger, "info", lambda msg, *a: logs.append(msg % a))
+    printed: list[str] = []
+    monkeypatch.setattr("builtins.print", lambda msg: printed.append(msg))
 
     provider.refresh_all(verbose=True)
 
@@ -128,4 +128,4 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
 
     for key in provider.ENDPOINTS:
         fname = f"{tmp_path / key}.json"
-        assert any(fname in msg for msg in logs)
+        assert f"{fname} - 0 entries" in printed
