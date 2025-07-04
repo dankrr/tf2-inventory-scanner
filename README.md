@@ -35,6 +35,7 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   ```bash
   python app.py --refresh  # fetch latest schema files
   python main.py --refresh
+  # verbose output is enabled automatically; no --verbose flag required
   ```
 - Inspect a single user's inventory from the command line (defaults to a demo
   ID if omitted):

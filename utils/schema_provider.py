@@ -97,7 +97,7 @@ class SchemaProvider:
         return {}
 
     # ------------------------------------------------------------------
-    def refresh_all(self, verbose: bool = False) -> None:
+    def refresh_all(self, verbose: bool = True) -> None:
         """Force refresh of all schema files."""
         fetched: list[tuple[Path, int]] = []
         for key, ep in self.ENDPOINTS.items():
@@ -105,9 +105,8 @@ class SchemaProvider:
             count = len(data) if hasattr(data, "__len__") else 0
             fetched.append((self._cache_file(key), count))
 
-        if verbose:
-            for path, count in fetched:
-                print(f"{path} - {count} entries")
+        for path, count in fetched:
+            print(f"{path} - {count} entries")
 
         self.items_by_defindex = None
         self.attributes_by_defindex = None

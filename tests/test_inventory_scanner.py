@@ -37,7 +37,7 @@ def test_refresh_schema(monkeypatch, capsys):
             print("schema/items.json - 0 entries")
 
     monkeypatch.setattr(inventory_scanner.SchemaProvider, "refresh_all", fake_refresh)
-    inventory_scanner.main(["--refresh", "--verbose"])
+    inventory_scanner.main(["--refresh"])
     out = capsys.readouterr().out
     assert "Schema refreshed" in out
     assert "schema/items.json - 0 entries" in out
