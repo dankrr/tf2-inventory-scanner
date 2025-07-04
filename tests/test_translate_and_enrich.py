@@ -59,15 +59,28 @@ def test_extract_spells_and_badges(monkeypatch):
     ld.TF2_SCHEMA = {"501": {"defindex": 501, "item_name": "Gun", "image_url": ""}}
     ld.ITEMS_GAME_CLEANED = {}
 
+    monkeypatch.setattr(
+        ld,
+        "SCHEMA_ATTRIBUTES",
+        {
+            1009: {"description_string": "Exorcism"},
+            2001: {"description_string": "Chromatic Corruption"},
+            2000: {"description_string": "Team Spirit Footprints"},
+            3001: {"description_string": "Pumpkin Bombs"},
+            1010: {"description_string": "Spy's Creepy Croon"},
+        },
+        False,
+    )
+
     asset = {
         "defindex": 501,
         "quality": 6,
         "attributes": [
-            {"defindex": 1009, "value": 1},  # Exorcism
-            {"defindex": 2001, "value": 3},  # Chromatic Corruption
-            {"defindex": 2000, "value": 1},  # Team Spirit Footprints
-            {"defindex": 3001, "value": 1},  # Pumpkin Bombs
-            {"defindex": 1010, "value": 9},  # Spy's Creepy Croon
+            {"defindex": 1009},
+            {"defindex": 2001},
+            {"defindex": 2000},
+            {"defindex": 3001},
+            {"defindex": 1010},
         ],
     }
 
