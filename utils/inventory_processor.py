@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import struct
 
-from . import steam_api_client, schema_fetcher, items_game_cache, local_data
+from . import steam_api_client, local_data
 from .constants import (
     KILLSTREAK_TIERS,
     SHEEN_NAMES,
@@ -17,7 +17,6 @@ from .constants import (
     KILLSTREAK_BADGE_ICONS,
 )
 
-items_game_cache.load_items_game_cleaned()
 
 logger = logging.getLogger(__name__)
 
@@ -269,11 +268,7 @@ def _extract_strange_parts(asset: Dict[str, Any]) -> List[str]:
             name = info.get("name")
         if not name:
             defindex = str(attr.get("defindex"))
-            entry = items_game_cache.ITEM_BY_DEFINDEX.get(defindex)
-            if isinstance(entry, dict):
-                name = entry.get("name")
-            if not name:
-                name = local_data.STRANGE_PART_NAMES.get(defindex)
+            name = local_data.STRANGE_PART_NAMES.get(defindex)
         if not name:
             continue
         lname = name.lower()
@@ -514,8 +509,8 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or schema_fetcher.SCHEMA or {}
-    cleaned_map = local_data.ITEMS_GAME_CLEANED or items_game_cache.ITEM_BY_DEFINDEX
+    schema_map = local_data.TF2_SCHEMA or {}
+    cleaned_map = local_data.ITEMS_GAME_CLEANED or {}
 
     for asset in items_raw:
         item = _process_item(asset, schema_map, cleaned_map)
