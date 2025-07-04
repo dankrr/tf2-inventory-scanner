@@ -54,7 +54,7 @@ Before enriching inventories, load the cached schema to populate
 ```python
 from utils import local_data
 
-local_data.load_files()
+local_data.load_files(verbose=True)
 ```
 You can also enrich raw inventory items using `ItemEnricher`:
 ```python

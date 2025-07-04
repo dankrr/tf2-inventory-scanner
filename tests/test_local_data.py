@@ -4,7 +4,7 @@ import pytest
 from utils import local_data as ld
 
 
-def test_load_files_success(tmp_path, monkeypatch, capsys):
+def test_load_files_success(tmp_path, monkeypatch, caplog):
     attr_file = tmp_path / "attributes.json"
     particles_file = tmp_path / "particles.json"
     items_file = tmp_path / "items.json"
@@ -28,8 +28,9 @@ def test_load_files_success(tmp_path, monkeypatch, capsys):
     ld.QUALITIES_BY_INDEX = {}
     ld.EFFECT_NAMES = {}
 
-    ld.load_files()
-    out = capsys.readouterr().out
+    caplog.set_level("INFO")
+    ld.load_files(verbose=True)
+    out = caplog.text
     assert ld.SCHEMA_ATTRIBUTES[1]["name"] == "Attr"
     assert ld.ITEMS_BY_DEFINDEX[1]["name"] == "One"
     assert "Loaded 1 attributes" in out
@@ -42,7 +43,7 @@ def test_load_files_missing(tmp_path, monkeypatch):
         ld.load_files()
 
 
-def test_load_files_auto_refetch(tmp_path, monkeypatch, capsys):
+def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
     attr_file = tmp_path / "attributes.json"
     items_file = tmp_path / "items.json"
     particles_file = tmp_path / "particles.json"
@@ -85,8 +86,9 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, capsys):
     ld.PAINT_SPELL_MAP = {}
     ld.FOOTPRINT_SPELL_MAP = {}
 
-    ld.load_files(auto_refetch=True)
-    out = capsys.readouterr().out
+    caplog.set_level("INFO")
+    ld.load_files(auto_refetch=True, verbose=True)
+    out = caplog.text
     assert "Downloaded" in out
     assert ld.SCHEMA_ATTRIBUTES[1]["name"] == "Attr"
     assert ld.PAINT_SPELL_MAP == {0: "A"}

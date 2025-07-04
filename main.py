@@ -27,7 +27,7 @@ def main() -> None:
         print("\N{CHECK MARK} Schema refreshed")
         return
 
-    local_data.load_files(auto_refetch=True)
+    local_data.load_files(auto_refetch=True, verbose=args.verbose)
 
     schema = SchemaProvider()
     enricher = ItemEnricher(schema)
