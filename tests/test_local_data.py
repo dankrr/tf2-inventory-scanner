@@ -90,6 +90,7 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, capsys):
     assert "Downloaded" in out
     assert ld.SCHEMA_ATTRIBUTES[1]["name"] == "Attr"
     assert ld.PAINT_SPELL_MAP == {0: "A"}
+    assert lookups_file.exists()
 
 
 def test_load_files_name_key_quality(tmp_path, monkeypatch):
