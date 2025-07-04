@@ -16,6 +16,7 @@ from .constants import (
     PAINT_COLORS,
     KILLSTREAK_EFFECTS,
     KILLSTREAK_BADGE_ICONS,
+    FOOTPRINT_SPELLS,
 )
 
 
@@ -108,6 +109,10 @@ SPELL_CLASSES = {
     "halloween_pumpkin_explosions",
     "halloween_green_flames",
     "halloween_footstep_type",
+    "set_item_tint_rgb_override",
+    "set_item_tint_rgb_unusual",
+    "set_item_texture_wear_override",
+    "set_item_color_wear_override",
 }
 
 
@@ -447,6 +452,17 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
             attr_class,
             str(info.get("name", "")).replace("SPELL: ", "").strip(),
         )
+
+        if attr_class == "halloween_footstep_type":
+            val_raw = (
+                attr.get("float_value") if "float_value" in attr else attr.get("value")
+            )
+            try:
+                val = int(float(val_raw))
+            except (TypeError, ValueError):
+                logger.warning("Invalid footprint spell value for %s: %r", idx, val_raw)
+            else:
+                display = FOOTPRINT_SPELLS.get(val, display)
 
         icon = _spell_icon(display)
         badges.append({"icon": icon, "title": display, "color": "#A156D6"})
