@@ -57,7 +57,6 @@ def test_decorated_flamethrower_enrichment():
 
 def test_extract_spells_and_badges(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {501: {"item_name": "Gun", "image_url": ""}}
-    ld.ITEMS_GAME_CLEANED = {}
 
     monkeypatch.setattr(
         ld,
