@@ -77,6 +77,31 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, capsys):
     assert ld.SCHEMA_ATTRIBUTES[1]["name"] == "Attr"
 
 
+def test_load_files_name_key_quality(tmp_path, monkeypatch):
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+
+    attr_file.write_text(json.dumps([{"defindex": 1, "name": "Attr"}]))
+    particles_file.write_text(json.dumps([{"id": 1, "name": "P"}]))
+    items_file.write_text(json.dumps([{"defindex": 1, "name": "One"}]))
+    qual_file.write_text(json.dumps({"Unique": 1}))
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+
+    ld.SCHEMA_ATTRIBUTES = {}
+    ld.ITEMS_BY_DEFINDEX = {}
+    ld.PARTICLE_NAMES = {}
+    ld.QUALITIES_BY_INDEX = {}
+
+    ld.load_files()
+    assert ld.QUALITIES_BY_INDEX == {1: "Unique"}
+
+
 def test_clean_items_game_parses_all():
     sample = {
         "items_game": {
