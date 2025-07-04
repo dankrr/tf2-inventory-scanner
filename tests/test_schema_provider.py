@@ -24,6 +24,7 @@ def test_schema_provider(monkeypatch, tmp_path):
         "/properties/strangeParts": {"Kills": {"id": 64, "name": "Kills"}},
         "/properties/qualities": {"Normal": 0},
         "/properties/defindexes": {"5021": "Key"},
+        "/raw/schema/string_lookups": {"KillEaterEventType": "Kills"},
     }
     calls = {key: 0 for key in payloads}
 
@@ -42,6 +43,7 @@ def test_schema_provider(monkeypatch, tmp_path):
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
+    assert provider.get_string_lookups() == {"KillEaterEventType": "Kills"}
     assert provider.get_defindexes() == {5021: "Key"}
 
     # second calls should hit cache and not increase call counts
@@ -52,6 +54,7 @@ def test_schema_provider(monkeypatch, tmp_path):
     provider.get_origins()
     provider.get_parts()
     provider.get_qualities()
+    provider.get_string_lookups()
 
     for endpoint in payloads:
         assert calls[endpoint] == 1
@@ -72,6 +75,9 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
         "/raw/schema/originNames": {"value": [{"id": 0, "name": "Timed Drop"}]},
         "/properties/strangeParts": {"value": [{"id": 64, "name": "Kills"}]},
         "/properties/qualities": {"value": [{"id": 0, "name": "Normal"}]},
+        "/raw/schema/string_lookups": {
+            "value": [{"key": "KillEaterEventType", "value": "Kills"}]
+        },
     }
 
     def fake_get(self, url, timeout=20):
@@ -89,6 +95,7 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
+    assert provider.get_string_lookups() == {"KillEaterEventType": "Kills"}
 
 
 def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
@@ -108,6 +115,7 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     provider.qualities_map = {}
     provider.effects_by_index = {}
     provider.origins_by_index = {}
+    provider.string_lookups = {}
 
     printed: list[str] = []
     monkeypatch.setattr("builtins.print", lambda msg: printed.append(msg))
@@ -125,6 +133,7 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     assert provider.qualities_map is None
     assert provider.effects_by_index is None
     assert provider.origins_by_index is None
+    assert provider.string_lookups is None
 
     for key in provider.ENDPOINTS:
         fname = f"{tmp_path / key}.json"
