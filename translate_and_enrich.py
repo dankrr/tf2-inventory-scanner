@@ -227,30 +227,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-    sample = {
-        "assets": [
-            {
-                "classid": "1",
-                "instanceid": "0",
-                "attributes": [{"defindex": 134, "float_value": 15}],
-            }
-        ],
-        "descriptions": [
-            {
-                "classid": "1",
-                "instanceid": "0",
-                "app_data": {"def_index": "1"},
-                "tradable": 1,
-                "marketable": 1,
-            }
-        ],
-    }
-    maps = {"effect_names": {"15": "Burning Flames"}}
-    enriched = enrich_inventory(
-        sample,
-        {"1": {"item_name": "Test Item"}},
-        {"1": {"name": "Test Item"}},
-        maps,
-    )
-    assert enriched[0]["unusual_effect"] == "Burning Flames"
