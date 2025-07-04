@@ -143,8 +143,8 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
 
     optional_missing = {k: p for k, p in optional.items() if not p.exists()}
     if optional_missing and auto_refetch:
-        provider = SchemaProvider(cache_dir=required["attributes"].parent)
         for key, path in optional_missing.items():
+            provider = SchemaProvider(cache_dir=path.parent)
             provider._load(key, provider.ENDPOINTS[key], force=True)
             print(f"\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded {path}")
 
