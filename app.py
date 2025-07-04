@@ -91,7 +91,12 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
         status, data = sac.fetch_inventory(steamid64)
     items: List[Dict[str, Any]] = []
     if status == "parsed":
-        items = enrich_inventory(data)
+        try:
+            items = enrich_inventory(data)
+        except Exception:
+            app.logger.exception("Failed to enrich inventory for %s", steamid64)
+            status = "failed"
+            items = []
     return {"items": items, "status": status}
 
 
