@@ -437,17 +437,25 @@ def _preferred_base_name(
     return ig_name or f"Item #{defindex}"
 
 
-def _process_item(
-    asset: Dict[str, Any], schema_map: Dict[str, Any], cleaned_map: Dict[str, Any]
-) -> Dict[str, Any] | None:
+def _process_item(asset: Dict[str, Any]) -> Dict[str, Any] | None:
     """Return an enriched item dictionary for a single asset."""
 
-    defindex = str(asset.get("defindex", "0"))
-    schema_entry = schema_map.get(defindex)
-    ig_item = cleaned_map.get(defindex) or {}
-    if not (schema_entry or ig_item):
+    defindex_raw = asset.get("defindex", 0)
+    try:
+        defindex_int = int(defindex_raw)
+    except (TypeError, ValueError):
+        logger.warning("Invalid defindex on asset: %r", defindex_raw)
         return None
 
+    schema_entry = local_data.ITEMS_BY_DEFINDEX.get(
+        defindex_int
+    ) or local_data.TF2_SCHEMA.get(str(defindex_int))
+    ig_item = local_data.ITEMS_GAME_CLEANED.get(str(defindex_int)) or {}
+    if not (schema_entry or ig_item):
+        logger.warning("Missing schema entry for defindex %s", defindex_int)
+        return None
+
+    defindex = str(defindex_int)
     image_url = schema_entry.get("image_url") if schema_entry else ""
 
     paintkit_name = _extract_paintkit(asset)
@@ -554,11 +562,9 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return []
 
     items: List[Dict[str, Any]] = []
-    schema_map = local_data.TF2_SCHEMA or {}
-    cleaned_map = local_data.ITEMS_GAME_CLEANED or {}
 
     for asset in items_raw:
-        item = _process_item(asset, schema_map, cleaned_map)
+        item = _process_item(asset)
         if not item:
             continue
 
