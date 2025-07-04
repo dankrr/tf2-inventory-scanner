@@ -5,7 +5,6 @@ from utils import local_data as ld
 
 @pytest.fixture(autouse=True)
 def reset_schema(monkeypatch):
-    ld.TF2_SCHEMA = {}
     ld.ITEMS_GAME_CLEANED = {}
     ld.ITEMS_BY_DEFINDEX = {}
 
@@ -31,15 +30,20 @@ def test_enrichment_full_attributes(monkeypatch):
             }
         ]
     }
-    ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
     ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher"}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
     monkeypatch.setattr(
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {"description_string": "Exorcism"},
-            2001: {"description_string": "Chromatic Corruption"},
+            1009: {
+                "description_string": "Exorcism",
+                "attribute_class": "halloween_death_ghosts",
+            },
+            2001: {
+                "description_string": "Chromatic Corruption",
+                "attribute_class": "halloween_green_flames",
+            },
         },
         False,
     )
@@ -78,7 +82,6 @@ def test_unknown_values_warn(monkeypatch, caplog):
             }
         ]
     }
-    ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
     ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher"}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
 
