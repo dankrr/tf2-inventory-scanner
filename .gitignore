@@ -2,5 +2,10 @@
 __pycache__/
 data/
 cache/
+!cache/
+cache/*
+!cache/schema/
+cache/schema/*
+!cache/schema/parts.json
 .venv/
 .coverage
