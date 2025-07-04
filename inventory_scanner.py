@@ -33,7 +33,7 @@ def main(args: list[str]) -> None:
     opts = parser.parse_args(args)
 
     if opts.refresh:
-        SchemaProvider().refresh_all(verbose=opts.verbose)
+        SchemaProvider().refresh_all(verbose=True)
         print("\N{CHECK MARK} Schema refreshed")
         return
 
