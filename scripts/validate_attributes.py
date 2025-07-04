@@ -29,17 +29,17 @@ def main() -> int:
         print("Schema validation skipped.")
         return 0
     try:
-        _, items_game = local_data.load_files()
+        attributes, _ = local_data.load_files()
     except Exception as exc:  # pragma: no cover - filesystem issues
         print(f"\N{CROSS MARK} Failed to load schema: {exc}")
         return 0 if os.getenv("SKIP_VALIDATE") else 1
+    if not attributes:
+        print("Schema not found; skipping validation.")
+        return 0
 
-    attributes = (
-        items_game.get("attributes", {}) if isinstance(items_game, dict) else {}
-    )
     all_ok = True
     for attr_id, label in REQUIRED_ATTRS.items():
-        if str(attr_id) in attributes:
+        if attr_id in attributes:
             print(f"\N{CHECK MARK} {attr_id} {label}")
         else:
             print(f"\N{CROSS MARK} {attr_id} {label}")

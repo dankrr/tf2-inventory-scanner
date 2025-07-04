@@ -5,25 +5,37 @@ from utils import local_data as ld
 
 
 def test_load_files_success(tmp_path, monkeypatch, capsys):
-    schema_file = tmp_path / "tf2_schema.json"
-    items_file = tmp_path / "items_game_cleaned.json"
-    schema_file.write_text(json.dumps({"items": {"1": {"name": "One"}}}))
-    items_file.write_text(json.dumps({"1": {"name": "A"}}))
-    monkeypatch.setattr(ld, "SCHEMA_FILE", schema_file)
-    monkeypatch.setattr(ld, "ITEMS_GAME_FILE", items_file)
-    ld.TF2_SCHEMA = {}
-    ld.ITEMS_GAME_CLEANED = {}
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+
+    attr_file.write_text(json.dumps([{"defindex": 1, "name": "Attr"}]))
+    particles_file.write_text(json.dumps([{"id": 1, "name": "P"}]))
+    items_file.write_text(json.dumps([{"defindex": 1, "name": "One"}]))
+    qual_file.write_text(json.dumps({"1": "Unique"}))
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+
+    ld.SCHEMA_ATTRIBUTES = {}
+    ld.ITEMS_BY_DEFINDEX = {}
+    ld.PARTICLE_NAMES = {}
+    ld.QUALITIES_BY_INDEX = {}
     ld.EFFECT_NAMES = {}
+
     ld.load_files()
     out = capsys.readouterr().out
-    assert ld.TF2_SCHEMA["1"]["name"] == "One"
-    assert f"Loaded 1 items from {schema_file}" in out
-    assert "tf2_schema.json may be stale" in out
+    assert ld.SCHEMA_ATTRIBUTES[1]["name"] == "Attr"
+    assert ld.ITEMS_BY_DEFINDEX[1]["name"] == "One"
+    assert "Loaded 1 attributes" in out
 
 
 def test_load_files_missing(tmp_path, monkeypatch):
-    monkeypatch.setattr(ld, "SCHEMA_FILE", tmp_path / "missing.json")
-    monkeypatch.setattr(ld, "ITEMS_GAME_FILE", tmp_path / "missing2.json")
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", tmp_path / "missing.json")
+    monkeypatch.setattr(ld, "ITEMS_FILE", tmp_path / "missing2.json")
     with pytest.raises(RuntimeError):
         ld.load_files()
 
