@@ -8,7 +8,6 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def reset_data(monkeypatch):
-    ld.ITEMS_GAME_CLEANED = {}
     ld.ITEMS_BY_DEFINDEX = {}
 
 
@@ -252,7 +251,6 @@ def test_paint_and_paintkit_badges(monkeypatch):
 def test_schema_name_used_for_key():
     data = {"items": [{"defindex": 5021, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {5021: {"item_name": "Mann Co. Supply Crate Key"}}
-    ld.ITEMS_GAME_CLEANED = {"5021": {"name": "Decoder Ring"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Mann Co. Supply Crate Key"
@@ -261,7 +259,6 @@ def test_schema_name_used_for_key():
 def test_placeholder_name_falls_back_to_schema():
     data = {"items": [{"defindex": 1001, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {1001: {"item_name": "Sniper Rifle"}}
-    ld.ITEMS_GAME_CLEANED = {"1001": {"name": "rifle"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Sniper Rifle"
@@ -278,7 +275,6 @@ def test_paintkit_appended_to_name(monkeypatch):
         ]
     }
     ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower"}}
-    ld.ITEMS_GAME_CLEANED = {"15141": {"name": "tf_weapon_flamethrower"}}
     monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Warhawk"}, False)
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
