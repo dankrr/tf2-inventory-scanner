@@ -11,7 +11,7 @@ HTML = '{% include "_user.html" %}'
 @pytest.fixture
 def app(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
-    monkeypatch.setattr("utils.local_data.load_files", lambda: ({}, {}))
+    monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     mod = importlib.import_module("app")
     importlib.reload(mod)
     return mod.app
