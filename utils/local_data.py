@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, Tuple
 
 import vdf
+from .schema_provider import SchemaProvider
 
 # Legacy globals kept for backward compatibility
 TF2_SCHEMA: Dict[str, Any] = {}
@@ -103,9 +104,23 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
     global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
 
-    attr_path = ATTRIBUTES_FILE.resolve()
-    if not attr_path.exists():
-        raise RuntimeError(f"Missing {attr_path}")
+    required = {
+        "attributes": ATTRIBUTES_FILE.resolve(),
+        "items": ITEMS_FILE.resolve(),
+        "qualities": QUALITIES_FILE.resolve(),
+        "particles": PARTICLES_FILE.resolve(),
+    }
+
+    missing = {k: p for k, p in required.items() if not p.exists()}
+    if missing:
+        if not auto_refetch:
+            raise RuntimeError("Missing " + ", ".join(str(p) for p in missing.values()))
+        provider = SchemaProvider(cache_dir=required["attributes"].parent)
+        for key, path in missing.items():
+            provider._load(key, provider.ENDPOINTS[key], force=True)
+            print(f"\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded {path}")
+
+    attr_path = required["attributes"]
     with attr_path.open() as f:
         data = json.load(f)
     raw_attrs = data["value"] if isinstance(data, dict) and "value" in data else data
@@ -124,7 +139,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
     SCHEMA_ATTRIBUTES = mapping
     print(f"\N{CHECK MARK} Loaded {len(SCHEMA_ATTRIBUTES)} attributes from {attr_path}")
 
-    items_path = ITEMS_FILE.resolve()
+    items_path = required["items"]
     if not items_path.exists():
         raise RuntimeError(f"Missing {items_path}")
     with items_path.open() as f:
@@ -149,7 +164,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
             "\N{WARNING SIGN} items.json may be stale or incomplete. Consider a refresh."
         )
 
-    qual_path = QUALITIES_FILE.resolve()
+    qual_path = required["qualities"]
     if not qual_path.exists():
         raise RuntimeError(f"Missing {qual_path}")
     with qual_path.open() as f:
@@ -167,7 +182,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
         }
     print(f"\N{CHECK MARK} Loaded {len(QUALITIES_BY_INDEX)} qualities from {qual_path}")
 
-    particle_path = PARTICLES_FILE.resolve()
+    particle_path = required["particles"]
     if not particle_path.exists():
         raise RuntimeError(f"Missing {particle_path}")
     with particle_path.open() as f:
