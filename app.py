@@ -35,7 +35,7 @@ if ARGS.refresh:
         "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
     )
     provider = SchemaProvider(cache_dir="cache/schema")
-    provider.refresh_all(verbose=ARGS.verbose)
+    provider.refresh_all(verbose=True)
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
