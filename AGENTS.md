@@ -22,7 +22,6 @@ The repository currently exposes several entry points:
 3. **`utils/steam_api_client.py`** – common helpers for Steam Web API requests.
 4. **`utils/inventory_processor.py`** – utilities that enrich and sort inventory
    data.
-5. **`utils/schema_fetcher.py`** – caches the TF2 item schema for other modules.
 
 To register a new scanning agent, place its module under `utils/` (or create a
 new top-level script) and add any reusable functions to `utils/__init__.py`.
@@ -67,8 +66,8 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
   - Return values in refined metal (e.g., `5.33 ref`)
 
 ### 📜 Steam Item Schema API:
-- `https://api.steampowered.com/IEconItems_440/GetSchema/v1/?key=<STEAM_API_KEY>`
-  - Used by `schema_fetcher.py` to cache item metadata
+- `https://schema.autobot.tf/raw/schema/items`
+  - Used by `SchemaProvider` to cache item metadata
 
 ---
 

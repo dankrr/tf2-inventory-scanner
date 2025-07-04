@@ -17,12 +17,12 @@ def test_schema_provider(monkeypatch, tmp_path):
 
     payloads = {
         "/raw/schema/items": {"5021": {"item_name": "Key"}},
-        "/attributes": {"2025": {"name": "Killstreak Tier"}},
-        "/effects": {"Burning Flames": {"id": 13, "name": "Burning Flames"}},
-        "/paints": {"A Color Similar to Slate": 3100495},
-        "/origins": {"0": "Timed Drop"},
-        "/parts": {"Kills": {"id": 64, "name": "Kills"}},
-        "/qualities": {"Normal": 0},
+        "/raw/schema/attributes": {"2025": {"name": "Killstreak Tier"}},
+        "/properties/effects": {"Burning Flames": {"id": 13, "name": "Burning Flames"}},
+        "/properties/paints": {"A Color Similar to Slate": 3100495},
+        "/raw/schema/originNames": {"0": "Timed Drop"},
+        "/properties/strangeParts": {"Kills": {"id": 64, "name": "Kills"}},
+        "/properties/qualities": {"Normal": 0},
         "/properties/defindexes": {"5021": "Key"},
     }
     calls = {key: 0 for key in payloads}
@@ -62,12 +62,16 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
 
     payloads = {
         "/raw/schema/items": {"value": [{"defindex": 5021, "item_name": "Key"}]},
-        "/attributes": {"value": [{"defindex": 2025, "name": "Killstreak Tier"}]},
-        "/effects": {"value": [{"id": 13, "name": "Burning Flames"}]},
-        "/paints": {"value": [{"id": 3100495, "name": "A Color Similar to Slate"}]},
-        "/origins": {"value": [{"id": 0, "name": "Timed Drop"}]},
-        "/parts": {"value": [{"id": 64, "name": "Kills"}]},
-        "/qualities": {"value": [{"id": 0, "name": "Normal"}]},
+        "/raw/schema/attributes": {
+            "value": [{"defindex": 2025, "name": "Killstreak Tier"}]
+        },
+        "/properties/effects": {"value": [{"id": 13, "name": "Burning Flames"}]},
+        "/properties/paints": {
+            "value": [{"id": 3100495, "name": "A Color Similar to Slate"}]
+        },
+        "/raw/schema/originNames": {"value": [{"id": 0, "name": "Timed Drop"}]},
+        "/properties/strangeParts": {"value": [{"id": 64, "name": "Kills"}]},
+        "/properties/qualities": {"value": [{"id": 0, "name": "Normal"}]},
     }
 
     def fake_get(self, url, timeout=20):
