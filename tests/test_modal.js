@@ -45,6 +45,22 @@ modal.renderBadges([{ icon: '🌈', title: 'Weapon color spell' }]);
 if (!window.document.querySelector('#modal-badges').textContent.includes('🌈')) {
   throw new Error('Badge not rendered');
 }
+const html1 = modal.generateModalHTML({ spells: ['A Spell', 'B Spell'] });
+if (!html1.includes('<li>A Spell</li>') || !html1.includes('<li>B Spell</li>')) {
+  throw new Error('String spells not rendered');
+}
+const html2 = modal.generateModalHTML({
+  spells: [
+    { name: 'Ghosts', count: 2 },
+    { name: 'Fire', count: 1 },
+  ],
+});
+if (!html2.includes('<li>Ghosts (2)</li>')) {
+  throw new Error('Spell count not shown');
+}
+if (!html2.includes('<li>Fire</li>')) {
+  throw new Error('Spell object not rendered');
+}
 modal.closeModal();
 modal.showItemModal('<p>Race</p>');
 setTimeout(() => {
