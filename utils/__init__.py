@@ -7,6 +7,7 @@ from .constants import (
     KILLSTREAK_BADGE_ICONS,
 )
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
+from .wear_helpers import _wear_tier, _decode_seed_info
 from .item_enricher import ItemEnricher
 from .inventory_provider import InventoryProvider
 
@@ -21,4 +22,6 @@ __all__ = [
     "KILLSTREAK_BADGE_ICONS",
     "ItemEnricher",
     "InventoryProvider",
+    "_wear_tier",
+    "_decode_seed_info",
 ]
