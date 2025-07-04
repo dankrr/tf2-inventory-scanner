@@ -17,9 +17,9 @@ def test_app_uses_mock_schema(monkeypatch):
     def fake_load():
         from utils import local_data as ld
 
-        ld.TF2_SCHEMA = {"1": {"name": "A"}}
-        ld.ITEMS_GAME_CLEANED = {"1": {"name": "B"}}
-        return ld.TF2_SCHEMA, ld.ITEMS_GAME_CLEANED
+        ld.SCHEMA_ATTRIBUTES = {1: {"name": "Attr"}}
+        ld.ITEMS_BY_DEFINDEX = {1: {"name": "B"}}
+        return ld.SCHEMA_ATTRIBUTES, ld.ITEMS_BY_DEFINDEX
 
     monkeypatch.setattr("utils.local_data.load_files", fake_load)
     monkeypatch.setenv("STEAM_API_KEY", "x")
