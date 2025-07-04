@@ -82,21 +82,22 @@ def test_all_spell_types(monkeypatch):
             {
                 "table_name": "SPELL: set Halloween footstep type",
                 "strings": [
-                    {"index": 3, "string": "Gangreen Footprints"},
+                    {"index": 30, "string": "Gangreen Footprints"},
                 ],
             },
         ]
     }
     foot_map, paint_map = _parse_lookups(lookups)
-    monkeypatch.setattr(ld, "FOOTPRINT_SPELL_MAP", foot_map, False)
-    monkeypatch.setattr(ld, "PAINT_SPELL_MAP", paint_map, False)
-    monkeypatch.setattr(ip, "FOOTPRINT_SPELL_MAP", foot_map, False)
-    monkeypatch.setattr(ip, "PAINT_SPELL_MAP", paint_map, False)
+    spell_map = {
+        **{k: ("paint", v) for k, v in paint_map.items()},
+        **{k: ("footprint", v) for k, v in foot_map.items()},
+    }
+    monkeypatch.setattr(ip, "_SPELL_MAP", spell_map, False)
 
     dummy = {
         "attributes": [
             {"defindex": 1009},
-            {"defindex": 2000, "value": 3},
+            {"defindex": 2000, "value": 30},
             {"defindex": 2001},
             {"defindex": 1010},
             {"defindex": 3003},
@@ -105,7 +106,7 @@ def test_all_spell_types(monkeypatch):
     badges, names = _extract_spells(dummy)
     assert set(names) == {
         "Exorcism",
-        foot_map[3],
+        foot_map[30],
         "Halloween Fire",
         "Voices From Below",
         "Pumpkin Bombs",
@@ -182,16 +183,17 @@ def test_paint_and_footprints(monkeypatch):
             {
                 "table_name": "SPELL: set Halloween footstep type",
                 "strings": [
-                    {"index": 3, "string": "Gangreen Footprints"},
+                    {"index": 30, "string": "Gangreen Footprints"},
                 ],
             },
         ]
     }
     foot_map, paint_map = _parse_lookups(lookups)
-    monkeypatch.setattr(ld, "FOOTPRINT_SPELL_MAP", foot_map, False)
-    monkeypatch.setattr(ip, "FOOTPRINT_SPELL_MAP", foot_map, False)
-    monkeypatch.setattr(ld, "PAINT_SPELL_MAP", paint_map, False)
-    monkeypatch.setattr(ip, "PAINT_SPELL_MAP", paint_map, False)
+    spell_map = {
+        **{k: ("paint", v) for k, v in paint_map.items()},
+        **{k: ("footprint", v) for k, v in foot_map.items()},
+    }
+    monkeypatch.setattr(ip, "_SPELL_MAP", spell_map, False)
 
     dummy = {
         "attributes": [
@@ -199,9 +201,9 @@ def test_paint_and_footprints(monkeypatch):
             {"defindex": 4002, "value": 2},
             {"defindex": 4003, "value": 3},
             {"defindex": 4004, "value": 4},
-            {"defindex": 2000, "value": 3},
+            {"defindex": 2000, "value": 30},
         ]
     }
     _, names = _extract_spells(dummy)
-    expected = set(paint_map.values()) | {foot_map[3]}
+    expected = set(paint_map.values()) | {foot_map[30]}
     assert expected <= set(names)
