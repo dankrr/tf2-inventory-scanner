@@ -128,4 +128,5 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
 
     for key in provider.ENDPOINTS:
         fname = f"{tmp_path / key}.json"
-        assert f"{fname} - 0 entries" in printed
+        assert f"Fetching {key}..." in printed
+        assert f"\N{CHECK MARK} Saved {fname} (0 entries)" in printed
