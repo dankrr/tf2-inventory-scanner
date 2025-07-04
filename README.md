@@ -76,6 +76,14 @@ All modal behaviour is centralized in `static/modal.js`. Other scripts use
 its helper functions and should never manipulate the modal DOM directly.
 Use `showItemModal(html)` to populate and display the dialog.
 
+## Spells
+
+Halloween spells are parsed from item attributes using the loaded schema files
+at runtime. The processor decodes attribute values to extract spell names and
+their counts, mapping each spell through schema lookups. When an item has any
+spells, they are listed in the item modal as bullet points; counts greater than
+one appear in parentheses next to the spell name.
+
 ## Testing
 
 Run linting and tests before committing:
