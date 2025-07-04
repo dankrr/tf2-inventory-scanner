@@ -11,10 +11,8 @@ from types import SimpleNamespace
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
-from utils.schema_fetcher import ensure_schema_cached
 from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
-from utils import items_game_cache
 from utils import local_data
 from utils import constants as consts
 
@@ -30,18 +28,13 @@ parser.add_argument("--test", action="store_true")
 ARGS, _ = parser.parse_known_args()
 
 if ARGS.refresh:
-    from utils import items_game_cache
     from utils.schema_provider import SchemaProvider
 
     print(
-        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema and items_game..."
+        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
     )
     provider = SchemaProvider(cache_dir="cache/schema")
     provider.refresh_all()
-    print("\N{CHECK MARK} Schema files updated")
-
-    cleaned = items_game_cache.load_items_game_cleaned(force_rebuild=True)
-    print(f"\N{CHECK MARK} Saved {len(cleaned)} cleaned item definitions")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
@@ -56,11 +49,7 @@ STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
 
-ITEMS_GAME_READY_FUTURE = items_game_cache.ensure_future()
 MAX_MERGE_MS = 0
-
-SCHEMA = ensure_schema_cached()
-print(f"Loaded {len(SCHEMA)} schema items")
 local_data.load_files()
 
 # --- Utility functions ------------------------------------------------------
@@ -108,7 +97,6 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
 async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     """Asynchronously build user card data."""
     inv_task = asyncio.to_thread(fetch_inventory, steamid64)
-    await items_game_cache.wait_until_ready()
     t1 = time.perf_counter()
     summary = await asyncio.to_thread(get_player_summary, steamid64)
     inv_result = await inv_task

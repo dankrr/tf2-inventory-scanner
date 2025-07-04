@@ -1,17 +1,9 @@
 import importlib
-import asyncio
 
 
 def test_app_uses_mock_schema(monkeypatch):
-    mock_schema = {"5": {"defindex": 5, "name": "Five"}}
-
-    def fake_ensure():
-        return mock_schema
-
-    monkeypatch.setattr("utils.schema_fetcher.ensure_schema_cached", fake_ensure)
     monkeypatch.setattr(
-        "utils.items_game_cache.ensure_future",
-        lambda *a, **k: asyncio.get_event_loop().create_future(),
+        "utils.schema_provider.SchemaProvider.refresh_all", lambda self: None
     )
 
     def fake_load():
@@ -24,4 +16,4 @@ def test_app_uses_mock_schema(monkeypatch):
     monkeypatch.setattr("utils.local_data.load_files", fake_load)
     monkeypatch.setenv("STEAM_API_KEY", "x")
     app = importlib.import_module("app")
-    assert app.SCHEMA == mock_schema
+    assert hasattr(app, "app")

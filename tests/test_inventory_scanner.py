@@ -35,7 +35,7 @@ def test_refresh_schema(monkeypatch, capsys):
         "refresh_all",
         lambda self: called.__setitem__("refresh", True),
     )
-    inventory_scanner.main(["--refresh-schema"])
+    inventory_scanner.main(["--refresh"])
     out = capsys.readouterr().out
     assert "Schema refreshed" in out
     assert called["refresh"]
