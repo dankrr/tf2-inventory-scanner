@@ -43,6 +43,9 @@ SPELL_DISPLAY_NAMES: Dict[str, str] = {
     "halloween_death_ghosts": "Exorcism",
     "halloween_footstep_type": "Halloween Footprints",
     "set_item_tint_rgb_override": "Die Job (Purple/Green Paint)",
+    "set_item_tint_rgb_unusual": "Chromatic Corruption",
+    "set_item_texture_wear_override": "Spectral Spectrum",
+    "set_item_color_wear_override": "Sinister Staining",
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
