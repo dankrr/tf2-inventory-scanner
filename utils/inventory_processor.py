@@ -22,6 +22,11 @@ from .constants import (
 logger = logging.getLogger(__name__)
 
 
+SCHEMA_DIR = Path("cache/schema")
+with open(SCHEMA_DIR / "parts.json") as fp:
+    _PARTS_BY_ID = {int(v[2:]): k for k, v in json.load(fp).items()}
+
+
 # ---------------------------------------------------------------------------
 # attribute class helpers
 
@@ -748,7 +753,8 @@ def _process_item(asset: dict) -> dict | None:
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),
         "score_type": (
-            local_data.STRANGE_PART_NAMES.get(str(score_types.get(1)))
+            _PARTS_BY_ID.get(score_types.get(1))
+            or local_data.STRANGE_PART_NAMES.get(str(score_types.get(1)))
             if score_types.get(1) is not None
             else None
         ),
