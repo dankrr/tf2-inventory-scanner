@@ -8,7 +8,7 @@ from pathlib import Path
 import struct
 
 from . import steam_api_client, local_data
-from .local_data import SPELL_DISPLAY_NAMES
+from .local_data import SPELL_DISPLAY_NAMES, FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .constants import (
     KILLSTREAK_TIERS,
     SHEEN_NAMES,
@@ -16,7 +16,6 @@ from .constants import (
     PAINT_COLORS,
     KILLSTREAK_EFFECTS,
     KILLSTREAK_BADGE_ICONS,
-    FOOTPRINT_SPELLS,
 )
 
 
@@ -462,10 +461,33 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
             except (TypeError, ValueError):
                 logger.warning("Invalid footprint spell value for %s: %r", idx, val_raw)
             else:
-                display = FOOTPRINT_SPELLS.get(val, display)
+                display = FOOTPRINT_SPELL_MAP.get(val, display)
+        elif attr_class in {
+            "set_item_tint_rgb_override",
+            "set_item_tint_rgb_unusual",
+            "set_item_texture_wear_override",
+            "set_item_color_wear_override",
+        }:
+            val_raw = (
+                attr.get("float_value") if "float_value" in attr else attr.get("value")
+            )
+            try:
+                val = int(float(val_raw))
+            except (TypeError, ValueError):
+                logger.warning("Invalid paint spell value for %s: %r", idx, val_raw)
+            else:
+                display = PAINT_SPELL_MAP.get(val, display)
 
         icon = _spell_icon(display)
-        badges.append({"icon": icon, "title": display, "color": "#A156D6"})
+        badges.append(
+            {
+                "icon": icon,
+                "title": display,
+                "color": "#A156D6",
+                "label": display,
+                "type": "spell",
+            }
+        )
         names.append(display)
 
     return badges, names
@@ -646,19 +668,49 @@ def _process_item(asset: dict) -> dict | None:
     badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
     if effect and quality_id in (5, 11):
-        badges.append({"icon": "★", "title": effect, "color": "#8650AC"})
+        badges.append(
+            {
+                "icon": "★",
+                "title": effect,
+                "color": "#8650AC",
+                "label": effect,
+                "type": "effect",
+            }
+        )
     if ks_tier_val:
         tier_id = int(float(ks_tier_val))
         icon = KILLSTREAK_BADGE_ICONS.get(tier_id)
         if icon:
             title = KILLSTREAK_TIERS[tier_id]
-            badges.append({"icon": icon, "title": title, "color": "#ff7e30"})
+            badges.append(
+                {
+                    "icon": icon,
+                    "title": title,
+                    "color": "#ff7e30",
+                    "label": title,
+                    "type": "killstreak",
+                }
+            )
     badges.extend(spell_badges)
 
     if paint_name:
-        badges.append({"icon": "\U0001f3a8", "title": f"Paint: {paint_name}"})
+        badges.append(
+            {
+                "icon": "\U0001f3a8",
+                "title": f"Paint: {paint_name}",
+                "label": paint_name,
+                "type": "paint",
+            }
+        )
     if paintkit_name:
-        badges.append({"icon": "\U0001f58c", "title": f"Warpaint: {paintkit_name}"})
+        badges.append(
+            {
+                "icon": "\U0001f58c",
+                "title": f"Warpaint: {paintkit_name}",
+                "label": paintkit_name,
+                "type": "warpaint",
+            }
+        )
 
     item = {
         "defindex": defindex,
