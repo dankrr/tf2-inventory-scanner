@@ -800,7 +800,7 @@ def run_enrichment_test(path: str | None = None) -> None:
         print(f"File not found: {file_path}")
         return
 
-    local_data.load_files()
+    local_data.load_files(verbose=True)
     with file_path.open() as f:
         raw = json.load(f)
 
