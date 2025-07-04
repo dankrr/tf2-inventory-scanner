@@ -105,7 +105,7 @@ class ItemEnricher:
             val = attr.get("float_value") or attr.get("value")
 
             info = self.attrs.get(aid, {})
-            cls = info.get("class", "")
+            cls = info.get("class") or info.get("attribute_class", "")
             name = info.get("name", "")
 
             if aid in self.parts:
