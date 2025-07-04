@@ -5,7 +5,6 @@ from utils import local_data as ld
 
 @pytest.fixture(autouse=True)
 def reset_schema(monkeypatch):
-    ld.ITEMS_GAME_CLEANED = {}
     ld.ITEMS_BY_DEFINDEX = {}
 
 
