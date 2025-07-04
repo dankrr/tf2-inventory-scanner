@@ -28,11 +28,12 @@ def fetch_inventory(steamid: str) -> dict:
 def main(args: list[str]) -> None:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--refresh", action="store_true")
+    parser.add_argument("--verbose", action="store_true")
     parser.add_argument("steamid", nargs="?")
     opts = parser.parse_args(args)
 
     if opts.refresh:
-        SchemaProvider().refresh_all()
+        SchemaProvider().refresh_all(verbose=opts.verbose)
         print("\N{CHECK MARK} Schema refreshed")
         return
 
