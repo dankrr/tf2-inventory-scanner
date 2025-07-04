@@ -30,13 +30,15 @@ parser.add_argument("--test", action="store_true")
 ARGS, _ = parser.parse_known_args()
 
 if ARGS.refresh:
-    from utils import schema_fetcher, items_game_cache
+    from utils import items_game_cache
+    from utils.schema_provider import SchemaProvider
 
     print(
         "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema and items_game..."
     )
-    schema = schema_fetcher.refresh_schema()
-    print(f"\N{CHECK MARK} Fetched {len(schema)} schema items")
+    provider = SchemaProvider(cache_dir="cache/schema")
+    provider.refresh_all()
+    print("\N{CHECK MARK} Schema files updated")
 
     cleaned = items_game_cache.load_items_game_cleaned(force_rebuild=True)
     print(f"\N{CHECK MARK} Saved {len(cleaned)} cleaned item definitions")
