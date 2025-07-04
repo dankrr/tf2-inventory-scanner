@@ -28,33 +28,7 @@
       <div class="inventory-container">
         {% for item in user.items %}
           {# ↑ keep border-color for quality #}
-          <div class="item-card"
-               style="border-color: {{ item.quality_color }};"
-               data-item='{{ item|tojson|safe }}'>
-
-            {# ─── Badge row ─────────────────────────────────────────────── #}
-            <div class="item-badges">
-              {# Paint dot (uses hex) #}
-              {% if item.paint_hex %}
-                <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
-              {% endif %}
-
-              {# All the *other* badges. Skip the old paint icons (🎨 / 🖌) #}
-              {% for badge in item.badges %}
-                {% if badge.icon not in ['🎨', '🖌'] %}
-                  <span class="badge" data-icon="{{ badge.icon }}"
-                        {% if badge.color %} style="color:{{ badge.color }}"{% endif %}
-                        title="{{ badge.title }}">{{ badge.icon }}</span>
-                {% endif %}
-              {% endfor %}
-            </div>
-            {% if item.image_url %}
-              <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
-            {% else %}
-              <div class="missing-icon"></div>
-            {% endif %}
-            <div class="item-name">{{ item.name }}</div>
-          </div>
+          {% include "item_card.html" %}
         {% endfor %}
       </div>
       <button class="scroll-arrow right" type="button" aria-label="Scroll right">
