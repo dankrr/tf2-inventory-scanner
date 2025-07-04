@@ -423,7 +423,7 @@ def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     return name or f"Item #{defindex}"
 
 
-def _process_item(asset: Dict[str, Any]) -> Dict[str, Any] | None:
+def _process_item(asset: dict) -> dict | None:
     """Return an enriched item dictionary for a single asset."""
 
     defindex_raw = asset.get("defindex", 0)
@@ -448,7 +448,10 @@ def _process_item(asset: Dict[str, Any]) -> Dict[str, Any] | None:
         base_name = f"{base_name} ({paintkit_name})"
 
     quality_id = asset.get("quality", 0)
-    q_name, q_col = QUALITY_MAP.get(quality_id, ("Unknown", "#B2B2B2"))
+    q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
+    if not q_name:
+        q_name = QUALITY_MAP.get(quality_id, ("Unknown",))[0]
+    q_col = QUALITY_MAP.get(quality_id, ("", "#B2B2B2"))[1]
     display_name = _build_item_name(base_name, q_name, asset)
 
     ks_tier, sheen = _extract_killstreak(asset)
