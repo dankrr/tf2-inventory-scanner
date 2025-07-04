@@ -222,37 +222,82 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
+def _spell_icon(name: str) -> str:
+    """Return an emoji icon for the given spell name."""
+
+    lname = name.lower()
+    if "foot" in lname:
+        return "👣"
+    if any(
+        word in lname
+        for word in (
+            "paint",
+            "pigment",
+            "spectrum",
+            "staining",
+            "corruption",
+            "chromatic",
+            "die job",
+            "color",
+            "dye",
+        )
+    ):
+        return "🖌"
+    if any(
+        word in lname
+        for word in (
+            "croon",
+            "bark",
+            "snarl",
+            "growl",
+            "moan",
+            "bellow",
+            "drawl",
+            "bass",
+        )
+    ):
+        return "🎤"
+    if "pumpkin" in lname or "gourd" in lname or "squash" in lname:
+        return "🎃"
+    if "exorcism" in lname or "ghost" in lname:
+        return "👻"
+    if "fire" in lname:
+        return "🔥"
+    return "✨"
+
+
 def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
     """Return badge dictionaries and spell names extracted from attributes."""
-
-    from . import constants as C
 
     badges: list[dict] = []
     names: list[str] = []
 
+    attr_map = local_data.SCHEMA_ATTRIBUTES or {}
+    tf2_attrs = (
+        local_data.TF2_SCHEMA.get("attributes", {})
+        if isinstance(local_data.TF2_SCHEMA, dict)
+        else {}
+    )
+
     for attr in asset.get("attributes", []):
-        aid = attr.get("defindex")
-        val_raw = attr.get("value", 0)
+        idx_raw = attr.get("defindex")
         try:
-            val = int(val_raw)
+            idx = int(idx_raw)
         except (TypeError, ValueError):
-            logger.warning("Invalid spell value: %r", val_raw)
+            logger.warning("Invalid spell defindex: %r", idx_raw)
             continue
 
-        name = None
-        if aid in C.WEAPON_SPELLS:
-            name = C.WEAPON_SPELLS[aid]
-        elif aid == 2000:
-            name = C.FOOTPRINT_SPELLS.get(val)
-        elif aid == 2001:
-            name = C.PAINT_SPELLS.get(val)
-        elif aid == 1010:
-            name = C.VOCAL_SPELLS.get(val)
+        info = attr_map.get(idx) or tf2_attrs.get(str(idx))
+        if not isinstance(info, dict):
+            continue
 
-        if name:
-            icon = C.SPELL_BADGE_ICONS.get(name, "✨")
-            badges.append({"icon": icon, "title": name, "color": "#A156D6"})
-            names.append(name)
+        name = info.get("description_string") or info.get("name")
+        if not name:
+            continue
+
+        icon = _spell_icon(name)
+        badges.append({"icon": icon, "title": name, "color": "#A156D6"})
+        names.append(name)
 
     return badges, names
 
