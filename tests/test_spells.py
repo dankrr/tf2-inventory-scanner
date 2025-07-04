@@ -1,3 +1,4 @@
+import utils.inventory_processor as ip
 from utils.inventory_processor import _extract_spells
 from utils import local_data as ld
 
@@ -78,3 +79,60 @@ def test_placeholder_spell_ignored(monkeypatch):
     badges, names = _extract_spells(dummy)
     assert badges == []
     assert names == []
+
+
+def test_paint_and_footprints(monkeypatch):
+    monkeypatch.setattr(
+        ld,
+        "SCHEMA_ATTRIBUTES",
+        {
+            4001: {
+                "name": "SPELL: Paint A",
+                "attribute_class": "set_item_tint_rgb_override",
+            },
+            4002: {
+                "name": "SPELL: Paint B",
+                "attribute_class": "set_item_color_wear_override",
+            },
+            4003: {
+                "name": "SPELL: Paint C",
+                "attribute_class": "set_item_tint_rgb_unusual",
+            },
+            4004: {
+                "name": "SPELL: Paint D",
+                "attribute_class": "set_item_texture_wear_override",
+            },
+            2000: {
+                "name": "SPELL: set Halloween footstep type",
+                "attribute_class": "halloween_footstep_type",
+            },
+        },
+        False,
+    )
+    display = {
+        "set_item_tint_rgb_override": "Die Job",
+        "set_item_color_wear_override": "Sinister Staining",
+        "set_item_tint_rgb_unusual": "Chromatic Corruption",
+        "set_item_texture_wear_override": "Spectral Spectrum",
+        "halloween_footstep_type": "Halloween Footprints",
+    }
+    monkeypatch.setattr(ld, "SPELL_DISPLAY_NAMES", display, False)
+    monkeypatch.setattr(ip, "SPELL_DISPLAY_NAMES", display, False)
+
+    dummy = {
+        "attributes": [
+            {"defindex": 4001},
+            {"defindex": 4002},
+            {"defindex": 4003},
+            {"defindex": 4004},
+            {"defindex": 2000, "value": 3},
+        ]
+    }
+    _, names = _extract_spells(dummy)
+    assert {
+        "Die Job",
+        "Sinister Staining",
+        "Chromatic Corruption",
+        "Spectral Spectrum",
+        "Gangreen Footprints",
+    } <= set(names)

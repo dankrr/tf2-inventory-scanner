@@ -92,3 +92,14 @@ KILLSTREAK_EFFECTS = {
     2010: "Hellish Inferno",
     2011: "Fireworks",
 }
+
+# Map of halloween footprint value -> spell name
+FOOTPRINT_SPELLS = {
+    1: "Violent Violet Footprints",
+    2: "Team Spirit Footprints",
+    3: "Gangreen Footprints",
+    4: "Rotten Orange Footprints",
+    5: "Bruised Purple Footprints",
+    6: "Headless Horseshoes",
+    7: "Corpse Gray Footprints",
+}
