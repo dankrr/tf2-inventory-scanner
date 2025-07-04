@@ -10,6 +10,7 @@ import pytest
 def reset_data(monkeypatch):
     ld.TF2_SCHEMA = {}
     ld.ITEMS_GAME_CLEANED = {}
+    ld.ITEMS_BY_DEFINDEX = {}
 
 
 def test_enrich_inventory():
@@ -17,6 +18,12 @@ def test_enrich_inventory():
     ld.TF2_SCHEMA = {
         "111": {
             "defindex": 111,
+            "item_name": "Rocket Launcher",
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/img/360fx360f",
+        }
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        111: {
             "item_name": "Rocket Launcher",
             "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/img/360fx360f",
         }
@@ -44,6 +51,7 @@ def test_enrich_inventory_unusual_effect():
     ld.TF2_SCHEMA = {
         "222": {"defindex": 222, "item_name": "Team Captain", "image_url": "img"}
     }
+    ld.ITEMS_BY_DEFINDEX = {222: {"item_name": "Team Captain", "image_url": "img"}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
@@ -71,6 +79,7 @@ def test_unusual_effect_only_for_allowed_qualities(quality, expected):
         ]
     }
     ld.TF2_SCHEMA = {"333": {"defindex": 333, "item_name": "Cap", "image_url": ""}}
+    ld.ITEMS_BY_DEFINDEX = {333: {"item_name": "Cap", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual", 11: "Haunted", 6: "Unique"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
@@ -91,6 +100,13 @@ def test_process_inventory_handles_missing_icon():
         },
         "2": {"defindex": 2, "item_name": "Two", "image_url": ""},
     }
+    ld.ITEMS_BY_DEFINDEX = {
+        1: {
+            "item_name": "One",
+            "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/a/360fx360f",
+        },
+        2: {"item_name": "Two", "image_url": ""},
+    }
     ld.QUALITIES_BY_INDEX = {}
     items = ip.process_inventory(data)
     assert {i["name"] for i in items} == {"One", "Two"}
@@ -107,6 +123,7 @@ def test_enrich_inventory_preserves_absolute_url():
     data = {"items": [{"defindex": 5, "quality": 0}]}
     url = "http://example.com/icon.png"
     ld.TF2_SCHEMA = {"5": {"defindex": 5, "item_name": "Abs", "image_url": url}}
+    ld.ITEMS_BY_DEFINDEX = {5: {"item_name": "Abs", "image_url": url}}
     ld.QUALITIES_BY_INDEX = {0: "Normal"}
     items = ip.enrich_inventory(data)
     assert items[0]["image_url"] == url
@@ -115,6 +132,7 @@ def test_enrich_inventory_preserves_absolute_url():
 def test_enrich_inventory_skips_unknown_defindex():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     ld.TF2_SCHEMA = {"1": {"defindex": 1, "item_name": "One", "image_url": "a"}}
+    ld.ITEMS_BY_DEFINDEX = {1: {"item_name": "One", "image_url": "a"}}
     ld.QUALITIES_BY_INDEX = {}
     items = ip.enrich_inventory(data)
     assert len(items) == 1
@@ -124,6 +142,7 @@ def test_enrich_inventory_skips_unknown_defindex():
 def test_custom_name_stored_separately(monkeypatch):
     data = {"items": [{"defindex": 444, "quality": 6, "custom_name": "Named"}]}
     ld.TF2_SCHEMA = {"444": {"defindex": 444, "item_name": "Thing", "image_url": ""}}
+    ld.ITEMS_BY_DEFINDEX = {444: {"item_name": "Thing", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Thing"
@@ -133,6 +152,7 @@ def test_custom_name_stored_separately(monkeypatch):
 def test_unusual_effect_quality_filter(monkeypatch):
     data = {"items": [{"defindex": 500, "quality": 5, "effect": 15}]}
     ld.TF2_SCHEMA = {"500": {"defindex": 500, "item_name": "Hat", "image_url": ""}}
+    ld.ITEMS_BY_DEFINDEX = {500: {"item_name": "Hat", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"15": "Burning Flames"}
     items = ip.enrich_inventory(data)
@@ -141,6 +161,7 @@ def test_unusual_effect_quality_filter(monkeypatch):
     # quality not allowed
     data = {"items": [{"defindex": 501, "quality": 6, "effect": 15}]}
     ld.TF2_SCHEMA = {"501": {"defindex": 501, "item_name": "Thing", "image_url": ""}}
+    ld.ITEMS_BY_DEFINDEX = {501: {"item_name": "Thing", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     assert items[0]["unusual_effect"] is None
@@ -244,6 +265,7 @@ def test_paint_and_paintkit_badges(monkeypatch):
     ld.TF2_SCHEMA = {
         "9000": {"defindex": 9000, "item_name": "Painted", "image_url": ""}
     }
+    ld.ITEMS_BY_DEFINDEX = {9000: {"item_name": "Painted", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Test Paint"}, False)
     monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Test Kit"}, False)
@@ -260,6 +282,7 @@ def test_schema_name_used_for_key():
     ld.TF2_SCHEMA = {
         "5021": {"defindex": 5021, "item_name": "Mann Co. Supply Crate Key"}
     }
+    ld.ITEMS_BY_DEFINDEX = {5021: {"item_name": "Mann Co. Supply Crate Key"}}
     ld.ITEMS_GAME_CLEANED = {"5021": {"name": "Decoder Ring"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
@@ -269,6 +292,7 @@ def test_schema_name_used_for_key():
 def test_placeholder_name_falls_back_to_schema():
     data = {"items": [{"defindex": 1001, "quality": 6}]}
     ld.TF2_SCHEMA = {"1001": {"defindex": 1001, "item_name": "Sniper Rifle"}}
+    ld.ITEMS_BY_DEFINDEX = {1001: {"item_name": "Sniper Rifle"}}
     ld.ITEMS_GAME_CLEANED = {"1001": {"name": "rifle"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
@@ -286,6 +310,7 @@ def test_paintkit_appended_to_name(monkeypatch):
         ]
     }
     ld.TF2_SCHEMA = {"15141": {"defindex": 15141, "item_name": "Flamethrower"}}
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower"}}
     ld.ITEMS_GAME_CLEANED = {"15141": {"name": "tf_weapon_flamethrower"}}
     monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Warhawk"}, False)
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
@@ -309,6 +334,7 @@ def test_kill_eater_fields(monkeypatch):
         ]
     }
     ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Thing", "image_url": ""}}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
     monkeypatch.setattr(
         ld, "STRANGE_PART_NAMES", {"64": "Kills", "70": "Robots"}, False
