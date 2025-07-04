@@ -3,6 +3,7 @@ from .constants import (
     SHEEN_NAMES,
     KILLSTREAK_TIERS,
     KILLSTREAK_EFFECTS,
+    FOOTPRINT_SPELLS,
     ORIGIN_MAP,
     KILLSTREAK_BADGE_ICONS,
 )
@@ -14,6 +15,7 @@ __all__ = [
     "SHEEN_NAMES",
     "KILLSTREAK_TIERS",
     "KILLSTREAK_EFFECTS",
+    "FOOTPRINT_SPELLS",
     "ORIGIN_MAP",
     "KILLSTREAK_BADGE_ICONS",
     "ItemEnricher",
