@@ -130,6 +130,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
         "qualities": QUALITIES_FILE.resolve(),
         "particles": PARTICLES_FILE.resolve(),
     }
+    optional = {"string_lookups": STRING_LOOKUPS_FILE.resolve()}
 
     missing = {k: p for k, p in required.items() if not p.exists()}
     if missing:
@@ -137,6 +138,13 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
             raise RuntimeError("Missing " + ", ".join(str(p) for p in missing.values()))
         provider = SchemaProvider(cache_dir=required["attributes"].parent)
         for key, path in missing.items():
+            provider._load(key, provider.ENDPOINTS[key], force=True)
+            print(f"\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded {path}")
+
+    optional_missing = {k: p for k, p in optional.items() if not p.exists()}
+    if optional_missing and auto_refetch:
+        provider = SchemaProvider(cache_dir=required["attributes"].parent)
+        for key, path in optional_missing.items():
             provider._load(key, provider.ENDPOINTS[key], force=True)
             print(f"\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded {path}")
 

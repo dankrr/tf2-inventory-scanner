@@ -24,7 +24,7 @@ def test_main_passes_steamid_to_inventory_provider(monkeypatch):
     monkeypatch.setattr(main, "InventoryProvider", DummyProvider)
     monkeypatch.setattr(main, "ItemEnricher", DummyEnricher)
     monkeypatch.setattr(main, "SchemaProvider", lambda: None)
-    monkeypatch.setattr(main.local_data, "load_files", lambda: ({}, {}))
+    monkeypatch.setattr(main.local_data, "load_files", lambda *a, **k: ({}, {}))
 
     monkeypatch.setattr(sys, "argv", ["main.py", "123"])
     main.main()
