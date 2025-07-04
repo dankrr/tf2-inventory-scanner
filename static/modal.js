@@ -111,7 +111,21 @@
     if (Array.isArray(data.spells) && data.spells.length) {
       spells += '<h4 id="modal-spells">Spells</h4><ul>';
       data.spells.forEach(sp => {
-        spells += '<li>' + esc(sp) + '</li>';
+        let name = '';
+        let count = null;
+        if (typeof sp === 'string') {
+          name = sp;
+        } else if (sp && typeof sp === 'object') {
+          name = sp.name || '';
+          count = sp.count;
+        } else {
+          name = String(sp || '');
+        }
+        let line = esc(name);
+        if (count && count > 1) {
+          line += ' (' + esc(count) + ')';
+        }
+        spells += '<li>' + line + '</li>';
       });
       spells += '</ul>';
     }
