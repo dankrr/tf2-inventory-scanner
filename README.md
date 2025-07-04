@@ -33,10 +33,9 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
 - Item schema is cached automatically via `SchemaProvider` in
   `utils/schema_provider.py`. Pass `base_url` to use a mirror. Update it with:
   ```bash
-  python app.py --refresh
-  # refresh simplified schema
-python main.py --refresh-schema
-```
+  python app.py --refresh  # fetch latest schema files
+  python main.py --refresh-schema
+  ```
 - Inspect a single user's inventory from the command line (defaults to a demo
   ID if omitted):
   ```bash

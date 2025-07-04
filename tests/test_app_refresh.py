@@ -13,8 +13,8 @@ def test_refresh_flag_triggers_update(monkeypatch):
         "pathlib.Path.mkdir", lambda self, parents=True, exist_ok=True: None
     )
     monkeypatch.setattr(
-        "utils.schema_fetcher.refresh_schema",
-        lambda: called.__setitem__("schema", True) or {"1": {}},
+        "utils.schema_provider.SchemaProvider.refresh_all",
+        lambda self: called.__setitem__("schema", True),
     )
     monkeypatch.setattr(
         "utils.items_game_cache.load_items_game_cleaned",
