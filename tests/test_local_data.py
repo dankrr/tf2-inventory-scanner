@@ -114,3 +114,72 @@ def test_clean_items_game_parses_all():
     cleaned = ld.clean_items_game(sample)
     assert cleaned["111"]["name"] == "Correct"
     assert cleaned["30607"]["name"] == "Pump"
+
+
+def test_load_files_string_lookups(tmp_path, monkeypatch):
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+    lookups_file = tmp_path / "string_lookups.json"
+
+    for f in (attr_file, particles_file, items_file, qual_file):
+        f.write_text("[]")
+
+    lookups = {
+        "value": [
+            {
+                "table_name": "SPELL: set item tint RGB",
+                "strings": [
+                    {"index": 0, "string": "A"},
+                    {"index": 1, "string": "B"},
+                ],
+            },
+            {
+                "table_name": "SPELL: set Halloween footstep type",
+                "strings": [
+                    {"index": 2, "string": "C"},
+                    {"index": 3, "string": "D"},
+                ],
+            },
+        ]
+    }
+    lookups_file.write_text(json.dumps(lookups))
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+    monkeypatch.setattr(ld, "STRING_LOOKUPS_FILE", lookups_file)
+
+    ld.FOOTPRINT_SPELL_MAP = {}
+    ld.PAINT_SPELL_MAP = {}
+
+    ld.load_files()
+
+    assert ld.PAINT_SPELL_MAP == {0: "A", 1: "B"}
+    assert ld.FOOTPRINT_SPELL_MAP == {2: "C", 3: "D"}
+
+
+def test_load_files_string_lookups_missing(tmp_path, monkeypatch):
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+
+    for f in (attr_file, particles_file, items_file, qual_file):
+        f.write_text("[]")
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+    monkeypatch.setattr(ld, "STRING_LOOKUPS_FILE", tmp_path / "missing.json")
+
+    ld.FOOTPRINT_SPELL_MAP = {1: "X"}
+    ld.PAINT_SPELL_MAP = {1: "Y"}
+
+    ld.load_files()
+
+    assert ld.PAINT_SPELL_MAP == {}
+    assert ld.FOOTPRINT_SPELL_MAP == {}

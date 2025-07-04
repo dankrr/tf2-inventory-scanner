@@ -22,6 +22,8 @@ KILLSTREAK_NAMES: Dict[str, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
 PAINTKIT_NAMES: Dict[str, str] = {}
 CRATE_SERIES_NAMES: Dict[str, str] = {}
+FOOTPRINT_SPELL_MAP: Dict[int, str] = {}
+PAINT_SPELL_MAP: Dict[int, str] = {}
 KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
     "2002": "Fire Horns",
     "2003": "Cerebral Discharge",
@@ -67,6 +69,7 @@ DEFAULT_KS_EFFECT_FILE = BASE_DIR / "cache" / "killstreak_effect_names.json"
 DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
 DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "paintkit_names.json"
 DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
+DEFAULT_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "string_lookups.json"
 EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
 PAINT_FILE = Path(os.getenv("TF2_PAINT_FILE", DEFAULT_PAINT_FILE))
 WEAR_FILE = Path(os.getenv("TF2_WEAR_FILE", DEFAULT_WEAR_FILE))
@@ -75,6 +78,9 @@ KILLSTREAK_EFFECT_FILE = Path(os.getenv("TF2_KS_EFFECT_FILE", DEFAULT_KS_EFFECT_
 STRANGE_PART_FILE = Path(os.getenv("TF2_STRANGE_PART_FILE", DEFAULT_STRANGE_PART_FILE))
 PAINTKIT_FILE = Path(os.getenv("TF2_PAINTKIT_FILE", DEFAULT_PAINTKIT_FILE))
 CRATE_SERIES_FILE = Path(os.getenv("TF2_CRATE_SERIES_FILE", DEFAULT_CRATE_SERIES_FILE))
+STRING_LOOKUPS_FILE = Path(
+    os.getenv("TF2_STRING_LOOKUPS_FILE", DEFAULT_STRING_LOOKUPS_FILE)
+)
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:
@@ -116,6 +122,7 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
 
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
     global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
+    global FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 
     required = {
         "attributes": ATTRIBUTES_FILE.resolve(),
@@ -218,6 +225,46 @@ def load_files(*, auto_refetch: bool = False) -> Tuple[Dict[int, Any], Dict[int,
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
     PAINTKIT_NAMES = _load_json_map(PAINTKIT_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
+
+    FOOTPRINT_SPELL_MAP = {}
+    PAINT_SPELL_MAP = {}
+    if STRING_LOOKUPS_FILE.exists():
+        try:
+            with STRING_LOOKUPS_FILE.open() as f:
+                data = json.load(f)
+            tables = (
+                data["value"] if isinstance(data, dict) and "value" in data else data
+            )
+            if isinstance(tables, list):
+                for table in tables:
+                    if not isinstance(table, dict):
+                        continue
+                    name = str(table.get("table_name", "")).lower()
+                    entries = table.get("strings", [])
+                    if not isinstance(entries, list):
+                        continue
+                    mapping = {
+                        int(e.get("index")): str(e.get("string"))
+                        for e in entries
+                        if isinstance(e, dict)
+                        and "index" in e
+                        and "string" in e
+                        and str(e.get("index")).lstrip("-").isdigit()
+                    }
+                    if "footstep" in name or "footprint" in name:
+                        FOOTPRINT_SPELL_MAP.update(mapping)
+                    elif "tint" in name:
+                        PAINT_SPELL_MAP.update(mapping)
+        except Exception:
+            FOOTPRINT_SPELL_MAP = {}
+            PAINT_SPELL_MAP = {}
+    else:
+        FOOTPRINT_SPELL_MAP = {}
+        PAINT_SPELL_MAP = {}
+
+    if FOOTPRINT_SPELL_MAP or PAINT_SPELL_MAP:
+        total = len(FOOTPRINT_SPELL_MAP) + len(PAINT_SPELL_MAP)
+        print(f"\N{CHECK MARK} Loaded {total} spell lookups from {STRING_LOOKUPS_FILE}")
 
     for label, mapping, path in [
         ("effects", EFFECT_NAMES, EFFECT_FILE),
