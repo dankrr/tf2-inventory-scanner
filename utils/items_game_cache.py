@@ -5,7 +5,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-from utils.local_data import DEFAULT_ITEMS_GAME_FILE, clean_items_game
+from utils.local_data import clean_items_game
 
 import requests
 import vdf
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 RAW_FILE = Path("cache/items_game.txt")
 JSON_FILE = Path("cache/items_game.json")
-CLEANED_FILE = DEFAULT_ITEMS_GAME_FILE
+CLEANED_FILE = Path("cache/items_game_cleaned.json")
 TTL = 48 * 60 * 60  # 48 hours
 
 ITEMS_GAME: Dict[str, Any] | None = None
