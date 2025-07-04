@@ -62,23 +62,38 @@ def test_extract_spells_and_badges(monkeypatch):
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {"name": "Exorcism", "attribute_class": "halloween_death_ghosts"},
+            1009: {
+                "name": "SPELL: Halloween ghosts",
+                "attribute_class": "halloween_death_ghosts",
+            },
             2001: {
-                "name": "Chromatic Corruption",
+                "name": "SPELL: Halloween fire",
                 "attribute_class": "halloween_green_flames",
             },
             2000: {
-                "name": "Team Spirit Footprints",
+                "name": "SPELL: set Halloween footstep type",
                 "attribute_class": "halloween_footstep_type",
             },
             3001: {
-                "name": "Pumpkin Bombs",
+                "name": "SPELL: Pumpkin explosions",
                 "attribute_class": "halloween_pumpkin_explosions",
             },
             1010: {
-                "name": "Spy's Creepy Croon",
+                "name": "SPELL: Halloween voice modulation",
                 "attribute_class": "halloween_voice_modulation",
             },
+        },
+        False,
+    )
+    monkeypatch.setattr(
+        ld,
+        "SPELL_DISPLAY_NAMES",
+        {
+            "halloween_death_ghosts": "Exorcism",
+            "halloween_green_flames": "Halloween Fire",
+            "halloween_footstep_type": "Halloween Footprints",
+            "halloween_pumpkin_explosions": "Pumpkin Bombs",
+            "halloween_voice_modulation": "Voices From Below",
         },
         False,
     )
@@ -98,10 +113,10 @@ def test_extract_spells_and_badges(monkeypatch):
     badges, names = ip._extract_spells(asset)
     expected_spells = [
         "Exorcism",
-        "Chromatic Corruption",
-        "Team Spirit Footprints",
+        "Halloween Fire",
+        "Halloween Footprints",
         "Pumpkin Bombs",
-        "Spy's Creepy Croon",
+        "Voices From Below",
     ]
     assert set(names) == set(expected_spells)
 
