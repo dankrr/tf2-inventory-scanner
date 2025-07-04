@@ -39,6 +39,15 @@ QUALITY_MAP = {
     15: ("Decorated Weapon", "#FAFAFA"),
 }
 
+# Attribute class names that correspond to Halloween spell effects
+SPELL_CLASSES = {
+    "halloween_death_ghosts",
+    "halloween_voice_modulation",
+    "halloween_pumpkin_explosions",
+    "halloween_green_flames",
+    "halloween_footstep_type",
+}
+
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
     """Return the unusual effect name from attributes or descriptions."""
@@ -284,6 +293,10 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
 
         info = attr_map.get(idx)
         if not isinstance(info, dict):
+            continue
+
+        attr_class = info.get("attribute_class")
+        if attr_class not in SPELL_CLASSES:
             continue
 
         name = info.get("description_string") or info.get("name")
