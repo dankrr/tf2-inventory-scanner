@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from utils.item_enricher import ItemEnricher
 from utils.inventory_provider import InventoryProvider
 from utils.schema_provider import SchemaProvider
+from utils import local_data
 
 load_dotenv()
 
@@ -24,6 +25,8 @@ def main() -> None:
         SchemaProvider().refresh_all()
         print("\N{CHECK MARK} Schema refreshed")
         return
+
+    local_data.load_files()
 
     schema = SchemaProvider()
     enricher = ItemEnricher(schema)
