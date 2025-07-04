@@ -273,11 +273,6 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
     names: list[str] = []
 
     attr_map = local_data.SCHEMA_ATTRIBUTES or {}
-    tf2_attrs = (
-        local_data.TF2_SCHEMA.get("attributes", {})
-        if isinstance(local_data.TF2_SCHEMA, dict)
-        else {}
-    )
 
     for attr in asset.get("attributes", []):
         idx_raw = attr.get("defindex")
@@ -287,7 +282,7 @@ def _extract_spells(asset: Dict[str, Any]) -> tuple[list[dict], list[str]]:
             logger.warning("Invalid spell defindex: %r", idx_raw)
             continue
 
-        info = attr_map.get(idx) or tf2_attrs.get(str(idx))
+        info = attr_map.get(idx)
         if not isinstance(info, dict):
             continue
 
@@ -415,26 +410,17 @@ def _is_placeholder_name(name: str) -> bool:
     return False
 
 
-def _preferred_base_name(
-    defindex: str, schema_entry: Dict[str, Any] | None, ig_item: Dict[str, Any]
-) -> str:
+def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     """Return human readable base item name."""
 
     if defindex in WARPAINT_MAP:
         return WARPAINT_MAP[defindex]
 
-    ig_name = ig_item.get("name")
-    schema_name = None
-    if schema_entry:
-        schema_name = schema_entry.get("item_name") or schema_entry.get("name")
+    name = schema_entry.get("item_name") or schema_entry.get("name")
+    if name and not _is_placeholder_name(name):
+        return name
 
-    if ig_name and not _is_placeholder_name(ig_name):
-        return ig_name
-
-    if schema_name:
-        return schema_name
-
-    return ig_name or f"Item #{defindex}"
+    return name or f"Item #{defindex}"
 
 
 def _process_item(asset: Dict[str, Any]) -> Dict[str, Any] | None:
@@ -447,20 +433,17 @@ def _process_item(asset: Dict[str, Any]) -> Dict[str, Any] | None:
         logger.warning("Invalid defindex on asset: %r", defindex_raw)
         return None
 
-    schema_entry = local_data.ITEMS_BY_DEFINDEX.get(
-        defindex_int
-    ) or local_data.TF2_SCHEMA.get(str(defindex_int))
-    ig_item = local_data.ITEMS_GAME_CLEANED.get(str(defindex_int)) or {}
-    if not (schema_entry or ig_item):
+    schema_entry = local_data.ITEMS_BY_DEFINDEX.get(defindex_int)
+    if not schema_entry:
         logger.warning("Missing schema entry for defindex %s", defindex_int)
         return None
 
     defindex = str(defindex_int)
-    image_url = schema_entry.get("image_url") if schema_entry else ""
+    image_url = schema_entry.get("image_url", "")
 
     paintkit_name = _extract_paintkit(asset)
 
-    base_name = _preferred_base_name(defindex, schema_entry, ig_item)
+    base_name = _preferred_base_name(defindex, schema_entry)
     if paintkit_name:
         base_name = f"{base_name} ({paintkit_name})"
 
@@ -506,28 +489,17 @@ def _process_item(asset: Dict[str, Any]) -> Dict[str, Any] | None:
         "quality": q_name,
         "quality_color": q_col,
         "image_url": image_url,
-        "item_type_name": (
-            schema_entry.get("item_type_name")
-            if schema_entry
-            else ig_item.get("item_type_name")
-        ),
-        "item_name": schema_entry.get("name") if schema_entry else ig_item.get("name"),
-        "craft_class": (
-            schema_entry.get("craft_class")
-            if schema_entry
-            else ig_item.get("craft_class")
-        ),
-        "craft_material_type": (
-            schema_entry.get("craft_material_type")
-            if schema_entry
-            else ig_item.get("craft_material_type")
-        ),
+        "item_type_name": schema_entry.get("item_type_name"),
+        "item_name": schema_entry.get("name"),
+        "craft_class": schema_entry.get("craft_class"),
+        "craft_material_type": schema_entry.get("craft_material_type"),
         "item_set": schema_entry.get("item_set"),
         "capabilities": schema_entry.get("capabilities"),
         "tags": schema_entry.get("tags"),
-        "equip_regions": ig_item.get("equip_regions") or ig_item.get("equip_region"),
-        "item_class": ig_item.get("item_class"),
-        "slot_type": ig_item.get("item_slot") or ig_item.get("slot_type"),
+        "equip_regions": schema_entry.get("equip_regions")
+        or schema_entry.get("equip_region"),
+        "item_class": schema_entry.get("item_class"),
+        "slot_type": schema_entry.get("item_slot") or schema_entry.get("slot_type"),
         "level": asset.get("level"),
         "origin": ORIGIN_MAP.get(asset.get("origin")),
         "custom_name": asset.get("custom_name"),
