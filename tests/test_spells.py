@@ -118,21 +118,35 @@ def test_paint_and_footprints(monkeypatch):
     }
     monkeypatch.setattr(ld, "SPELL_DISPLAY_NAMES", display, False)
     monkeypatch.setattr(ip, "SPELL_DISPLAY_NAMES", display, False)
+    monkeypatch.setattr(ld, "FOOTPRINT_SPELL_MAP", {3: "Gangreen Footprints"}, False)
+    monkeypatch.setattr(ip, "FOOTPRINT_SPELL_MAP", {3: "Gangreen Footprints"}, False)
+    monkeypatch.setattr(
+        ld,
+        "PAINT_SPELL_MAP",
+        {1: "Paint A", 2: "Paint B", 3: "Paint C", 4: "Paint D"},
+        False,
+    )
+    monkeypatch.setattr(
+        ip,
+        "PAINT_SPELL_MAP",
+        {1: "Paint A", 2: "Paint B", 3: "Paint C", 4: "Paint D"},
+        False,
+    )
 
     dummy = {
         "attributes": [
-            {"defindex": 4001},
-            {"defindex": 4002},
-            {"defindex": 4003},
-            {"defindex": 4004},
+            {"defindex": 4001, "value": 1},
+            {"defindex": 4002, "value": 2},
+            {"defindex": 4003, "value": 3},
+            {"defindex": 4004, "value": 4},
             {"defindex": 2000, "value": 3},
         ]
     }
     _, names = _extract_spells(dummy)
     assert {
-        "Die Job",
-        "Sinister Staining",
-        "Chromatic Corruption",
-        "Spectral Spectrum",
+        "Paint A",
+        "Paint B",
+        "Paint C",
+        "Paint D",
         "Gangreen Footprints",
     } <= set(names)
