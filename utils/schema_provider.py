@@ -23,6 +23,7 @@ class SchemaProvider:
         "parts": "/properties/strangeParts",
         "qualities": "/properties/qualities",
         "defindexes": "/properties/defindexes",
+        "string_lookups": "/raw/schema/string_lookups",
     }
 
     def __init__(
@@ -43,6 +44,7 @@ class SchemaProvider:
         self.qualities_map: Dict[str, int] | None = None
         self.defindex_names: Dict[int, str] | None = None
         self.origins_by_index: Dict[int, str] | None = None
+        self.string_lookups: Dict[str, str] | None = None
 
     # ------------------------------------------------------------------
     def _fetch(self, endpoint: str) -> Any:
@@ -116,6 +118,7 @@ class SchemaProvider:
         self.qualities_map = None
         self.effects_by_index = None
         self.origins_by_index = None
+        self.string_lookups = None
 
     def _to_int_map(self, data: dict) -> Dict[int, Any]:
         mapping: Dict[int, Any] = {}
@@ -191,6 +194,23 @@ class SchemaProvider:
                 mapping = self._from_name_map(data)
             self.origins_by_index = mapping
         return self.origins_by_index
+
+    def get_string_lookups(self, *, force: bool = False) -> Dict[str, str]:
+        if self.string_lookups is None or force:
+            data = self._load("string_lookups", self.ENDPOINTS["string_lookups"], force)
+            if isinstance(data, dict) and "value" in data:
+                data = data["value"]
+            if isinstance(data, list):
+                self.string_lookups = {
+                    str(e.get("key")): str(e.get("value"))
+                    for e in data
+                    if isinstance(e, dict) and "key" in e and "value" in e
+                }
+            elif isinstance(data, dict):
+                self.string_lookups = {str(k): str(v) for k, v in data.items()}
+            else:
+                self.string_lookups = {}
+        return self.string_lookups
 
     def get_parts(self, *, force: bool = False) -> Dict[int, Any]:
         if self.parts_by_defindex is None or force:
