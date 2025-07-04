@@ -6,7 +6,7 @@ def test_app_uses_mock_schema(monkeypatch):
         "utils.schema_provider.SchemaProvider.refresh_all", lambda self: None
     )
 
-    def fake_load():
+    def fake_load(*args, **kwargs):
         from utils import local_data as ld
 
         ld.SCHEMA_ATTRIBUTES = {1: {"name": "Attr"}}
