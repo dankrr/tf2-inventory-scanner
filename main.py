@@ -18,11 +18,12 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--refresh", action="store_true")
+    parser.add_argument("--verbose", action="store_true")
     parser.add_argument("steamid", nargs="?")
     args, _ = parser.parse_known_args()
 
     if args.refresh:
-        SchemaProvider().refresh_all()
+        SchemaProvider().refresh_all(verbose=args.verbose)
         print("\N{CHECK MARK} Schema refreshed")
         return
 
