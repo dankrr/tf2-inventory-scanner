@@ -56,7 +56,6 @@ def test_decorated_flamethrower_enrichment():
 
 
 def test_extract_spells_and_badges(monkeypatch):
-    ld.TF2_SCHEMA = {"501": {"defindex": 501, "item_name": "Gun", "image_url": ""}}
     ld.ITEMS_BY_DEFINDEX = {501: {"item_name": "Gun", "image_url": ""}}
     ld.ITEMS_GAME_CLEANED = {}
 
@@ -64,11 +63,26 @@ def test_extract_spells_and_badges(monkeypatch):
         ld,
         "SCHEMA_ATTRIBUTES",
         {
-            1009: {"description_string": "Exorcism"},
-            2001: {"description_string": "Chromatic Corruption"},
-            2000: {"description_string": "Team Spirit Footprints"},
-            3001: {"description_string": "Pumpkin Bombs"},
-            1010: {"description_string": "Spy's Creepy Croon"},
+            1009: {
+                "description_string": "Exorcism",
+                "attribute_class": "halloween_death_ghosts",
+            },
+            2001: {
+                "description_string": "Chromatic Corruption",
+                "attribute_class": "halloween_green_flames",
+            },
+            2000: {
+                "description_string": "Team Spirit Footprints",
+                "attribute_class": "halloween_footstep_type",
+            },
+            3001: {
+                "description_string": "Pumpkin Bombs",
+                "attribute_class": "halloween_pumpkin_explosions",
+            },
+            1010: {
+                "description_string": "Spy's Creepy Croon",
+                "attribute_class": "halloween_voice_modulation",
+            },
         },
         False,
     )
