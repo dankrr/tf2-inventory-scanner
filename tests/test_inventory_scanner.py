@@ -34,11 +34,13 @@ def test_refresh_schema(monkeypatch, capsys):
     def fake_refresh(self, verbose: bool = False):
         called["refresh"] = verbose
         if verbose:
-            print("schema/items.json - 0 entries")
+            print("Fetching items...")
+            print("\N{CHECK MARK} Saved schema/items.json (0 entries)")
 
     monkeypatch.setattr(inventory_scanner.SchemaProvider, "refresh_all", fake_refresh)
     inventory_scanner.main(["--refresh", "--verbose"])
     out = capsys.readouterr().out
     assert "Schema refreshed" in out
-    assert "schema/items.json - 0 entries" in out
+    assert "Fetching items..." in out
+    assert "✓ Saved schema/items.json (0 entries)" in out
     assert called["refresh"] is True

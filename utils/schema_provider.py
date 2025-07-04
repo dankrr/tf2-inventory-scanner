@@ -99,15 +99,14 @@ class SchemaProvider:
     # ------------------------------------------------------------------
     def refresh_all(self, verbose: bool = False) -> None:
         """Force refresh of all schema files."""
-        fetched: list[tuple[Path, int]] = []
         for key, ep in self.ENDPOINTS.items():
+            if verbose:
+                print(f"Fetching {key}...")
             data = self._load(key, ep, force=True)
             count = len(data) if hasattr(data, "__len__") else 0
-            fetched.append((self._cache_file(key), count))
-
-        if verbose:
-            for path, count in fetched:
-                print(f"{path} - {count} entries")
+            if verbose:
+                path = self._cache_file(key)
+                print(f"\N{CHECK MARK} Saved {path} ({count} entries)")
 
         self.items_by_defindex = None
         self.attributes_by_defindex = None
