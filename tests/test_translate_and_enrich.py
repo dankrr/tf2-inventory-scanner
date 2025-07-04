@@ -57,6 +57,7 @@ def test_decorated_flamethrower_enrichment():
 
 def test_extract_spells_and_badges(monkeypatch):
     ld.TF2_SCHEMA = {"501": {"defindex": 501, "item_name": "Gun", "image_url": ""}}
+    ld.ITEMS_BY_DEFINDEX = {501: {"item_name": "Gun", "image_url": ""}}
     ld.ITEMS_GAME_CLEANED = {}
 
     monkeypatch.setattr(
@@ -94,7 +95,7 @@ def test_extract_spells_and_badges(monkeypatch):
     ]
     assert set(names) == set(expected_spells)
 
-    item = ip._process_item(asset, ld.TF2_SCHEMA, {})
+    item = ip._process_item(asset)
     icons = {b["icon"] for b in item["badges"]}
     assert {"👻", "🖌", "👣", "🎤", "🎃"} <= icons
 

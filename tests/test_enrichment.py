@@ -7,6 +7,7 @@ from utils import local_data as ld
 def reset_schema(monkeypatch):
     ld.TF2_SCHEMA = {}
     ld.ITEMS_GAME_CLEANED = {}
+    ld.ITEMS_BY_DEFINDEX = {}
 
 
 def test_enrichment_full_attributes(monkeypatch):
@@ -31,6 +32,7 @@ def test_enrichment_full_attributes(monkeypatch):
         ]
     }
     ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher"}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
     monkeypatch.setattr(
         ld,
@@ -77,6 +79,7 @@ def test_unknown_values_warn(monkeypatch, caplog):
         ]
     }
     ld.TF2_SCHEMA = {"111": {"defindex": 111, "item_name": "Rocket Launcher"}}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher"}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
 
     ip.enrich_inventory(data)
