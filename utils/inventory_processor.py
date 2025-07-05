@@ -447,7 +447,6 @@ def _extract_kill_eater_info(
         try:
             idx = int(idx_raw)
         except (TypeError, ValueError):
-            logger.warning("Invalid kill-eater defindex: %r", idx_raw)
             continue
 
         val_raw = (
@@ -456,7 +455,6 @@ def _extract_kill_eater_info(
         try:
             val = int(float(val_raw))
         except (TypeError, ValueError):
-            logger.warning("Invalid kill-eater value for %s: %r", idx, val_raw)
             continue
 
         if idx == 214:
@@ -473,8 +471,6 @@ def _extract_kill_eater_info(
                 types[(idx - 380) // 2 + 2] = val
         elif idx in (214, 292):
             pass
-        else:
-            logger.warning("Unknown kill-eater index: %s", idx)
 
     return counts, types
 
