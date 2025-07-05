@@ -24,9 +24,9 @@
   {% endif %}
   <div class="item-title">
     {% if item.unusual_effect_name %}
-      <strong>{{ item.unusual_effect_name }} {{ item.name }}</strong>
+        {{ item.unusual_effect_name }} {{ item.display_name }}
     {% else %}
-      {{ item.name }}
+        {{ item.display_name }}
     {% endif %}
   </div>
   {% if item.strange_parts %}
