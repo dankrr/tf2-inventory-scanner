@@ -51,6 +51,31 @@ def test_enrich_inventory_unusual_effect():
     assert item["quality"] == "Unusual"
 
 
+def test_unusual_effect_badge_included():
+    data = {
+        "items": [
+            {
+                "defindex": 7000,
+                "quality": 5,
+                "attributes": [{"defindex": 134, "float_value": 13}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {7000: {"item_name": "Hat", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    ld.EFFECT_NAMES = {"13": "Burning Flames"}
+
+    items = ip.enrich_inventory(data)
+    badges = items[0]["badges"]
+    assert {
+        "icon": "★",
+        "title": "Unusual Effect: Burning Flames",
+        "color": "#8650AC",
+        "label": "Burning Flames",
+        "type": "effect",
+    } in badges
+
+
 @pytest.mark.parametrize(
     "quality,expected",
     [
