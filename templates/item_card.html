@@ -14,6 +14,9 @@
       <span class="badge bg-indigo-600" title="Contains Strange Parts">🔧</span>
     {% endif %}
   </div>
+  {% if item.quantity and item.quantity > 1 %}
+    <span class="item-qty">x{{ item.quantity }}</span>
+  {% endif %}
   {% if item.image_url %}
     <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
   {% else %}
