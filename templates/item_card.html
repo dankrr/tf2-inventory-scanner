@@ -5,11 +5,11 @@
     {% if item.paint_hex %}
       <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
     {% endif %}
-    {% for badge in item.badges %}
-      {% if badge.icon not in ['🎨', '🖌'] %}
-        <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
-      {% endif %}
-    {% endfor %}
+      {% for badge in item.badges %}
+        {% if badge.icon != '🎨' %}
+          <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
+        {% endif %}
+      {% endfor %}
     {% if "🔧" in item.badges %}
       <span class="badge bg-indigo-600" title="Contains Strange Parts">🔧</span>
     {% endif %}
