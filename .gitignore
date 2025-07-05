@@ -7,5 +7,6 @@ cache/*
 !cache/schema/
 cache/schema/*
 !cache/schema/parts.json
+!cache/schema/effects.json
 .venv/
 .coverage
