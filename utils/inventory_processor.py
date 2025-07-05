@@ -447,7 +447,7 @@ def _extract_kill_eater_info(
         try:
             idx = int(idx_raw)
         except (TypeError, ValueError):
-            logger.warning("Invalid kill-eater defindex: %r", idx_raw)
+            # Ignore non-numeric defindex values
             continue
 
         val_raw = (
@@ -456,7 +456,7 @@ def _extract_kill_eater_info(
         try:
             val = int(float(val_raw))
         except (TypeError, ValueError):
-            logger.warning("Invalid kill-eater value for %s: %r", idx, val_raw)
+            # Ignore non-numeric values
             continue
 
         if idx == 214:
