@@ -101,5 +101,4 @@ def test_unknown_values_warn(monkeypatch, caplog):
     assert "Unknown killstreak effect id" in text
     assert "Wear value out of range" in text
     assert "Invalid kill-eater value" in text
-    assert "Unknown kill-eater index" in text
     assert "Invalid kill-eater defindex" in text

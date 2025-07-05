@@ -473,8 +473,6 @@ def _extract_kill_eater_info(
                 types[(idx - 380) // 2 + 2] = val
         elif idx in (214, 292):
             pass
-        else:
-            logger.warning("Unknown kill-eater index: %s", idx)
 
     return counts, types
 
