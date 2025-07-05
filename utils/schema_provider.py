@@ -70,11 +70,19 @@ class SchemaProvider:
                 data = fetched["value"]
             else:
                 data = fetched
-            path.write_text(json.dumps(data))
+            if (
+                key == "effects"
+                and isinstance(data, dict)
+                and not any(str(k).isdigit() for k in data)
+                and all(str(v).isdigit() for v in data.values())
+            ):
+                # convert mapping of name -> id to id -> name
+                data = {int(v): k for k, v in data.items()}
+            path.write_text(json.dumps(data, indent=2))
         elif isinstance(data, dict) and "value" in data:
             # migrate old cache format that stores entire API response
             data = data["value"]
-            path.write_text(json.dumps(data))
+            path.write_text(json.dumps(data, indent=2))
         return data
 
     # ------------------------------------------------------------------
@@ -154,7 +162,12 @@ class SchemaProvider:
     def get_effects(self, *, force: bool = False) -> Dict[int, Any]:
         if self.effects_by_index is None or force:
             data = self._load("effects", self.ENDPOINTS["effects"], force)
-            self.effects_by_index = self._unwrap_and_index(data, "id")
+            mapping = self._unwrap_and_index(data, "id")
+            if mapping and all(not isinstance(v, dict) for v in mapping.values()):
+                mapping = {
+                    idx: {"id": idx, "name": str(name)} for idx, name in mapping.items()
+                }
+            self.effects_by_index = mapping
         return self.effects_by_index
 
     def get_paints(self, *, force: bool = False) -> Dict[str, int]:
