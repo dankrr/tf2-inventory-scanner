@@ -114,14 +114,14 @@ QUALITY_MAP = {
 
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
-    """Return the unusual effect name for an Unusual-quality item."""
+    """Return the unusual effect name for Unusual or Strange Unusual items."""
 
     try:
         quality = int(asset.get("quality", 0))
     except (TypeError, ValueError):
         return None
 
-    if quality != 5:
+    if quality not in (5, 11):
         return None
 
     for attr in asset.get("attributes", []):
