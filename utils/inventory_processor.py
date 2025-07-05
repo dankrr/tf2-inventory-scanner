@@ -114,6 +114,9 @@ def _build_spell_map() -> None:
                 ),
                 None,
             )
+            if pretty is None and idx in PAINT_COLORS:
+                color_name = PAINT_COLORS[idx][0]
+                pretty = color_name if kind == "paint" else f"{color_name} Footprints"
             if pretty:
                 mapping[idx] = (kind, pretty)
     _SPELL_MAP = mapping
