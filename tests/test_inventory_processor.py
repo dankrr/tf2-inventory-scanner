@@ -44,17 +44,18 @@ def test_enrich_inventory_unusual_effect():
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
-    assert items[0]["name"] == "Unusual Team Captain"
-    assert items[0]["display_name"] == "Burning Flames Team Captain"
-    assert items[0]["unusual_effect"] == "Burning Flames"
-    assert items[0]["quality"] == "Unusual"
+    item = items[0]
+    assert item["name"] == "Unusual Team Captain"
+    assert item["display_name"] == "Burning Flames Team Captain"
+    assert item["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
+    assert item["quality"] == "Unusual"
 
 
 @pytest.mark.parametrize(
     "quality,expected",
     [
         (5, True),
-        (11, True),
+        (11, False),
         (6, False),
     ],
 )
@@ -74,7 +75,7 @@ def test_unusual_effect_only_for_allowed_qualities(quality, expected):
     items = ip.enrich_inventory(data)
     effect = items[0]["unusual_effect"]
     if expected:
-        assert effect == "Burning Flames"
+        assert effect == {"id": 13, "name": "Burning Flames"}
     else:
         assert effect is None
 
@@ -141,7 +142,7 @@ def test_unusual_effect_quality_filter(monkeypatch):
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"15": "Burning Flames"}
     items = ip.enrich_inventory(data)
-    assert items[0]["unusual_effect"] == "Burning Flames"
+    assert items[0]["unusual_effect"] == {"id": 15, "name": "Burning Flames"}
 
     # quality not allowed
     data = {
@@ -173,7 +174,7 @@ def test_unusual_effect_attribute_object():
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
-    assert items[0]["unusual_effect"] == "Burning Flames"
+    assert items[0]["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
