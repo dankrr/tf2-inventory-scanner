@@ -624,7 +624,11 @@ def _process_item(asset: dict) -> dict | None:
 
     badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
-    effect_name = effect.get("name") if isinstance(effect, dict) else None
+    effect_id = None
+    effect_name = None
+    if isinstance(effect, dict):
+        effect_id = effect.get("id")
+        effect_name = effect.get("name")
     display_name = f"{effect_name} {base_name}" if effect_name else base_name
     if effect_name:
         badges.append(
@@ -694,6 +698,8 @@ def _process_item(asset: dict) -> dict | None:
         "custom_name": asset.get("custom_name"),
         "custom_description": asset.get("custom_desc"),
         "unusual_effect": effect,
+        "unusual_effect_id": effect_id,
+        "unusual_effect_name": effect_name,
         "killstreak_tier": ks_tier,
         "sheen": sheen,
         "paint_name": paint_name,
