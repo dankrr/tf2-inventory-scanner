@@ -56,6 +56,36 @@ local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 # --- Utility functions ------------------------------------------------------
 
 
+IGNORED_STACK_KEYS = {"level", "custom_description", "custom_name", "origin"}
+
+
+def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return a list of items with identical attributes collapsed.
+
+    Items are grouped by all fields except those in ``IGNORED_STACK_KEYS``.
+    Each returned dictionary includes a ``quantity`` key indicating how many
+    instances were merged.
+    """
+
+    grouped: Dict[str, Dict[str, Any]] = {}
+    for itm in items:
+        if not isinstance(itm, dict):
+            continue
+        key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
+        try:
+            key = json.dumps(key_obj, sort_keys=True)
+        except TypeError:
+            # Fallback: skip items with unserializable fields
+            key = str(key_obj)
+        if key in grouped:
+            grouped[key]["quantity"] += 1
+        else:
+            new_item = itm.copy()
+            new_item.setdefault("quantity", 1)
+            grouped[key] = new_item
+    return list(grouped.values())
+
+
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
     """Return profile name, avatar URL and TF2 playtime for a user."""
     print(f"Fetching player summary for {steamid64}")
@@ -111,6 +141,8 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     items = inv_result.get("items", [])
     if not isinstance(items, list):
         items = []
+    else:
+        items = stack_items(items)
     status = inv_result.get("status", "failed")
 
     summary.update({"steamid": steamid64, "items": items, "status": status})
