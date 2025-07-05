@@ -142,6 +142,23 @@ def test_unusual_effect_quality_filter(monkeypatch):
     assert items[0]["unusual_effect"] is None
 
 
+def test_unusual_effect_attribute_object():
+    data = {
+        "items": [
+            {
+                "defindex": 700,
+                "quality": 5,
+                "attributes": [{"defindex": 134, "float_value": 13}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {700: {"item_name": "Hat", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    ld.EFFECT_NAMES = {"13": "Burning Flames"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
+
+
 def test_get_inventories_adds_user_agent(monkeypatch):
     captured = {}
 

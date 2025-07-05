@@ -631,6 +631,18 @@ def _process_item(asset: dict) -> dict | None:
 
     badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
+    effect_obj: Dict[str, Any] | None = None
+    for attr in asset.get("attributes", []):
+        if attr.get("defindex") == 134:
+            try:
+                effect_id = int(attr.get("float_value", 0))
+            except (TypeError, ValueError):
+                effect_id = 0
+            effect_name = local_data.EFFECT_NAMES.get(str(effect_id))
+            if effect_name:
+                effect_obj = {"id": effect_id, "name": effect_name}
+                effect = effect_name
+            break
     if effect and quality_id in (5, 11):
         badges.append(
             {
@@ -697,7 +709,11 @@ def _process_item(asset: dict) -> dict | None:
         "origin": ORIGIN_MAP.get(asset.get("origin")),
         "custom_name": asset.get("custom_name"),
         "custom_description": asset.get("custom_desc"),
-        "unusual_effect": effect if quality_id in (5, 11) else None,
+        "unusual_effect": (
+            (effect_obj if effect_obj is not None else effect)
+            if quality_id in (5, 11)
+            else None
+        ),
         "killstreak_tier": ks_tier,
         "sheen": sheen,
         "paint_name": paint_name,
