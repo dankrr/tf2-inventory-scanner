@@ -167,6 +167,17 @@ button {
   pointer-events:none;
   font-size:14px;
 }
+.item-qty{
+  position:absolute;
+  left:2px;
+  bottom:2px;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  padding:0 3px;
+  border-radius:4px;
+  font-size:12px;
+  pointer-events:none;
+}
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
 }
