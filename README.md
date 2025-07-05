@@ -84,6 +84,14 @@ their counts, mapping each spell through schema lookups. When an item has any
 spells, they are listed in the item modal as bullet points; counts greater than
 one appear in parentheses next to the spell name.
 
+For proper spell resolution, `string_lookups.json` and `defindexes.json` must be
+present in `cache/schema/`. If spell names show up as generic placeholders, run
+the following to refresh the schema files:
+
+```bash
+python app.py --refresh
+```
+
 ## Testing
 
 Run linting and tests before committing:
