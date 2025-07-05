@@ -22,7 +22,12 @@
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
-  <div class="item-name">{{ item.name }}</div>
+  <div class="item-title">
+    {% if item.unusual_effect %}
+      <span class="unusual-effect">{{ item.unusual_effect.name }}</span>
+    {% endif %}
+    {{ item.name }}
+  </div>
   {% if item.strange_parts %}
     <ul class="text-xs mt-1 text-gray-300">
       {% for part in item.strange_parts %}
