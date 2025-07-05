@@ -186,6 +186,11 @@ button {
   filter:drop-shadow(0 0 3px #ff7e30);
 }
 
+.badge[data-icon="★"]{
+  color:#8650AC;
+  filter:drop-shadow(0 0 2px #8650AC);
+}
+
 /* Killstreak chevrons */
 .badge[data-icon="›"],
 .badge[data-icon="››"],

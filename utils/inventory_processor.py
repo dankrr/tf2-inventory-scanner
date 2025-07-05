@@ -640,7 +640,16 @@ def _process_item(asset: dict) -> dict | None:
         effect_id = effect_info["id"]
         effect_name = effect_info["name"]
         effect = effect_info
-        badges.append({"type": "effect", "label": effect_name})
+        if effect_name:
+            badges.append(
+                {
+                    "icon": "★",
+                    "title": f"Unusual Effect: {effect_name}",
+                    "color": "#8650AC",
+                    "label": effect_name,
+                    "type": "effect",
+                }
+            )
     else:
         effect = None
         effect_id = effect_name = None
