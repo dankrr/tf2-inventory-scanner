@@ -58,3 +58,22 @@ def test_user_template_renders_badge_icon(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     assert "★" in html
+
+
+def test_user_template_renders_paint_spell_badge(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Painted Hat",
+                    "image_url": "",
+                    "badges": [{"icon": "🖌", "title": "Paint Spell"}],
+                }
+            ]
+        }
+    }
+    with app.app_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    assert "🖌" in html
