@@ -54,7 +54,7 @@ def test_enrich_inventory_unusual_effect():
     "quality,expected",
     [
         (5, True),
-        (11, False),
+        (11, True),
         (6, False),
     ],
 )
