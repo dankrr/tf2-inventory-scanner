@@ -45,7 +45,8 @@ def test_enrich_inventory_unusual_effect():
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["name"] == "Unusual Team Captain"
+    assert item["name"] == "Burning Flames Team Captain"
+    assert item["original_name"] == "Unusual Team Captain"
     assert item["display_name"] == "Burning Flames Team Captain"
     assert item["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
     assert item["quality"] == "Unusual"
