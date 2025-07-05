@@ -2,6 +2,7 @@ import importlib
 
 import pytest
 from flask import render_template_string
+from bs4 import BeautifulSoup
 
 HTML = '{% include "_user.html" %}'
 
@@ -94,3 +95,27 @@ def test_user_template_filters_hidden_items(app):
         html = render_template_string(HTML, **context)
     assert "Vis" in html
     assert "Hidden" not in html
+
+
+def test_unusual_effect_rendered(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Unusual Cap",
+                    "display_name": "Burning Flames Cap",
+                    "unusual_effect_name": "Burning Flames",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                }
+            ]
+        }
+    }
+    with app.app_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    span = soup.find("span", class_="unusual-effect")
+    assert span is not None
+    assert "Burning Flames" in span.text
