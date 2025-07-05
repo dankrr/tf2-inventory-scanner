@@ -18,15 +18,12 @@
     <span class="item-qty">x{{ item.quantity }}</span>
   {% endif %}
   {% if item.image_url %}
-    <img class="item-img" src="{{ item.image_url }}" alt="{{ item.name }}" width="64" height="64" onerror="this.style.display='none';">
+    <img class="item-img" src="{{ item.image_url }}" alt="{{ item.display_name }}" width="64" height="64" onerror="this.style.display='none';">
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
   <div class="item-title">
-    {% if item.unusual_effect %}
-      <span class="unusual-effect">{{ item.unusual_effect.name }}</span>
-    {% endif %}
-    {{ item.name }}
+    {{ item.display_name }}
   </div>
   {% if item.strange_parts %}
     <ul class="text-xs mt-1 text-gray-300">

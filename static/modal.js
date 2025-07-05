@@ -78,12 +78,7 @@
     }
 
     if (data.unusual_effect) {
-      const name = typeof data.unusual_effect === 'object'
-        ? data.unusual_effect.name
-        : data.unusual_effect;
-      if (name) {
-        attrs.push('<div><strong>Unusual Effect:</strong> ' + esc(name) + '</div>');
-      }
+      attrs.push('<div><strong>Unusual Effect:</strong> ' + esc(data.unusual_effect) + '</div>');
     }
 
     ;[
@@ -148,14 +143,7 @@
     const title = document.getElementById('modal-title');
     const effectBox = document.getElementById('modal-effect');
     if (title) title.textContent = data.custom_name || data.name || '';
-    let effectText = '';
-    if (data.unusual_effect) {
-      if (typeof data.unusual_effect === 'object') {
-        effectText = data.unusual_effect.name || '';
-      } else {
-        effectText = data.unusual_effect;
-      }
-    }
+    let effectText = data.unusual_effect || '';
     if (effectBox) effectBox.textContent = effectText;
   }
 
