@@ -36,7 +36,7 @@ def test_enrich_inventory_unusual_effect():
             {
                 "defindex": 222,
                 "quality": 5,
-                "descriptions": [{"value": "Unusual Effect: Burning Flames"}],
+                "attributes": [{"defindex": 134, "float_value": 13}],
             }
         ]
     }
@@ -45,6 +45,7 @@ def test_enrich_inventory_unusual_effect():
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Unusual Team Captain"
+    assert items[0]["display_name"] == "Burning Flames Team Captain"
     assert items[0]["unusual_effect"] == "Burning Flames"
     assert items[0]["quality"] == "Unusual"
 
@@ -53,7 +54,7 @@ def test_enrich_inventory_unusual_effect():
     "quality,expected",
     [
         (5, True),
-        (11, True),
+        (11, False),
         (6, False),
     ],
 )
@@ -63,7 +64,7 @@ def test_unusual_effect_only_for_allowed_qualities(quality, expected):
             {
                 "defindex": 333,
                 "quality": quality,
-                "descriptions": [{"value": "Unusual Effect: Burning Flames"}],
+                "attributes": [{"defindex": 134, "float_value": 13}],
             }
         ]
     }
@@ -127,7 +128,15 @@ def test_custom_name_stored_separately(monkeypatch):
 
 
 def test_unusual_effect_quality_filter(monkeypatch):
-    data = {"items": [{"defindex": 500, "quality": 5, "effect": 15}]}
+    data = {
+        "items": [
+            {
+                "defindex": 500,
+                "quality": 5,
+                "attributes": [{"defindex": 134, "float_value": 15}],
+            }
+        ]
+    }
     ld.ITEMS_BY_DEFINDEX = {500: {"item_name": "Hat", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"15": "Burning Flames"}
@@ -135,7 +144,15 @@ def test_unusual_effect_quality_filter(monkeypatch):
     assert items[0]["unusual_effect"] == "Burning Flames"
 
     # quality not allowed
-    data = {"items": [{"defindex": 501, "quality": 6, "effect": 15}]}
+    data = {
+        "items": [
+            {
+                "defindex": 501,
+                "quality": 6,
+                "attributes": [{"defindex": 134, "float_value": 15}],
+            }
+        ]
+    }
     ld.ITEMS_BY_DEFINDEX = {501: {"item_name": "Thing", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
@@ -156,7 +173,7 @@ def test_unusual_effect_attribute_object():
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     ld.EFFECT_NAMES = {"13": "Burning Flames"}
     items = ip.enrich_inventory(data)
-    assert items[0]["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
+    assert items[0]["unusual_effect"] == "Burning Flames"
 
 
 def test_get_inventories_adds_user_agent(monkeypatch):
