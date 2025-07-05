@@ -43,6 +43,12 @@ PATTERN_SEED_HI_CLASSES: set[str] = set()
 PAINTKIT_CLASSES: set[str] = set()
 CRATE_SERIES_CLASSES: set[str] = set()
 
+# Sets of attribute defindexes considered "special" for craft weapon detection
+SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
+SPECIAL_KILLSTREAK_ATTRS: set[int] = {2013, 2014, 2025}
+SPECIAL_FESTIVIZER_ATTRS: set[int] = {2053}
+SPECIAL_PAINTKIT_ATTRS: set[int] = {834, 866, 867, 725}
+
 
 def _refresh_attr_classes() -> None:
     """Populate attribute class sets from ``local_data.SCHEMA_ATTRIBUTES``."""
@@ -536,6 +542,44 @@ def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     return name or f"Item #{defindex}"
 
 
+def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
+    """Return True if ``asset`` is a plain craft weapon without special attrs."""
+
+    try:
+        quality = int(asset.get("quality", 0))
+    except (TypeError, ValueError):
+        return False
+
+    if quality != 6:
+        return False
+
+    if (
+        schema_entry.get("craft_class") != "weapon"
+        and schema_entry.get("craft_material_type") != "weapon"
+    ):
+        return False
+
+    for attr in asset.get("attributes", []) or []:
+        idx = attr.get("defindex")
+        try:
+            idx_int = int(idx)
+        except (TypeError, ValueError):
+            continue
+        if idx_int in SPECIAL_SPELL_ATTRS:
+            return False
+        if idx_int in SPECIAL_KILLSTREAK_ATTRS:
+            return False
+        if idx_int in SPECIAL_FESTIVIZER_ATTRS:
+            return False
+        if idx_int in SPECIAL_PAINTKIT_ATTRS:
+            return False
+
+    if asset.get("custom_name") or asset.get("custom_desc"):
+        return False
+
+    return True
+
+
 def _process_item(asset: dict) -> dict | None:
     """Return an enriched item dictionary for a single asset."""
 
@@ -549,6 +593,9 @@ def _process_item(asset: dict) -> dict | None:
     schema_entry = local_data.ITEMS_BY_DEFINDEX.get(defindex_int)
     if not schema_entry:
         logger.warning("Missing schema entry for defindex %s", defindex_int)
+        return None
+
+    if _is_plain_craft_weapon(asset, schema_entry):
         return None
 
     defindex = str(defindex_int)
