@@ -1,8 +1,4 @@
-from utils.item_enricher import (
-    ItemEnricher,
-    _decode_float_bits_to_int,
-    _build_spell_map,
-)
+from utils.item_enricher import ItemEnricher, _decode_float_bits_to_int
 from utils.schema_provider import SchemaProvider
 import struct
 
@@ -108,38 +104,20 @@ def test_spell_extraction(monkeypatch):
     )
     monkeypatch.setattr(provider, "get_qualities", lambda: {"Unique": 6})
     monkeypatch.setattr(provider, "get_paints", lambda: {})
-    monkeypatch.setattr(
-        provider,
-        "get_attributes",
-        lambda: {
-            8901: {
-                "defindex": 8901,
-                "name": "SPELL: Die Job",
-                "attribute_class": "set_item_tint_rgb_override",
-            },
-            8902: {
-                "defindex": 8902,
-                "description_string": "#Attrib_Halloween_Footstep_Type",
-            },
-            8903: {"defindex": 8903, "name": "SPELL: Halloween voice modulation"},
-        },
-    )
+    monkeypatch.setattr(provider, "get_attributes", lambda: {})
     monkeypatch.setattr(provider, "get_effects", lambda: {})
     monkeypatch.setattr(provider, "get_strange_parts", lambda: {})
 
     enricher = ItemEnricher(provider)
-
-    def enc(i: int) -> float:
-        return struct.unpack("<f", struct.pack("<I", i))[0]
 
     raw = [
         {
             "defindex": 1,
             "quality": 6,
             "attributes": [
-                {"defindex": 8901, "float_value": enc(3)},
-                {"defindex": 8902, "value": 2},
-                {"defindex": 8903, "float_value": enc(1)},
+                {"defindex": 1004, "float_value": 0},
+                {"defindex": 1005, "value": 1},
+                {"defindex": 1006, "float_value": 1},
             ],
         }
     ]
@@ -147,41 +125,11 @@ def test_spell_extraction(monkeypatch):
     item = enricher.enrich_inventory(raw)[0]
     spells = item["spells"]
 
-    assert {"name": "Die Job", "type": "paint", "count": 3} in spells
-    assert {
-        "name": "Halloween Footstep Type",
-        "type": "footprint",
-        "count": 2,
-    } in spells
-    assert {
-        "name": "Halloween voice modulation",
-        "type": "voices",
-        "count": 1,
-    } in spells
+    assert "Die Job" in spells
+    assert "Team Spirit Footprints" in spells
+    assert "Voices From Below" in spells
 
 
 def test_decode_float_bits_to_int():
     val = struct.unpack("<f", struct.pack("<I", 7))[0]
     assert _decode_float_bits_to_int(val) == 7
-
-
-def test_build_spell_map():
-    attrs = {
-        8901: {
-            "name": "SPELL: Die Job",
-            "attribute_class": "set_item_tint_rgb_override",
-        },
-        8902: {
-            "description_string": "#Attrib_Halloween_Footstep_Type",
-            "attribute_class": "halloween_footstep_type",
-        },
-        8903: {"name": "SPELL: Halloween voice modulation"},
-        100: {"name": "Not a spell"},
-    }
-
-    mapping = _build_spell_map(attrs)
-
-    assert mapping[8901] == {"name": "Die Job", "type": "paint"}
-    assert mapping[8902] == {"name": "Halloween Footstep Type", "type": "footprint"}
-    assert mapping[8903] == {"name": "Halloween voice modulation", "type": "voices"}
-    assert 100 not in mapping
