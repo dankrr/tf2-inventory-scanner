@@ -77,6 +77,15 @@
       attrs.push('<div>' + ksHtml + '</div>');
     }
 
+    if (data.unusual_effect) {
+      const name = typeof data.unusual_effect === 'object'
+        ? data.unusual_effect.name
+        : data.unusual_effect;
+      if (name) {
+        attrs.push('<div><strong>Unusual Effect:</strong> ' + esc(name) + '</div>');
+      }
+    }
+
     ;[
       ['Type', data.item_type_name],
       ['Level', data.level],
@@ -139,7 +148,15 @@
     const title = document.getElementById('modal-title');
     const effectBox = document.getElementById('modal-effect');
     if (title) title.textContent = data.custom_name || data.name || '';
-    if (effectBox) effectBox.textContent = data.unusual_effect || '';
+    let effectText = '';
+    if (data.unusual_effect) {
+      if (typeof data.unusual_effect === 'object') {
+        effectText = data.unusual_effect.name || '';
+      } else {
+        effectText = data.unusual_effect;
+      }
+    }
+    if (effectBox) effectBox.textContent = effectText;
   }
 
   function renderBadges(badges) {
