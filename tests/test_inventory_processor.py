@@ -9,6 +9,7 @@ import pytest
 @pytest.fixture(autouse=True)
 def reset_data(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {}
+    ld.SCHEMA_ATTRIBUTES = {}
 
 
 def test_enrich_inventory():
@@ -315,3 +316,27 @@ def test_kill_eater_fields(monkeypatch):
     item = items[0]
     assert item["strange_count"] == 10
     assert item["score_type"] == "Kills"
+
+
+def test_plain_craft_weapon_filtered():
+    data = {"items": [{"defindex": 10, "quality": 6}]}
+    ld.ITEMS_BY_DEFINDEX = {10: {"item_name": "A", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items == []
+
+
+def test_special_craft_weapon_kept():
+    data = {
+        "items": [
+            {
+                "defindex": 11,
+                "quality": 6,
+                "attributes": [{"defindex": 2025, "value": 1}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {11: {"item_name": "B", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    assert len(items) == 1
