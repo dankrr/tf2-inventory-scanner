@@ -77,3 +77,20 @@ def test_user_template_renders_paint_spell_badge(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     assert "🖌" in html
+
+
+def test_user_template_filters_hidden_items(app):
+    context = {
+        "user": {
+            "items": [
+                {"name": "Vis", "image_url": ""},
+                {"name": "Hidden", "image_url": "", "_hidden": True},
+            ]
+        }
+    }
+    with app.app_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    assert "Vis" in html
+    assert "Hidden" not in html

@@ -38,3 +38,28 @@ def test_post_valid_ids_sets_initial_ids(app):
     html = resp.get_data(as_text=True)
     assert steamid in html
     assert "window.initialIds" in html
+
+
+def test_hidden_items_not_rendered(app):
+    mod = importlib.import_module("app")
+    user = mod.normalize_user_payload(
+        {
+            "steamid": "1",
+            "avatar": "",
+            "username": "Test",
+            "playtime": 0,
+            "status": "parsed",
+            "items": [
+                {"name": "Visible", "image_url": ""},
+                {"name": "Hid", "image_url": "", "_hidden": True},
+            ],
+        }
+    )
+    app.config["PRELOADED_USERS"] = [user]
+    app.config["TEST_STEAMID"] = "1"
+    client = app.test_client()
+    resp = client.get("/")
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert "Visible" in html
+    assert "Hid" not in html
