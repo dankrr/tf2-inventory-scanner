@@ -102,7 +102,8 @@ def test_unusual_effect_rendered(app):
         "user": {
             "items": [
                 {
-                    "name": "Unusual Cap",
+                    "name": "Burning Flames Cap",
+                    "original_name": "Unusual Cap",
                     "display_name": "Burning Flames Cap",
                     "unusual_effect_name": "Burning Flames",
                     "image_url": "",
@@ -117,5 +118,7 @@ def test_unusual_effect_rendered(app):
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     span = soup.find("span", class_="unusual-effect")
-    assert span is not None
-    assert "Burning Flames" in span.text
+    assert span is None
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert title.text.strip().startswith("Burning Flames")

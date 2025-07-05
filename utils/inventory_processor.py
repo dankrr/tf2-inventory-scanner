@@ -656,6 +656,9 @@ def _process_item(asset: dict) -> dict | None:
     # ----------------------------------------------------------------------
 
     display_name = f"{base_name}" if not effect_name else f"{effect_name} {base_name}"
+    original_name = name if effect_name else None
+    if effect_name:
+        name = display_name
     if ks_tier_val:
         tier_id = int(float(ks_tier_val))
         icon = KILLSTREAK_BADGE_ICONS.get(tier_id)
@@ -694,6 +697,8 @@ def _process_item(asset: dict) -> dict | None:
     item = {
         "defindex": defindex,
         "name": name,
+        "original_name": original_name,
+        "base_name": base_name,
         "display_name": display_name,
         "quality": q_name,
         "quality_color": q_col,
