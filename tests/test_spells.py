@@ -1,6 +1,7 @@
 import utils.inventory_processor as ip
 from utils.inventory_processor import _extract_spells
 from utils import local_data as ld
+from utils import constants
 
 
 def _parse_lookups(data):
@@ -207,3 +208,42 @@ def test_paint_and_footprints(monkeypatch):
     _, names = _extract_spells(dummy)
     expected = set(paint_map.values()) | {foot_map[30]}
     assert expected <= set(names)
+
+
+def test_color_id_spell_map(monkeypatch):
+    lookups = {
+        "value": [
+            {
+                "table_name": "SPELL: set item tint RGB",
+                "strings": [
+                    {"index": 3100495, "string": "unused"},
+                    {"index": 8208499, "string": "unused2"},
+                ],
+            },
+            {
+                "table_name": "SPELL: set Halloween footstep type",
+                "strings": [
+                    {"index": 1757009, "string": "unused"},
+                ],
+            },
+        ]
+    }
+
+    def fake_load(name):
+        if name == "string_lookups":
+            return lookups["value"]
+        if name == "defindexes":
+            return {}
+        return None
+
+    monkeypatch.setattr(ip, "_load_json", fake_load)
+    ip._SPELL_MAP = None
+    ip._build_spell_map()
+
+    p1 = constants.PAINT_COLORS[3100495][0]
+    p2 = constants.PAINT_COLORS[8208499][0]
+    p3 = constants.PAINT_COLORS[1757009][0]
+
+    assert ip._SPELL_MAP[3100495] == ("paint", p1)
+    assert ip._SPELL_MAP[8208499] == ("paint", p2)
+    assert ip._SPELL_MAP[1757009] == ("footprint", f"{p3} Footprints")
