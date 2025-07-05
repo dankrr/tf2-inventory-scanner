@@ -23,8 +23,8 @@ def test_enrichment_full_attributes(monkeypatch):
                     {"defindex": 292, "value": 64},
                     {"defindex": 379, "value": 5},
                     {"defindex": 380, "value": 70},
-                    {"defindex": 1009},
-                    {"defindex": 2001},
+                    {"defindex": 1009, "value": 1},
+                    {"defindex": 1008, "value": 1},
                 ],
             }
         ]
@@ -39,7 +39,7 @@ def test_enrichment_full_attributes(monkeypatch):
                 "name": "SPELL: Halloween ghosts",
                 "attribute_class": "halloween_death_ghosts",
             },
-            2001: {
+            1008: {
                 "name": "SPELL: Halloween fire",
                 "attribute_class": "halloween_green_flames",
             },
