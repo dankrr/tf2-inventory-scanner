@@ -113,25 +113,32 @@ QUALITY_MAP = {
 }
 
 
-def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
-    """Return the unusual effect name for Unusual or Strange Unusual items."""
+def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
+    """Return unusual effect mapping for Unusual items."""
 
     try:
         quality = int(asset.get("quality", 0))
     except (TypeError, ValueError):
         return None
 
-    if quality not in (5, 11):
+    if quality != 5:
         return None
 
     for attr in asset.get("attributes", []):
-        idx = attr.get("defindex")
-        if idx in (134, 2041):
+        try:
+            idx = int(attr.get("defindex"))
+        except (TypeError, ValueError):
+            continue
+        if idx == 2041 or idx == 134:
+            raw_val = (
+                attr.get("float_value") if "float_value" in attr else attr.get("value")
+            )
             try:
-                effect_id = int(attr.get("float_value", 0))
+                effect_id = int(raw_val)
             except (TypeError, ValueError):
                 continue
-            return local_data.EFFECT_NAMES.get(str(effect_id))
+            name = local_data.EFFECT_NAMES.get(str(effect_id))
+            return {"id": effect_id, "name": name} if name else {"id": effect_id}
     return None
 
 
@@ -617,14 +624,15 @@ def _process_item(asset: dict) -> dict | None:
 
     badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
-    display_name = f"{effect} {base_name}" if effect else base_name
-    if effect:
+    effect_name = effect.get("name") if isinstance(effect, dict) else None
+    display_name = f"{effect_name} {base_name}" if effect_name else base_name
+    if effect_name:
         badges.append(
             {
                 "icon": "★",
-                "title": effect,
+                "title": effect_name,
                 "color": "#8650AC",
-                "label": effect,
+                "label": effect_name,
                 "type": "effect",
             }
         )
