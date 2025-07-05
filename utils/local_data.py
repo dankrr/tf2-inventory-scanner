@@ -63,7 +63,7 @@ PARTICLES_FILE = Path(os.getenv("TF2_PARTICLES_FILE", DEFAULT_PARTICLES_FILE))
 ITEMS_FILE = Path(os.getenv("TF2_ITEMS_FILE", DEFAULT_ITEMS_FILE))
 QUALITIES_FILE = Path(os.getenv("TF2_QUALITIES_FILE", DEFAULT_QUALITIES_FILE))
 DEFAULT_EFFECT_FILE = BASE_DIR / "cache" / "schema" / "effects.json"
-DEFAULT_PAINT_FILE = BASE_DIR / "cache" / "paint_names.json"
+DEFAULT_PAINT_FILE = BASE_DIR / "cache" / "schema" / "paints.json"
 DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "wear_names.json"
 DEFAULT_KILLSTREAK_FILE = BASE_DIR / "cache" / "killstreak_names.json"
 DEFAULT_KS_EFFECT_FILE = BASE_DIR / "cache" / "killstreak_effect_names.json"
@@ -113,6 +113,21 @@ def _load_json_map(path: Path) -> Dict[str, str]:
             data = json.load(f)
         if isinstance(data, dict):
             return {str(k): str(v) for k, v in data.items()}
+    except Exception:
+        pass
+    return {}
+
+
+def _load_paint_id_map(path: Path) -> Dict[str, str]:
+    """Return a mapping of paint ID -> name from a name->id JSON file."""
+
+    if not path.exists():
+        return {}
+    try:
+        with path.open() as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            return {str(v): str(k) for k, v in data.items() if str(v).isdigit()}
     except Exception:
         pass
     return {}
@@ -253,7 +268,7 @@ def load_files(
         )
 
     EFFECT_NAMES = _load_json_map(EFFECT_FILE)
-    PAINT_NAMES = _load_json_map(PAINT_FILE)
+    PAINT_NAMES = _load_paint_id_map(PAINT_FILE)
     WEAR_NAMES = _load_json_map(WEAR_FILE)
     KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
     KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
