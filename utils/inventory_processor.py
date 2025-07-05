@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 SCHEMA_DIR = Path("cache/schema")
-with open(SCHEMA_DIR / "parts.json") as fp:
+with open(SCHEMA_DIR / "strange_parts.json") as fp:
     _PARTS_BY_ID = {int(v[2:]): k for k, v in json.load(fp).items()}
 
 
