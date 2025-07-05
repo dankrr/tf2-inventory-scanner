@@ -112,33 +112,52 @@ QUALITY_MAP = {
     15: ("Decorated Weapon", "#FAFAFA"),
 }
 
+# effect_id -> name mapping loaded from ``local_data``
+EFFECTS_MAP: Dict[int, str] = {
+    int(k): v for k, v in getattr(local_data, "EFFECT_NAMES", {}).items()
+}
+
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
     """Return unusual effect mapping for Unusual items."""
 
-    try:
-        quality = int(asset.get("quality", 0))
-    except (TypeError, ValueError):
-        return None
-
-    if quality != 5:
+    # Only Unusual quality (5) items can have a particle effect.
+    if asset.get("quality") != 5:
         return None
 
     for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
         try:
-            idx = int(attr.get("defindex"))
+            idx_int = int(idx)
         except (TypeError, ValueError):
             continue
-        if idx == 2041 or idx == 134:
-            raw_val = (
-                attr.get("float_value") if "float_value" in attr else attr.get("value")
-            )
+
+        effect_id = None
+        if idx_int == 134:
+            raw = attr.get("float_value")
+            if raw is None:
+                continue
             try:
-                effect_id = int(raw_val)
+                effect_id = int(raw)
             except (TypeError, ValueError):
                 continue
-            name = local_data.EFFECT_NAMES.get(str(effect_id))
-            return {"id": effect_id, "name": name} if name else {"id": effect_id}
+        elif idx_int == 2041:
+            raw = attr.get("value")
+            if raw is None:
+                continue
+            try:
+                effect_id = int(raw)
+            except (TypeError, ValueError):
+                continue
+
+        if effect_id is None:
+            continue
+
+        effect_name = EFFECTS_MAP.get(effect_id)
+        if effect_name is None:
+            effect_name = getattr(local_data, "EFFECT_NAMES", {}).get(str(effect_id))
+        return {"id": effect_id, "name": effect_name}
+
     return None
 
 
@@ -623,23 +642,20 @@ def _process_item(asset: dict) -> dict | None:
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
     badges: List[Dict[str, str]] = []
-    effect = _extract_unusual_effect(asset)
-    effect_id = None
-    effect_name = None
-    if isinstance(effect, dict):
-        effect_id = effect.get("id")
-        effect_name = effect.get("name")
-    display_name = f"{effect_name} {base_name}" if effect_name else base_name
-    if effect_name:
-        badges.append(
-            {
-                "icon": "★",
-                "title": effect_name,
-                "color": "#8650AC",
-                "label": effect_name,
-                "type": "effect",
-            }
-        )
+
+    # --- UNUSUAL EFFECT ----------------------------------------------------
+    effect_info = _extract_unusual_effect(asset)
+    if effect_info:
+        effect_id = effect_info["id"]
+        effect_name = effect_info["name"]
+        effect = effect_info
+        badges.append({"type": "effect", "label": effect_name})
+    else:
+        effect = None
+        effect_id = effect_name = None
+    # ----------------------------------------------------------------------
+
+    display_name = f"{base_name}" if not effect_name else f"{effect_name} {base_name}"
     if ks_tier_val:
         tier_id = int(float(ks_tier_val))
         icon = KILLSTREAK_BADGE_ICONS.get(tier_id)
