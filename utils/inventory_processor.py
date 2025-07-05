@@ -114,38 +114,24 @@ QUALITY_MAP = {
 
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> str | None:
-    """Return the unusual effect name from attributes or descriptions."""
+    """Return the unusual effect name for an Unusual-quality item."""
 
-    _refresh_attr_classes()
+    try:
+        quality = int(asset.get("quality", 0))
+    except (TypeError, ValueError):
+        return None
 
-    if "effect" in asset:
-        name = local_data.EFFECT_NAMES.get(str(asset["effect"]))
-        if name:
-            return name
+    if quality != 5:
+        return None
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        attr_class = _get_attr_class(idx)
-        if attr_class in UNUSUAL_CLASSES:
-            val = str(int(attr.get("float_value", 0)))
-            name = local_data.EFFECT_NAMES.get(val)
-            if name:
-                return name
-        elif idx == 134:
-            logger.warning("Using numeric fallback for unusual effect index %s", idx)
-            val = str(int(attr.get("float_value", 0)))
-            name = local_data.EFFECT_NAMES.get(val)
-            if name:
-                return name
-
-    for desc in asset.get("descriptions", []):
-        if not isinstance(desc, dict):
-            continue
-        text = unescape(desc.get("value", ""))
-        text = re.sub(r"<[^>]+>", "", text)
-        match = re.search(r"Unusual Effect:\s*(.+)", text, re.I)
-        if match:
-            return match.group(1).strip()
+        if idx in (134, 2041):
+            try:
+                effect_id = int(attr.get("float_value", 0))
+            except (TypeError, ValueError):
+                continue
+            return local_data.EFFECT_NAMES.get(str(effect_id))
     return None
 
 
@@ -612,7 +598,7 @@ def _process_item(asset: dict) -> dict | None:
     if not q_name:
         q_name = QUALITY_MAP.get(quality_id, ("Unknown",))[0]
     q_col = QUALITY_MAP.get(quality_id, ("", "#B2B2B2"))[1]
-    display_name = _build_item_name(base_name, q_name, asset)
+    name = _build_item_name(base_name, q_name, asset)
 
     ks_tier, sheen = _extract_killstreak(asset)
     ks_effect = _extract_killstreak_effect(asset)
@@ -631,19 +617,8 @@ def _process_item(asset: dict) -> dict | None:
 
     badges: List[Dict[str, str]] = []
     effect = _extract_unusual_effect(asset)
-    effect_obj: Dict[str, Any] | None = None
-    for attr in asset.get("attributes", []):
-        if attr.get("defindex") == 134:
-            try:
-                effect_id = int(attr.get("float_value", 0))
-            except (TypeError, ValueError):
-                effect_id = 0
-            effect_name = local_data.EFFECT_NAMES.get(str(effect_id))
-            if effect_name:
-                effect_obj = {"id": effect_id, "name": effect_name}
-                effect = effect_name
-            break
-    if effect and quality_id in (5, 11):
+    display_name = f"{effect} {base_name}" if effect else base_name
+    if effect:
         badges.append(
             {
                 "icon": "★",
@@ -690,7 +665,8 @@ def _process_item(asset: dict) -> dict | None:
 
     item = {
         "defindex": defindex,
-        "name": display_name,
+        "name": name,
+        "display_name": display_name,
         "quality": q_name,
         "quality_color": q_col,
         "image_url": image_url,
@@ -709,11 +685,7 @@ def _process_item(asset: dict) -> dict | None:
         "origin": ORIGIN_MAP.get(asset.get("origin")),
         "custom_name": asset.get("custom_name"),
         "custom_description": asset.get("custom_desc"),
-        "unusual_effect": (
-            (effect_obj if effect_obj is not None else effect)
-            if quality_id in (5, 11)
-            else None
-        ),
+        "unusual_effect": effect,
         "killstreak_tier": ks_tier,
         "sheen": sheen,
         "paint_name": paint_name,
