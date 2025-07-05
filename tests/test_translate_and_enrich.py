@@ -58,55 +58,16 @@ def test_decorated_flamethrower_enrichment():
 def test_extract_spells_and_badges(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {501: {"item_name": "Gun", "image_url": ""}}
 
-    monkeypatch.setattr(
-        ld,
-        "SCHEMA_ATTRIBUTES",
-        {
-            1009: {
-                "name": "SPELL: Halloween ghosts",
-                "attribute_class": "halloween_death_ghosts",
-            },
-            2001: {
-                "name": "SPELL: Halloween fire",
-                "attribute_class": "halloween_green_flames",
-            },
-            2000: {
-                "name": "SPELL: set Halloween footstep type",
-                "attribute_class": "halloween_footstep_type",
-            },
-            3001: {
-                "name": "SPELL: Pumpkin explosions",
-                "attribute_class": "halloween_pumpkin_explosions",
-            },
-            1010: {
-                "name": "SPELL: Halloween voice modulation",
-                "attribute_class": "halloween_voice_modulation",
-            },
-        },
-        False,
-    )
-    monkeypatch.setattr(
-        ld,
-        "SPELL_DISPLAY_NAMES",
-        {
-            "halloween_death_ghosts": "Exorcism",
-            "halloween_green_flames": "Halloween Fire",
-            "halloween_footstep_type": "Halloween Footprints",
-            "halloween_pumpkin_explosions": "Pumpkin Bombs",
-            "halloween_voice_modulation": "Voices From Below",
-        },
-        False,
-    )
-
     asset = {
         "defindex": 501,
         "quality": 6,
         "attributes": [
-            {"defindex": 1009},
-            {"defindex": 2001},
-            {"defindex": 2000},
-            {"defindex": 3001},
-            {"defindex": 1010},
+            {"defindex": 1009, "value": 1},
+            {"defindex": 1008, "value": 1},
+            {"defindex": 1005, "value": 8421376},
+            {"defindex": 1007, "value": 1},
+            {"defindex": 1006, "value": 1},
+            {"defindex": 1004, "value": 2},
         ],
     }
 
@@ -114,9 +75,10 @@ def test_extract_spells_and_badges(monkeypatch):
     expected_spells = [
         "Exorcism",
         "Halloween Fire",
-        "Halloween Footprints",
+        "Gangreen Footprints",
         "Pumpkin Bombs",
         "Voices From Below",
+        "Putrescent Pigmentation",
     ]
     assert set(names) == set(expected_spells)
 

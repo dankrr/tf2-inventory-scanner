@@ -78,19 +78,10 @@ Use `showItemModal(html)` to populate and display the dialog.
 
 ## Spells
 
-Halloween spells are parsed from item attributes using the loaded schema files
-at runtime. The processor decodes attribute values to extract spell names and
-their counts, mapping each spell through schema lookups. When an item has any
-spells, they are listed in the item modal as bullet points; counts greater than
-one appear in parentheses next to the spell name.
-
-For proper spell resolution, `string_lookups.json` and `defindexes.json` must be
-present in `cache/schema/`. If spell names show up as generic placeholders, run
-the following to refresh the schema files:
-
-```bash
-python app.py --refresh
-```
+Halloween spell detection now relies on a static map of known spells. For each
+item attribute with a defindex from `1004` to `1009`, the numeric value is
+matched against this table to produce the spell name. No schema lookups are
+required and spell names are always resolved offline.
 
 ## Testing
 
