@@ -426,3 +426,16 @@ def test_price_map_applied():
     assert item["price"] == price_map[(42, 6)]
     assert item["price_string"] == "5.33 Refined"
     assert item["formatted_price"] == "5.33 Refined"
+
+
+def test_price_map_key_conversion_large_value():
+    data = {"items": [{"defindex": 42, "quality": 6}]}
+    ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {(42, 6): {"value_raw": 367.73, "currency": "metal"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 70.0}}}
+
+    items = ip.enrich_inventory(data, price_map=price_map)
+    item = items[0]
+    assert item["formatted_price"] == "5 Keys 17.73 Refined"
+    assert item["price_string"] == "5 Keys 17.73 Refined"
