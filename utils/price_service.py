@@ -36,3 +36,38 @@ def convert_price_to_keys_ref(
         parts.append(f"{ref_str} Refined")
 
     return " ".join(parts)
+
+
+def convert_to_key_ref(value_refined: float) -> str:
+    """Convert a refined metal value into a keys+refined string.
+
+    Parameters
+    ----------
+    value_refined:
+        The amount of refined metal to convert.
+
+    Returns
+    -------
+    str
+        A string in the form ``"<N> Keys <M.MM> Refined"``. Keys are computed
+        using integer division and the remainder is formatted with two decimal
+        places.
+    """
+
+    try:
+        value = float(value_refined)
+    except (TypeError, ValueError):
+        return ""
+
+    key_price = 50.0
+
+    keys = int(value // key_price)
+    refined = value - keys * key_price
+
+    parts = []
+    if keys:
+        parts.append(f"{keys} Key" + ("s" if keys != 1 else ""))
+    if refined > 0.0 or not parts:
+        parts.append(f"{refined:.2f} Refined")
+
+    return " ".join(parts)
