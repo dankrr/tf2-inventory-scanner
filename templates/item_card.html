@@ -23,6 +23,9 @@
     <div class="missing-icon"></div>
   {% endif %}
   <h2 class="item-title">{{ item.name }}</h2>
+  {% if item.price_string %}
+    <div class="item-price">{{ item.price_string|replace("Refined", "ref") }}</div>
+  {% endif %}
   {% if item.strange_parts %}
     <ul class="text-xs mt-1 text-gray-300">
       {% for part in item.strange_parts %}
