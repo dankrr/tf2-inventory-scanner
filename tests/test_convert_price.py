@@ -16,3 +16,13 @@ def test_convert_exact_key_price():
 def test_convert_keys_currency():
     out = ps.convert_price_to_keys_ref(2, "keys", currencies)
     assert out == "2 Keys"
+
+
+def test_convert_to_key_ref_custom_exact_key():
+    out = ps.convert_to_key_ref(67.16, currencies)
+    assert out == "1 Key"
+
+
+def test_convert_to_key_ref_custom_keys_and_refined():
+    out = ps.convert_to_key_ref(123.44, currencies)
+    assert out == "1 Key 56.28 Refined"
