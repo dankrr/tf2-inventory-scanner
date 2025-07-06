@@ -38,8 +38,8 @@ def test_price_map_smoke(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert (5021, 6) in mapping
-    assert mapping[(5021, 6)]["currency"] == "metal"
+    assert ("Mann Co. Supply Crate Key", 6, False) in mapping
+    assert mapping[("Mann Co. Supply Crate Key", 6, False)]["currency"] == "metal"
 
 
 def test_price_map_non_craftable(tmp_path, monkeypatch):
@@ -76,8 +76,8 @@ def test_price_map_non_craftable(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert (123, 5) in mapping
-    assert mapping[(123, 5)]["currency"] == "keys"
+    assert ("Unusual Hat", 5, False) in mapping
+    assert mapping[("Unusual Hat", 5, False)]["currency"] == "keys"
 
 
 def test_price_map_unusual_effect(tmp_path, monkeypatch):
@@ -114,8 +114,8 @@ def test_price_map_unusual_effect(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert (30998, 5, 13) in mapping
-    assert mapping[(30998, 5, 13)]["currency"] == "keys"
+    assert ("Villain's Veil", 5, False) in mapping
+    assert mapping[("Villain's Veil", 5, False)]["currency"] == "keys"
 
 
 def test_price_map_australium(tmp_path, monkeypatch):
@@ -153,7 +153,7 @@ def test_price_map_australium(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert (205, 6, "australium") in mapping
+    assert ("Rocket Launcher", 6, True) in mapping
 
 
 def test_missing_api_key(monkeypatch):

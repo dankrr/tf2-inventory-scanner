@@ -71,29 +71,22 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
     return path
 
 
-def build_price_map(
-    prices_path: Path,
-) -> dict[
-    tuple[int, int] | tuple[int, int, int] | tuple[int, int, str],
-    dict,
-]:
-    """Return mapping of (defindex, quality[, effect_or_flag]) -> price info.
-
-    If an item entry contains ``"australium": "1"``, the price will also be
-    stored under ``(defindex, quality, "australium")``.
-    """
+def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool], dict]:
+    """Return mapping of ``(item_name, quality, is_australium)`` -> price info."""
 
     with prices_path.open() as f:
         data = json.load(f)
 
     items = data.get("response", {}).get("items", {})
-    mapping: dict[
-        tuple[int, int] | tuple[int, int, int] | tuple[int, int, str], dict
-    ] = {}
+    mapping: dict[tuple[str, int, bool], dict] = {}
 
-    for item in items.values():
-        defindexes = item.get("defindex") or []
-        is_australium = str(item.get("australium")) == "1"
+    for name, item in items.items():
+        is_australium = str(item.get("australium")) == "1" or name.startswith(
+            "Australium "
+        )
+        base_name = (
+            name.replace("Australium ", "") if name.startswith("Australium ") else name
+        )
         prices = item.get("prices", {})
         for quality, qdata in prices.items():
             try:
@@ -103,73 +96,24 @@ def build_price_map(
 
             tradable = qdata.get("Tradable", {})
             entries = tradable.get("Craftable")
-            if not isinstance(entries, list) and qid == 5 and isinstance(entries, dict):
-                # Unusual prices indexed by effect id
-                for eff_str, entry in entries.items():
-                    try:
-                        eff_id = int(eff_str)
-                    except (TypeError, ValueError):
-                        continue
-                    if not isinstance(entry, dict):
-                        continue
-                    value_raw = entry.get("value_raw")
-                    currency = entry.get("currency")
-                    if value_raw is None or currency is None:
-                        continue
-                    for defi in defindexes:
-                        try:
-                            idx = int(defi)
-                        except (TypeError, ValueError):
-                            continue
-                        mapping[(idx, qid, eff_id)] = {
-                            "value_raw": float(value_raw),
-                            "currency": str(currency),
-                        }
-                continue
-
-            if not isinstance(entries, list):
-                entries = tradable.get("Non-Craftable")
 
             if qid == 5 and isinstance(entries, dict):
-                for eff_str, entry in entries.items():
-                    try:
-                        eff_id = int(eff_str)
-                    except (TypeError, ValueError):
-                        continue
-                    if not isinstance(entry, dict):
-                        continue
-                    value_raw = entry.get("value_raw")
-                    currency = entry.get("currency")
-                    if value_raw is None or currency is None:
-                        continue
-                    for defi in defindexes:
-                        try:
-                            idx = int(defi)
-                        except (TypeError, ValueError):
-                            continue
-                        mapping[(idx, qid, eff_id)] = {
-                            "value_raw": float(value_raw),
-                            "currency": str(currency),
-                        }
-                continue
+                entry = next(iter(entries.values()), None)
+            else:
+                if not isinstance(entries, list):
+                    entries = tradable.get("Non-Craftable")
+                entry = entries[0] if isinstance(entries, list) else None
 
-            entry = entries[0] if isinstance(entries, list) else None
             if not isinstance(entry, dict):
                 continue
+
             value_raw = entry.get("value_raw")
             currency = entry.get("currency")
             if value_raw is None or currency is None:
                 continue
-            for defi in defindexes:
-                try:
-                    idx = int(defi)
-                except (TypeError, ValueError):
-                    continue
-                info = {
-                    "value_raw": float(value_raw),
-                    "currency": str(currency),
-                }
-                mapping[(idx, qid)] = info
-                if is_australium:
-                    mapping[(idx, qid, "australium")] = info
+
+            mapping[(base_name, qid, is_australium)] = {
+                "value_raw": float(value_raw),
+                "currency": str(currency),
+            }
     return mapping

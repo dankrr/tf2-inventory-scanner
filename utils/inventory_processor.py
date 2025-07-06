@@ -606,13 +606,7 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
 
 def _process_item(
     asset: dict,
-    price_map: (
-        dict[
-            tuple[int, int] | tuple[int, int, int] | tuple[int, int, str],
-            dict,
-        ]
-        | None
-    ) = None,
+    price_map: dict[tuple[str, int, bool], dict] | None = None,
 ) -> dict | None:
     """Return an enriched item dictionary for a single asset.
 
@@ -621,10 +615,9 @@ def _process_item(
     asset:
         Raw inventory item from Steam.
     price_map:
-        Optional mapping of ``(defindex, quality_id[, effect])`` or
-        ``(defindex, quality, "australium")`` to Backpack.tf price data. When
-        provided, price information is added under ``"price"`` and
-        ``"price_string"`` keys.
+        Optional mapping of ``(item_name, quality, is_australium)`` to
+        Backpack.tf price data. When provided, price information is added under
+        ``"price"`` and ``"price_string"`` keys.
     """
 
     defindex_raw = asset.get("defindex", 0)
@@ -802,13 +795,7 @@ def _process_item(
             tradable = 1
 
         if tradable:
-            info = None
-            if effect_id is not None and int(quality_id) == 5:
-                info = price_map.get((defindex_int, int(quality_id), effect_id))
-            if info is None and is_australium:
-                info = price_map.get((defindex_int, int(quality_id), "australium"))
-            if info is None:
-                info = price_map.get((defindex_int, int(quality_id)))
+            info = price_map.get((base_name, int(quality_id), bool(is_australium)))
 
             if info:
                 item["price"] = info
@@ -825,7 +812,7 @@ def _process_item(
 
 def enrich_inventory(
     data: Dict[str, Any],
-    price_map: dict[tuple[int, int] | tuple[int, int, int], dict] | None = None,
+    price_map: dict[tuple[str, int, bool], dict] | None = None,
 ) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info.
 
@@ -834,8 +821,9 @@ def enrich_inventory(
     data:
         Inventory payload from Steam.
     price_map:
-        Optional mapping of ``(defindex, quality_id[, effect_id])`` to Backpack.tf
-        price information. When provided, items will include price metadata.
+        Optional mapping of ``(item_name, quality, is_australium)`` to
+        Backpack.tf price information. When provided, items will include price
+        metadata.
     """
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
@@ -890,7 +878,8 @@ def enrich_inventory(
 
 
 def process_inventory(
-    data: Dict[str, Any], price_map: dict[tuple[int, int], dict] | None = None
+    data: Dict[str, Any],
+    price_map: dict[tuple[str, int, bool], dict] | None = None,
 ) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
     items = enrich_inventory(data, price_map)
