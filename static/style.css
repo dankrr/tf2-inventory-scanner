@@ -151,14 +151,13 @@ button {
   align-items: center;
   justify-content: flex-start;
   width: 96px;
-  height: 112px;
   padding: 4px;
   margin: 0;
   border: 2px solid #FFDD00;
   border-radius: 8px;
-  overflow: hidden;
   background-color: #1e1e1e;
   position: relative; /* ensure badges overlay */
+  min-height: 112px;
 }
 
 .item-card:hover {
@@ -240,11 +239,7 @@ button {
   word-break: break-word;
   color: #fff;
   line-height: 1.2em;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  max-height: 2.4em;
+  margin-top: 4px;
 }
 
 .item-price {
@@ -286,6 +281,6 @@ button {
   }
   .item-card {
     width: 80px;
-    height: 104px;
+    min-height: 104px;
   }
 }
