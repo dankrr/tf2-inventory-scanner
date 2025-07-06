@@ -151,8 +151,7 @@ button {
   align-items: center;
   justify-content: space-between;
   width: 96px;
-  height: auto;
-  min-height: 128px;
+  height: 112px;
   padding: 4px;
   margin: 0;
   border: 2px solid #FFDD00;
@@ -238,9 +237,16 @@ button {
 .item-title {
   font-size: 0.9rem;
   line-height: 1.1rem;
-  white-space: normal;
-  overflow: visible;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  max-height: 3.3rem;
   margin-top: 0.4rem;
+}
+
+.item-title.long {
+  font-size: 0.8rem;
 }
 
 .item-price {
