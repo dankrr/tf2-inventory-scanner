@@ -241,6 +241,11 @@ button {
   color: #fff;
 }
 
+.item-price {
+  margin-top: 2px;
+  font-size: 12px;
+}
+
 /* ───── Paint colour dot (used in card & modal) ───────────────────── */
 .paint-dot {
   display: inline-block;
