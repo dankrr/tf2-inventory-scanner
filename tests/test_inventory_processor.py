@@ -424,3 +424,4 @@ def test_price_map_applied():
     item = items[0]
     assert item["price"] == price_map[(42, 6)]
     assert item["price_string"] == "5.33 Refined"
+    assert item["formatted_price"] == "5.33 Refined"

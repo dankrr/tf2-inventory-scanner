@@ -765,9 +765,11 @@ def _process_item(
             value = info.get("value_raw")
             currency = info.get("currency")
             if value is not None and currency:
-                item["price_string"] = convert_price_to_keys_ref(
+                formatted = convert_price_to_keys_ref(
                     value, currency, local_data.CURRENCIES
                 )
+                item["price_string"] = formatted
+                item["formatted_price"] = formatted
     return item
 
 
