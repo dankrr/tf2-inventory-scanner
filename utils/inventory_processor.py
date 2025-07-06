@@ -760,19 +760,29 @@ def _process_item(
         ),
     }
     if price_map is not None:
-        info = None
-        if effect_id is not None and int(quality_id) == 5:
-            info = price_map.get((defindex_int, int(quality_id), effect_id))
-        if info is None:
-            info = price_map.get((defindex_int, int(quality_id)))
+        tradable = asset.get("tradable", 1)
+        try:
+            tradable = int(tradable)
+        except (TypeError, ValueError):  # pragma: no cover - fallback handling
+            tradable = 1
 
-        if info:
-            item["price"] = info
-            value = info.get("value_raw")
-            if value is not None:
-                formatted = format_price(value, local_data.CURRENCIES)
-                item["price_string"] = formatted
-                item["formatted_price"] = formatted
+        if tradable:
+            info = None
+            if effect_id is not None and int(quality_id) == 5:
+                info = price_map.get((defindex_int, int(quality_id), effect_id))
+            if info is None:
+                info = price_map.get((defindex_int, int(quality_id)))
+
+            if info:
+                item["price"] = info
+                value = info.get("value_raw")
+                if value is not None:
+                    formatted = format_price(value, local_data.CURRENCIES)
+                    item["price_string"] = formatted
+                    item["formatted_price"] = formatted
+            else:
+                item["price"] = None
+                item["price_string"] = ""
     return item
 
 
