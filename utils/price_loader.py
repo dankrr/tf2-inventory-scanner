@@ -88,8 +88,13 @@ def build_price_map(prices_path: Path) -> dict[tuple[int, int], dict]:
                 qid = int(quality)
             except (TypeError, ValueError):
                 continue
-            craftable = qdata.get("Tradable", {}).get("Craftable")
-            entry = craftable[0] if isinstance(craftable, list) else None
+
+            tradable = qdata.get("Tradable", {})
+            entries = tradable.get("Craftable")
+            if not isinstance(entries, list):
+                entries = tradable.get("Non-Craftable")
+
+            entry = entries[0] if isinstance(entries, list) else None
             if not isinstance(entry, dict):
                 continue
             value_raw = entry.get("value_raw")
