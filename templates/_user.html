@@ -30,7 +30,9 @@
             {# ↑ keep border-color for quality #}
             <div class="item-wrapper">
               {% include "item_card.html" %}
-              <div class="item-price">{{ item.formatted_price or "Unpriced" }}</div>
+              {% if item.price_string %}
+                <div class="item-price">{{ item.formatted_price }}</div>
+              {% endif %}
             </div>
           {% endfor %}
         </div>
