@@ -485,3 +485,12 @@ def test_tradable_item_missing_price():
     item = items[0]
     assert item["price"] is None
     assert item["price_string"] == ""
+
+
+def test_australium_display_name():
+    data = {"items": [{"defindex": 111, "quality": 6, "is_australium": True}]}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["display_name"] == "Australium Rocket Launcher"

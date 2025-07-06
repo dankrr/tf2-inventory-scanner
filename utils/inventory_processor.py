@@ -628,6 +628,8 @@ def _process_item(
     if paintkit_name:
         base_name = f"{base_name} ({paintkit_name})"
 
+    is_australium = asset.get("is_australium")
+
     quality_id = asset.get("quality", 0)
     q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
     if not q_name:
@@ -712,12 +714,22 @@ def _process_item(
             }
         )
 
+    if is_australium:
+        clean_base = re.sub(
+            r"^(Strange|Unique|Vintage|Haunted|Collector's|Genuine|Unusual)\s+",
+            "",
+            base_name,
+            flags=re.IGNORECASE,
+        )
+        display_name = f"Australium {clean_base}"
+
     item = {
         "defindex": defindex,
         "name": name,
         "original_name": original_name,
         "base_name": base_name,
         "display_name": display_name,
+        "is_australium": bool(is_australium),
         "quality": q_name,
         "quality_color": q_col,
         "image_url": image_url,
