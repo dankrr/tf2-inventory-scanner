@@ -1,5 +1,6 @@
 import importlib
 import json
+from pathlib import Path
 
 import pytest
 from flask import render_template_string
@@ -11,7 +12,16 @@ HTML = '{% include "_user.html" %}'
 @pytest.fixture
 def app(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
+    monkeypatch.setenv("BPTF_API_KEY", "x")
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_prices_cached",
+        lambda refresh=False: Path("prices.json"),
+    )
+    monkeypatch.setattr(
+        "utils.price_loader.build_price_map",
+        lambda path: {},
+    )
     mod = importlib.import_module("app")
     importlib.reload(mod)
     return mod.app

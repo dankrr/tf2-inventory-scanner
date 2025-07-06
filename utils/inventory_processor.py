@@ -584,7 +584,9 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     return True
 
 
-def _process_item(asset: dict) -> dict | None:
+def _process_item(
+    asset: dict, price_map: dict[tuple[int, int], dict] | None = None
+) -> dict | None:
     """Return an enriched item dictionary for a single asset."""
 
     defindex_raw = asset.get("defindex", 0)
@@ -742,10 +744,16 @@ def _process_item(asset: dict) -> dict | None:
             else None
         ),
     }
+    if price_map is not None:
+        info = price_map.get((defindex_int, int(quality_id)))
+        if info:
+            item["price"] = info
     return item
 
 
-def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def enrich_inventory(
+    data: Dict[str, Any], price_map: dict[tuple[int, int], dict] | None = None
+) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info."""
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
@@ -754,7 +762,7 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     items: List[Dict[str, Any]] = []
 
     for asset in items_raw:
-        item = _process_item(asset)
+        item = _process_item(asset, price_map)
         if not item:
             continue
 
@@ -804,9 +812,11 @@ def enrich_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     return items
 
 
-def process_inventory(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def process_inventory(
+    data: Dict[str, Any], price_map: dict[tuple[int, int], dict] | None = None
+) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
-    items = enrich_inventory(data)
+    items = enrich_inventory(data, price_map)
     return sorted(items, key=lambda i: i["name"])
 
 
