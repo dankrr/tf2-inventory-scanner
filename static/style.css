@@ -142,7 +142,7 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 96px;
   height: 128px;
   padding: 4px;
@@ -239,10 +239,16 @@ button {
   text-align: center;
   word-break: break-word;
   color: #fff;
+  line-height: 1.2em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  max-height: 2.4em;
 }
 
 .item-price {
-  margin-top: 2px;
+  margin-top: auto;
   font-size: 12px;
 }
 
