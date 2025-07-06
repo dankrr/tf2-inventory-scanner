@@ -73,17 +73,27 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
 
 def build_price_map(
     prices_path: Path,
-) -> dict[tuple[int, int] | tuple[int, int, int], dict]:
-    """Return mapping of (defindex, quality[, effect]) -> price info."""
+) -> dict[
+    tuple[int, int] | tuple[int, int, int] | tuple[int, int, str],
+    dict,
+]:
+    """Return mapping of (defindex, quality[, effect_or_flag]) -> price info.
+
+    If an item entry contains ``"australium": "1"``, the price will also be
+    stored under ``(defindex, quality, "australium")``.
+    """
 
     with prices_path.open() as f:
         data = json.load(f)
 
     items = data.get("response", {}).get("items", {})
-    mapping: dict[tuple[int, int] | tuple[int, int, int], dict] = {}
+    mapping: dict[
+        tuple[int, int] | tuple[int, int, int] | tuple[int, int, str], dict
+    ] = {}
 
     for item in items.values():
         defindexes = item.get("defindex") or []
+        is_australium = str(item.get("australium")) == "1"
         prices = item.get("prices", {})
         for quality, qdata in prices.items():
             try:
@@ -155,8 +165,11 @@ def build_price_map(
                     idx = int(defi)
                 except (TypeError, ValueError):
                     continue
-                mapping[(idx, qid)] = {
+                info = {
                     "value_raw": float(value_raw),
                     "currency": str(currency),
                 }
+                mapping[(idx, qid)] = info
+                if is_australium:
+                    mapping[(idx, qid, "australium")] = info
     return mapping
