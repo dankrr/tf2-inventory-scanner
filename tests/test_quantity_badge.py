@@ -1,4 +1,5 @@
 import importlib
+from pathlib import Path
 from flask import render_template_string
 from bs4 import BeautifulSoup
 
@@ -18,6 +19,12 @@ def test_stack_items_collapses_duplicates():
 
 def test_quantity_badge_rendered(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
+    monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_prices_cached",
+        lambda refresh=False: Path("prices.json"),
+    )
+    monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     mod = importlib.import_module("app")
     importlib.reload(mod)
