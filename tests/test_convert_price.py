@@ -4,7 +4,7 @@ currencies = {"keys": {"price": {"value_raw": 67.16}}}
 
 
 def test_format_price_metal_to_keys_and_ref():
-    assert format_price(123.44, currencies) == "1 Key 56.28 Refined"
+    assert format_price(123.44, currencies) == "1 Key 56.28 ref"
 
 
 def test_format_price_exact_key():
@@ -20,4 +20,4 @@ def test_format_price_custom_exact_key():
 
 
 def test_format_price_custom_keys_and_refined():
-    assert format_price(123.44, currencies) == "1 Key 56.28 Refined"
+    assert format_price(123.44, currencies) == "1 Key 56.28 ref"

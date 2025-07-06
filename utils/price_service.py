@@ -26,7 +26,7 @@ def format_price(value_raw: float, currencies: Dict[str, Any]) -> str:
     if keys:
         parts.append(f"{keys} Key" + ("s" if keys != 1 else ""))
     if refined > 0 or not parts:
-        parts.append(f"{refined:.2f} Refined")
+        parts.append(f"{refined:.2f} ref")
 
     return " ".join(parts)
 
@@ -34,7 +34,7 @@ def format_price(value_raw: float, currencies: Dict[str, Any]) -> str:
 def convert_price_to_keys_ref(
     value_raw: float, currency: str, currencies: Dict[str, Any]
 ) -> str:
-    """Backward compatible wrapper calling :func:`format_price`."""
+    """Return a price string like ``"1 Key 0.11 ref"``."""
 
     return format_price(value_raw, currencies)
 
@@ -42,7 +42,7 @@ def convert_price_to_keys_ref(
 def convert_to_key_ref(
     value_refined: float, currencies: Dict[str, Any] | None = None
 ) -> str:
-    """Backward compatible wrapper for :func:`format_price`."""
+    """Return a price string formatted using key price and refined metal."""
 
     if currencies is None:
         currencies = local_data.CURRENCIES
