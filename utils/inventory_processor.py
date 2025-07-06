@@ -645,13 +645,22 @@ def _process_item(
         base_name = f"{base_name} ({paintkit_name})"
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)
+    display_base = base_name
+    if is_australium:
+        clean_base = re.sub(
+            r"^(Strange|Unique|Vintage|Haunted|Collector's|Genuine|Unusual)\s+",
+            "",
+            base_name,
+            flags=re.IGNORECASE,
+        )
+        display_base = f"Australium {clean_base}"
 
     quality_id = asset.get("quality", 0)
     q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
     if not q_name:
         q_name = QUALITY_MAP.get(quality_id, ("Unknown",))[0]
     q_col = QUALITY_MAP.get(quality_id, ("", "#B2B2B2"))[1]
-    name = _build_item_name(base_name, q_name, asset)
+    name = _build_item_name(display_base, q_name, asset)
 
     ks_tier, sheen = _extract_killstreak(asset)
     ks_effect = _extract_killstreak_effect(asset)
@@ -691,7 +700,9 @@ def _process_item(
         effect_id = effect_name = None
     # ----------------------------------------------------------------------
 
-    display_name = f"{base_name}" if not effect_name else f"{effect_name} {base_name}"
+    display_name = (
+        f"{display_base}" if not effect_name else f"{effect_name} {display_base}"
+    )
     original_name = name if effect_name else None
     if effect_name:
         name = display_name
@@ -729,15 +740,6 @@ def _process_item(
                 "type": "warpaint",
             }
         )
-
-    if is_australium:
-        clean_base = re.sub(
-            r"^(Strange|Unique|Vintage|Haunted|Collector's|Genuine|Unusual)\s+",
-            "",
-            base_name,
-            flags=re.IGNORECASE,
-        )
-        display_name = f"Australium {clean_base}"
 
     item = {
         "defindex": defindex,
