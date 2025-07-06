@@ -234,24 +234,27 @@ button {
   justify-content: center;
 }
 
+
+/* Make sure long names can wrap onto two lines without overlap */
 .item-title {
-  font-size: 12px;
+  font-size: 0.9rem;
+  line-height: 1.1rem;
+  height: auto;             /* let the title grow                      */
+  white-space: normal;      /* allow wrapping                          */
+  overflow: hidden;         /* hide overflow just in case              */
   text-align: center;
   word-break: break-word;
   color: #fff;
-  line-height: 1.2em;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  max-height: 2.4em;
 }
 
+/* Item-card price text */
 .item-price {
-  margin-top: 2px;
-  font-size: 11px;
-  text-align: center;
-  word-wrap: break-word;
+  font-size: 0.8rem;        /* slightly smaller than title            */
+  color: #cfcfcf;           /* subtle light grey                       */
+  margin-top: 0.25rem;      /* space between name and price            */
+  text-align: center;       /* keep it centered under the icon         */
+  word-wrap: break-word;    /* allow wrapping if really long           */
+  line-height: 1rem;        /* compact vertical spacing                */
 }
 
 /* ───── Paint colour dot (used in card & modal) ───────────────────── */
