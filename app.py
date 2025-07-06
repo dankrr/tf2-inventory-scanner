@@ -15,6 +15,7 @@ from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 from utils import local_data
 from utils import constants as consts
+from utils.price_loader import ensure_prices_cached, build_price_map
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -36,6 +37,7 @@ if ARGS.refresh:
     )
     provider = SchemaProvider(cache_dir="cache/schema")
     provider.refresh_all(verbose=True)
+    ensure_prices_cached(refresh=True)
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
@@ -52,6 +54,8 @@ app = Flask(__name__)
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
+_prices_path = ensure_prices_cached(refresh=ARGS.refresh)
+PRICE_MAP = build_price_map(_prices_path)
 
 # --- Utility functions ------------------------------------------------------
 
@@ -122,7 +126,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
-            items = enrich_inventory(data)
+            items = enrich_inventory(data, price_map=PRICE_MAP)
         except Exception:
             app.logger.exception("Failed to enrich inventory for %s", steamid64)
             status = "failed"
