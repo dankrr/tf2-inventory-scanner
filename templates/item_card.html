@@ -10,9 +10,6 @@
           <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
         {% endif %}
       {% endfor %}
-    {% if "🔧" in item.badges %}
-      <span class="badge bg-indigo-600" title="Contains Strange Parts">🔧</span>
-    {% endif %}
   </div>
   {% if item.quantity and item.quantity > 1 %}
     <span class="item-qty">x{{ item.quantity }}</span>
@@ -23,11 +20,4 @@
     <div class="missing-icon"></div>
   {% endif %}
   <h2 class="item-title">{{ item.name }}</h2>
-  {% if item.strange_parts %}
-    <ul class="text-xs mt-1 text-gray-300">
-      {% for part in item.strange_parts %}
-        <li>🛠️ {{ part }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
 </div>
