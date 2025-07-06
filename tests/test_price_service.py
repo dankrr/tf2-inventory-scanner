@@ -14,8 +14,10 @@ def test_convert_price_to_keys_ref_keys():
 
 
 def test_convert_to_key_ref_only_refined():
-    assert convert_to_key_ref(5.0) == "5.00 Refined"
+    currencies = {"keys": {"price": {"value_raw": 50.0}}}
+    assert convert_to_key_ref(5.0, currencies) == "5.00 Refined"
 
 
 def test_convert_to_key_ref_keys_and_refined():
-    assert convert_to_key_ref(125.5) == "2 Keys 25.50 Refined"
+    currencies = {"keys": {"price": {"value_raw": 50.0}}}
+    assert convert_to_key_ref(125.5, currencies) == "2 Keys 25.50 Refined"

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+from . import local_data
+
 
 def convert_price_to_keys_ref(
     value_raw: float, currency: str, currencies: Dict[str, Any]
@@ -30,13 +32,18 @@ def convert_price_to_keys_ref(
         return f"{round(value_raw, 2)} {currency}"
 
 
-def convert_to_key_ref(value_refined: float) -> str:
+def convert_to_key_ref(
+    value_refined: float, currencies: Dict[str, Any] | None = None
+) -> str:
     """Convert a refined metal value into a keys+refined string.
 
     Parameters
     ----------
     value_refined:
         The amount of refined metal to convert.
+    currencies:
+        Mapping of currency data loaded from ``local_data``. If ``None``,
+        ``local_data.CURRENCIES`` will be used.
 
     Returns
     -------
@@ -51,7 +58,14 @@ def convert_to_key_ref(value_refined: float) -> str:
     except (TypeError, ValueError):
         return ""
 
+    if currencies is None:
+        currencies = local_data.CURRENCIES
+
     key_price = 50.0
+    try:
+        key_price = float(currencies["keys"]["price"]["value_raw"])
+    except Exception:
+        pass
 
     keys = int(value // key_price)
     refined = value - keys * key_price
