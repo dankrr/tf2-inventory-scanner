@@ -112,9 +112,6 @@
 
     if (data.custom_description) attrs.push('<div>Custom Desc: ' + esc(data.custom_description) + '</div>');
 
-    if (Array.isArray(data.strange_parts) && data.strange_parts.length) {
-      attrs.push('<div>Strange Parts: ' + data.strange_parts.map(esc).join(', ') + '</div>');
-    }
 
     let spells = '';
     if (Array.isArray(data.spells) && data.spells.length) {
