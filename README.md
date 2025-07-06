@@ -16,6 +16,7 @@ A Flask web app that inspects one or more Steam users' Team Fortress 2 inventori
    ```bash
    cp .env.example .env
    # edit .env and set STEAM_API_KEY=<your key>
+   # and BPTF_API_KEY=<your backpack.tf key>
    ```
    The app uses **python-dotenv** to load variables at runtime.
 
