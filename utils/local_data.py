@@ -6,6 +6,7 @@ import logging
 
 import vdf
 from .schema_provider import SchemaProvider
+from .price_loader import ensure_currencies_cached
 
 # Legacy globals kept for backward compatibility
 TF2_SCHEMA: Dict[str, Any] = {}
@@ -23,6 +24,7 @@ KILLSTREAK_NAMES: Dict[str, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
 PAINTKIT_NAMES: Dict[str, str] = {}
 CRATE_SERIES_NAMES: Dict[str, str] = {}
+CURRENCIES: Dict[str, Any] = {}
 FOOTPRINT_SPELL_MAP: Dict[int, str] = {}
 PAINT_SPELL_MAP: Dict[int, str] = {}
 KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
@@ -57,11 +59,13 @@ DEFAULT_ATTRIBUTES_FILE = BASE_DIR / "cache" / "schema" / "attributes.json"
 DEFAULT_PARTICLES_FILE = BASE_DIR / "cache" / "schema" / "particles.json"
 DEFAULT_ITEMS_FILE = BASE_DIR / "cache" / "schema" / "items.json"
 DEFAULT_QUALITIES_FILE = BASE_DIR / "cache" / "schema" / "qualities.json"
+DEFAULT_CURRENCIES_FILE = BASE_DIR / "cache" / "currencies.json"
 
 ATTRIBUTES_FILE = Path(os.getenv("TF2_ATTRIBUTES_FILE", DEFAULT_ATTRIBUTES_FILE))
 PARTICLES_FILE = Path(os.getenv("TF2_PARTICLES_FILE", DEFAULT_PARTICLES_FILE))
 ITEMS_FILE = Path(os.getenv("TF2_ITEMS_FILE", DEFAULT_ITEMS_FILE))
 QUALITIES_FILE = Path(os.getenv("TF2_QUALITIES_FILE", DEFAULT_QUALITIES_FILE))
+CURRENCIES_FILE = Path(os.getenv("TF2_CURRENCIES_FILE", DEFAULT_CURRENCIES_FILE))
 DEFAULT_EFFECT_FILE = BASE_DIR / "cache" / "schema" / "effects.json"
 DEFAULT_PAINT_FILE = BASE_DIR / "cache" / "schema" / "paints.json"
 DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "wear_names.json"
@@ -147,6 +151,7 @@ def load_files(
         "items": ITEMS_FILE.resolve(),
         "qualities": QUALITIES_FILE.resolve(),
         "particles": PARTICLES_FILE.resolve(),
+        "currencies": CURRENCIES_FILE.resolve(),
     }
     optional = {"string_lookups": STRING_LOOKUPS_FILE.resolve()}
 
@@ -156,7 +161,10 @@ def load_files(
             raise RuntimeError("Missing " + ", ".join(str(p) for p in missing.values()))
         provider = SchemaProvider(cache_dir=required["attributes"].parent)
         for key, path in missing.items():
-            provider._load(key, provider.ENDPOINTS[key], force=True)
+            if key == "currencies":
+                ensure_currencies_cached(refresh=True)
+            else:
+                provider._load(key, provider.ENDPOINTS[key], force=True)
             if verbose:
                 logging.info(
                     "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
@@ -265,6 +273,25 @@ def load_files(
             "\N{CHECK MARK} Loaded %d particles from %s",
             len(PARTICLE_NAMES),
             particle_path,
+        )
+
+    curr_path = required["currencies"]
+    if not curr_path.exists():
+        raise RuntimeError(f"Missing {curr_path}")
+    with curr_path.open() as f:
+        data = json.load(f)
+    raw_curr = (
+        data.get("response", {}).get("currencies") if isinstance(data, dict) else data
+    )
+    if isinstance(raw_curr, dict):
+        CURRENCIES.update(raw_curr)
+    else:
+        CURRENCIES.clear()
+    if verbose:
+        logging.info(
+            "\N{CHECK MARK} Loaded %d currencies from %s",
+            len(CURRENCIES),
+            curr_path,
         )
 
     EFFECT_NAMES = _load_json_map(EFFECT_FILE)

@@ -18,6 +18,10 @@ def app(monkeypatch):
         lambda refresh=False: Path("prices.json"),
     )
     monkeypatch.setattr(
+        "utils.price_loader.ensure_currencies_cached",
+        lambda refresh=False: Path("currencies.json"),
+    )
+    monkeypatch.setattr(
         "utils.price_loader.build_price_map",
         lambda path: {},
     )
