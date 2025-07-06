@@ -1,4 +1,5 @@
 import importlib
+from pathlib import Path
 
 
 def test_app_uses_mock_schema(monkeypatch):
@@ -15,5 +16,14 @@ def test_app_uses_mock_schema(monkeypatch):
 
     monkeypatch.setattr("utils.local_data.load_files", fake_load)
     monkeypatch.setenv("STEAM_API_KEY", "x")
+    monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_prices_cached",
+        lambda refresh=False: Path("prices.json"),
+    )
+    monkeypatch.setattr(
+        "utils.price_loader.build_price_map",
+        lambda path: {},
+    )
     app = importlib.import_module("app")
     assert hasattr(app, "app")
