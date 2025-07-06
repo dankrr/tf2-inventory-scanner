@@ -63,6 +63,11 @@ MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 _prices_path = ensure_prices_cached(refresh=ARGS.refresh)
 _currencies_path = ensure_currencies_cached(refresh=ARGS.refresh)
+try:
+    with open(_currencies_path) as f:
+        local_data.CURRENCIES = json.load(f)["response"]["currencies"]
+except Exception:
+    local_data.CURRENCIES = {}
 PRICE_MAP = build_price_map(_prices_path)
 
 # --- Utility functions ------------------------------------------------------
