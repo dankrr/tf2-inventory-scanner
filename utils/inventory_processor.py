@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from . import steam_api_client, local_data
-from .price_service import format_price
+from .valuation_service import ValuationService
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
     KILLSTREAK_TIERS,
@@ -21,6 +21,12 @@ from .constants import (
 
 
 logger = logging.getLogger(__name__)
+
+
+try:  # instantiate default valuation service lazily
+    valuation_service = ValuationService()
+except Exception:  # pragma: no cover - fallback when prices unavailable
+    valuation_service = ValuationService(price_map={})
 
 
 SCHEMA_DIR = Path("cache/schema")
@@ -606,7 +612,7 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
 
 def _process_item(
     asset: dict,
-    price_map: dict[tuple[str, int, bool], dict] | None = None,
+    valuation_service: ValuationService | None = None,
 ) -> dict | None:
     """Return an enriched item dictionary for a single asset.
 
@@ -614,12 +620,14 @@ def _process_item(
     ----------
     asset:
         Raw inventory item from Steam.
-    price_map:
-        Optional mapping of ``(item_name, quality, is_australium)`` to
-        Backpack.tf price data. The ``item_name`` key should match the full
-        display name used in the inventory output. When provided, price
-        information is added under ``"price"`` and ``"price_string"`` keys.
+    valuation_service:
+        Optional :class:`ValuationService` used to look up item values. When
+        provided, price information is added under ``"price"`` and
+        ``"price_string"`` keys. Defaults to the module-level instance.
     """
+
+    if valuation_service is None:
+        valuation_service = globals().get("valuation_service")
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -790,7 +798,7 @@ def _process_item(
             else None
         ),
     }
-    if price_map is not None:
+    if valuation_service is not None:
         tradable = asset.get("tradable", 1)
         try:
             tradable = int(tradable)
@@ -798,15 +806,25 @@ def _process_item(
             tradable = 1
 
         if tradable:
-            info = price_map.get((name, int(quality_id), bool(is_australium)))
-
-            if info:
-                item["price"] = info
-                value = info.get("value_raw")
-                if value is not None:
-                    formatted = format_price(value, local_data.CURRENCIES)
-                    item["price_string"] = formatted
-                    item["formatted_price"] = formatted
+            try:
+                qid = int(quality_id)
+            except (TypeError, ValueError):
+                qid = 0
+            try:
+                formatted = valuation_service.format_price(
+                    item.get("name", ""),
+                    qid,
+                    bool(is_australium),
+                    currencies=local_data.CURRENCIES,
+                )
+            except Exception:  # pragma: no cover - defensive fallback
+                formatted = ""
+            if formatted:
+                item["price"] = valuation_service.get_price_info(
+                    item.get("name", ""), qid, bool(is_australium)
+                )
+                item["price_string"] = formatted
+                item["formatted_price"] = formatted
             else:
                 item["price"] = None
                 item["price_string"] = ""
@@ -815,7 +833,7 @@ def _process_item(
 
 def enrich_inventory(
     data: Dict[str, Any],
-    price_map: dict[tuple[str, int, bool], dict] | None = None,
+    valuation_service: ValuationService | None = None,
 ) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info.
 
@@ -823,11 +841,12 @@ def enrich_inventory(
     ----------
     data:
         Inventory payload from Steam.
-    price_map:
-        Optional mapping of ``(item_name, quality, is_australium)`` to
-        Backpack.tf price information. When provided, items will include price
-        metadata.
+    valuation_service:
+        Optional :class:`ValuationService` used to look up prices. Defaults to
+        the module-level instance.
     """
+    if valuation_service is None:
+        valuation_service = globals().get("valuation_service")
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
         return []
@@ -835,7 +854,7 @@ def enrich_inventory(
     items: List[Dict[str, Any]] = []
 
     for asset in items_raw:
-        item = _process_item(asset, price_map)
+        item = _process_item(asset, valuation_service)
         if not item:
             continue
 
@@ -882,10 +901,12 @@ def enrich_inventory(
 
 def process_inventory(
     data: Dict[str, Any],
-    price_map: dict[tuple[str, int, bool], dict] | None = None,
+    valuation_service: ValuationService | None = None,
 ) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
-    items = enrich_inventory(data, price_map)
+    if valuation_service is None:
+        valuation_service = globals().get("valuation_service")
+    items = enrich_inventory(data, valuation_service)
     return sorted(items, key=lambda i: i["name"])
 
 
