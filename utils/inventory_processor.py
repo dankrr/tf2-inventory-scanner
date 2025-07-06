@@ -600,7 +600,7 @@ def _process_item(
     price_map:
         Optional mapping of ``(defindex, quality_id)`` to Backpack.tf price
         data. When provided, price information is added under ``"price"`` and
-        ``"price_display"`` keys.
+        ``"price_string"`` keys.
     """
 
     defindex_raw = asset.get("defindex", 0)
@@ -765,7 +765,7 @@ def _process_item(
             value = info.get("value_raw")
             currency = info.get("currency")
             if value is not None and currency:
-                item["price_display"] = convert_price_to_keys_ref(
+                item["price_string"] = convert_price_to_keys_ref(
                     value, currency, local_data.CURRENCIES
                 )
     return item
