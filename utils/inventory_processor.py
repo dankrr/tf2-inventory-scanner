@@ -821,11 +821,6 @@ def enrich_inventory(
                     if name:
                         parts_found.add(name)
             if parts_found:
-                badges = item.setdefault("badges", [])
-                if "🔧" not in badges and not any(
-                    isinstance(b, dict) and b.get("icon") == "🔧" for b in badges
-                ):
-                    badges.append("🔧")
                 existing = item.get("strange_parts", [])
                 if not isinstance(existing, list):
                     existing = []
