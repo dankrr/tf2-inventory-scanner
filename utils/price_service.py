@@ -8,28 +8,49 @@ from . import local_data
 def convert_price_to_keys_ref(
     value_raw: float, currency: str, currencies: Dict[str, Any]
 ) -> str:
-    """Return human-readable price in keys and refined metal."""
+    """Return human-readable price in keys and refined metal.
+
+    ``value_raw`` from the Backpack.tf price dump is always expressed in
+    refined metal, even when the ``currency`` field is ``"keys"``. This
+    helper converts that metal value into a formatted string using the
+    current key price from ``currencies``.
+    """
 
     try:
-        if currency == "keys":
-            return f"{round(value_raw, 2)} Keys"
+        value = float(value_raw)
+    except (TypeError, ValueError):
+        return ""
 
-        ref_per_key = currencies["keys"]["price"]["value_raw"]
-        if not ref_per_key or ref_per_key <= 0:
-            return f"{round(value_raw, 2)} Refined"
+    curr_lower = str(currency or "").lower()
 
-        total_ref = value_raw
-        keys = int(total_ref // ref_per_key)
-        refined = round(total_ref - keys * ref_per_key, 2)
-
-        if keys > 0 and refined > 0:
-            return f"{keys} Keys {refined} Refined"
-        elif keys > 0:
-            return f"{keys} Keys"
-        else:
-            return f"{refined} Refined"
+    key_price = 0.0
+    try:
+        key_price = float(currencies["keys"]["price"]["value_raw"])
     except Exception:
-        return f"{round(value_raw, 2)} {currency}"
+        pass
+
+    # Determine if ``value_raw`` is actually in refined metal units.
+    in_ref = curr_lower in {"metal", "ref", "refined"} or (
+        curr_lower == "keys" and key_price > 0 and value >= key_price
+    )
+
+    if in_ref:
+        if key_price > 0:
+            keys = int(value // key_price)
+            refined = round(value - keys * key_price, 2)
+            if keys and refined:
+                return f"{keys} Keys {refined} Refined"
+            if keys:
+                return f"{keys} Keys"
+            return f"{refined} Refined"
+        return f"{round(value, 2)} Refined"
+
+    if curr_lower == "keys":
+        if value.is_integer():
+            return f"{int(value)} Keys"
+        return f"{round(value, 2)} Keys"
+
+    return f"{round(value, 2)} {currency}"
 
 
 def convert_to_key_ref(
