@@ -240,11 +240,9 @@ button {
   word-break: break-word;
   color: #fff;
   line-height: 1.2em;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  max-height: 2.4em;
+  margin-top: 4px;
+  max-height: 3.6em;
+  overflow-y: auto;
 }
 
 .item-price {
