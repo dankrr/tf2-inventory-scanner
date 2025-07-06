@@ -748,6 +748,15 @@ def _process_item(
         info = price_map.get((defindex_int, int(quality_id)))
         if info:
             item["price"] = info
+            value = info.get("value_raw")
+            currency = info.get("currency")
+            if value is not None and currency:
+                if currency == "metal":
+                    display_val = f"{value:.2f}".rstrip("0").rstrip(".")
+                    item["price_display"] = f"{display_val} ref"
+                else:
+                    display_val = f"{value:.2f}".rstrip("0").rstrip(".")
+                    item["price_display"] = f"{display_val} {currency}"
     return item
 
 
