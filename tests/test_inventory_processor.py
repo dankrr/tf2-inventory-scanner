@@ -423,4 +423,4 @@ def test_price_map_applied():
     items = ip.enrich_inventory(data, price_map=price_map)
     item = items[0]
     assert item["price"] == price_map[(42, 6)]
-    assert item["price_display"] == "5.33 Refined"
+    assert item["price_string"] == "5.33 Refined"
