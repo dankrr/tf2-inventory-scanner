@@ -241,8 +241,10 @@ button {
 }
 
 .item-price {
-  margin-top: auto;
-  font-size: 12px;
+  margin-top: 2px;
+  font-size: 11px;
+  text-align: center;
+  word-wrap: break-word;
 }
 
 /* ───── Paint colour dot (used in card & modal) ───────────────────── */
