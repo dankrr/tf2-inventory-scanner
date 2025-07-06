@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
 from utils.inventory_processor import enrich_inventory
+import utils.inventory_processor as ip
+from utils.valuation_service import ValuationService
 from utils import steam_api_client as sac
 from utils import local_data
 from utils import constants as consts
@@ -69,6 +71,7 @@ try:
 except Exception:
     local_data.CURRENCIES = {}
 PRICE_MAP = build_price_map(_prices_path)
+ip.valuation_service = ValuationService(PRICE_MAP)
 
 # --- Utility functions ------------------------------------------------------
 
@@ -139,7 +142,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
-            items = enrich_inventory(data, price_map=PRICE_MAP)
+            items = enrich_inventory(data, valuation_service=ip.valuation_service)
         except Exception:
             app.logger.exception("Failed to enrich inventory for %s", steamid64)
             status = "failed"

@@ -1,6 +1,7 @@
 from utils import inventory_processor as ip
 from utils import steam_api_client as sac
 from utils import local_data as ld
+from utils.valuation_service import ValuationService
 from pathlib import Path
 import requests
 import responses
@@ -11,6 +12,16 @@ import pytest
 def reset_data(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {}
     ld.SCHEMA_ATTRIBUTES = {}
+
+
+@pytest.fixture
+def patch_valuation(monkeypatch):
+    def _apply(price_map):
+        service = ValuationService(price_map=price_map)
+        monkeypatch.setattr(ip, "valuation_service", service)
+        return service
+
+    return _apply
 
 
 def test_enrich_inventory():
@@ -430,34 +441,36 @@ def test_australium_only_attribute_kept():
     assert len(items) == 1
 
 
-def test_price_map_applied():
+def test_price_map_applied(patch_valuation):
     data = {"items": [{"defindex": 42, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("Answer", 6, False): {"value_raw": 5.33, "currency": "metal"}}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
-    items = ip.enrich_inventory(data, price_map=price_map)
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
     item = items[0]
     assert item["price"] == price_map[("Answer", 6, False)]
     assert item["price_string"] == "5.33 ref"
     assert item["formatted_price"] == "5.33 ref"
 
 
-def test_price_map_key_conversion_large_value():
+def test_price_map_key_conversion_large_value(patch_valuation):
     data = {"items": [{"defindex": 42, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("Answer", 6, False): {"value_raw": 367.73, "currency": "metal"}}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 70.0}}}
 
-    items = ip.enrich_inventory(data, price_map=price_map)
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
     item = items[0]
     assert item["formatted_price"] == "5 Keys 17.73 ref"
     assert item["price_string"] == "5 Keys 17.73 ref"
 
 
-def test_price_map_unusual_lookup():
+def test_price_map_unusual_lookup(patch_valuation):
     data = {
         "items": [
             {
@@ -474,32 +487,35 @@ def test_price_map_unusual_lookup():
     }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 67.165}}}
 
-    items = ip.enrich_inventory(data, price_map=price_map)
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
     item = items[0]
     assert item["formatted_price"] == "2449 Keys 67.16 ref"
     assert item["price_string"] == "2449 Keys 67.16 ref"
 
 
-def test_untradable_item_no_price():
+def test_untradable_item_no_price(patch_valuation):
     data = {"items": [{"defindex": 42, "quality": 6, "tradable": 0}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("Answer", 6, False): {"value_raw": 5.33, "currency": "metal"}}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
-    items = ip.enrich_inventory(data, price_map=price_map)
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
     item = items[0]
     assert "price" not in item
     assert "price_string" not in item
 
 
-def test_tradable_item_missing_price():
+def test_tradable_item_missing_price(patch_valuation):
     data = {"items": [{"defindex": 43, "quality": 6, "tradable": 1}]}
     ld.ITEMS_BY_DEFINDEX = {43: {"item_name": "Bazooka", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
-    items = ip.enrich_inventory(data, price_map={})
+    patch_valuation({})
+    items = ip.enrich_inventory(data)
     item = items[0]
     assert item["price"] is None
     assert item["price_string"] == ""
@@ -534,7 +550,7 @@ def test_australium_attribute_sets_flag():
     assert item["display_name"] == "Australium Rocket Launcher"
 
 
-def test_price_map_australium_lookup():
+def test_price_map_australium_lookup(patch_valuation):
     data = {"items": [{"defindex": 205, "quality": 6, "is_australium": True}]}
     ld.ITEMS_BY_DEFINDEX = {205: {"item_name": "Rocket Launcher", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
@@ -546,7 +562,8 @@ def test_price_map_australium_lookup():
     }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
-    items = ip.enrich_inventory(data, price_map=price_map)
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
     item = items[0]
     assert item["price"] == price_map[("Australium Rocket Launcher", 6, True)]
     assert item["formatted_price"] == "2 Keys"
