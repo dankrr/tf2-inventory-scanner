@@ -93,6 +93,19 @@ pytest --cov=utils --cov=app
 ```
 HTML coverage is written to `htmlcov/`.
 
+## Test Suite
+
+Running the full test suite requires the additional packages listed in
+`requirements-test.txt`. Install them alongside the main requirements before
+invoking `pytest`.
+
+Many tests also expect cached schema files under `cache/schema/`. You can refresh
+these files with:
+
+```bash
+python app.py --refresh
+```
+
 ## Docker / Deployment
 
 Build and run the container locally:
