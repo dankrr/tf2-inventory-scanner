@@ -13,6 +13,12 @@ def test_convert_price_to_keys_ref_keys():
     assert out == "1.5 Keys"
 
 
+def test_convert_price_to_keys_ref_mislabeled_keys():
+    currencies = {"keys": {"price": {"value_raw": 50.0}}}
+    out = convert_price_to_keys_ref(125.5, "keys", currencies)
+    assert out == "2 Keys 25.5 Refined"
+
+
 def test_convert_to_key_ref_only_refined():
     currencies = {"keys": {"price": {"value_raw": 50.0}}}
     assert convert_to_key_ref(5.0, currencies) == "5.00 Refined"
