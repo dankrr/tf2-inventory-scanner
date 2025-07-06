@@ -11,6 +11,7 @@ from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .item_enricher import ItemEnricher
 from .inventory_provider import InventoryProvider
+from .valuation_service import ValuationService
 
 __all__ = [
     "PAINT_COLORS",
@@ -24,6 +25,7 @@ __all__ = [
     "KILLSTREAK_BADGE_ICONS",
     "ItemEnricher",
     "InventoryProvider",
+    "ValuationService",
     "_wear_tier",
     "_decode_seed_info",
 ]
