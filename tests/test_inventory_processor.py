@@ -460,3 +460,28 @@ def test_price_map_unusual_lookup():
     item = items[0]
     assert item["formatted_price"] == "2449 Keys 67.16 ref"
     assert item["price_string"] == "2449 Keys 67.16 ref"
+
+
+def test_untradable_item_no_price():
+    data = {"items": [{"defindex": 42, "quality": 6, "tradable": 0}]}
+    ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {(42, 6): {"value_raw": 5.33, "currency": "metal"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+
+    items = ip.enrich_inventory(data, price_map=price_map)
+    item = items[0]
+    assert "price" not in item
+    assert "price_string" not in item
+
+
+def test_tradable_item_missing_price():
+    data = {"items": [{"defindex": 43, "quality": 6, "tradable": 1}]}
+    ld.ITEMS_BY_DEFINDEX = {43: {"item_name": "Bazooka", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+
+    items = ip.enrich_inventory(data, price_map={})
+    item = items[0]
+    assert item["price"] is None
+    assert item["price_string"] == ""
