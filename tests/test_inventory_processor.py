@@ -424,8 +424,8 @@ def test_price_map_applied():
     items = ip.enrich_inventory(data, price_map=price_map)
     item = items[0]
     assert item["price"] == price_map[(42, 6)]
-    assert item["price_string"] == "5.33 Refined"
-    assert item["formatted_price"] == "5.33 Refined"
+    assert item["price_string"] == "5.33 ref"
+    assert item["formatted_price"] == "5.33 ref"
 
 
 def test_price_map_key_conversion_large_value():
@@ -437,8 +437,8 @@ def test_price_map_key_conversion_large_value():
 
     items = ip.enrich_inventory(data, price_map=price_map)
     item = items[0]
-    assert item["formatted_price"] == "5 Keys 17.73 Refined"
-    assert item["price_string"] == "5 Keys 17.73 Refined"
+    assert item["formatted_price"] == "5 Keys 17.73 ref"
+    assert item["price_string"] == "5 Keys 17.73 ref"
 
 
 def test_price_map_unusual_lookup():
@@ -458,5 +458,5 @@ def test_price_map_unusual_lookup():
 
     items = ip.enrich_inventory(data, price_map=price_map)
     item = items[0]
-    assert item["formatted_price"] == "2449 Keys 67.16 Refined"
-    assert item["price_string"] == "2449 Keys 67.16 Refined"
+    assert item["formatted_price"] == "2449 Keys 67.16 ref"
+    assert item["price_string"] == "2449 Keys 67.16 ref"
