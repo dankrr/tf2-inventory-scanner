@@ -23,8 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 SCHEMA_DIR = Path("cache/schema")
-with open(SCHEMA_DIR / "strange_parts.json") as fp:
-    _PARTS_BY_ID = {int(v[2:]): k for k, v in json.load(fp).items()}
+try:  # graceful fallback if the optional file is missing
+    with open(SCHEMA_DIR / "strange_parts.json") as fp:
+        _PARTS_BY_ID = {int(v[2:]): k for k, v in json.load(fp).items()}
+except FileNotFoundError:  # pragma: no cover - only used in dev/test
+    _PARTS_BY_ID = {}
 
 
 # ---------------------------------------------------------------------------
@@ -587,7 +590,17 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
 def _process_item(
     asset: dict, price_map: dict[tuple[int, int], dict] | None = None
 ) -> dict | None:
-    """Return an enriched item dictionary for a single asset."""
+    """Return an enriched item dictionary for a single asset.
+
+    Parameters
+    ----------
+    asset:
+        Raw inventory item from Steam.
+    price_map:
+        Optional mapping of ``(defindex, quality_id)`` to Backpack.tf price
+        data. When provided, price information is added under ``"price"`` and
+        ``"price_display"`` keys.
+    """
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -763,7 +776,16 @@ def _process_item(
 def enrich_inventory(
     data: Dict[str, Any], price_map: dict[tuple[int, int], dict] | None = None
 ) -> List[Dict[str, Any]]:
-    """Return a list of inventory items enriched with schema info."""
+    """Return a list of inventory items enriched with schema info.
+
+    Parameters
+    ----------
+    data:
+        Inventory payload from Steam.
+    price_map:
+        Optional mapping of ``(defindex, quality_id)`` to Backpack.tf price
+        information. When provided, items will include price metadata.
+    """
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
         return []
