@@ -15,7 +15,11 @@ from utils.inventory_processor import enrich_inventory
 from utils import steam_api_client as sac
 from utils import local_data
 from utils import constants as consts
-from utils.price_loader import ensure_prices_cached, build_price_map
+from utils.price_loader import (
+    ensure_prices_cached,
+    ensure_currencies_cached,
+    build_price_map,
+)
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -38,7 +42,9 @@ if ARGS.refresh:
     provider = SchemaProvider(cache_dir="cache/schema")
     provider.refresh_all(verbose=True)
     price_path = ensure_prices_cached(refresh=True)
+    curr_path = ensure_currencies_cached(refresh=True)
     print(f"\N{CHECK MARK} Saved {price_path}")
+    print(f"\N{CHECK MARK} Saved {curr_path}")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
@@ -56,6 +62,7 @@ app = Flask(__name__)
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 _prices_path = ensure_prices_cached(refresh=ARGS.refresh)
+_currencies_path = ensure_currencies_cached(refresh=ARGS.refresh)
 PRICE_MAP = build_price_map(_prices_path)
 
 # --- Utility functions ------------------------------------------------------

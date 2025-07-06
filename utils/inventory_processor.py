@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from . import steam_api_client, local_data
+from .price_service import convert_price_to_keys_ref
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
     KILLSTREAK_TIERS,
@@ -764,12 +765,9 @@ def _process_item(
             value = info.get("value_raw")
             currency = info.get("currency")
             if value is not None and currency:
-                if currency == "metal":
-                    display_val = f"{value:.2f}".rstrip("0").rstrip(".")
-                    item["price_display"] = f"{display_val} ref"
-                else:
-                    display_val = f"{value:.2f}".rstrip("0").rstrip(".")
-                    item["price_display"] = f"{display_val} {currency}"
+                item["price_display"] = convert_price_to_keys_ref(
+                    value, currency, local_data.CURRENCIES
+                )
     return item
 
 
