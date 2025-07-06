@@ -17,6 +17,7 @@ REQUIRED_ATTRS = {
     2025: "Killstreak Tier",
     2014: "Killstreak Sheen",
     2013: "Killstreaker",
+    2027: "Australium Item",
     187: "Crate Series",
     866: "Paintkit Seed Lo",
     867: "Paintkit Seed Hi",
