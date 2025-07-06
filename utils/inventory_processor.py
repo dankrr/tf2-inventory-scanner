@@ -305,6 +305,19 @@ def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
     return None
 
 
+def _extract_australium(asset: Dict[str, Any]) -> bool:
+    """Return True if the asset has an Australium attribute."""
+
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        try:
+            if int(idx) == 2027:
+                return True
+        except (TypeError, ValueError):
+            continue
+    return False
+
+
 def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     """Return killstreak effect string if present."""
 
@@ -628,7 +641,7 @@ def _process_item(
     if paintkit_name:
         base_name = f"{base_name} ({paintkit_name})"
 
-    is_australium = asset.get("is_australium")
+    is_australium = asset.get("is_australium") or _extract_australium(asset)
 
     quality_id = asset.get("quality", 0)
     q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
