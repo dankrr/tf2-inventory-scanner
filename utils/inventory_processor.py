@@ -580,6 +580,9 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     ):
         return False
 
+    if _extract_australium(asset):
+        return False
+
     for attr in asset.get("attributes", []) or []:
         idx = attr.get("defindex")
         try:
