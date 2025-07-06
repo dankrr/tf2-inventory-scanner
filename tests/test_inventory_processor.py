@@ -439,3 +439,24 @@ def test_price_map_key_conversion_large_value():
     item = items[0]
     assert item["formatted_price"] == "5 Keys 17.73 Refined"
     assert item["price_string"] == "5 Keys 17.73 Refined"
+
+
+def test_price_map_unusual_lookup():
+    data = {
+        "items": [
+            {
+                "defindex": 30998,
+                "quality": 5,
+                "attributes": [{"defindex": 134, "float_value": 13}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {30998: {"item_name": "Veil", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    price_map = {(30998, 5, 13): {"value_raw": 164554.25, "currency": "keys"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 67.165}}}
+
+    items = ip.enrich_inventory(data, price_map=price_map)
+    item = items[0]
+    assert item["formatted_price"] == "2449 Keys 67.16 Refined"
+    assert item["price_string"] == "2449 Keys 67.16 Refined"
