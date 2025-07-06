@@ -1,6 +1,7 @@
 from utils import inventory_processor as ip
 from utils import steam_api_client as sac
 from utils import local_data as ld
+from pathlib import Path
 import requests
 import responses
 import pytest
@@ -263,6 +264,12 @@ def test_fetch_inventory_statuses(monkeypatch, payload, expected):
 @pytest.mark.parametrize("status", ["parsed", "incomplete", "private"])
 def test_user_template_safe(monkeypatch, status):
     monkeypatch.setenv("STEAM_API_KEY", "x")
+    monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_prices_cached",
+        lambda refresh=False: Path("prices.json"),
+    )
+    monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     import importlib
 
@@ -401,3 +408,15 @@ def test_special_craft_weapon_kept():
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     assert len(items) == 1
+
+
+def test_price_map_applied():
+    data = {"items": [{"defindex": 42, "quality": 6}]}
+    ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {(42, 6): {"value_raw": 5.33, "currency": "metal"}}
+
+    items = ip.enrich_inventory(data, price_map=price_map)
+    item = items[0]
+    assert item["price"] == price_map[(42, 6)]
+    assert item["price_display"] == "5.33 ref"
