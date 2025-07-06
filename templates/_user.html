@@ -25,12 +25,15 @@
       <button class="scroll-arrow left" type="button" aria-label="Scroll left">
         <i class="fa-solid fa-chevron-left"></i>
       </button>
-      <div class="inventory-container">
-        {% for item in user.items if not item._hidden %}
-          {# ↑ keep border-color for quality #}
-          {% include "item_card.html" %}
-        {% endfor %}
-      </div>
+        <div class="inventory-container">
+          {% for item in user.items if not item._hidden %}
+            {# ↑ keep border-color for quality #}
+            <div class="item-wrapper">
+              {% include "item_card.html" %}
+              <div class="item-price">{{ item.formatted_price or "Unpriced" }}</div>
+            </div>
+          {% endfor %}
+        </div>
       <button class="scroll-arrow right" type="button" aria-label="Scroll right">
         <i class="fa-solid fa-chevron-right"></i>
       </button>
