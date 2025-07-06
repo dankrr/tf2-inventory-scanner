@@ -528,3 +528,16 @@ def test_australium_attribute_sets_flag():
     item = items[0]
     assert item["is_australium"] is True
     assert item["display_name"] == "Australium Rocket Launcher"
+
+
+def test_price_map_australium_lookup():
+    data = {"items": [{"defindex": 205, "quality": 6, "is_australium": True}]}
+    ld.ITEMS_BY_DEFINDEX = {205: {"item_name": "Rocket Launcher", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {(205, 6, "australium"): {"value_raw": 100.0, "currency": "keys"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+
+    items = ip.enrich_inventory(data, price_map=price_map)
+    item = items[0]
+    assert item["price"] == price_map[(205, 6, "australium")]
+    assert item["formatted_price"] == "2 Keys"
