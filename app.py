@@ -37,7 +37,8 @@ if ARGS.refresh:
     )
     provider = SchemaProvider(cache_dir="cache/schema")
     provider.refresh_all(verbose=True)
-    ensure_prices_cached(refresh=True)
+    price_path = ensure_prices_cached(refresh=True)
+    print(f"\N{CHECK MARK} Saved {price_path}")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
     )
