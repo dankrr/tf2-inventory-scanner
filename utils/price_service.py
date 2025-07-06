@@ -30,10 +30,10 @@ def convert_price_to_keys_ref(
 
     parts = []
     if keys:
-        parts.append(f"{keys} Key" + ("s" if keys != 1 else ""))
+        parts.append(f"{keys} key" + ("s" if keys != 1 else ""))
     if refined > 0.01 or not parts:
         ref_str = f"{refined:.2f}".rstrip("0").rstrip(".")
-        parts.append(f"{ref_str} Refined")
+        parts.append(f"{ref_str} ref")
 
     return " ".join(parts)
 
