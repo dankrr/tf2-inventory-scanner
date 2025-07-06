@@ -20,6 +20,10 @@ def test_env_present_allows_import(monkeypatch):
         "utils.price_loader.ensure_prices_cached",
         lambda refresh=False: Path("prices.json"),
     )
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_currencies_cached",
+        lambda refresh=False: Path("currencies.json"),
+    )
     monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     sys.modules.pop("app", None)

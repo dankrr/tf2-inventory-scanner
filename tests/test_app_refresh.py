@@ -28,6 +28,10 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         "utils.price_loader.ensure_prices_cached",
         lambda refresh=True: called.__setitem__("prices", True) or Path("prices.json"),
     )
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_currencies_cached",
+        lambda refresh=True: called.__setitem__("curr", True) or Path("curr.json"),
+    )
     monkeypatch.setattr(sys, "argv", ["app.py", "--refresh", "--verbose"])
     sys.modules.pop("app", None)
     with pytest.raises(SystemExit):
@@ -37,3 +41,4 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     assert "✓ Saved cache/schema/items.json (0 entries)" in out
     assert called["schema"] is True
     assert called["prices"] is True
+    assert called["curr"] is True
