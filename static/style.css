@@ -235,16 +235,14 @@ button {
 }
 
 .item-title {
-  font-size: 12px;
+  font-size: 0.9rem;
   text-align: center;
   word-break: break-word;
   color: #fff;
-  line-height: 1.2em;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  max-height: 2.4em;
+  line-height: 1.1rem;
+  white-space: normal;
+  overflow: visible;
+  margin-top: 0.4rem;
 }
 
 .item-price {
