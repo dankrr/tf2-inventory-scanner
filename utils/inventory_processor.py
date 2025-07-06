@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from . import steam_api_client, local_data
-from .price_service import convert_price_to_keys_ref, convert_to_key_ref
+from .price_service import format_price
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
     KILLSTREAK_TIERS,
@@ -589,7 +589,8 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
 
 
 def _process_item(
-    asset: dict, price_map: dict[tuple[int, int], dict] | None = None
+    asset: dict,
+    price_map: dict[tuple[int, int] | tuple[int, int, int], dict] | None = None,
 ) -> dict | None:
     """Return an enriched item dictionary for a single asset.
 
@@ -598,9 +599,9 @@ def _process_item(
     asset:
         Raw inventory item from Steam.
     price_map:
-        Optional mapping of ``(defindex, quality_id)`` to Backpack.tf price
-        data. When provided, price information is added under ``"price"`` and
-        ``"price_string"`` keys.
+        Optional mapping of ``(defindex, quality_id[, effect_id])`` to Backpack.tf
+        price data. When provided, price information is added under ``"price"``
+        and ``"price_string"`` keys.
     """
 
     defindex_raw = asset.get("defindex", 0)
@@ -759,32 +760,25 @@ def _process_item(
         ),
     }
     if price_map is not None:
-        info = price_map.get((defindex_int, int(quality_id)))
+        info = None
+        if effect_id is not None and int(quality_id) == 5:
+            info = price_map.get((defindex_int, int(quality_id), effect_id))
+        if info is None:
+            info = price_map.get((defindex_int, int(quality_id)))
+
         if info:
             item["price"] = info
             value = info.get("value_raw")
-            currency = info.get("currency")
-            if value is not None and currency:
-                c = str(currency).lower()
-                if c == "keys":
-                    formatted = convert_price_to_keys_ref(
-                        value, currency, local_data.CURRENCIES
-                    )
-                elif c in {"metal", "ref", "refined"}:
-                    formatted = convert_to_key_ref(
-                        value, currencies=local_data.CURRENCIES
-                    )
-                else:
-                    formatted = convert_price_to_keys_ref(
-                        value, currency, local_data.CURRENCIES
-                    )
+            if value is not None:
+                formatted = format_price(value, local_data.CURRENCIES)
                 item["price_string"] = formatted
                 item["formatted_price"] = formatted
     return item
 
 
 def enrich_inventory(
-    data: Dict[str, Any], price_map: dict[tuple[int, int], dict] | None = None
+    data: Dict[str, Any],
+    price_map: dict[tuple[int, int] | tuple[int, int, int], dict] | None = None,
 ) -> List[Dict[str, Any]]:
     """Return a list of inventory items enriched with schema info.
 
@@ -793,8 +787,8 @@ def enrich_inventory(
     data:
         Inventory payload from Steam.
     price_map:
-        Optional mapping of ``(defindex, quality_id)`` to Backpack.tf price
-        information. When provided, items will include price metadata.
+        Optional mapping of ``(defindex, quality_id[, effect_id])`` to Backpack.tf
+        price information. When provided, items will include price metadata.
     """
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
