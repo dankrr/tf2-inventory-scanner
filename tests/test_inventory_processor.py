@@ -509,6 +509,7 @@ def test_australium_display_name():
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     item = items[0]
+    assert item["name"] == "Australium Rocket Launcher"
     assert item["display_name"] == "Australium Rocket Launcher"
 
 
@@ -527,6 +528,7 @@ def test_australium_attribute_sets_flag():
     items = ip.enrich_inventory(data)
     item = items[0]
     assert item["is_australium"] is True
+    assert item["name"] == "Australium Rocket Launcher"
     assert item["display_name"] == "Australium Rocket Launcher"
 
 
