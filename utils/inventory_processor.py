@@ -616,8 +616,9 @@ def _process_item(
         Raw inventory item from Steam.
     price_map:
         Optional mapping of ``(item_name, quality, is_australium)`` to
-        Backpack.tf price data. When provided, price information is added under
-        ``"price"`` and ``"price_string"`` keys.
+        Backpack.tf price data. The ``item_name`` key should match the full
+        display name used in the inventory output. When provided, price
+        information is added under ``"price"`` and ``"price_string"`` keys.
     """
 
     defindex_raw = asset.get("defindex", 0)
@@ -797,7 +798,7 @@ def _process_item(
             tradable = 1
 
         if tradable:
-            info = price_map.get((base_name, int(quality_id), bool(is_australium)))
+            info = price_map.get((name, int(quality_id), bool(is_australium)))
 
             if info:
                 item["price"] = info

@@ -469,7 +469,9 @@ def test_price_map_unusual_lookup():
     }
     ld.ITEMS_BY_DEFINDEX = {30998: {"item_name": "Veil", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
-    price_map = {("Veil", 5, False): {"value_raw": 164554.25, "currency": "keys"}}
+    price_map = {
+        ("Burning Flames Veil", 5, False): {"value_raw": 164554.25, "currency": "keys"}
+    }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 67.165}}}
 
     items = ip.enrich_inventory(data, price_map=price_map)
@@ -536,10 +538,15 @@ def test_price_map_australium_lookup():
     data = {"items": [{"defindex": 205, "quality": 6, "is_australium": True}]}
     ld.ITEMS_BY_DEFINDEX = {205: {"item_name": "Rocket Launcher", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
-    price_map = {("Rocket Launcher", 6, True): {"value_raw": 100.0, "currency": "keys"}}
+    price_map = {
+        ("Australium Rocket Launcher", 6, True): {
+            "value_raw": 100.0,
+            "currency": "keys",
+        }
+    }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
     items = ip.enrich_inventory(data, price_map=price_map)
     item = items[0]
-    assert item["price"] == price_map[("Rocket Launcher", 6, True)]
+    assert item["price"] == price_map[("Australium Rocket Launcher", 6, True)]
     assert item["formatted_price"] == "2 Keys"
