@@ -22,7 +22,9 @@
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
-  <h2 class="item-title {% if item.name|length > 45 %}long{% endif %}" title="{{ item.name }}">{{ item.name }}</h2>
+  <h2 class="item-title {% if item.name|length > 45 %}small-font{% endif %}" title="{{ item.name }}">
+    {{ item.name }}
+  </h2>
   {% if item.price_string %}
     <div class="item-price">
       {{ item.price_string | replace("Refined", "ref") | lower }}

@@ -235,18 +235,24 @@ button {
 }
 
 .item-title {
-  font-size: 0.9rem;
-  line-height: 1.1rem;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
-  max-height: 3.3rem;
+  text-align: center;
+  word-break: break-word;
+  white-space: normal;
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.1rem;
+  max-height: 3.3rem; /* 3 lines x 1.1rem */
   margin-top: 0.4rem;
 }
 
-.item-title.long {
+.item-title.small-font {
   font-size: 0.8rem;
+  line-height: 1rem;
+  max-height: 3rem;
 }
 
 .item-price {
