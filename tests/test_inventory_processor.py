@@ -414,6 +414,22 @@ def test_special_craft_weapon_kept():
     assert len(items) == 1
 
 
+def test_australium_only_attribute_kept():
+    data = {
+        "items": [
+            {
+                "defindex": 12,
+                "quality": 6,
+                "attributes": [{"defindex": 2027}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {12: {"item_name": "C", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    assert len(items) == 1
+
+
 def test_price_map_applied():
     data = {"items": [{"defindex": 42, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
