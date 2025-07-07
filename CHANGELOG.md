@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Additional unit tests for inventory processing and ID conversion.
 - Coverage and CI badges in the README.
 - SchemaProvider class for fetching schema properties.
+- Paintkits endpoint cached as `warpaints.json`.
 
 ### Changed
 - Updated schema caching logic and UI (previous releases).
