@@ -392,6 +392,30 @@ a.backpack-link:visited {
   margin-left: 4px;
 }
 
+.footer {
+  text-align: center;
+  color: #aaa;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+.bptf-link {
+  color: #ccc;
+  text-decoration: none;
+}
+
+.bptf-link:hover {
+  text-decoration: underline;
+  color: #fff;
+}
+
+.bptf-logo {
+  height: 1em;
+  width: auto;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 .page-footer {
   margin-top: 2rem;
   text-align: center;
