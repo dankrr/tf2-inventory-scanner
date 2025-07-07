@@ -152,7 +152,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
-            items = enrich_inventory(data, valuation_service=ip.valuation_service)
+            items = enrich_inventory(data, valuation_service=ip.get_valuation_service())
         except Exception:
             app.logger.exception("Failed to enrich inventory for %s", steamid64)
             status = "failed"
