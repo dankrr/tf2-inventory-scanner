@@ -67,6 +67,7 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
         "items": [{"defindex": 1, "name": "One"}],
         "particles": [{"id": 1, "name": "P"}],
         "qualities": {"1": "Unique"},
+        "paintkits": [],
         "string_lookups": {
             "value": [
                 {

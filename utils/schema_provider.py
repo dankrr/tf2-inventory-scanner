@@ -21,6 +21,7 @@ class SchemaProvider:
         "paints": "/properties/paints",
         "origins": "/raw/schema/originNames",
         "parts": "/properties/strangeParts",
+        "paintkits": "/properties/paintkits",
         "qualities": "/properties/qualities",
         "defindexes": "/properties/defindexes",
         "string_lookups": "/raw/schema/string_lookups",
@@ -41,6 +42,7 @@ class SchemaProvider:
         self.effects_by_index: Dict[int, Any] | None = None
         self.parts_by_defindex: Dict[int, Any] | None = None
         self.paints_map: Dict[str, int] | None = None
+        self.paintkits_map: Dict[int, str] | None = None
         self.qualities_map: Dict[str, int] | None = None
         self.defindex_names: Dict[int, str] | None = None
         self.origins_by_index: Dict[int, str] | None = None
@@ -54,6 +56,8 @@ class SchemaProvider:
         return resp.json()
 
     def _cache_file(self, key: str) -> Path:
+        if key == "paintkits":
+            return self.cache_dir / "warpaints.json"
         return self.cache_dir / f"{key}.json"
 
     def _load(self, key: str, endpoint: str, force: bool = False) -> Any:
@@ -121,6 +125,7 @@ class SchemaProvider:
         self.items_by_defindex = None
         self.attributes_by_defindex = None
         self.paints_map = None
+        self.paintkits_map = None
         self.parts_by_defindex = None
         self.defindex_names = None
         self.qualities_map = None
@@ -280,7 +285,19 @@ class SchemaProvider:
 
     # Stub helpers kept for backward compatibility --------------------------
     def get_paintkits(self, *, force: bool = False) -> Dict[int, str]:
-        return {}
+        if self.paintkits_map is None or force:
+            data = self._load("paintkits", self.ENDPOINTS["paintkits"], force)
+            if isinstance(data, dict):
+                if all(str(v).isdigit() for v in data.values()):
+                    mapping = {int(v): str(k) for k, v in data.items()}
+                else:
+                    mapping = {
+                        int(k): str(v) for k, v in data.items() if str(k).isdigit()
+                    }
+            else:
+                mapping = {}
+            self.paintkits_map = mapping
+        return self.paintkits_map
 
     def get_killstreaks(self, *, force: bool = False) -> Dict[int, str]:
         return {}

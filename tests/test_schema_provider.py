@@ -20,6 +20,7 @@ def test_schema_provider(monkeypatch, tmp_path):
         "/raw/schema/attributes": {"2025": {"name": "Killstreak Tier"}},
         "/properties/effects": {"Burning Flames": {"id": 13, "name": "Burning Flames"}},
         "/properties/paints": {"A Color Similar to Slate": 3100495},
+        "/properties/paintkits": {"Warhawk": 350},
         "/raw/schema/originNames": {"0": "Timed Drop"},
         "/properties/strangeParts": {"Kills": {"id": 64, "name": "Kills"}},
         "/properties/qualities": {"Normal": 0},
@@ -40,6 +41,7 @@ def test_schema_provider(monkeypatch, tmp_path):
     assert provider.get_attributes() == {2025: {"name": "Killstreak Tier"}}
     assert provider.get_effects() == {13: {"id": 13, "name": "Burning Flames"}}
     assert provider.get_paints() == {"A Color Similar to Slate": 3100495}
+    assert provider.get_paintkits() == {350: "Warhawk"}
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
@@ -72,6 +74,7 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
         "/properties/paints": {
             "value": [{"id": 3100495, "name": "A Color Similar to Slate"}]
         },
+        "/properties/paintkits": {"value": [{"id": 350, "name": "Warhawk"}]},
         "/raw/schema/originNames": {"value": [{"id": 0, "name": "Timed Drop"}]},
         "/properties/strangeParts": {"value": [{"id": 64, "name": "Kills"}]},
         "/properties/qualities": {"value": [{"id": 0, "name": "Normal"}]},
@@ -92,6 +95,7 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     }
     assert provider.get_effects() == {13: {"id": 13, "name": "Burning Flames"}}
     assert provider.get_paints() == {"A Color Similar to Slate": 3100495}
+    assert provider.get_paintkits() == {350: "Warhawk"}
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
@@ -123,7 +127,7 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     provider.refresh_all(verbose=True)
 
     for key in provider.ENDPOINTS:
-        assert (tmp_path / f"{key}.json").exists()
+        assert provider._cache_file(key).exists()
 
     assert provider.items_by_defindex is None
     assert provider.attributes_by_defindex is None
@@ -136,6 +140,6 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     assert provider.string_lookups is None
 
     for key in provider.ENDPOINTS:
-        fname = f"{tmp_path / key}.json"
+        fname = str(provider._cache_file(key))
         assert f"Fetching {key}..." in printed
         assert f"\N{CHECK MARK} Saved {fname} (0 entries)" in printed
