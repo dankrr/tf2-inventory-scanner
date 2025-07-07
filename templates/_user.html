@@ -4,6 +4,9 @@
       <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
     </a>
     {{ user.username }}
+    <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" target="_blank" class="bptf-link">
+      <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="bptf-logo">
+    </a>
     <span class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</span>
     <span class="pill status-pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="Retry scan for this user"{% endif %}>
       {% if user.status == 'parsed' %}
