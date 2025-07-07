@@ -80,6 +80,8 @@
             align-items: flex-start;
             position: relative;
         }
+        #item-modal .modal-body { position: relative; }
+        #item-modal .particle-overlay img { max-width: 64px; max-height: 64px; }
         .modal-effect {
             font-weight: bold;
             color: #8650AC;
@@ -123,6 +125,7 @@
         <div id="modal-badges" class="item-badges"></div>
       </div>
       <div class="modal-body">
+        <div id="modal-effect-bg" class="particle-overlay"></div>
         <img id="modal-img" src="" width="64" height="64" alt="">
         <div id="modal-details"></div>
       </div>

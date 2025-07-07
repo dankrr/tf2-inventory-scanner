@@ -74,6 +74,9 @@ function attachItemModal() {
       if (window.modal && typeof window.modal.updateHeader === 'function') {
         window.modal.updateHeader(data);
       }
+      if (window.modal && typeof window.modal.setParticleBackground === 'function') {
+        window.modal.setParticleBackground(data.unusual_effect_id);
+      }
       if (window.modal && typeof window.modal.generateModalHTML === 'function') {
         const html = window.modal.generateModalHTML(data);
         if (window.modal.showItemModal) {

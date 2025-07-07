@@ -170,6 +170,17 @@
     });
   }
 
+  function setParticleBackground(effectId) {
+    const box = document.getElementById('modal-effect-bg');
+    if (!box) return;
+    if (effectId) {
+      const url = '/static/images/effects/' + effectId + '_380x380.png';
+      box.innerHTML = '<img src="' + url + '" alt="">';
+    } else {
+      box.innerHTML = '';
+    }
+  }
+
   function showItemModal(html) {
     if (!html) {
       console.warn('Empty modal HTML!');
@@ -201,5 +212,6 @@
     showItemModal,
     generateModalHTML,
     updateHeader,
+    setParticleBackground,
   };
 })(window);
