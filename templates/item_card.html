@@ -37,9 +37,15 @@
   {% if item.strange or quality == 'Strange' %}
     {% set _ = title_parts.append('Strange') %}
   {% elif quality and quality not in ('Unique', 'Normal') %}
-    {% set _ = title_parts.append(quality) %}
+    {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
+      {% set _ = title_parts.append(quality) %}
+    {% endif %}
   {% endif %}
-  {% set base = item.base_name or item.display_name or item.name %}
+  {% if item.unusual_effect_id %}
+    {% set base = item.display_name %}
+  {% else %}
+    {% set base = item.base_name or item.display_name or item.name %}
+  {% endif %}
   {% set _ = title_parts.append(base) %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
 </div>
