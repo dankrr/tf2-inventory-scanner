@@ -221,3 +221,30 @@ def test_load_files_string_lookups_missing(tmp_path, monkeypatch):
 
     assert ld.PAINT_SPELL_MAP == {}
     assert ld.FOOTPRINT_SPELL_MAP == {}
+
+
+def test_effect_names_file_loaded(tmp_path, monkeypatch):
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+    currencies_file = tmp_path / "currencies.json"
+    effect_file = tmp_path / "effect_names.json"
+
+    for f in (attr_file, particles_file, items_file, qual_file):
+        f.write_text("[]")
+
+    effect_file.write_text(json.dumps({"3009": "Silver Cyclone"}))
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+    monkeypatch.setattr(ld, "CURRENCIES_FILE", currencies_file)
+    monkeypatch.setattr(ld, "EFFECT_NAMES_FILE", effect_file)
+
+    currencies_file.write_text(json.dumps({"metal": {"value_raw": 1.0}}))
+
+    ld.load_files()
+
+    assert ld.EFFECT_NAMES["3009"] == "Silver Cyclone"
