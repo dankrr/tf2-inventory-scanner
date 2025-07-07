@@ -507,6 +507,17 @@ html, body {
   flex: 1;
 }
 
+.fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-in.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 footer {
   padding: 1rem;
   text-align: center;
