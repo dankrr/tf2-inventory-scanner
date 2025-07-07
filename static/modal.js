@@ -174,7 +174,7 @@
     const box = document.getElementById('modal-effect-bg');
     if (!box) return;
     if (effectId) {
-      const url = '/static/images/effects/' + effectId + '_380x380.png';
+      const url = '/static/images/effects/' + effectId + '.png';
       box.innerHTML = '<img src="' + url + '" alt="">';
     } else {
       box.innerHTML = '';
