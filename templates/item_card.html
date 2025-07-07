@@ -46,4 +46,7 @@
   {% endif %}
   {% set _ = title_parts.append(base) %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
+  {% if item.warpaint_name %}
+    <div class="badge warpaint-badge">Warpaint: {{ item.warpaint_name }}</div>
+  {% endif %}
 </div>

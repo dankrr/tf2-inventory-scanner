@@ -43,6 +43,8 @@ class SchemaProvider:
         self.parts_by_defindex: Dict[int, Any] | None = None
         self.paints_map: Dict[str, int] | None = None
         self.paintkits_map: Dict[int, str] | None = None
+        self.warpaints: Dict[str, int] | None = None
+        self._warpaints_by_id: Dict[int, str] | None = None
         self.qualities_map: Dict[str, int] | None = None
         self.defindex_names: Dict[int, str] | None = None
         self.origins_by_index: Dict[int, str] | None = None
@@ -126,6 +128,8 @@ class SchemaProvider:
         self.attributes_by_defindex = None
         self.paints_map = None
         self.paintkits_map = None
+        self.warpaints = None
+        self._warpaints_by_id = None
         self.parts_by_defindex = None
         self.defindex_names = None
         self.qualities_map = None
@@ -303,7 +307,24 @@ class SchemaProvider:
             else:
                 mapping = {}
             self.paintkits_map = mapping
+            self._warpaints_by_id = mapping
+            self.warpaints = {v: k for k, v in mapping.items()}
         return self.paintkits_map
+
+    # New helpers -----------------------------------------------------------
+    def get_warpaints(self, *, force: bool = False) -> Dict[str, int]:
+        """Return a mapping of warpaint name -> id."""
+
+        if self.warpaints is None or self._warpaints_by_id is None or force:
+            _ = self.get_paintkits(force=force)
+        assert self.warpaints is not None
+        return self.warpaints
+
+    @property
+    def warpaints_by_id(self) -> Dict[int, str]:
+        if self._warpaints_by_id is None:
+            _ = self.get_paintkits()
+        return self._warpaints_by_id or {}
 
     def get_killstreaks(self, *, force: bool = False) -> Dict[int, str]:
         return {}

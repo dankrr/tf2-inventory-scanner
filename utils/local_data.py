@@ -306,7 +306,7 @@ def load_files(
     KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
     KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
-    PAINTKIT_NAMES = _load_json_map(PAINTKIT_FILE)
+    PAINTKIT_NAMES = _load_paint_id_map(PAINTKIT_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
 
     FOOTPRINT_SPELL_MAP = {}

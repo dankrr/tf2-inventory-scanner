@@ -39,6 +39,30 @@ def test_load_files_success(tmp_path, monkeypatch, caplog):
     assert "Loaded 1 attributes" in out
 
 
+def test_warpaint_map_reversed(tmp_path, monkeypatch):
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+    curr_file = tmp_path / "currencies.json"
+    paintkit_file = tmp_path / "warpaints.json"
+
+    for f in (attr_file, particles_file, items_file, qual_file):
+        f.write_text("[]")
+    curr_file.write_text(json.dumps({"metal": {"value_raw": 1.0}}))
+    paintkit_file.write_text(json.dumps({"Warhawk": 80}))
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+    monkeypatch.setattr(ld, "PAINTKIT_FILE", paintkit_file)
+    monkeypatch.setattr(ld, "CURRENCIES_FILE", curr_file)
+
+    ld.load_files()
+    assert ld.PAINTKIT_NAMES == {"80": "Warhawk"}
+
+
 def test_load_files_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(ld, "ATTRIBUTES_FILE", tmp_path / "missing.json")
     monkeypatch.setattr(ld, "ITEMS_FILE", tmp_path / "missing2.json")
