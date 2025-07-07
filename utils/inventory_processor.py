@@ -141,12 +141,21 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
             continue
 
         raw = attr.get("float_value")
-        if raw is None:
-            raw = attr.get("value")
+        effect_id = None
+        if raw is not None:
+            try:
+                effect_id = int(float(raw))
+            except (TypeError, ValueError):
+                effect_id = None
 
-        try:
-            effect_id = int(float(raw))
-        except (TypeError, ValueError):
+        if not effect_id:
+            raw = attr.get("value")
+            try:
+                effect_id = int(float(raw)) if raw is not None else None
+            except (TypeError, ValueError):
+                continue
+
+        if not effect_id:
             continue
 
         effect_name = local_data.EFFECT_NAMES.get(str(effect_id)) or EFFECTS_MAP.get(
