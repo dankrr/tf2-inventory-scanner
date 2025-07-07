@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from . import steam_api_client, local_data
-from .valuation_service import ValuationService
+from .valuation_service import ValuationService, get_valuation_service
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
     KILLSTREAK_TIERS,
@@ -21,12 +21,6 @@ from .constants import (
 
 
 logger = logging.getLogger(__name__)
-
-
-try:  # instantiate default valuation service lazily
-    valuation_service = ValuationService()
-except Exception:  # pragma: no cover - fallback when prices unavailable
-    valuation_service = ValuationService(price_map={})
 
 
 SCHEMA_DIR = Path("cache/schema")
@@ -627,7 +621,7 @@ def _process_item(
     """
 
     if valuation_service is None:
-        valuation_service = globals().get("valuation_service")
+        valuation_service = get_valuation_service()
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -846,7 +840,7 @@ def enrich_inventory(
         the module-level instance.
     """
     if valuation_service is None:
-        valuation_service = globals().get("valuation_service")
+        valuation_service = get_valuation_service()
     items_raw = data.get("items")
     if not isinstance(items_raw, list):
         return []
@@ -905,7 +899,7 @@ def process_inventory(
 ) -> List[Dict[str, Any]]:
     """Public wrapper that sorts items by name."""
     if valuation_service is None:
-        valuation_service = globals().get("valuation_service")
+        valuation_service = get_valuation_service()
     items = enrich_inventory(data, valuation_service)
     return sorted(items, key=lambda i: i["name"])
 

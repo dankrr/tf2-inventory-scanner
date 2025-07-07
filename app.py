@@ -13,14 +13,13 @@ from flask import Flask, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
 from utils.inventory_processor import enrich_inventory
 import utils.inventory_processor as ip
-from utils.valuation_service import ValuationService
+
 from utils import steam_api_client as sac
 from utils import local_data
 from utils import constants as consts
 from utils.price_loader import (
     ensure_prices_cached,
     ensure_currencies_cached,
-    build_price_map,
 )
 
 load_dotenv()
@@ -70,8 +69,6 @@ try:
         local_data.CURRENCIES = json.load(f)["response"]["currencies"]
 except Exception:
     local_data.CURRENCIES = {}
-PRICE_MAP = build_price_map(_prices_path)
-ip.valuation_service = ValuationService(PRICE_MAP)
 
 # --- Utility functions ------------------------------------------------------
 
