@@ -10,6 +10,7 @@ from utils import local_data
 # attribute defindex -> human readable name
 REQUIRED_ATTRS = {
     134: "Unusual Effect",
+    2041: "Unusual Effect (new)",
     142: "Paint Color",
     261: "Paint Color (legacy)",
     725: "Wear",
