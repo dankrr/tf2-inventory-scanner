@@ -86,6 +86,8 @@
     </style>
 </head>
 <body>
+    <div class="page-container">
+    <main class="content-wrap">
     <h1>TF2 Inventory Checker</h1>
     {% with msgs = get_flashed_messages() %}
         {% if msgs %}
@@ -125,6 +127,7 @@
       </div>
     </dialog>
 
+    </main>
     <footer class="site-footer">
       <p class="attribution">
         Pricing and particles provided by
@@ -140,6 +143,8 @@
         <em>This project is not affiliated with or endorsed by Valve.</em>
       </p>
     </footer>
+
+    </div>
 
     <script>
       window.initialIds = {{ ids|tojson|safe }};
