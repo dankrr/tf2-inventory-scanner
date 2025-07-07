@@ -17,10 +17,8 @@ This is a Python Flask web application that allows a user to input one or more S
 The repository currently exposes several entry points:
 
 1. **`app.py`** – the Flask web application for scanning multiple Steam users.
-2. **`inventory_scanner.py`** – a small command-line tool that fetches the
-   inventory for a single SteamID.
-3. **`utils/steam_api_client.py`** – common helpers for Steam Web API requests.
-4. **`utils/inventory_processor.py`** – utilities that enrich and sort inventory
+2. **`utils/steam_api_client.py`** – common helpers for Steam Web API requests.
+3. **`utils/inventory_processor.py`** – utilities that enrich and sort inventory
    data.
 
 To register a new scanning agent, place its module under `utils/` (or create a
