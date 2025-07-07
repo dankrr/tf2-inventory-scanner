@@ -4,6 +4,7 @@ function appendCard(html) {
   const card = wrapper.firstElementChild;
   if (card) {
     document.getElementById('user-container').appendChild(card);
+    showResults();
   }
 }
 
@@ -24,6 +25,7 @@ function refreshCard(id) {
         appendCard(html);
       }
       attachHandlers();
+      showResults();
     });
 }
 
@@ -73,6 +75,15 @@ function loadUsers(ids) {
   });
 }
 
+function showResults() {
+  const results = document.getElementById('results');
+  if (!results) return;
+  results.classList.add('fade-in');
+  setTimeout(() => {
+    results.classList.add('show');
+  }, 10);
+}
+
 function attachItemModal() {
   document.querySelectorAll('.item-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -114,5 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
   attachItemModal();
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
+  }
+  if (document.getElementById('user-container').children.length) {
+    showResults();
   }
 });
