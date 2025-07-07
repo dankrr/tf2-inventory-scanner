@@ -5,7 +5,6 @@ from typing import Any, Dict, Tuple
 import logging
 
 import vdf
-import requests
 from .schema_provider import SchemaProvider
 from .price_loader import ensure_currencies_cached
 
@@ -138,37 +137,6 @@ def _load_paint_id_map(path: Path) -> Dict[str, str]:
     except Exception:
         pass
     return {}
-
-
-def ensure_effect_names_cached(refresh: bool = False) -> Path:
-    """Download particle effect names from the Steam API."""
-
-    path = EFFECT_NAMES_FILE
-    if path.exists() and not refresh:
-        return path
-
-    url = "https://api.steampowered.com/IEconParticles/GetParticles/v1"
-    try:
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        payload = resp.json()
-    except Exception as exc:  # requests or JSON
-        logging.warning("Failed to fetch effect names: %s", exc)
-        if path.exists():
-            return path
-        raise RuntimeError("Cannot fetch effect names") from exc
-
-    mapping: Dict[str, str] = {}
-    parts = payload.get("result", {}).get("particles")
-    if isinstance(parts, list):
-        for entry in parts:
-            if not isinstance(entry, dict) or "id" not in entry or "name" not in entry:
-                continue
-            mapping[str(entry["id"])] = str(entry["name"])
-
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(mapping, indent=2))
-    return path
 
 
 def load_files(
@@ -330,12 +298,6 @@ def load_files(
 
     EFFECT_NAMES = _load_json_map(EFFECT_FILE)
     extra = _load_json_map(EFFECT_NAMES_FILE)
-    if not extra and auto_refetch:
-        try:
-            ensure_effect_names_cached(refresh=True)
-            extra = _load_json_map(EFFECT_NAMES_FILE)
-        except Exception:
-            extra = {}
     if extra:
         EFFECT_NAMES.update(extra)
     PAINT_NAMES = _load_paint_id_map(PAINT_FILE)
