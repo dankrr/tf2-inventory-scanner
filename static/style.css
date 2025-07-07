@@ -41,6 +41,31 @@ button,
     border-radius: 8px;
 }
 
+/* ───── New user header layout ────────────────────────────── */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-pic {
+  width: 64px;
+  border-radius: 8px;
+}
+
 .profile-info {
     display: flex;
     flex-direction: column;
@@ -48,7 +73,8 @@ button,
     gap: 0.25rem;
 }
 
-.profile-info .username {
+.profile-info .username,
+.profile-details .username {
     font-weight: bold;
     font-size: 1.2rem;
 }
@@ -337,9 +363,9 @@ button {
   font-size: 0.9em;
 }
 
-.bptf-logo {
-  width: 1em;
-  height: 1em;
+.bp-logo {
+  height: 20px;
+  background: transparent;
   vertical-align: middle;
   margin-left: 4px;
 }
@@ -365,10 +391,10 @@ button {
     width: 80px;
     height: 104px;
   }
-  .profile-header .avatar-link img {
+  .profile-pic {
     width: 48px;
   }
-  .profile-info .username {
+  .profile-details .username {
     font-size: 1rem;
   }
 }
