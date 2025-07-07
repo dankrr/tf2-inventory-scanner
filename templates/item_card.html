@@ -19,5 +19,22 @@
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
-  <h2 class="item-title">{{ item.name }}</h2>
+  {% set title_parts = [] %}
+  {% if item.killstreak_name %}
+    {% if item.killstreak_name == 'Killstreak' %}
+      {% set _ = title_parts.append('Killstreak') %}
+    {% else %}
+      {% set _ = title_parts.append(item.killstreak_name) %}
+      {% set _ = title_parts.append('Killstreak') %}
+    {% endif %}
+  {% endif %}
+  {% set quality = item.quality %}
+  {% if item.strange or quality == 'Strange' %}
+    {% set _ = title_parts.append('Strange') %}
+  {% elif quality and quality not in ('Unique', 'Normal') %}
+    {% set _ = title_parts.append(quality) %}
+  {% endif %}
+  {% set base = item.base_name or item.display_name or item.name %}
+  {% set _ = title_parts.append(base) %}
+  <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
 </div>

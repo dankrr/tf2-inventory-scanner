@@ -215,6 +215,11 @@ button {
   filter:drop-shadow(0 0 2px #A156D6);
 }
 .ks-effect{color:#ff7e30;font-weight:bold;}
+.ks-tier{
+  color:#ff7e30;
+  font-weight:bold;
+  margin-right:2px;
+}
 .unusual-effect {
   font-weight: bold;
   color: #8650AC;
