@@ -11,7 +11,7 @@ from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .item_enricher import ItemEnricher
 from .inventory_provider import InventoryProvider
-from .valuation_service import ValuationService
+from .valuation_service import ValuationService, get_valuation_service
 
 __all__ = [
     "PAINT_COLORS",
@@ -26,6 +26,7 @@ __all__ = [
     "ItemEnricher",
     "InventoryProvider",
     "ValuationService",
+    "get_valuation_service",
     "_wear_tier",
     "_decode_seed_info",
 ]
