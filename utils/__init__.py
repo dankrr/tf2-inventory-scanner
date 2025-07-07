@@ -8,8 +8,7 @@ from .constants import (
     SPELL_MAP,
 )
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
-from .wear_helpers import _wear_tier, _decode_seed_info from .item_enricher import ItemEnricher
-from .inventory_provider import InventoryProvider
+from .wear_helpers import _wear_tier, _decode_seed_info
 from .valuation_service import ValuationService, get_valuation_service
 
 __all__ = [
@@ -22,8 +21,6 @@ __all__ = [
     "PAINT_SPELL_MAP",
     "ORIGIN_MAP",
     "KILLSTREAK_BADGE_ICONS",
-    "ItemEnricher",
-    "InventoryProvider",
     "ValuationService",
     "get_valuation_service",
     "_wear_tier",
