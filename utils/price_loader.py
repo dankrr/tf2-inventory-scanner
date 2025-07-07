@@ -18,14 +18,41 @@ PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
 
 
+QUALITY_PREFIXES = (
+    "Strange ",
+    "Genuine ",
+    "Vintage ",
+    "Collector's ",
+    "Haunted ",
+    "Unusual ",
+    "Decorated ",
+    "Civilian Grade ",
+    "Freelance Grade ",
+    "Mercenary Grade ",
+    "Commando Grade ",
+    "Assassin Grade ",
+    "Elite Grade ",
+)
+
+
+def _strip_quality(name: str) -> str:
+    for q in QUALITY_PREFIXES:
+        if name.startswith(q):
+            return name[len(q) :]
+    return name
+
+
 def _extract_killstreak(name: str) -> tuple[str, int]:
     """Return (base name, killstreak tier) from an item name."""
 
+    name_no_qual = _strip_quality(name)
+
     for tier in (3, 2, 1):
         prefix = f"{KILLSTREAK_TIERS[tier]} "
-        if name.startswith(prefix):
-            return name[len(prefix) :], tier
-    return name, 0
+        if name_no_qual.startswith(prefix):
+            base = name_no_qual[len(prefix) :]
+            return base, tier
+    return name_no_qual, 0
 
 
 def _require_key() -> str:
