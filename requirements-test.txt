@@ -7,3 +7,4 @@ python-dotenv==1.1.1
 vdf==3.4
 beautifulsoup4==4.13.4
 psutil==5.9.8
+pre_commit
