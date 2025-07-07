@@ -808,7 +808,7 @@ def _process_item(
                 qid = 0
             try:
                 formatted = valuation_service.format_price(
-                    item.get("name", ""),
+                    item.get("base_name", base_name),
                     qid,
                     bool(is_australium),
                     currencies=local_data.CURRENCIES,
@@ -817,7 +817,7 @@ def _process_item(
                 formatted = ""
             if formatted:
                 item["price"] = valuation_service.get_price_info(
-                    item.get("name", ""), qid, bool(is_australium)
+                    item.get("base_name", base_name), qid, bool(is_australium)
                 )
                 item["price_string"] = formatted
                 item["formatted_price"] = formatted
