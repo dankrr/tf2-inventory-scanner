@@ -267,6 +267,8 @@ button {
   -webkit-line-clamp: 3;
   overflow: hidden;
   max-height: 3.6em;
+  position: relative;
+  z-index: 2;
 }
 
 .item-price {
