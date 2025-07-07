@@ -21,6 +21,11 @@ button,
     margin-bottom: 16px;
 }
 
+.user-card h2 a.avatar-link {
+    display: inline-block;
+    line-height: 0;
+}
+
 button {
     padding: 6px 12px;
     cursor: pointer;
