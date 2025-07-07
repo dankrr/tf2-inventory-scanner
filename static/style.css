@@ -369,9 +369,25 @@ button {
   font-size: 0.9em;
 }
 
-.bp-logo {
-  height: 20px;
-  background: transparent;
+
+a.backpack-link {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a.backpack-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+a.backpack-link:visited {
+  color: #ddd;
+}
+
+.inline-icon {
+  height: 1em;
+  width: auto;
   vertical-align: middle;
   margin-left: 4px;
 }

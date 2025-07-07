@@ -8,8 +8,9 @@
         <div class="username">{{ user.username }}</div>
         <div class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</div>
         <div class="profile-link">
-          <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" target="_blank">
-            Backpack.tf <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="bp-logo" />
+          <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" class="backpack-link" target="_blank" rel="noopener">
+            Backpack.tf
+            <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon" />
           </a>
         </div>
       </div>
