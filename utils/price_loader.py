@@ -5,6 +5,8 @@ import logging
 import os
 from pathlib import Path
 
+from .constants import KILLSTREAK_TIERS
+
 import requests
 from dotenv import load_dotenv
 
@@ -14,6 +16,16 @@ logger = logging.getLogger(__name__)
 
 PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
+
+
+def _extract_killstreak(name: str) -> tuple[str, int]:
+    """Return (base name, killstreak tier) from an item name."""
+
+    for tier in (3, 2, 1):
+        prefix = f"{KILLSTREAK_TIERS[tier]} "
+        if name.startswith(prefix):
+            return name[len(prefix) :], tier
+    return name, 0
 
 
 def _require_key() -> str:
@@ -71,14 +83,16 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
     return path
 
 
-def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool, int], dict]:
-    """Return mapping of ``(item_name, quality, is_australium, effect_id)`` -> price info."""
+def build_price_map(
+    prices_path: Path,
+) -> dict[tuple[str, int, bool, int, int], dict]:
+    """Return mapping of ``(item_name, quality, is_australium, effect_id, killstreak_tier)`` -> price info."""
 
     with prices_path.open() as f:
         data = json.load(f)
 
     items = data.get("response", {}).get("items", {})
-    mapping: dict[tuple[str, int, bool, int], dict] = {}
+    mapping: dict[tuple[str, int, bool, int, int], dict] = {}
 
     for name, item in items.items():
         is_australium = str(item.get("australium")) == "1" or name.startswith(
@@ -87,6 +101,7 @@ def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool, int], dict]
         base_name = (
             name.replace("Australium ", "") if name.startswith("Australium ") else name
         )
+        base_name, ks_tier = _extract_killstreak(base_name)
         prices = item.get("prices", {})
         for quality, qdata in prices.items():
             try:
@@ -119,7 +134,7 @@ def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool, int], dict]
                 except (TypeError, ValueError):
                     effect_id = 0
 
-                mapping[(base_name, qid, is_australium, effect_id)] = {
+                mapping[(base_name, qid, is_australium, effect_id, ks_tier)] = {
                     "value_raw": float(value_raw),
                     "currency": str(currency),
                 }
