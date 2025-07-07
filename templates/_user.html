@@ -1,15 +1,20 @@
 <div id="user-{{ user.steamid }}" class="user-card">
-  <div class="profile-header">
-    <a href="{{ user.profile }}" target="_blank" class="avatar-link">
-      <img src="{{ user.avatar }}" alt="Avatar">
-    </a>
-    <div class="profile-info">
-      <div class="username">{{ user.username }}</div>
-      <div class="profile-link">
-        <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" target="_blank">Backpack.tf</a>
-        <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="bptf-logo">
+  <div class="user-header">
+    <div class="user-profile">
+      <a href="{{ user.profile }}" target="_blank" class="avatar-link">
+        <img src="{{ user.avatar }}" alt="Avatar" class="profile-pic" />
+      </a>
+      <div class="profile-details">
+        <div class="username">{{ user.username }}</div>
+        <div class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</div>
+        <div class="profile-link">
+          <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" target="_blank">
+            Backpack.tf <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="bp-logo" />
+          </a>
+        </div>
       </div>
-      <div class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</div>
+    </div>
+    <div class="privacy-status">
       <span class="pill status-pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="Retry scan for this user"{% endif %}>
         {% if user.status == 'parsed' %}
           <i class="fa-solid fa-check"></i> Public
