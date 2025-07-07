@@ -188,11 +188,13 @@ def test_price_lookup_cosmetic_effect(patch_valuation):
     }
     ld.ITEMS_BY_DEFINDEX = {5001: {"item_name": "Cool Hat", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
-    price_map = {("Cool Hat", 5, False, 55): {"value_raw": 50.0, "currency": "metal"}}
+    price_map = {
+        ("Cool Hat", 5, False, 55, 0): {"value_raw": 50.0, "currency": "metal"}
+    }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
     patch_valuation(price_map)
     item = ip.enrich_inventory({"items": [asset]})[0]
-    assert item["price"] == price_map[("Cool Hat", 5, False, 55)]
+    assert item["price"] == price_map[("Cool Hat", 5, False, 55, 0)]
     assert item["price_string"] == "1 Key"
 
 
@@ -205,10 +207,10 @@ def test_price_lookup_taunt_effect(patch_valuation):
     ld.ITEMS_BY_DEFINDEX = {6001: {"item_name": "Taunt: Conga", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
     price_map = {
-        ("Taunt: Conga", 5, False, 54): {"value_raw": 100.0, "currency": "metal"}
+        ("Taunt: Conga", 5, False, 54, 0): {"value_raw": 100.0, "currency": "metal"}
     }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
     patch_valuation(price_map)
     item = ip.enrich_inventory({"items": [asset]})[0]
-    assert item["price"] == price_map[("Taunt: Conga", 5, False, 54)]
+    assert item["price"] == price_map[("Taunt: Conga", 5, False, 54, 0)]
     assert item["price_string"] == "2 Keys"
