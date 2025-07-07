@@ -438,10 +438,6 @@ a.backpack-link:visited {
     gap: 2px;
     overflow-x: auto;
   }
-  .item-card {
-    width: 80px;
-    height: 104px;
-  }
   .profile-pic {
     width: 48px;
   }
