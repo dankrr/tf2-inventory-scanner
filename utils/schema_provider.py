@@ -287,7 +287,13 @@ class SchemaProvider:
     def get_paintkits(self, *, force: bool = False) -> Dict[int, str]:
         if self.paintkits_map is None or force:
             data = self._load("paintkits", self.ENDPOINTS["paintkits"], force)
-            if isinstance(data, dict):
+            if isinstance(data, list):
+                mapping = {
+                    int(e["id"]): str(e["name"])
+                    for e in data
+                    if isinstance(e, dict) and "id" in e and "name" in e
+                }
+            elif isinstance(data, dict):
                 if all(str(v).isdigit() for v in data.values()):
                     mapping = {int(v): str(k) for k, v in data.items()}
                 else:

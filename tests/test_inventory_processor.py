@@ -409,7 +409,30 @@ def test_paintkit_appended_to_name(monkeypatch):
     monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Warhawk"}, False)
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
-    assert items[0]["name"] == "Decorated Weapon Flamethrower (Warhawk)"
+    item = items[0]
+    assert item["name"] == "Decorated Weapon Flamethrower (Warhawk)"
+    assert item["warpaint_id"] == 350
+    assert item["warpaint_name"] == "Warhawk"
+    assert item["paintkit_name"] == "Warhawk"
+
+
+def test_warpaint_unknown_defaults_unknown(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 999}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 999
+    assert item["warpaint_name"] == "Unknown"
 
 
 def test_kill_eater_fields(monkeypatch):
