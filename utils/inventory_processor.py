@@ -617,7 +617,9 @@ def _process_item(
     valuation_service:
         Optional :class:`ValuationService` used to look up item values. When
         provided, price information is added under ``"price"`` and
-        ``"price_string"`` keys. Defaults to the module-level instance.
+        ``"price_string"`` keys. Defaults to
+        :func:`~utils.valuation_service.get_valuation_service`, which returns a
+        singleton service.
     """
 
     if valuation_service is None:
@@ -837,7 +839,8 @@ def enrich_inventory(
         Inventory payload from Steam.
     valuation_service:
         Optional :class:`ValuationService` used to look up prices. Defaults to
-        the module-level instance.
+        :func:`~utils.valuation_service.get_valuation_service`, which provides
+        a singleton service.
     """
     if valuation_service is None:
         valuation_service = get_valuation_service()
