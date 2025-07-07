@@ -15,7 +15,7 @@
     <span class="item-qty">x{{ item.quantity }}</span>
   {% endif %}
   {% if item.unusual_effect_id %}
-    <img class="particle-bg" src="/static/images/effects/{{ item.unusual_effect_id }}_380x380.png" alt="effect">
+    <img class="particle-bg" src="/static/images/effects/{{ item.unusual_effect_id }}.png" alt="effect">
   {% endif %}
   {% if item.image_url %}
     <img class="item-img" src="{{ item.image_url }}" alt="{{ item.display_name }}" width="64" height="64" onerror="this.style.display='none';">
