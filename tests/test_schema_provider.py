@@ -42,6 +42,8 @@ def test_schema_provider(monkeypatch, tmp_path):
     assert provider.get_effects() == {13: {"id": 13, "name": "Burning Flames"}}
     assert provider.get_paints() == {"A Color Similar to Slate": 3100495}
     assert provider.get_paintkits() == {350: "Warhawk"}
+    assert provider.get_warpaints() == {"Warhawk": 350}
+    assert provider.warpaints_by_id == {350: "Warhawk"}
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
@@ -96,6 +98,8 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     assert provider.get_effects() == {13: {"id": 13, "name": "Burning Flames"}}
     assert provider.get_paints() == {"A Color Similar to Slate": 3100495}
     assert provider.get_paintkits() == {350: "Warhawk"}
+    assert provider.get_warpaints() == {"Warhawk": 350}
+    assert provider.warpaints_by_id == {350: "Warhawk"}
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}

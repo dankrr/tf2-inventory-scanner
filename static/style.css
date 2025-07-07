@@ -368,6 +368,16 @@ button {
   word-wrap: break-word;
 }
 
+.warpaint-badge {
+  background: #282828;
+  color: #f4d03f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-top: 4px;
+  display: inline-block;
+}
+
 /* ───── Paint colour dot (used in card & modal) ───────────────────── */
 .paint-dot {
   display: inline-block;
