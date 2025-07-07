@@ -125,21 +125,20 @@
       </div>
     </dialog>
 
-    <footer class="footer">
-      <p>
+    <footer class="site-footer">
+      <p class="attribution">
         Pricing and particles provided by
         <a href="https://backpack.tf" target="_blank" rel="noopener" class="bptf-link">
-          Backpack.tf
-          <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf logo" class="bptf-logo" />
+          Backpack.tf <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf logo" class="footer-icon">
         </a>
       </p>
-      <i class="fa-brands fa-steam"></i>
-      <span>
-            Team Fortress 2 and all related assets are © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation. This project is not affiliated with or endorsed by Valve.
-      </span>
-      {% if debug_ms %}
-        <div>Longest merge: {{ debug_ms }} ms</div>
-      {% endif %}
+
+      <p class="disclaimer">
+        <i class="fab fa-steam steam-icon"></i>
+        Team Fortress 2 and all related assets are © Valve Corporation.<br>
+        Steam and the Steam logo are trademarks of Valve Corporation.<br>
+        <em>This project is not affiliated with or endorsed by Valve.</em>
+      </p>
     </footer>
 
     <script>
