@@ -811,13 +811,17 @@ def _process_item(
                     item.get("base_name", base_name),
                     qid,
                     bool(is_australium),
+                    effect_id=effect_id,
                     currencies=local_data.CURRENCIES,
                 )
             except Exception:  # pragma: no cover - defensive fallback
                 formatted = ""
             if formatted:
                 item["price"] = valuation_service.get_price_info(
-                    item.get("base_name", base_name), qid, bool(is_australium)
+                    item.get("base_name", base_name),
+                    qid,
+                    bool(is_australium),
+                    effect_id=effect_id,
                 )
                 item["price_string"] = formatted
                 item["formatted_price"] = formatted

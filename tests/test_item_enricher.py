@@ -1,6 +1,25 @@
 from utils.item_enricher import ItemEnricher, _decode_float_bits_to_int
 from utils.schema_provider import SchemaProvider
+from utils import inventory_processor as ip, local_data as ld
+from utils.valuation_service import ValuationService
+import pytest
 import struct
+
+
+@pytest.fixture(autouse=True)
+def reset_data():
+    ld.ITEMS_BY_DEFINDEX = {}
+    ld.SCHEMA_ATTRIBUTES = {}
+
+
+@pytest.fixture
+def patch_valuation(monkeypatch):
+    def _apply(price_map):
+        service = ValuationService(price_map=price_map)
+        monkeypatch.setattr(ip, "get_valuation_service", lambda: service)
+        return service
+
+    return _apply
 
 
 def test_enrich_inventory(monkeypatch):
@@ -159,3 +178,37 @@ def test_spell_extraction(monkeypatch):
 def test_decode_float_bits_to_int():
     val = struct.unpack("<f", struct.pack("<I", 7))[0]
     assert _decode_float_bits_to_int(val) == 7
+
+
+def test_price_lookup_cosmetic_effect(patch_valuation):
+    asset = {
+        "defindex": 5001,
+        "quality": 5,
+        "attributes": [{"defindex": 134, "float_value": 55}],
+    }
+    ld.ITEMS_BY_DEFINDEX = {5001: {"item_name": "Cool Hat", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    price_map = {("Cool Hat", 5, False, 55): {"value_raw": 50.0, "currency": "metal"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+    patch_valuation(price_map)
+    item = ip.enrich_inventory({"items": [asset]})[0]
+    assert item["price"] == price_map[("Cool Hat", 5, False, 55)]
+    assert item["price_string"] == "1 Key"
+
+
+def test_price_lookup_taunt_effect(patch_valuation):
+    asset = {
+        "defindex": 6001,
+        "quality": 5,
+        "attributes": [{"defindex": 134, "float_value": 54}],
+    }
+    ld.ITEMS_BY_DEFINDEX = {6001: {"item_name": "Taunt: Conga", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    price_map = {
+        ("Taunt: Conga", 5, False, 54): {"value_raw": 100.0, "currency": "metal"}
+    }
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+    patch_valuation(price_map)
+    item = ip.enrich_inventory({"items": [asset]})[0]
+    assert item["price"] == price_map[("Taunt: Conga", 5, False, 54)]
+    assert item["price_string"] == "2 Keys"
