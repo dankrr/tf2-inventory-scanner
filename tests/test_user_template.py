@@ -50,7 +50,7 @@ def app(monkeypatch):
     ],
 )
 def test_user_template_does_not_error(app, context):
-    with app.app_context():
+    with app.test_request_context():
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context.get("user", {}))
         render_template_string(HTML, **context)
@@ -68,7 +68,7 @@ def test_user_template_renders_badge_icon(app):
             ]
         }
     }
-    with app.app_context():
+    with app.test_request_context():
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
@@ -87,7 +87,7 @@ def test_user_template_renders_paint_spell_badge(app):
             ]
         }
     }
-    with app.app_context():
+    with app.test_request_context():
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
@@ -103,7 +103,7 @@ def test_user_template_filters_hidden_items(app):
             ]
         }
     }
-    with app.app_context():
+    with app.test_request_context():
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
@@ -119,20 +119,24 @@ def test_unusual_effect_rendered(app):
                     "name": "Burning Flames Cap",
                     "original_name": "Unusual Cap",
                     "display_name": "Burning Flames Cap",
+                    "base_name": "Cap",
                     "unusual_effect_name": "Burning Flames",
+                    "unusual_effect_id": 123,
+                    "quality": "Unusual",
+                    "strange": True,
                     "image_url": "",
                     "quality_color": "#fff",
                 }
             ]
         }
     }
-    with app.app_context():
+    with app.test_request_context():
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    span = soup.find("span", class_="unusual-effect")
-    assert span is None
     title = soup.find("h2", class_="item-title")
     assert title is not None
-    assert title.text.strip().startswith("Burning Flames")
+    text = title.text.strip()
+    assert text.startswith("Strange Burning Flames Cap")
+    assert "Unusual" not in text
