@@ -10,12 +10,6 @@
         .retry-pill:hover {
             background: rgba(255, 0, 0, 0.1);
         }
-        .footer {
-            margin-top: 2rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #aaa;
-        }
         .inventory-scroll {
             display: flex;
             align-items: center;
@@ -132,13 +126,20 @@
     </dialog>
 
     <footer class="footer">
-        <i class="fa-brands fa-steam"></i>
-        <span>
-            Team Fortress 2 © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation.
-        </span>
-        {% if debug_ms %}
-          <div>Longest merge: {{ debug_ms }} ms</div>
-        {% endif %}
+      <p>
+        Pricing and particles provided by
+        <a href="https://backpack.tf" target="_blank" rel="noopener" class="bptf-link">
+          Backpack.tf
+          <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf logo" class="bptf-logo" />
+        </a>
+      </p>
+      <i class="fa-brands fa-steam"></i>
+      <span>
+          Team Fortress 2 © Valve Corporation. Steam and the Steam logo are trademarks of Valve Corporation.
+      </span>
+      {% if debug_ms %}
+        <div>Longest merge: {{ debug_ms }} ms</div>
+      {% endif %}
     </footer>
 
     <script>
