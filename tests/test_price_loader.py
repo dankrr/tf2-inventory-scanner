@@ -77,7 +77,7 @@ def test_price_map_non_craftable(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Unusual Hat", 5, False, 0, 0)
+    key = ("Hat", 5, False, 0, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "keys"
 
