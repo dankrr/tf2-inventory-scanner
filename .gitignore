@@ -1,6 +1,9 @@
 .env
 __pycache__/
 data/
+!data/
+!data/effect_names.json
+!data/effect_names.json
 cache/
 !cache/
 cache/*

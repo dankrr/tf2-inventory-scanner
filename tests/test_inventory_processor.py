@@ -232,6 +232,26 @@ def test_unusual_effect_attribute_object_2041():
     assert items[0]["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
 
 
+def test_unusual_taunt_effect_badge():
+    data = {
+        "items": [
+            {
+                "defindex": 6001,
+                "quality": 5,
+                "attributes": [{"defindex": 134, "float_value": 3009}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {6001: {"item_name": "Taunt: Conga", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    ld.EFFECT_NAMES = {"3009": "Silver Cyclone"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["badges"][0]["icon"] == "★"
+    assert item["unusual_effect_name"] == "Silver Cyclone"
+    assert "Silver Cyclone" in item["name"]
+
+
 def test_get_inventories_adds_user_agent(monkeypatch):
     captured = {}
 
