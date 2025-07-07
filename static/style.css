@@ -21,6 +21,11 @@ button,
     margin-bottom: 16px;
 }
 
+.user-box.loading {
+    opacity: 0.6;
+    filter: grayscale(0.4);
+}
+
 .profile-header .avatar-link {
     display: inline-block;
     line-height: 0;
