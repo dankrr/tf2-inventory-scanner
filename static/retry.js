@@ -27,20 +27,32 @@ function refreshCard(id) {
     });
 }
 
+function updateRefreshButton() {
+  const btn = document.getElementById('refresh-failed-btn');
+  if (!btn) return;
+  const hasFailures = document.querySelectorAll('.status-pill.failed').length > 0;
+  if (!hasFailures) {
+    btn.disabled = true;
+    btn.textContent = 'Nothing to Refresh';
+    btn.classList.add('btn-disabled');
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Refresh Failed';
+    btn.classList.remove('btn-disabled');
+  }
+}
+
 function attachHandlers() {
   document.querySelectorAll('.retry-pill').forEach(el => {
     el.addEventListener('click', () => refreshCard(el.dataset.steamid));
   });
-  const btn = document.getElementById('retry-all');
-  if (btn) {
-    btn.disabled = document.querySelectorAll('.retry-pill').length === 0;
-  }
+  updateRefreshButton();
 
   attachItemModal();
 }
 
 function refreshAll() {
-  const btn = document.getElementById('retry-all');
+  const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
   btn.disabled = true;
   const original = btn.textContent;
@@ -92,7 +104,7 @@ function attachItemModal() {
 
 document.addEventListener('DOMContentLoaded', () => {
   attachHandlers();
-  const btn = document.getElementById('retry-all');
+  const btn = document.getElementById('refresh-failed-btn');
   if (btn) {
     btn.addEventListener('click', refreshAll);
   }
