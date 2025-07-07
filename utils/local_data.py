@@ -5,6 +5,7 @@ from typing import Any, Dict, Tuple
 import logging
 
 import vdf
+import requests
 from .schema_provider import SchemaProvider
 from .price_loader import ensure_currencies_cached
 
@@ -76,6 +77,8 @@ DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "paintkit_names.json"
 DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
 DEFAULT_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "string_lookups.json"
 EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
+DEFAULT_EFFECT_NAMES_FILE = BASE_DIR / "data" / "effect_names.json"
+EFFECT_NAMES_FILE = Path(os.getenv("TF2_EFFECT_NAMES_FILE", DEFAULT_EFFECT_NAMES_FILE))
 PAINT_FILE = Path(os.getenv("TF2_PAINT_FILE", DEFAULT_PAINT_FILE))
 WEAR_FILE = Path(os.getenv("TF2_WEAR_FILE", DEFAULT_WEAR_FILE))
 KILLSTREAK_FILE = Path(os.getenv("TF2_KILLSTREAK_FILE", DEFAULT_KILLSTREAK_FILE))
@@ -135,6 +138,37 @@ def _load_paint_id_map(path: Path) -> Dict[str, str]:
     except Exception:
         pass
     return {}
+
+
+def ensure_effect_names_cached(refresh: bool = False) -> Path:
+    """Download particle effect names from the Steam API."""
+
+    path = EFFECT_NAMES_FILE
+    if path.exists() and not refresh:
+        return path
+
+    url = "https://api.steampowered.com/IEconParticles/GetParticles/v1"
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        payload = resp.json()
+    except Exception as exc:  # requests or JSON
+        logging.warning("Failed to fetch effect names: %s", exc)
+        if path.exists():
+            return path
+        raise RuntimeError("Cannot fetch effect names") from exc
+
+    mapping: Dict[str, str] = {}
+    parts = payload.get("result", {}).get("particles")
+    if isinstance(parts, list):
+        for entry in parts:
+            if not isinstance(entry, dict) or "id" not in entry or "name" not in entry:
+                continue
+            mapping[str(entry["id"])] = str(entry["name"])
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(mapping, indent=2))
+    return path
 
 
 def load_files(
@@ -295,6 +329,15 @@ def load_files(
         )
 
     EFFECT_NAMES = _load_json_map(EFFECT_FILE)
+    extra = _load_json_map(EFFECT_NAMES_FILE)
+    if not extra and auto_refetch:
+        try:
+            ensure_effect_names_cached(refresh=True)
+            extra = _load_json_map(EFFECT_NAMES_FILE)
+        except Exception:
+            extra = {}
+    if extra:
+        EFFECT_NAMES.update(extra)
     PAINT_NAMES = _load_paint_id_map(PAINT_FILE)
     WEAR_NAMES = _load_json_map(WEAR_FILE)
     KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
@@ -349,7 +392,7 @@ def load_files(
             )
 
     for label, mapping, path in [
-        ("effects", EFFECT_NAMES, EFFECT_FILE),
+        ("effects", EFFECT_NAMES, EFFECT_NAMES_FILE),
         ("paints", PAINT_NAMES, PAINT_FILE),
         ("wears", WEAR_NAMES, WEAR_FILE),
         ("killstreaks", KILLSTREAK_NAMES, KILLSTREAK_FILE),

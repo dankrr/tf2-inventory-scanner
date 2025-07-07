@@ -690,26 +690,29 @@ def _process_item(
         effect_id = effect_info["id"]
         effect_name = effect_info["name"]
         effect = effect_info
-        if effect_name:
-            badges.append(
-                {
-                    "icon": "★",
-                    "title": f"Unusual Effect: {effect_name}",
-                    "color": "#8650AC",
-                    "label": effect_name,
-                    "type": "effect",
-                }
-            )
     else:
         effect = None
         effect_id = effect_name = None
+
+    if effect_id is not None:
+        badges.append(
+            {
+                "icon": "★",
+                "title": f"Unusual Effect: {effect_name or f'#{effect_id}'}",
+                "color": "#8650AC",
+                "label": effect_name or f"#{effect_id}",
+                "type": "effect",
+            }
+        )
     # ----------------------------------------------------------------------
 
     display_name = (
-        f"{display_base}" if not effect_name else f"{effect_name} {display_base}"
+        f"{display_base}"
+        if effect_id is None
+        else f"{effect_name or f'Effect #{effect_id}'} {display_base}"
     )
-    original_name = name if effect_name else None
-    if effect_name:
+    original_name = name if effect_id is not None else None
+    if effect_id is not None:
         name = display_name
     if ks_tier_val:
         tier_id = int(float(ks_tier_val))
