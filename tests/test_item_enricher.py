@@ -96,6 +96,32 @@ def test_enrich_inventory_attribute_class(monkeypatch):
     assert item["unusual_effect"] == "Hot"
 
 
+def test_enrich_inventory_attribute_class_2041(monkeypatch):
+    provider = SchemaProvider(base_url="https://example.com")
+
+    monkeypatch.setattr(
+        provider, "get_items", lambda: {100: {"defindex": 100, "item_name": "Rocket"}}
+    )
+    monkeypatch.setattr(provider, "get_qualities", lambda: {"Unique": 6})
+    monkeypatch.setattr(provider, "get_paints", lambda: {})
+    monkeypatch.setattr(
+        provider,
+        "get_attributes",
+        lambda: {2041: {"defindex": 2041, "attribute_class": "set_attached_particle"}},
+    )
+    monkeypatch.setattr(provider, "get_effects", lambda: {55: "Hot"})
+    monkeypatch.setattr(provider, "get_strange_parts", lambda: {})
+
+    enricher = ItemEnricher(provider)
+
+    raw = [
+        {"defindex": 100, "quality": 6, "attributes": [{"defindex": 2041, "value": 55}]}
+    ]
+
+    item = enricher.enrich_inventory(raw)[0]
+    assert item["unusual_effect"] == "Hot"
+
+
 def test_spell_extraction(monkeypatch):
     provider = SchemaProvider(base_url="https://example.com")
 

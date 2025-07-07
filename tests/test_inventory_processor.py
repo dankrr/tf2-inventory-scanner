@@ -215,6 +215,23 @@ def test_unusual_effect_attribute_object():
     assert items[0]["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
 
 
+def test_unusual_effect_attribute_object_2041():
+    data = {
+        "items": [
+            {
+                "defindex": 701,
+                "quality": 5,
+                "attributes": [{"defindex": 2041, "value": 13}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {701: {"item_name": "Hat", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual"}
+    ld.EFFECT_NAMES = {"13": "Burning Flames"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["unusual_effect"] == {"id": 13, "name": "Burning Flames"}
+
+
 def test_get_inventories_adds_user_agent(monkeypatch):
     captured = {}
 

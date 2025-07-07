@@ -70,7 +70,7 @@ def _refresh_attr_classes() -> None:
     global PATTERN_SEED_LO_CLASSES, PATTERN_SEED_HI_CLASSES
     global PAINTKIT_CLASSES, CRATE_SERIES_CLASSES
 
-    UNUSUAL_CLASSES = {cls(134)} - {None}
+    UNUSUAL_CLASSES = {cls(134), cls(2041)} - {None}
     KILLSTREAK_TIER_CLASSES = {cls(2025)} - {None}
     KILLSTREAK_SHEEN_CLASSES = {cls(2014)} - {None}
     KILLSTREAK_EFFECT_CLASSES = {cls(2013)} - {None}
@@ -137,7 +137,7 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
         except (TypeError, ValueError):
             continue
 
-        if idx_int != 134:
+        if idx_int not in (134, 2041):
             continue
 
         raw = attr.get("float_value")
