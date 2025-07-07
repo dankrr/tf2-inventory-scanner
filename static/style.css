@@ -445,31 +445,39 @@ a.backpack-link:visited {
   }
 }
 
-/* === Footer Styling === */
+/* === Footer Refinement === */
 .site-footer {
   text-align: center;
-  padding: 24px 12px 32px;
-  font-size: 0.9rem;
-  color: #c0c0c0;
-  line-height: 1.6;
+  padding: 20px 12px 28px;
+  font-size: 0.8rem;  /* Reduced from 0.9rem */
+  color: #b0b0b0;
+  line-height: 1.5;
   border-top: 1px solid #333;
-  background: transparent;
+}
+
+.site-footer .attribution,
+.site-footer .disclaimer {
+  margin-bottom: 10px;
 }
 
 .site-footer a.bptf-link {
-  color: #84baff;
+  color: #b0b0b0;
   font-weight: 500;
   text-decoration: none;
+  border-bottom: 1px dashed #777;
+  transition: color 0.2s ease, border 0.2s ease;
 }
+
 .site-footer a.bptf-link:hover {
-  text-decoration: underline;
+  color: #ffffff;
+  border-bottom: 1px solid #999;
 }
 
 .footer-icon {
   height: 1em;
   vertical-align: middle;
   margin-left: 4px;
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 .steam-icon {
