@@ -196,6 +196,43 @@ def test_price_map_killstreak(tmp_path, monkeypatch):
     assert ("Rocket Launcher", 6, False, 0, 3) in mapping
 
 
+def test_price_map_quality_killstreak(tmp_path, monkeypatch):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    url = "https://backpack.tf/api/IGetPrices/v4?raw=1&key=TEST"
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Strange Professional Killstreak Rocket Launcher": {
+                    "defindex": [205],
+                    "prices": {
+                        "11": {
+                            "Tradable": {
+                                "Craftable": [
+                                    {
+                                        "value": 100,
+                                        "value_raw": 100.0,
+                                        "currency": "keys",
+                                        "last_update": 0,
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, json=payload, status=200)
+        p = price_loader.ensure_prices_cached(refresh=True)
+
+    mapping = price_loader.build_price_map(p)
+    assert ("Rocket Launcher", 11, False, 0, 3) in mapping
+
+
 def test_missing_api_key(monkeypatch):
     monkeypatch.delenv("BPTF_API_KEY", raising=False)
     with pytest.raises(RuntimeError):
