@@ -1,8 +1,0 @@
-{
-  "devDependencies": {
-    "jsdom": "^26.1.0"
-  },
-  "scripts": {
-    "test": "node tests/test_modal.js"
-  }
-}
