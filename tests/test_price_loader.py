@@ -38,7 +38,7 @@ def test_price_map_smoke(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Mann Co. Supply Crate Key", 6, False, 0)
+    key = ("Mann Co. Supply Crate Key", 6, False, 0, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "metal"
 
@@ -77,7 +77,7 @@ def test_price_map_non_craftable(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Unusual Hat", 5, False, 0)
+    key = ("Unusual Hat", 5, False, 0, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "keys"
 
@@ -116,7 +116,7 @@ def test_price_map_unusual_effect(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Villain's Veil", 5, False, 13)
+    key = ("Villain's Veil", 5, False, 13, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "keys"
 
@@ -156,7 +156,44 @@ def test_price_map_australium(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert ("Rocket Launcher", 6, True, 0) in mapping
+    assert ("Rocket Launcher", 6, True, 0, 0) in mapping
+
+
+def test_price_map_killstreak(tmp_path, monkeypatch):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    url = "https://backpack.tf/api/IGetPrices/v4?raw=1&key=TEST"
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Professional Killstreak Rocket Launcher": {
+                    "defindex": [205],
+                    "prices": {
+                        "6": {
+                            "Tradable": {
+                                "Craftable": [
+                                    {
+                                        "value": 100,
+                                        "value_raw": 100.0,
+                                        "currency": "keys",
+                                        "last_update": 0,
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, json=payload, status=200)
+        p = price_loader.ensure_prices_cached(refresh=True)
+
+    mapping = price_loader.build_price_map(p)
+    assert ("Rocket Launcher", 6, False, 0, 3) in mapping
 
 
 def test_missing_api_key(monkeypatch):
