@@ -296,6 +296,13 @@ button {
 
 .tf2-hours { margin-left: 6px; font-size: 0.9em; }
 
+.bptf-logo {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
 .page-footer {
   margin-top: 2rem;
   text-align: center;
