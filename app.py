@@ -5,8 +5,7 @@ import time
 from pathlib import Path
 import json
 import argparse
-import subprocess
-import platform
+import psutil
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -80,33 +79,14 @@ IGNORED_STACK_KEYS = {"level", "custom_description", "custom_name", "origin"}
 def kill_process_on_port(port: int) -> None:
     """Terminate any process currently listening on ``port``."""
 
-    system = platform.system()
-    if system == "Windows":
-        try:
-            output = subprocess.check_output(
-                f"netstat -ano | findstr :{port}", shell=True, text=True
-            )
-        except subprocess.CalledProcessError:
-            return
-        for line in output.splitlines():
-            parts = line.split()
-            if not parts:
-                continue
-            pid = parts[-1]
-            if pid.isdigit() and int(pid) != os.getpid():
-                subprocess.run(["taskkill", "/F", "/PID", pid])
-    else:
-        try:
-            pids = (
-                subprocess.check_output(["lsof", "-ti", f"tcp:{port}"], text=True)
-                .strip()
-                .splitlines()
-            )
-        except subprocess.CalledProcessError:
-            pids = []
-        for pid in pids:
-            if pid.isdigit() and int(pid) != os.getpid():
-                subprocess.run(["kill", "-9", pid])
+    for conn in psutil.net_connections(kind="tcp"):
+        if conn.status == psutil.CONN_LISTEN and conn.laddr.port == port:
+            pid = conn.pid
+            if pid and pid != os.getpid():
+                try:
+                    psutil.Process(pid).terminate()
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
 
 
 def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
