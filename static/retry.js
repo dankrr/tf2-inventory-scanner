@@ -23,45 +23,67 @@ function hideScanToast() {
   setTimeout(() => toast.classList.add('hidden'), 300);
 }
 
-function refreshCard(id) {
-  const pill = document.querySelector('#user-' + id + ' .status-pill');
+function retryInventory(id) {
+  let card = document.getElementById('user-' + id);
+  if (card) {
+    card.classList.remove('failed', 'success');
+    card.classList.add('loading');
+  } else {
+    card = document.createElement('div');
+    card.id = 'user-' + id;
+    card.dataset.steamid = id;
+    card.className = 'user-card user-box loading';
+    document.getElementById('user-container').appendChild(card);
+  }
+
+  const pill = card.querySelector('.status-pill');
   if (pill) {
     pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
   }
+
   return fetch('/retry/' + id, { method: 'POST' })
     .then(r => r.text())
     .then(html => {
-      const existing = document.getElementById('user-' + id);
-      if (existing) {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = html;
-        existing.replaceWith(wrapper.firstElementChild);
-      } else {
-        appendCard(html);
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      const newCard = wrapper.firstElementChild;
+      if (newCard) {
+        card.replaceWith(newCard);
       }
       attachHandlers();
+      updateRefreshButton();
       showResults();
+    })
+    .catch(() => {
+      const existing = document.getElementById('user-' + id);
+      if (existing) {
+        existing.classList.remove('loading');
+        existing.classList.add('failed');
+      }
+      updateRefreshButton();
     });
 }
 
 function updateRefreshButton() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
-  const hasFailures = document.querySelectorAll('.status-pill.failed').length > 0;
-  if (!hasFailures) {
+  const failures = document.querySelectorAll('.user-box.failed').length;
+  if (failures === 0) {
     btn.disabled = true;
     btn.textContent = 'Nothing to Refresh';
     btn.classList.add('btn-disabled');
   } else {
     btn.disabled = false;
-    btn.textContent = 'Refresh Failed';
+    btn.textContent = `Refresh Failed (${failures})`;
     btn.classList.remove('btn-disabled');
   }
 }
 
+document.addEventListener('DOMContentLoaded', updateRefreshButton);
+
 function attachHandlers() {
   document.querySelectorAll('.retry-pill').forEach(el => {
-    el.addEventListener('click', () => refreshCard(el.dataset.steamid));
+    el.addEventListener('click', () => retryInventory(el.dataset.steamid));
   });
   updateRefreshButton();
 
@@ -74,13 +96,13 @@ function refreshAll() {
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const ids = Array.from(document.querySelectorAll('.retry-pill')).map(
+  const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
     el => el.dataset.steamid
   );
   (async () => {
     for (let i = 0; i < ids.length; i++) {
       updateScanToast(i + 1, ids.length);
-      await refreshCard(ids[i]);
+      await retryInventory(ids[i]);
     }
     btn.disabled = false;
     btn.textContent = original;
@@ -93,8 +115,16 @@ function loadUsers(ids) {
   if (!ids || !ids.length) return;
   (async () => {
     for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      if (!document.getElementById('user-' + id)) {
+        const placeholder = document.createElement('div');
+        placeholder.id = 'user-' + id;
+        placeholder.dataset.steamid = id;
+        placeholder.className = 'user-card user-box loading';
+        document.getElementById('user-container').appendChild(placeholder);
+      }
       updateScanToast(i + 1, ids.length);
-      await refreshCard(ids[i]);
+      await retryInventory(id);
     }
     hideScanToast();
   })();
