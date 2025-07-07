@@ -157,6 +157,12 @@ button {
     cursor: pointer;
 }
 
+.btn-disabled {
+    background-color: #444;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
 .form-actions {
     display: flex;
     gap: 10px;
