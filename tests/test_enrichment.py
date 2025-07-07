@@ -62,7 +62,8 @@ def test_enrichment_full_attributes(monkeypatch):
     items = ip.enrich_inventory(data)
     item = items[0]
 
-    assert item["killstreak_tier"] == "Professional Killstreak"
+    assert item["killstreak_tier"] == 3
+    assert item["killstreak_name"] == "Professional"
     assert item["sheen"] == "Manndarin"
     assert item["killstreak_effect"] == "Cerebral Discharge"
     assert item["wear_name"] == "Field-Tested"

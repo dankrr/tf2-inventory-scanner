@@ -7,6 +7,13 @@ KILLSTREAK_TIERS = {
     3: "Professional Killstreak",
 }
 
+# Map of killstreak tier id -> short name
+KILLSTREAK_LABELS = {
+    1: "Killstreak",
+    2: "Specialized",
+    3: "Professional",
+}
+
 # Map of killstreak tier id -> badge icon
 KILLSTREAK_BADGE_ICONS = {
     1: "›",

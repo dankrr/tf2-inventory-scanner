@@ -11,6 +11,7 @@ from .valuation_service import ValuationService, get_valuation_service
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
     KILLSTREAK_TIERS,
+    KILLSTREAK_LABELS,
     SHEEN_NAMES,
     ORIGIN_MAP,
     PAINT_COLORS,
@@ -162,6 +163,41 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
             effect_id
         )
         return {"id": effect_id, "name": effect_name}
+
+    return None
+
+
+def _extract_killstreak_tier(asset: Dict[str, Any]) -> int | None:
+    """Return killstreak tier id if present."""
+
+    _refresh_attr_classes()
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        attr_class = _get_attr_class(idx)
+        if attr_class in KILLSTREAK_TIER_CLASSES or idx == 2025:
+            raw = (
+                attr.get("float_value") if "float_value" in attr else attr.get("value")
+            )
+            try:
+                val = int(float(raw)) if raw is not None else None
+            except (TypeError, ValueError):
+                logger.warning("Invalid killstreak tier value: %r", raw)
+                continue
+            if val is not None and val not in KILLSTREAK_TIERS:
+                logger.warning("Unknown killstreak tier id: %s", val)
+            return val
+
+    for desc in asset.get("descriptions", []):
+        if not isinstance(desc, dict):
+            continue
+        text = unescape(desc.get("value", ""))
+        text = re.sub(r"<[^>]+>", "", text)
+        if re.search(r"Professional Killstreak", text, re.I):
+            return 3
+        if re.search(r"Specialized Killstreak", text, re.I):
+            return 2
+        if re.search(r"Killstreaks? Active", text, re.I):
+            return 1
 
     return None
 
@@ -676,13 +712,9 @@ def _process_item(
     q_col = QUALITY_MAP.get(quality_id, ("", "#B2B2B2"))[1]
     name = _build_item_name(display_base, q_name, asset)
 
+    ks_tier_val = _extract_killstreak_tier(asset)
     ks_tier, sheen = _extract_killstreak(asset)
     ks_effect = _extract_killstreak_effect(asset)
-    ks_tier_val = None
-    for attr in asset.get("attributes", []):
-        if attr.get("defindex") == 2025:
-            ks_tier_val = attr.get("float_value") or attr.get("value")
-            break
     paint_name, paint_hex = _extract_paint(asset)
     wear_name = _extract_wear(asset)
     pattern_seed = _extract_pattern_seed(asset)
@@ -786,7 +818,8 @@ def _process_item(
         "unusual_effect": effect,
         "unusual_effect_id": effect_id,
         "unusual_effect_name": effect_name,
-        "killstreak_tier": ks_tier,
+        "killstreak_tier": ks_tier_val,
+        "killstreak_name": KILLSTREAK_LABELS.get(ks_tier_val),
         "sheen": sheen,
         "paint_name": paint_name,
         "paint_hex": paint_hex,
