@@ -9,7 +9,7 @@ from .constants import (
 )
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .wear_helpers import _wear_tier, _decode_seed_info
-from .item_enricher import ItemEnricher
+# from .item_enricher import ItemEnricher
 from .inventory_provider import InventoryProvider
 from .valuation_service import ValuationService, get_valuation_service
 
