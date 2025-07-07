@@ -482,13 +482,13 @@ def test_price_map_applied(patch_valuation):
     data = {"items": [{"defindex": 42, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
-    price_map = {("Answer", 6, False, 0): {"value_raw": 5.33, "currency": "metal"}}
+    price_map = {("Answer", 6, False, 0, 0): {"value_raw": 5.33, "currency": "metal"}}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
     patch_valuation(price_map)
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["price"] == price_map[("Answer", 6, False, 0)]
+    assert item["price"] == price_map[("Answer", 6, False, 0, 0)]
     assert item["price_string"] == "5.33 ref"
     assert item["formatted_price"] == "5.33 ref"
 
@@ -498,14 +498,14 @@ def test_price_map_strange_lookup(patch_valuation):
     ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {11: "Strange"}
     price_map = {
-        ("Rocket Launcher", 11, False, 0): {"value_raw": 5.33, "currency": "metal"}
+        ("Rocket Launcher", 11, False, 0, 0): {"value_raw": 5.33, "currency": "metal"}
     }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
     patch_valuation(price_map)
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["price"] == price_map[("Rocket Launcher", 11, False, 0)]
+    assert item["price"] == price_map[("Rocket Launcher", 11, False, 0, 0)]
     assert item["price_string"] == "5.33 ref"
     assert item["formatted_price"] == "5.33 ref"
 
@@ -514,7 +514,7 @@ def test_price_map_key_conversion_large_value(patch_valuation):
     data = {"items": [{"defindex": 42, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
-    price_map = {("Answer", 6, False, 0): {"value_raw": 367.73, "currency": "metal"}}
+    price_map = {("Answer", 6, False, 0, 0): {"value_raw": 367.73, "currency": "metal"}}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 70.0}}}
 
     patch_valuation(price_map)
@@ -536,7 +536,9 @@ def test_price_map_unusual_lookup(patch_valuation):
     }
     ld.ITEMS_BY_DEFINDEX = {30998: {"item_name": "Veil", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {5: "Unusual"}
-    price_map = {("Veil", 5, False, 13): {"value_raw": 164554.25, "currency": "keys"}}
+    price_map = {
+        ("Veil", 5, False, 13, 0): {"value_raw": 164554.25, "currency": "keys"}
+    }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 67.165}}}
 
     patch_valuation(price_map)
@@ -550,7 +552,7 @@ def test_untradable_item_no_price(patch_valuation):
     data = {"items": [{"defindex": 42, "quality": 6, "tradable": 0}]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
-    price_map = {("Answer", 6, False, 0): {"value_raw": 5.33, "currency": "metal"}}
+    price_map = {("Answer", 6, False, 0, 0): {"value_raw": 5.33, "currency": "metal"}}
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
     patch_valuation(price_map)
@@ -607,12 +609,12 @@ def test_price_map_australium_lookup(patch_valuation):
     ld.ITEMS_BY_DEFINDEX = {205: {"item_name": "Rocket Launcher", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {
-        ("Rocket Launcher", 6, True, 0): {"value_raw": 100.0, "currency": "keys"}
+        ("Rocket Launcher", 6, True, 0, 0): {"value_raw": 100.0, "currency": "keys"}
     }
     ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
 
     patch_valuation(price_map)
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["price"] == price_map[("Rocket Launcher", 6, True, 0)]
+    assert item["price"] == price_map[("Rocket Launcher", 6, True, 0, 0)]
     assert item["formatted_price"] == "2 Keys"

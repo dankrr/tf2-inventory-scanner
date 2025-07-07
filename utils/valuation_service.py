@@ -25,7 +25,8 @@ class ValuationService:
     """Wrapper around name-based price lookups."""
 
     def __init__(
-        self, price_map: Dict[Tuple[str, int, bool, int], Dict[str, Any]] | None = None
+        self,
+        price_map: Dict[Tuple[str, int, bool, int, int], Dict[str, Any]] | None = None,
     ) -> None:
         if price_map is None:
             path = ensure_prices_cached()
@@ -38,12 +39,19 @@ class ValuationService:
         quality: int,
         is_australium: bool = False,
         effect_id: int | None = None,
+        killstreak_tier: int | None = None,
     ) -> Dict[str, Any] | None:
         """Return raw price info dict for the item if available."""
-        key = (item_name, quality, is_australium, effect_id or 0)
+        key = (item_name, quality, is_australium, effect_id or 0, killstreak_tier or 0)
         info = self.price_map.get(key)
+        if info is None and killstreak_tier is not None:
+            info = self.price_map.get(
+                (item_name, quality, is_australium, effect_id or 0, 0)
+            )
         if info is None and effect_id is not None:
-            info = self.price_map.get((item_name, quality, is_australium, 0))
+            info = self.price_map.get(
+                (item_name, quality, is_australium, 0, killstreak_tier or 0)
+            )
         return info
 
     def format_price(
@@ -53,10 +61,17 @@ class ValuationService:
         is_australium: bool = False,
         *,
         effect_id: int | None = None,
+        killstreak_tier: int | None = None,
         currencies: Dict[str, Any] | None = None,
     ) -> str:
         """Return formatted price string using Backpack.tf key price."""
-        info = self.get_price_info(item_name, quality, is_australium, effect_id)
+        info = self.get_price_info(
+            item_name,
+            quality,
+            is_australium,
+            effect_id,
+            killstreak_tier,
+        )
         if not info:
             return ""
         value = info.get("value_raw")

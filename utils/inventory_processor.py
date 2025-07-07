@@ -857,6 +857,7 @@ def _process_item(
                     qid,
                     bool(is_australium),
                     effect_id=effect_id,
+                    killstreak_tier=ks_tier_val,
                     currencies=local_data.CURRENCIES,
                 )
             except Exception:  # pragma: no cover - defensive fallback
@@ -867,6 +868,7 @@ def _process_item(
                     qid,
                     bool(is_australium),
                     effect_id=effect_id,
+                    killstreak_tier=ks_tier_val,
                 )
                 item["price_string"] = formatted
                 item["formatted_price"] = formatted
