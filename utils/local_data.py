@@ -72,7 +72,8 @@ DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "wear_names.json"
 DEFAULT_KILLSTREAK_FILE = BASE_DIR / "cache" / "killstreak_names.json"
 DEFAULT_KS_EFFECT_FILE = BASE_DIR / "cache" / "killstreak_effect_names.json"
 DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
-DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "paintkit_names.json"
+# Cached warpaint names from the paintkits endpoint
+DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "schema" / "warpaints.json"
 DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
 DEFAULT_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "string_lookups.json"
 EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
