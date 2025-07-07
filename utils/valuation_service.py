@@ -7,6 +7,20 @@ from .price_loader import ensure_prices_cached, build_price_map
 from .price_service import format_price
 
 
+_default_service: ValuationService | None = None
+
+
+def get_valuation_service() -> "ValuationService":
+    """Return singleton :class:`ValuationService` instance."""
+    global _default_service
+    if _default_service is None:
+        try:
+            _default_service = ValuationService()
+        except Exception:  # pragma: no cover - fallback when prices unavailable
+            _default_service = ValuationService(price_map={})
+    return _default_service
+
+
 class ValuationService:
     """Wrapper around name-based price lookups."""
 

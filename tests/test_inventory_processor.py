@@ -18,7 +18,7 @@ def reset_data(monkeypatch):
 def patch_valuation(monkeypatch):
     def _apply(price_map):
         service = ValuationService(price_map=price_map)
-        monkeypatch.setattr(ip, "valuation_service", service)
+        monkeypatch.setattr(ip, "get_valuation_service", lambda: service)
         return service
 
     return _apply
