@@ -71,14 +71,14 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
     return path
 
 
-def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool], dict]:
-    """Return mapping of ``(item_name, quality, is_australium)`` -> price info."""
+def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool, int], dict]:
+    """Return mapping of ``(item_name, quality, is_australium, effect_id)`` -> price info."""
 
     with prices_path.open() as f:
         data = json.load(f)
 
     items = data.get("response", {}).get("items", {})
-    mapping: dict[tuple[str, int, bool], dict] = {}
+    mapping: dict[tuple[str, int, bool, int], dict] = {}
 
     for name, item in items.items():
         is_australium = str(item.get("australium")) == "1" or name.startswith(
@@ -98,22 +98,29 @@ def build_price_map(prices_path: Path) -> dict[tuple[str, int, bool], dict]:
             entries = tradable.get("Craftable")
 
             if qid == 5 and isinstance(entries, dict):
-                entry = next(iter(entries.values()), None)
+                effect_entries = entries
             else:
                 if not isinstance(entries, list):
                     entries = tradable.get("Non-Craftable")
                 entry = entries[0] if isinstance(entries, list) else None
+                effect_entries = {0: entry} if isinstance(entry, dict) else {}
 
-            if not isinstance(entry, dict):
-                continue
+            for effect_key, entry in effect_entries.items():
+                if not isinstance(entry, dict):
+                    continue
 
-            value_raw = entry.get("value_raw")
-            currency = entry.get("currency")
-            if value_raw is None or currency is None:
-                continue
+                value_raw = entry.get("value_raw")
+                currency = entry.get("currency")
+                if value_raw is None or currency is None:
+                    continue
 
-            mapping[(base_name, qid, is_australium)] = {
-                "value_raw": float(value_raw),
-                "currency": str(currency),
-            }
+                try:
+                    effect_id = int(effect_key)
+                except (TypeError, ValueError):
+                    effect_id = 0
+
+                mapping[(base_name, qid, is_australium, effect_id)] = {
+                    "value_raw": float(value_raw),
+                    "currency": str(currency),
+                }
     return mapping
