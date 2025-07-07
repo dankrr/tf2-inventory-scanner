@@ -7,10 +7,10 @@ def test_extract_unusual_effect_cosmetic():
     assert _extract_unusual_effect(asset) == {"id": 350, "name": "Spectral Fire"}
 
 
-def test_ignore_defindex_2041():
+def test_extract_unusual_effect_unusual():
     EFFECTS_MAP[510] = "Test Name"
     asset = {"quality": 5, "attributes": [{"defindex": 2041, "value": 510}]}
-    assert _extract_unusual_effect(asset) is None
+    assert _extract_unusual_effect(asset) == {"id": 510, "name": "Test Name"}
 
 
 def test_no_effect():
