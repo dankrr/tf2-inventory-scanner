@@ -8,6 +8,21 @@ function appendCard(html) {
   }
 }
 
+function updateScanToast(current, total) {
+  const toast = document.getElementById('scan-toast');
+  if (!toast) return;
+  toast.textContent = `\u{1F504} Scanning ${current} of ${total} inventories...`;
+  toast.classList.remove('hidden');
+  toast.classList.add('show');
+}
+
+function hideScanToast() {
+  const toast = document.getElementById('scan-toast');
+  if (!toast) return;
+  toast.classList.remove('show');
+  setTimeout(() => toast.classList.add('hidden'), 300);
+}
+
 function refreshCard(id) {
   const pill = document.querySelector('#user-' + id + ' .status-pill');
   if (pill) {
@@ -59,20 +74,30 @@ function refreshAll() {
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const promises = Array.from(document.querySelectorAll('.retry-pill')).map(el =>
-    refreshCard(el.dataset.steamid)
+  const ids = Array.from(document.querySelectorAll('.retry-pill')).map(
+    el => el.dataset.steamid
   );
-  Promise.all(promises).finally(() => {
+  (async () => {
+    for (let i = 0; i < ids.length; i++) {
+      updateScanToast(i + 1, ids.length);
+      await refreshCard(ids[i]);
+    }
     btn.disabled = false;
     btn.textContent = original;
     attachHandlers();
-  });
+    hideScanToast();
+  })();
 }
 
 function loadUsers(ids) {
-  ids.forEach(id => {
-    refreshCard(id);
-  });
+  if (!ids || !ids.length) return;
+  (async () => {
+    for (let i = 0; i < ids.length; i++) {
+      updateScanToast(i + 1, ids.length);
+      await refreshCard(ids[i]);
+    }
+    hideScanToast();
+  })();
 }
 
 function showResults() {
