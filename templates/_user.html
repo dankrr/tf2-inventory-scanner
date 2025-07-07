@@ -1,23 +1,26 @@
 <div id="user-{{ user.steamid }}" class="user-card">
-  <h2>
+  <div class="profile-header">
     <a href="{{ user.profile }}" target="_blank" class="avatar-link">
-      <img src="{{ user.avatar }}" width="64" style="vertical-align: middle; border-radius: 8px;">
+      <img src="{{ user.avatar }}" alt="Avatar">
     </a>
-    {{ user.username }}
-    <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" target="_blank" class="bptf-link">
-      <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="bptf-logo">
-    </a>
-    <span class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</span>
-    <span class="pill status-pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="Retry scan for this user"{% endif %}>
-      {% if user.status == 'parsed' %}
-        <i class="fa-solid fa-check"></i> Public
-      {% elif user.status == 'private' %}
-        <i class="fa-solid fa-lock"></i> Private
-      {% else %}
-        <i class="fa-solid fa-arrows-rotate"></i> Failed
-      {% endif %}
-    </span>
-  </h2>
+    <div class="profile-info">
+      <div class="username">{{ user.username }}</div>
+      <div class="profile-link">
+        <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" target="_blank">Backpack.tf</a>
+        <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="bptf-logo">
+      </div>
+      <div class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</div>
+      <span class="pill status-pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="Retry scan for this user"{% endif %}>
+        {% if user.status == 'parsed' %}
+          <i class="fa-solid fa-check"></i> Public
+        {% elif user.status == 'private' %}
+          <i class="fa-solid fa-lock"></i> Private
+        {% else %}
+          <i class="fa-solid fa-arrows-rotate"></i> Failed
+        {% endif %}
+      </span>
+    </div>
+  </div>
   <div class="card-body">
     {% if user.status == 'incomplete' %}
       <span class="badge bg-warning text-dark">Fetched but unparsed</span>
