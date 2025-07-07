@@ -21,9 +21,47 @@ button,
     margin-bottom: 16px;
 }
 
-.user-card h2 a.avatar-link {
+.profile-header .avatar-link {
     display: inline-block;
     line-height: 0;
+}
+
+/* ───── Profile header layout ─────────────────────────────── */
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-header .avatar-link img {
+    width: 64px;
+    border-radius: 8px;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.profile-info .username {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.profile-info .profile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.profile-info .status-pill {
+    margin-left: 0;
+    margin-top: 0.25rem;
 }
 
 button {
@@ -294,7 +332,10 @@ button {
   vertical-align: middle;
 }
 
-.tf2-hours { margin-left: 6px; font-size: 0.9em; }
+.tf2-hours {
+  margin: 0.25rem 0 0;
+  font-size: 0.9em;
+}
 
 .bptf-logo {
   width: 1em;
@@ -323,5 +364,11 @@ button {
   .item-card {
     width: 80px;
     height: 104px;
+  }
+  .profile-header .avatar-link img {
+    width: 48px;
+  }
+  .profile-info .username {
+    font-size: 1rem;
   }
 }
