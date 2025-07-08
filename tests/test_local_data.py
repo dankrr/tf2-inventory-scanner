@@ -46,9 +46,9 @@ def test_warpaint_map_reversed(tmp_path, monkeypatch):
 
     monkeypatch.setattr(ld, "BASE_DIR", tmp_path)
     warpaints = ld.load_json("schema/warpaints.json")
-    ld.PAINTKIT_NAMES = {str(v): k for k, v in warpaints.items()}
+    ld.PAINTKIT_NAMES = {str(k): v for k, v in warpaints.items()}
 
-    assert ld.PAINTKIT_NAMES == {"80": "Warhawk"}
+    assert ld.PAINTKIT_NAMES == {"Warhawk": 80}
 
 
 def test_load_files_missing(tmp_path, monkeypatch):
