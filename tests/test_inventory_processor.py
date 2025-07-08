@@ -418,7 +418,10 @@ def test_paintkit_appended_to_name(monkeypatch):
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["name"] == "Decorated Weapon Flamethrower (Warhawk)"
+    assert item["name"] == "Decorated Weapon Flamethrower"
+    assert item["resolved_name"] == "Warhawk Flamethrower"
+    assert item["base_weapon"] == "Flamethrower"
+    assert item["skin_name"] == "Warhawk"
     assert item["warpaint_id"] == 350
     assert item["warpaint_name"] == "Warhawk"
     assert item["paintkit_name"] == "Warhawk"
@@ -533,6 +536,9 @@ def test_warpaint_value_preferred_over_float(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] == 350
     assert item["warpaint_name"] == "Warhawk"
+    assert item["skin_name"] == "Warhawk"
+    assert item["base_weapon"] == "Flamethrower"
+    assert item["resolved_name"] == "Warhawk Flamethrower"
 
 
 def test_warpaint_index_749(monkeypatch):
@@ -599,7 +605,10 @@ def test_warpaintable_inferred_from_item_class(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] == 350
     assert item["warpaint_name"] == "Warhawk"
-    assert item["name"] == "Decorated Weapon Tester (Warhawk)"
+    assert item["skin_name"] == "Warhawk"
+    assert item["base_weapon"] == "Tester"
+    assert item["resolved_name"] == "Warhawk Tester"
+    assert item["name"] == "Decorated Weapon Tester"
 
 
 def test_warpaint_resolved_from_schema_name(monkeypatch):
@@ -626,7 +635,10 @@ def test_warpaint_resolved_from_schema_name(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] == 82
     assert item["warpaint_name"] == "Airwolf"
-    assert item["name"] == "Decorated Weapon Sniper Rifle (Airwolf)"
+    assert item["skin_name"] == "Airwolf"
+    assert item["base_weapon"] == "Sniper Rifle"
+    assert item["resolved_name"] == "Airwolf Sniper Rifle"
+    assert item["name"] == "Decorated Weapon Sniper Rifle"
 
 
 def test_warpaint_resolved_from_schema_name_mk_ii(monkeypatch):
@@ -655,7 +667,10 @@ def test_warpaint_resolved_from_schema_name_mk_ii(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] == 104
     assert item["warpaint_name"] == "Carpet Bomber Mk.II"
-    assert item["name"] == "Decorated Weapon Boomstick (Carpet Bomber Mk.II)"
+    assert item["skin_name"] == "Carpet Bomber Mk.II"
+    assert item["base_weapon"] == "Boomstick"
+    assert item["resolved_name"] == "Carpet Bomber Mk.II Boomstick"
+    assert item["name"] == "Decorated Weapon Boomstick"
 
 
 def test_warpaint_resolved_from_schema_name_nutcracker(monkeypatch):
@@ -682,7 +697,10 @@ def test_warpaint_resolved_from_schema_name_nutcracker(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] == 161
     assert item["warpaint_name"] == "Nutcracker Mk.II"
-    assert item["name"] == "Decorated Weapon Rocket Launcher (Nutcracker Mk.II)"
+    assert item["skin_name"] == "Nutcracker Mk.II"
+    assert item["base_weapon"] == "Rocket Launcher"
+    assert item["resolved_name"] == "Nutcracker Mk.II Rocket Launcher"
+    assert item["name"] == "Decorated Weapon Rocket Launcher"
 
 
 def test_warpaint_resolved_with_best_match(monkeypatch):
