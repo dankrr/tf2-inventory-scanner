@@ -14,6 +14,7 @@ from .constants import (
     KILLSTREAK_TIERS,
     KILLSTREAK_LABELS,
     SHEEN_NAMES,
+    KILLSTREAK_SHEEN_COLORS,
     ORIGIN_MAP,
     PAINT_COLORS,
     KILLSTREAK_EFFECTS,
@@ -197,15 +198,25 @@ def _extract_killstreak_tier(asset: Dict[str, Any]) -> int | None:
     return None
 
 
-def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
-    """Return killstreak tier and sheen names if present."""
+def _extract_killstreak(
+    asset: Dict[str, Any],
+) -> Tuple[str | None, str | None, int | None]:
+    """Return killstreak tier name, sheen name and sheen id if present."""
 
     _refresh_attr_classes()
     tier = None
     sheen = None
+    sheen_id = None
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
-        val = int(attr.get("float_value", 0))
+        val_raw = (
+            attr.get("float_value") if "float_value" in attr else attr.get("value")
+        )
+        try:
+            val = int(float(val_raw)) if val_raw is not None else None
+        except (TypeError, ValueError):
+            logger.warning("Invalid killstreak attribute value: %r", val_raw)
+            continue
         attr_class = _get_attr_class(idx)
         if attr_class in KILLSTREAK_TIER_CLASSES:
             tier = local_data.KILLSTREAK_NAMES.get(str(val)) or KILLSTREAK_TIERS.get(
@@ -214,6 +225,7 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
             if tier is None:
                 logger.warning("Unknown killstreak tier id: %s", val)
         elif attr_class in KILLSTREAK_SHEEN_CLASSES:
+            sheen_id = val
             sheen = SHEEN_NAMES.get(val)
             if sheen is None:
                 logger.warning("Unknown sheen id: %s", val)
@@ -226,10 +238,11 @@ def _extract_killstreak(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
                 if tier is None:
                     logger.warning("Unknown killstreak tier id: %s", val)
             else:
+                sheen_id = val
                 sheen = SHEEN_NAMES.get(val)
                 if sheen is None:
                     logger.warning("Unknown sheen id: %s", val)
-    return tier, sheen
+    return tier, sheen, sheen_id
 
 
 def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
@@ -639,7 +652,7 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     """Return the display name prefixed with quality and killstreak info."""
 
     parts: List[str] = []
-    ks_tier, sheen = _extract_killstreak(asset)
+    ks_tier, sheen, _ = _extract_killstreak(asset)
 
     if ks_tier:
         parts.append(ks_tier)
@@ -951,7 +964,12 @@ def _process_item(
     name = _build_item_name(display_base, q_name, asset)
 
     ks_tier_val = _extract_killstreak_tier(asset)
-    ks_tier, sheen = _extract_killstreak(asset)
+    ks_tier, sheen_name, sheen_id = _extract_killstreak(asset)
+    sheen_color = (
+        KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
+        if sheen_id is not None
+        else None
+    )
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)
     pattern_seed = _extract_pattern_seed(asset)
@@ -1001,7 +1019,7 @@ def _process_item(
                 {
                     "icon": icon,
                     "title": title,
-                    "color": "#ff7e30",
+                    "color": sheen_color or "#ff7e30",
                     "label": title,
                     "type": "killstreak",
                 }
@@ -1060,7 +1078,9 @@ def _process_item(
         "unusual_effect_name": effect_name,
         "killstreak_tier": ks_tier_val,
         "killstreak_name": KILLSTREAK_LABELS.get(ks_tier_val),
-        "sheen": sheen,
+        "sheen": sheen_name,
+        "sheen_name": sheen_name,
+        "sheen_color": sheen_color,
         "paint_name": paint_name,
         "paint_hex": paint_hex,
         "wear_name": wear_name,

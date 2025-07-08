@@ -1,6 +1,7 @@
 import pytest
 from utils import inventory_processor as ip
 from utils import local_data as ld
+from utils.constants import KILLSTREAK_SHEEN_COLORS
 
 
 @pytest.fixture(autouse=True)
@@ -65,6 +66,8 @@ def test_enrichment_full_attributes(monkeypatch):
     assert item["killstreak_tier"] == 3
     assert item["killstreak_name"] == "Professional"
     assert item["sheen"] == "Manndarin"
+    assert item["sheen_name"] == "Manndarin"
+    assert item["sheen_color"] == KILLSTREAK_SHEEN_COLORS[3][1]
     assert item["killstreak_effect"] == "Cerebral Discharge"
     assert item["wear_name"] == "Field-Tested"
     assert item["strange_count"] == 10
