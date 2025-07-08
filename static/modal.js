@@ -67,14 +67,21 @@
 
     if (data.killstreak_tier) {
       const tierMap = { 1: 'Killstreak', 2: 'Specialized', 3: 'Professional' };
-      const ksParts = [];
-      ksParts.push(tierMap[data.killstreak_tier] || data.killstreak_tier);
-      if (data.sheen) ksParts.push(esc(data.sheen));
-      let ksHtml = 'Killstreak: ' + ksParts.join(', ');
+      const tierName = tierMap[data.killstreak_tier] || data.killstreak_tier;
+      const color = data.sheen_color || '#f97316';
+      let ksHtml =
+        '<div><span class="badge ks-tier" style="background:' +
+        esc(color) + ';">' +
+        esc(tierName) +
+        '</span>';
+      if (data.sheen) {
+        ksHtml += ' ' + esc(data.sheen);
+      }
       if (data.killstreak_effect) {
         ksHtml += ', <span class="ks-effect">' + esc(data.killstreak_effect) + '</span>';
       }
-      attrs.push('<div>' + ksHtml + '</div>');
+      ksHtml += '</div>';
+      attrs.push(ksHtml);
     }
 
     if (data.unusual_effect) {
