@@ -36,9 +36,7 @@ KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
     "2006": "Singularity",
     "2007": "Incinerator",
     "2008": "Hypno-Beam",
-    "2009": "Tesla Coil",
-    "2010": "Hellish Inferno",
-    "2011": "Fireworks",
+
 }
 
 # Map of attribute class -> in-game spell name
