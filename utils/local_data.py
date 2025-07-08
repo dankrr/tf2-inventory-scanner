@@ -24,6 +24,7 @@ KILLSTREAK_NAMES: Dict[str, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
 # will be populated at import time
 PAINTKIT_NAMES: Dict[str, str]
+PAINTKIT_NAMES_BY_ID: Dict[str, str]
 CRATE_SERIES_NAMES: Dict[str, str] = {}
 CURRENCIES: Dict[str, Any] = {}
 FOOTPRINT_SPELL_MAP: Dict[int, str] = {}
@@ -36,7 +37,6 @@ KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
     "2006": "Singularity",
     "2007": "Incinerator",
     "2008": "Hypno-Beam",
-
 }
 
 # Map of attribute class -> in-game spell name
@@ -109,6 +109,7 @@ warpaints = load_json("schema/warpaints.json")
 PAINTKIT_NAMES = (
     {str(k): v for k, v in warpaints.items()} if isinstance(warpaints, dict) else {}
 )
+PAINTKIT_NAMES_BY_ID = {str(v): k for k, v in PAINTKIT_NAMES.items()}
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:
