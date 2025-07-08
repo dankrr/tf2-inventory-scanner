@@ -910,8 +910,14 @@ def _process_item(
 
     paintkit_id = paintkit_name = None
     target_weapon_def = target_weapon_name = None
-    wear_name = _extract_wear(asset)
     wear_float = _extract_wear_float(asset)
+    wear_tier = None
+    wear_name = None
+    if wear_float is not None:
+        wear_tier = wear_tier_from_float(wear_float)
+        wear_name = local_data.WEAR_NAMES.get(str(wear_tier)) or _wear_tier(wear_float)
+    else:
+        wear_name = _extract_wear(asset)
 
     if warpaint_tool:
         (
@@ -1088,7 +1094,9 @@ def _process_item(
         "paint_name": paint_name,
         "paint_hex": paint_hex,
         "wear_name": wear_name,
+        "wear_tier": wear_tier,
         "wear_float": wear_float,
+        "wear_value": wear_float,
         "pattern_seed": pattern_seed,
         "skin_name": skin_name,
         "composite_name": composite_name,
