@@ -79,7 +79,7 @@ def _refresh_attr_classes() -> None:
     WEAR_CLASSES = {cls(725)} - {None}
     PATTERN_SEED_LO_CLASSES = {cls(866)} - {None}
     PATTERN_SEED_HI_CLASSES = {cls(867)} - {None}
-    PAINTKIT_CLASSES = {cls(834)} - {None}
+    PAINTKIT_CLASSES = {cls(834), cls(214)} - {None}
     CRATE_SERIES_CLASSES = {cls(187)} - {None}
 
 
@@ -314,12 +314,18 @@ def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int, str] | None:
     """Return paintkit ``(id, name)`` tuple if present."""
 
     _refresh_attr_classes()
+
+    warpaint_id: int | None = None
+
+    # First look for explicit paintkit attribute defindex 214
     for attr in asset.get("attributes", []):
-        idx = attr.get("defindex")
-        attr_class = _get_attr_class(idx)
-        if attr_class in PAINTKIT_CLASSES or idx == 834:
+        try:
+            idx = int(attr.get("defindex"))
+        except (TypeError, ValueError):
+            continue
+
+        if idx == 214:
             raw = attr.get("float_value")
-            warpaint_id = None
             if raw is not None:
                 try:
                     warpaint_id = int(float(raw))
@@ -330,19 +336,37 @@ def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int, str] | None:
                 try:
                     warpaint_id = int(float(raw)) if raw is not None else None
                 except (TypeError, ValueError):
+                    warpaint_id = None
+            break
+
+    # Fallback to schema attribute classes / defindex 834
+    if warpaint_id is None:
+        for attr in asset.get("attributes", []):
+            idx = attr.get("defindex")
+            attr_class = _get_attr_class(idx)
+            if attr_class in PAINTKIT_CLASSES or idx == 834:
+                raw = attr.get("float_value")
+                if raw is not None:
+                    try:
+                        warpaint_id = int(float(raw))
+                    except (TypeError, ValueError):
+                        warpaint_id = None
+                if warpaint_id is None:
+                    raw = attr.get("value")
+                    try:
+                        warpaint_id = int(float(raw)) if raw is not None else None
+                    except (TypeError, ValueError):
+                        continue
+
+                if warpaint_id is None:
                     continue
 
-            if warpaint_id is None:
-                continue
+                if idx == 834 and attr_class not in PAINTKIT_CLASSES:
+                    logger.warning("Using numeric fallback for paintkit index %s", idx)
+                break
 
-            if idx == 834 and attr_class not in PAINTKIT_CLASSES:
-                logger.warning("Using numeric fallback for paintkit index %s", idx)
-
-            name = local_data.PAINTKIT_NAMES_BY_ID.get(
-                str(warpaint_id),
-                "Unknown",
-            )
-            return warpaint_id, name
+    if warpaint_id is not None:
+        return warpaint_id, local_data.PAINTKIT_NAMES.get(str(warpaint_id), "Unknown")
     return None
 
 

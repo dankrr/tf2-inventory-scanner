@@ -16,3 +16,6 @@ All notable changes to this project will be documented in this file.
 - Updated schema caching logic and UI (previous releases).
 - Security audit using git-secrets and pip-audit.
 - Price loader now reads both Craftable and Non-Craftable price entries.
+
+### Fixed
+- Warpaint extraction now checks attribute `214` before falling back to `834`.

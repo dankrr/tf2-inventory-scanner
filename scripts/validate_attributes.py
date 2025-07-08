@@ -15,6 +15,7 @@ REQUIRED_ATTRS = {
     261: "Paint Color (legacy)",
     725: "Wear",
     834: "Paintkit",
+    214: "Paintkit (214)",
     2025: "Killstreak Tier",
     2014: "Killstreak Sheen",
     2013: "Killstreaker",
