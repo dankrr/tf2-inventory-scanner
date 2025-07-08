@@ -111,7 +111,15 @@
       attrs.push(html);
     }
 
-    if (data.wear_name) attrs.push('<div>Wear: ' + esc(data.wear_name) + '</div>');
+    if (data.wear_name || data.wear_float !== undefined) {
+      let wear = '';
+      if (data.wear_name) wear += esc(data.wear_name);
+      if (data.wear_float !== undefined && data.wear_float !== null) {
+        const val = Number(data.wear_float).toFixed(2);
+        wear += (wear ? ' ' : '') + '(' + esc(val) + ')';
+      }
+      attrs.push('<div>Wear: ' + wear + '</div>');
+    }
 
     if (data.paintkit_name) attrs.push('<div>Paintkit: ' + esc(data.paintkit_name) + '</div>');
 

@@ -34,3 +34,14 @@ def test_killstreak_badge_color(app):
     assert badge is not None
     assert badge.text.strip() == "Professional Killstreak"
     assert "#8847ff" in badge.get("style", "")
+
+
+def test_modal_shows_wear_info(app):
+    item = {"wear_name": "Field-Tested", "wear_float": 0.23}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text()
+    assert "Wear:" in text
+    assert "Field-Tested" in text
+    assert "0.23" in text
