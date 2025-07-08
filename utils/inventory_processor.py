@@ -338,12 +338,8 @@ def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int, str] | None:
             if idx == 834 and attr_class not in PAINTKIT_CLASSES:
                 logger.warning("Using numeric fallback for paintkit index %s", idx)
 
-            name = next(
-                (
-                    n
-                    for n, pid in local_data.PAINTKIT_NAMES.items()
-                    if str(pid) == str(warpaint_id)
-                ),
+            name = local_data.PAINTKIT_NAMES_BY_ID.get(
+                str(warpaint_id),
                 "Unknown",
             )
             return warpaint_id, name
