@@ -44,6 +44,10 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   python main.py <steamid>
   ```
 - Use `--test` to run offline against cached data.
+- List warpaints present in cached inventories:
+  ```bash
+  python scripts/list_warpaints.py
+  ```
 - Access schema properties directly:
   ```python
   from utils.schema_provider import SchemaProvider
