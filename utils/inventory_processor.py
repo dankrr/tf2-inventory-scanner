@@ -215,7 +215,7 @@ def _extract_killstreak(
         try:
             val = int(float(val_raw)) if val_raw is not None else None
         except (TypeError, ValueError):
-            logger.warning("Invalid killstreak attribute value: %r", val_raw)
+            logger.debug("Invalid killstreak attribute value: %r", val_raw)
             continue
         attr_class = _get_attr_class(idx)
         if attr_class in KILLSTREAK_TIER_CLASSES:
