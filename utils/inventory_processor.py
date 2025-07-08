@@ -310,7 +310,9 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int | None, str | None]:
+def _extract_paintkit(
+    asset: Dict[str, Any], schema_entry: Dict[str, Any]
+) -> tuple[int | None, str | None]:
     """Return ``(paintkit_id, name)`` or ``(None, None)`` if not present."""
 
     _refresh_attr_classes()
@@ -340,6 +342,28 @@ def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int | None, str | None]:
 
             name = local_data.PAINTKIT_NAMES_BY_ID.get(str(warpaint_id))
             return warpaint_id, (name or "Unknown")
+
+    schema_name = schema_entry.get("name")
+    if isinstance(schema_name, str):
+        prefixes = (
+            "warbird_",
+            "concealedkiller_",
+            "craftsmann_",
+        )
+        for prefix in prefixes:
+            if schema_name.startswith(prefix):
+                suffix = schema_name[len(prefix) :]
+                parts = suffix.split("_", 1)
+                if len(parts) == 2:
+                    paint_slug = parts[1]
+                else:
+                    paint_slug = suffix
+                warpaint_name = paint_slug.replace("_", " ").title()
+                warpaint_id = local_data.PAINTKIT_NAMES.get(warpaint_name)
+                if warpaint_id is not None:
+                    return warpaint_id, warpaint_name
+                break
+
     return None, None
 
 
@@ -716,7 +740,7 @@ def _process_item(
     warpaintable = _is_warpaintable(schema_entry)
     warpaint_id = paintkit_name = None
     if warpaintable:
-        warpaint_id, paintkit_name = _extract_paintkit(asset)
+        warpaint_id, paintkit_name = _extract_paintkit(asset, schema_entry)
 
     base_name = _preferred_base_name(defindex, schema_entry)
     if warpaintable and warpaint_id is not None:
