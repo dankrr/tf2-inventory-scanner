@@ -1056,6 +1056,8 @@ def test_war_paint_tool_attributes(monkeypatch):
     assert item["paintkit_id"] == 350
     assert item["paintkit_name"] == "Warhawk"
     assert item["wear_name"] == "Field-Tested"
+    assert item["wear_tier"] == 2
+    assert item["wear_value"] == 0.2
     assert item["target_weapon_defindex"] == 222
     assert item["target_weapon_name"] == "Rocket Launcher"
     assert item["resolved_name"] == "War Paint: Warhawk (Field-Tested)"
@@ -1085,6 +1087,8 @@ def test_skin_detection(monkeypatch):
     assert item["paintkit_id"] == 350
     assert item["paintkit_name"] == "Warhawk"
     assert item["wear_name"] == "Factory New"
+    assert item["wear_tier"] == 0
+    assert item["wear_value"] == 0.04
     assert item["resolved_name"] == "Warhawk Flamethrower"
 
 
@@ -1110,6 +1114,8 @@ def test_skin_attribute_order(monkeypatch):
     item = items[0]
     assert item["paintkit_id"] == 350
     assert item["wear_name"] == "Factory New"
+    assert item["wear_tier"] == 0
+    assert item["wear_value"] == 0.04
     assert item["display_name"] == "Warhawk Flamethrower"
     assert item["wear_float"] == 0.04
 
