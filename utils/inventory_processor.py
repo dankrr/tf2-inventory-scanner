@@ -668,6 +668,27 @@ def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
     return True
 
 
+def _is_warpaint_tool(schema_entry: Dict[str, Any]) -> bool:
+    """Return True if ``schema_entry`` represents a warpaint tool."""
+
+    if schema_entry.get("item_class") != "tool":
+        return False
+
+    tool = schema_entry.get("tool")
+    if isinstance(tool, dict) and tool.get("type") == "paintkit":
+        return True
+
+    item_type = str(schema_entry.get("item_type_name", "")).lower()
+    if "war paint" in item_type:
+        return True
+
+    name = str(schema_entry.get("item_name") or schema_entry.get("name") or "").lower()
+    if "war paint" in name:
+        return True
+
+    return False
+
+
 def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     """Return True if ``asset`` is a plain craft weapon without special attrs."""
 
@@ -749,17 +770,27 @@ def _process_item(
     image_url = schema_entry.get("image_url", "")
 
     warpaintable = _is_warpaintable(schema_entry)
+    warpaint_tool = _is_warpaint_tool(schema_entry)
     warpaint_id = paintkit_name = None
-    if warpaintable or not schema_entry:
+    if warpaintable or warpaint_tool or not schema_entry:
         warpaint_id, paintkit_name = _extract_paintkit(asset, schema_entry)
         if warpaint_id is not None:
             warpaintable = True
 
-    base_name = _preferred_base_name(defindex, schema_entry)
+    base_weapon = _preferred_base_name(defindex, schema_entry)
     if not schema_entry:
-        base_name = "Unknown Weapon"
-    if warpaintable and warpaint_id is not None:
-        base_name = f"{base_name} ({paintkit_name})"
+        base_weapon = "Unknown Weapon"
+
+    base_name = base_weapon
+    skin_name = None
+    resolved_name = base_name
+
+    if warpaint_tool and warpaint_id is not None:
+        skin_name = paintkit_name
+        resolved_name = f"{paintkit_name} War Paint"
+    elif warpaintable and warpaint_id is not None:
+        skin_name = paintkit_name
+        resolved_name = f"{paintkit_name} {base_weapon}"
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)
     display_base = base_name
@@ -892,6 +923,9 @@ def _process_item(
         "paint_hex": paint_hex,
         "wear_name": wear_name,
         "pattern_seed": pattern_seed,
+        "skin_name": skin_name,
+        "base_weapon": base_weapon if skin_name else None,
+        "resolved_name": resolved_name,
         "warpaint_id": (
             warpaint_id if warpaintable and warpaint_id is not None else None
         ),
