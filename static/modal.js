@@ -143,8 +143,10 @@
 
   function updateHeader(data) {
     const title = document.getElementById('modal-title');
+    const custom = document.getElementById('modal-custom-name');
     const effectBox = document.getElementById('modal-effect');
-    if (title) title.textContent = data.custom_name || data.composite_name || data.name || '';
+    if (title) title.textContent = data.composite_name || data.name || '';
+    if (custom) custom.textContent = data.custom_name || '';
     let effectText = '';
     if (data.unusual_effect) {
       effectText = typeof data.unusual_effect === 'object'

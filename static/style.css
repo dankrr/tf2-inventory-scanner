@@ -582,3 +582,9 @@ footer {
     z-index: 0;
     pointer-events: none;
 }
+
+#modal-custom-name {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-top: 2px;
+}
