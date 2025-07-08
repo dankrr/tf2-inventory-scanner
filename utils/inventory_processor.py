@@ -622,7 +622,9 @@ def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
         schema_entry.get("craft_class") != "weapon"
         and schema_entry.get("craft_material_type") != "weapon"
     ):
-        return False
+        item_class = schema_entry.get("item_class", "")
+        if not item_class.startswith("tf_weapon_"):
+            return False
 
     name = schema_entry.get("item_name") or schema_entry.get("name") or ""
     if _is_placeholder_name(name):
