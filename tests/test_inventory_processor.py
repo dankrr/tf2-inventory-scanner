@@ -585,7 +585,7 @@ def test_warpaint_tool_resolved(monkeypatch):
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["resolved_name"] == "Warhawk War Paint"
+    assert item["resolved_name"] == "War Paint: Warhawk"
     assert item["base_weapon"] is None
     assert item["skin_name"] is None
 
@@ -611,7 +611,7 @@ def test_warpaint_tool_resolved_16200(monkeypatch):
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["resolved_name"].endswith("War Paint")
+    assert item["resolved_name"] == "War Paint: Warhawk"
     assert item["base_weapon"] is None
     assert item["skin_name"] is None
 
@@ -1008,3 +1008,61 @@ def test_price_map_australium_lookup(patch_valuation):
     item = items[0]
     assert item["price"] == price_map[("Rocket Launcher", 6, True, 0, 0)]
     assert item["formatted_price"] == "2 Keys"
+
+
+def test_war_paint_tool_attributes(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 5681,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 134, "value": 350},
+                    {"defindex": 725, "float_value": 0.2},
+                    {"defindex": 2014, "value": 222},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        5681: {"item_name": "War Paint", "item_class": "tool"},
+        222: {"item_name": "Rocket Launcher"},
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["is_war_paint_tool"] is True
+    assert item["paintkit_id"] == 350
+    assert item["paintkit_name"] == "Warhawk"
+    assert item["wear_name"] == "Field-Tested"
+    assert item["target_weapon_defindex"] == 222
+    assert item["target_weapon_name"] == "Rocket Launcher"
+    assert item["resolved_name"] == "War Paint: Warhawk (Field-Tested)"
+
+
+def test_skin_detection(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 834, "value": 350},
+                    {"defindex": 749, "float_value": 0.04},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {"item_name": "Flamethrower", "craft_class": "weapon"}
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["is_skin"] is True
+    assert item["paintkit_id"] == 350
+    assert item["paintkit_name"] == "Warhawk"
+    assert item["wear_name"] == "Factory New"
+    assert item["resolved_name"] == "Warhawk Flamethrower"

@@ -288,7 +288,7 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
                 logger.warning("Wear value out of range: %s", val)
             name = local_data.WEAR_NAMES.get(str(int(val)))
             return name or _wear_tier(val)
-        elif idx == 725:
+        elif idx in (725, 749):
             logger.warning("Using numeric fallback for wear index %s", idx)
             raw = attr.get("float_value")
             if raw is None:
@@ -668,6 +668,82 @@ def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
     return True
 
 
+WAR_PAINT_TOOL_DEFINDEXES = {5681, 5682, 5683}
+
+
+def _has_attr(asset: dict, idx: int) -> bool:
+    """Return True if ``asset`` contains an attribute with ``defindex`` ``idx``."""
+
+    for attr in asset.get("attributes", []) or []:
+        try:
+            if int(attr.get("defindex")) == idx:
+                return True
+        except (TypeError, ValueError):
+            continue
+    return False
+
+
+def _extract_warpaint_tool_info(
+    asset: dict,
+) -> tuple[int | None, str | None, str | None, int | None, str | None]:
+    """Return paintkit id, name, wear name, target weapon defindex and name."""
+
+    paintkit_id = None
+    wear_name = None
+    target_def = None
+    for attr in asset.get("attributes", []):
+        try:
+            idx = int(attr.get("defindex"))
+        except (TypeError, ValueError):
+            continue
+        if idx == 134:
+            raw = (
+                attr.get("value")
+                if attr.get("value") is not None
+                else attr.get("float_value")
+            )
+            try:
+                paintkit_id = int(float(raw)) if raw is not None else None
+            except (TypeError, ValueError):
+                continue
+        elif idx == 725:
+            raw = (
+                attr.get("float_value")
+                if attr.get("float_value") is not None
+                else attr.get("value")
+            )
+            try:
+                val = float(raw)
+            except (TypeError, ValueError):
+                continue
+            if 0 <= val <= 1:
+                name = local_data.WEAR_NAMES.get(str(int(val)))
+                wear_name = name or _wear_tier(val)
+        elif idx == 2014:
+            raw = (
+                attr.get("value")
+                if attr.get("value") is not None
+                else attr.get("float_value")
+            )
+            try:
+                target_def = int(float(raw)) if raw is not None else None
+            except (TypeError, ValueError):
+                continue
+
+    paintkit_name = None
+    if paintkit_id is not None:
+        paintkit_name = (
+            local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id)) or "Unknown"
+        )
+
+    target_name = None
+    if target_def is not None:
+        target_entry = local_data.ITEMS_BY_DEFINDEX.get(target_def, {})
+        target_name = _preferred_base_name(str(target_def), target_entry)
+
+    return paintkit_id, paintkit_name, wear_name, target_def, target_name
+
+
 def _is_warpaint_tool(schema_entry: Dict[str, Any]) -> bool:
     """Return True if ``schema_entry`` represents a warpaint tool."""
 
@@ -770,12 +846,37 @@ def _process_item(
     image_url = schema_entry.get("image_url", "")
 
     warpaintable = _is_warpaintable(schema_entry)
-    warpaint_tool = _is_warpaint_tool(schema_entry)
-    warpaint_id = paintkit_name = None
-    if warpaintable or warpaint_tool or not schema_entry:
-        warpaint_id, paintkit_name = _extract_paintkit(asset, schema_entry)
-        if warpaint_id is not None:
+    warpaint_tool = defindex_int in WAR_PAINT_TOOL_DEFINDEXES or _is_warpaint_tool(
+        schema_entry
+    )
+
+    paintkit_id = paintkit_name = None
+    target_weapon_def = target_weapon_name = None
+    wear_name = _extract_wear(asset)
+
+    if warpaint_tool:
+        (
+            paintkit_id,
+            paintkit_name,
+            wear_override,
+            target_weapon_def,
+            target_weapon_name,
+        ) = _extract_warpaint_tool_info(asset)
+        if paintkit_id is None:
+            paintkit_id, paintkit_name = _extract_paintkit(asset, schema_entry)
+        if wear_override:
+            wear_name = wear_override
+    elif warpaintable or not schema_entry:
+        paintkit_id, paintkit_name = _extract_paintkit(asset, schema_entry)
+        if paintkit_id is not None:
             warpaintable = True
+
+    is_skin = bool(
+        not warpaint_tool
+        and warpaintable
+        and _has_attr(asset, 834)
+        and _has_attr(asset, 749)
+    )
 
     base_weapon = _preferred_base_name(defindex, schema_entry)
     if not schema_entry:
@@ -786,9 +887,10 @@ def _process_item(
     composite_name = None
     resolved_name = base_name
 
-    if warpaint_tool and warpaint_id is not None:
-        resolved_name = f"{paintkit_name} War Paint"
-    elif warpaintable and warpaint_id is not None:
+    if warpaint_tool and paintkit_id is not None:
+        suffix = f" ({wear_name})" if wear_name else ""
+        resolved_name = f"War Paint: {paintkit_name}{suffix}"
+    elif warpaintable and paintkit_id is not None:
         skin_name = paintkit_name
         composite_name = f"{paintkit_name} {base_weapon}"
         resolved_name = composite_name
@@ -815,7 +917,6 @@ def _process_item(
     ks_tier, sheen = _extract_killstreak(asset)
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)
-    wear_name = _extract_wear(asset)
     pattern_seed = _extract_pattern_seed(asset)
     crate_series_name = _extract_crate_series(asset)
     spell_badges, spells = _extract_spells(asset)
@@ -879,7 +980,7 @@ def _process_item(
                 "type": "paint",
             }
         )
-    if warpaintable and warpaint_id is not None:
+    if warpaintable and paintkit_id is not None:
         badges.append(
             {
                 "icon": "\U0001f58c",
@@ -888,6 +989,9 @@ def _process_item(
                 "type": "warpaint",
             }
         )
+
+    if warpaint_tool or (warpaintable and paintkit_id is not None):
+        display_name = resolved_name
 
     item = {
         "defindex": defindex,
@@ -929,14 +1033,25 @@ def _process_item(
         "base_weapon": None if warpaint_tool else base_weapon if skin_name else None,
         "resolved_name": resolved_name,
         "warpaint_id": (
-            warpaint_id if warpaintable and warpaint_id is not None else None
+            paintkit_id
+            if (warpaint_tool or warpaintable) and paintkit_id is not None
+            else None
         ),
         "warpaint_name": (
-            paintkit_name if warpaintable and warpaint_id is not None else None
+            paintkit_name
+            if (warpaint_tool or warpaintable) and paintkit_id is not None
+            else None
         ),
         "paintkit_name": (
-            paintkit_name if warpaintable and warpaint_id is not None else None
+            paintkit_name
+            if (warpaint_tool or warpaintable) and paintkit_id is not None
+            else None
         ),
+        "paintkit_id": paintkit_id,
+        "target_weapon_defindex": target_weapon_def,
+        "target_weapon_name": target_weapon_name,
+        "is_war_paint_tool": warpaint_tool,
+        "is_skin": is_skin,
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,
