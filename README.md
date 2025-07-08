@@ -35,7 +35,8 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
 - Templates live under `templates/`; `index.html` includes `_user.html` for each user.
 - Item schema is cached automatically via `SchemaProvider` in
   `utils/schema_provider.py`. Paintkit names are written to
-  `cache/schema/warpaints.json`. Pass `base_url` to use a mirror. Update it with:
+  `cache/schema/warpaints.json` and wear names to
+  `cache/schema/wears.json`. Pass `base_url` to use a mirror. Update it with:
   ```bash
   python app.py --refresh  # fetch latest schema files (shows progress)
   python main.py --refresh
