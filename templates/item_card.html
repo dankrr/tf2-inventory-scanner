@@ -57,4 +57,7 @@
       <div class="badge warpaint-badge">Warpaint: {{ item.warpaint_name }}</div>
     {% endif %}
   {% endif %}
+  {% if item.is_war_paint_tool and item.target_weapon_name %}
+    <div class="badge target-weapon-badge">For: {{ item.target_weapon_name }}</div>
+  {% endif %}
 </div>

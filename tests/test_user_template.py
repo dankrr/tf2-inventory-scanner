@@ -140,3 +140,27 @@ def test_unusual_effect_rendered(app):
     text = title.text.strip()
     assert text.startswith("Strange Burning Flames Cap")
     assert "Unusual" not in text
+
+
+def test_war_paint_tool_target_displayed(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "War Paint",
+                    "display_name": "War Paint: Warhawk (Field-Tested)",
+                    "image_url": "",
+                    "badges": [],
+                    "warpaint_name": "Warhawk",
+                    "target_weapon_name": "Rocket Launcher",
+                    "is_war_paint_tool": True,
+                    "quality_color": "#fff",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    assert "Rocket Launcher" in html
