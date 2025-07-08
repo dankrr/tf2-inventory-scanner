@@ -772,6 +772,18 @@ def test_australium_attribute_sets_flag():
     assert item["display_name"] == "Australium Rocket Launcher"
 
 
+def test_australium_image_override(monkeypatch):
+    data = {"items": [{"defindex": 111, "quality": 6, "is_australium": True}]}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    monkeypatch.setitem(
+        ip.AUSTRALIUM_IMAGE_URLS, "Rocket Launcher", "https://example.com/a.png"
+    )
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["display_image_url"] == "https://example.com/a.png"
+
+
 def test_price_map_australium_lookup(patch_valuation):
     data = {"items": [{"defindex": 205, "quality": 6, "is_australium": True}]}
     ld.ITEMS_BY_DEFINDEX = {205: {"item_name": "Rocket Launcher", "image_url": ""}}

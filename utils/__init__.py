@@ -6,6 +6,7 @@ from .constants import (
     ORIGIN_MAP,
     KILLSTREAK_BADGE_ICONS,
     SPELL_MAP,
+    AUSTRALIUM_IMAGE_URLS,
 )
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .wear_helpers import _wear_tier, _decode_seed_info
@@ -17,6 +18,7 @@ __all__ = [
     "KILLSTREAK_TIERS",
     "KILLSTREAK_EFFECTS",
     "SPELL_MAP",
+    "AUSTRALIUM_IMAGE_URLS",
     "FOOTPRINT_SPELL_MAP",
     "PAINT_SPELL_MAP",
     "ORIGIN_MAP",

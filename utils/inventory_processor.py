@@ -18,6 +18,7 @@ from .constants import (
     KILLSTREAK_EFFECTS,
     KILLSTREAK_BADGE_ICONS,
     SPELL_MAP,
+    AUSTRALIUM_IMAGE_URLS,
 )
 
 
@@ -736,6 +737,7 @@ def _process_item(
 
     defindex = str(defindex_int)
     image_url = schema_entry.get("image_url", "")
+    display_image_url = image_url
 
     warpaintable = _is_warpaintable(schema_entry)
     warpaint_id = paintkit_name = None
@@ -760,6 +762,9 @@ def _process_item(
             flags=re.IGNORECASE,
         )
         display_base = f"Australium {clean_base}"
+        override = AUSTRALIUM_IMAGE_URLS.get(base_name)
+        if override:
+            display_image_url = override
 
     quality_id = asset.get("quality", 0)
     q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
@@ -856,6 +861,7 @@ def _process_item(
         "quality": q_name,
         "quality_color": q_col,
         "image_url": image_url,
+        "display_image_url": display_image_url,
         "item_type_name": schema_entry.get("item_type_name"),
         "item_name": schema_entry.get("name"),
         "craft_class": schema_entry.get("craft_class"),

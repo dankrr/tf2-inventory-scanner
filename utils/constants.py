@@ -123,3 +123,26 @@ SPELL_MAP = {
     1008: {1: "Halloween Fire"},
     1009: {1: "Exorcism"},
 }
+
+# Map of standard weapon base name -> Australium variant image URL
+AUSTRALIUM_IMAGE_URLS = {
+    "Scattergun": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_scattergun.png",
+    "Force-A-Nature": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Force-a-Nature.png",
+    "Rocket Launcher": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_rocketlauncher.png",
+    "Black Box": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Black_Box.png",
+    "Flame Thrower": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Flame_Thrower.png",
+    "Axtinguisher": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Axtinguisher.png",
+    "Grenade Launcher": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_grenadelauncher.png",
+    "Stickybomb Launcher": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_stickybomblauncher.png",
+    "Eyelander": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Eyelander.png",
+    "Minigun": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_minigun.png",
+    "Tomislav": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Tomislav.png",
+    "Frontier Justice": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Frontier_Justice.png",
+    "Wrench": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_wrench.png",
+    "Blutsauger": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Blutsauger_RED.png",
+    "Medi Gun": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_medigun_red.png",
+    "Sniper Rifle": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_sniperrife.png",
+    "SMG": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_SMG.png",
+    "Ambassador": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_Ambassador_RED.png",
+    "Knife": "https://wiki.teamfortress.com/wiki/Special:FilePath/Australium_knife_red.png",
+}
