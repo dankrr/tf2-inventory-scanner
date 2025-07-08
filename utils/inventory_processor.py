@@ -99,12 +99,6 @@ def _get_attr_class(idx: Any) -> str | None:
     return None
 
 
-# Mapping of defindex -> human readable name for warpaints
-MAPPING_FILE = Path(__file__).with_name("warpaint_mapping.json")
-WARPAINT_MAP: Dict[str, str] = {}
-if MAPPING_FILE.exists():
-    with MAPPING_FILE.open() as f:
-        WARPAINT_MAP = json.load(f)
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
     0: ("Normal", "#B2B2B2"),
@@ -613,9 +607,6 @@ def _is_placeholder_name(name: str) -> bool:
 
 def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     """Return human readable base item name."""
-
-    if defindex in WARPAINT_MAP:
-        return WARPAINT_MAP[defindex]
 
     name = schema_entry.get("item_name") or schema_entry.get("name")
     if name and not _is_placeholder_name(name):
