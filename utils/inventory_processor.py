@@ -310,14 +310,14 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
     return None
 
 
-def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int, str] | None:
-    """Return paintkit ``(id, name)`` tuple if present."""
+def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int | None, str | None]:
+    """Return ``(paintkit_id, name)`` or ``(None, None)`` if not present."""
 
     _refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = _get_attr_class(idx)
-        if attr_class in PAINTKIT_CLASSES or idx == 834:
+        if idx in (214, 834) or attr_class in PAINTKIT_CLASSES:
             raw = attr.get("float_value")
             warpaint_id = None
             if raw is not None:
@@ -338,12 +338,9 @@ def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int, str] | None:
             if idx == 834 and attr_class not in PAINTKIT_CLASSES:
                 logger.warning("Using numeric fallback for paintkit index %s", idx)
 
-            name = local_data.PAINTKIT_NAMES_BY_ID.get(
-                str(warpaint_id),
-                "Unknown",
-            )
-            return warpaint_id, name
-    return None
+            name = local_data.PAINTKIT_NAMES_BY_ID.get(str(warpaint_id))
+            return warpaint_id, (name or "Unknown")
+    return None, None
 
 
 def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
@@ -698,15 +695,10 @@ def _process_item(
     defindex = str(defindex_int)
     image_url = schema_entry.get("image_url", "")
 
-    paintkit = _extract_paintkit(asset)
-    if paintkit:
-        warpaint_id, paintkit_name = paintkit
-    else:
-        warpaint_id = None
-        paintkit_name = None
+    warpaint_id, paintkit_name = _extract_paintkit(asset)
 
     base_name = _preferred_base_name(defindex, schema_entry)
-    if paintkit is not None:
+    if warpaint_id is not None:
         base_name = f"{base_name} ({paintkit_name})"
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)

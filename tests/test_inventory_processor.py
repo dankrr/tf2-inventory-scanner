@@ -438,6 +438,27 @@ def test_warpaint_unknown_defaults_unknown(monkeypatch):
     assert item["warpaint_name"] == "Unknown"
 
 
+def test_no_warpaint_attribute(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] is None
+    assert item["warpaint_name"] is None
+    assert item["name"] == "Decorated Weapon Flamethrower"
+
+
 def test_kill_eater_fields(monkeypatch):
     data = {
         "items": [
