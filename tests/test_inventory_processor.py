@@ -508,6 +508,29 @@ def test_warpaint_invalid_value(monkeypatch):
     assert item["warpaint_name"] is None
 
 
+def test_warpaintable_inferred_from_item_class(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 16001,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        16001: {"item_name": "Tester", "item_class": "tf_weapon_test"}
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 350
+    assert item["warpaint_name"] == "Warhawk"
+    assert item["name"] == "Decorated Weapon Tester (Warhawk)"
+
+
 def test_kill_eater_fields(monkeypatch):
     data = {
         "items": [

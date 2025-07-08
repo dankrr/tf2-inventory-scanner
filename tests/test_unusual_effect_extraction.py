@@ -1,4 +1,5 @@
 from utils.inventory_processor import _extract_unusual_effect, EFFECTS_MAP
+from utils import local_data
 
 
 def test_extract_unusual_effect_cosmetic():
@@ -15,6 +16,7 @@ def test_extract_unusual_effect_unusual():
 
 def test_extract_unusual_effect_value_fallback():
     EFFECTS_MAP[3042] = "Taunt Effect"
+    local_data.EFFECT_NAMES.pop("3042", None)
     asset = {
         "quality": 5,
         "attributes": [
