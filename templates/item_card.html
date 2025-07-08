@@ -31,22 +31,30 @@
       {% set _ = title_parts.append('Killstreak') %}
     {% endif %}
   {% endif %}
-  {% set quality = item.quality %}
-  {% if item.strange or quality == 'Strange' %}
-    {% set _ = title_parts.append('Strange') %}
-  {% elif quality and quality not in ('Unique', 'Normal') %}
-    {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
-      {% set _ = title_parts.append(quality) %}
-    {% endif %}
-  {% endif %}
-  {% if item.unusual_effect_id %}
-    {% set base = item.display_name %}
+  {% if item.custom_name %}
+    <h2 class="item-title">{{ item.custom_name }}</h2>
   {% else %}
-    {% set base = item.base_name or item.display_name or item.name %}
+    {% set quality = item.quality %}
+    {% if item.strange or quality == 'Strange' %}
+      {% set _ = title_parts.append('Strange') %}
+    {% elif quality and quality not in ('Unique', 'Normal') %}
+      {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
+        {% set _ = title_parts.append(quality) %}
+      {% endif %}
+    {% endif %}
+    {% if item.unusual_effect_id %}
+      {% set base = item.display_name %}
+    {% else %}
+      {% set base = item.composite_name or item.base_name or item.display_name or item.name %}
+    {% endif %}
+    {% set _ = title_parts.append(base) %}
+    <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
   {% endif %}
-  {% set _ = title_parts.append(base) %}
-  <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
   {% if item.warpaint_name %}
-    <div class="badge warpaint-badge">Warpaint: {{ item.warpaint_name }}</div>
+    {% if item.base_weapon %}
+      <div class="badge warpaint-badge">Paintkit: {{ item.warpaint_name }}</div>
+    {% else %}
+      <div class="badge warpaint-badge">Warpaint: {{ item.warpaint_name }}</div>
+    {% endif %}
   {% endif %}
 </div>

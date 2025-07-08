@@ -783,13 +783,15 @@ def _process_item(
 
     base_name = base_weapon
     skin_name = None
+    composite_name = None
     resolved_name = base_name
 
     if warpaint_tool and warpaint_id is not None:
         resolved_name = f"{paintkit_name} War Paint"
     elif warpaintable and warpaint_id is not None:
         skin_name = paintkit_name
-        resolved_name = f"{paintkit_name} {base_weapon}"
+        composite_name = f"{paintkit_name} {base_weapon}"
+        resolved_name = composite_name
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)
     display_base = base_name
@@ -923,6 +925,7 @@ def _process_item(
         "wear_name": wear_name,
         "pattern_seed": pattern_seed,
         "skin_name": skin_name,
+        "composite_name": composite_name,
         "base_weapon": None if warpaint_tool else base_weapon if skin_name else None,
         "resolved_name": resolved_name,
         "warpaint_id": (
