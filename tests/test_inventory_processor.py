@@ -639,6 +639,26 @@ def test_warpaint_index_749(monkeypatch):
     assert item["warpaint_name"] == "Warhawk"
 
 
+def test_warpaint_tool_info_wear_name_lookup(monkeypatch):
+    asset = {
+        "attributes": [
+            {"defindex": 134, "value": 350},
+            {"defindex": 725, "float_value": 0.4},
+            {"defindex": 2014, "value": 42},
+        ]
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Pistol"}}
+    monkeypatch.setattr(
+        ld,
+        "WEAR_NAMES",
+        {"0": "FN", "1": "MW", "2": "FT", "3": "WW", "4": "BS"},
+        False,
+    )
+    result = ip._extract_warpaint_tool_info(asset)
+    assert result == (350, "Warhawk", "WW", 42, "Pistol")
+
+
 def test_unknown_defindex_preserves_warpaint(monkeypatch):
     data = {
         "items": [
@@ -1099,3 +1119,16 @@ def test_extract_wear_attr_749(monkeypatch):
     asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}
     wear = ip._extract_wear(asset)
     assert wear == "Factory New"
+
+
+def test_extract_wear_uses_local_mapping(monkeypatch):
+    ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
+    monkeypatch.setattr(
+        ld,
+        "WEAR_NAMES",
+        {"0": "FN", "1": "MW", "2": "FT", "3": "WW", "4": "BS"},
+        False,
+    )
+    asset = {"attributes": [{"defindex": 749, "float_value": 0.2}]}
+    wear = ip._extract_wear(asset)
+    assert wear == "FT"

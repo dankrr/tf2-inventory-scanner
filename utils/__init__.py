@@ -9,7 +9,7 @@ from .constants import (
     SPELL_MAP,
 )
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
-from .wear_helpers import _wear_tier, _decode_seed_info
+from .wear_helpers import _wear_tier, _decode_seed_info, wear_tier_from_float
 from .valuation_service import ValuationService, get_valuation_service
 from .helpers import best_match_from_keys
 
@@ -28,5 +28,6 @@ __all__ = [
     "get_valuation_service",
     "_wear_tier",
     "_decode_seed_info",
+    "wear_tier_from_float",
     "best_match_from_keys",
 ]

@@ -18,6 +18,20 @@ def _wear_tier(value: float) -> str:
     return "Battle Scarred"
 
 
+def wear_tier_from_float(value: float) -> int:
+    """Return a numeric wear tier for ``value`` between 0 and 1."""
+
+    if value < 0.07:
+        return 0
+    if value < 0.15:
+        return 1
+    if value < 0.38:
+        return 2
+    if value < 0.45:
+        return 3
+    return 4
+
+
 def _decode_seed_info(attrs: Iterable[dict]) -> Tuple[float | None, int | None]:
     """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
 
