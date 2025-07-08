@@ -237,7 +237,7 @@ button {
   border: 2px solid #FFDD00;
   border-radius: 8px;
   overflow: hidden;
-  background-color: #1e1e1e;
+  background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
 }
 
@@ -260,7 +260,7 @@ button {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -278,6 +278,7 @@ button {
   gap:2px;
   pointer-events:none;
   font-size:14px;
+  z-index:3;
 }
 .item-qty{
   position:absolute;
@@ -289,6 +290,7 @@ button {
   border-radius:4px;
   font-size:12px;
   pointer-events:none;
+  z-index:3;
 }
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
@@ -335,7 +337,7 @@ button {
   max-height: 64px;
   margin-bottom: 6px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 .missing-icon {
   width: 100%;
@@ -358,7 +360,7 @@ button {
   overflow: hidden;
   max-height: 3.6em;
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .item-price {
@@ -571,7 +573,7 @@ footer {
     height: 100%;
     object-fit: cover;
     opacity: 0.9;
-    z-index: 0;
+    z-index: 1;
     pointer-events: none;
 }
 
