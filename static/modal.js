@@ -144,7 +144,7 @@
   function updateHeader(data) {
     const title = document.getElementById('modal-title');
     const effectBox = document.getElementById('modal-effect');
-    if (title) title.textContent = data.custom_name || data.name || '';
+    if (title) title.textContent = data.custom_name || data.composite_name || data.name || '';
     let effectText = '';
     if (data.unusual_effect) {
       effectText = typeof data.unusual_effect === 'object'
