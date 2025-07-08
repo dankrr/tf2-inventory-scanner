@@ -1066,3 +1066,10 @@ def test_skin_detection(monkeypatch):
     assert item["paintkit_name"] == "Warhawk"
     assert item["wear_name"] == "Factory New"
     assert item["resolved_name"] == "Warhawk Flamethrower"
+
+
+def test_extract_wear_attr_749(monkeypatch):
+    ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
+    asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}
+    wear = ip._extract_wear(asset)
+    assert wear == "Factory New"

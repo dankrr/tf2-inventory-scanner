@@ -77,7 +77,7 @@ def _refresh_attr_classes() -> None:
     KILLSTREAK_SHEEN_CLASSES = {cls(2014)} - {None}
     KILLSTREAK_EFFECT_CLASSES = {cls(2013)} - {None}
     PAINT_CLASSES = {cls(142), cls(261)} - {None}
-    WEAR_CLASSES = {cls(725)} - {None}
+    WEAR_CLASSES = {cls(725), cls(749)} - {None}
     PATTERN_SEED_LO_CLASSES = {cls(866)} - {None}
     PATTERN_SEED_HI_CLASSES = {cls(867)} - {None}
     PAINTKIT_CLASSES = {cls(834)} - {None}
