@@ -103,15 +103,15 @@ def _get_attr_class(idx: Any) -> str | None:
 
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
-    0: ("Normal", "#B2B2B2"),
-    1: ("Genuine", "#4D7455"),
-    3: ("Vintage", "#476291"),
-    5: ("Unusual", "#8650AC"),
-    6: ("Unique", "#FFD700"),
-    11: ("Strange", "#CF6A32"),
-    13: ("Haunted", "#38F3AB"),
-    14: ("Collector's", "#AA0000"),
-    15: ("Decorated Weapon", "#FAFAFA"),
+    0: ("Normal", "#7f7f7f"),
+    1: ("Genuine", "#273429"),
+    3: ("Vintage", "#28344a"),
+    5: ("Unusual", "#4f3363"),
+    6: ("Unique", "#957e04"),
+    11: ("Strange", "#7a4121"),
+    13: ("Haunted", "#0c8657"),
+    14: ("Collector's", "#4f3363"),
+    15: ("Decorated Weapon", "#949494"),
 }
 
 # effect_id -> name mapping loaded from ``local_data``
