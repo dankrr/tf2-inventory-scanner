@@ -1,4 +1,10 @@
 <div class="modal-content">
+  {% if item.killstreak_name %}
+    <span class="badge killstreak-badge"
+          style="background-color: {{ item.sheen_color or '#f97316' }};">
+      {{ item.killstreak_name }}
+    </span>
+  {% endif %}
   {% if item.unusual_effect_name %}
     <p><strong>Unusual Effect:</strong>
       <span class="unusual-effect">{{ item.unusual_effect_name }}</span>
