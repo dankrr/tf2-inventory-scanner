@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Tuple
 import logging
 import re
+import difflib
 from html import unescape
 
 import json
@@ -310,6 +311,15 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
     return None
 
 
+def _slug_to_paintkit_name(slug: str) -> str:
+    """Return a human readable paintkit name from schema slug."""
+
+    if slug.endswith("_mk_ii"):
+        base = slug[:-6]
+        return base.replace("_", " ").title() + " Mk.II"
+    return slug.replace("_", " ").title()
+
+
 def _extract_paintkit(
     asset: Dict[str, Any], schema_entry: Dict[str, Any]
 ) -> tuple[int | None, str | None]:
@@ -352,8 +362,19 @@ def _extract_paintkit(
                     paint_slug = parts[1]
                 else:
                     paint_slug = suffix
-                warpaint_name = paint_slug.replace("_", " ").title()
+                warpaint_name = _slug_to_paintkit_name(paint_slug)
                 warpaint_id = local_data.PAINTKIT_NAMES.get(warpaint_name)
+                if warpaint_id is None:
+                    matches = difflib.get_close_matches(
+                        warpaint_name,
+                        list(local_data.PAINTKIT_NAMES.keys()),
+                        n=1,
+                        cutoff=0.6,
+                    )
+                    if matches:
+                        match = matches[0]
+                        warpaint_id = local_data.PAINTKIT_NAMES.get(match)
+                        warpaint_name = match
                 if warpaint_id is not None:
                     return warpaint_id, warpaint_name
                 break

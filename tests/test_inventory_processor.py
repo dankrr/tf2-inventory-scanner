@@ -629,6 +629,35 @@ def test_warpaint_resolved_from_schema_name(monkeypatch):
     assert item["name"] == "Decorated Weapon Sniper Rifle (Airwolf)"
 
 
+def test_warpaint_resolved_from_schema_name_mk_ii(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15155,
+                "quality": 15,
+                "attributes": [],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15155: {
+            "name": "warbird_shotgun_carpet_bomber_mk_ii",
+            "item_name": "Boomstick",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Carpet Bomber Mk.II": 104}, False)
+    monkeypatch.setattr(
+        ld, "PAINTKIT_NAMES_BY_ID", {"104": "Carpet Bomber Mk.II"}, False
+    )
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 104
+    assert item["warpaint_name"] == "Carpet Bomber Mk.II"
+    assert item["name"] == "Decorated Weapon Boomstick (Carpet Bomber Mk.II)"
+
+
 def test_kill_eater_fields(monkeypatch):
     data = {
         "items": [
