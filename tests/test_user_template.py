@@ -164,3 +164,28 @@ def test_war_paint_tool_target_displayed(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     assert "Rocket Launcher" in html
+
+
+def test_decorated_quality_not_shown(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Decorated Weapon Flamethrower",
+                    "composite_name": "Warhawk Flamethrower",
+                    "display_name": "Warhawk Flamethrower",
+                    "image_url": "",
+                    "quality": "Decorated Weapon",
+                    "quality_color": "#fff",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert title.text.strip() == "Warhawk Flamethrower"
