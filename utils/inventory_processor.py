@@ -729,7 +729,7 @@ def _process_item(
     schema_entry = local_data.ITEMS_BY_DEFINDEX.get(defindex_int)
     if not schema_entry:
         logger.warning("Missing schema entry for defindex %s", defindex_int)
-        return None
+        schema_entry = {}
 
     if _is_plain_craft_weapon(asset, schema_entry):
         return None
@@ -739,10 +739,14 @@ def _process_item(
 
     warpaintable = _is_warpaintable(schema_entry)
     warpaint_id = paintkit_name = None
-    if warpaintable:
+    if warpaintable or not schema_entry:
         warpaint_id, paintkit_name = _extract_paintkit(asset, schema_entry)
+        if warpaint_id is not None:
+            warpaintable = True
 
     base_name = _preferred_base_name(defindex, schema_entry)
+    if not schema_entry:
+        base_name = "Unknown Weapon"
     if warpaintable and warpaint_id is not None:
         base_name = f"{base_name} ({paintkit_name})"
 
