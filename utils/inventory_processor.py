@@ -324,16 +324,16 @@ def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int | None, str | None]:
                 try:
                     warpaint_id = int(float(raw))
                 except (TypeError, ValueError):
-                    warpaint_id = None
+                    return None, None
             if warpaint_id is None:
                 raw = attr.get("value")
                 try:
                     warpaint_id = int(float(raw)) if raw is not None else None
                 except (TypeError, ValueError):
-                    continue
+                    return None, None
 
-            if warpaint_id is None:
-                continue
+            if not warpaint_id:
+                return None, None
 
             if idx == 834 and attr_class not in PAINTKIT_CLASSES:
                 logger.warning("Using numeric fallback for paintkit index %s", idx)
@@ -615,6 +615,22 @@ def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     return name or f"Item #{defindex}"
 
 
+def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
+    """Return True if ``schema_entry`` represents a weapon that can be warpainted."""
+
+    if (
+        schema_entry.get("craft_class") != "weapon"
+        and schema_entry.get("craft_material_type") != "weapon"
+    ):
+        return False
+
+    name = schema_entry.get("item_name") or schema_entry.get("name") or ""
+    if _is_placeholder_name(name):
+        return False
+
+    return True
+
+
 def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     """Return True if ``asset`` is a plain craft weapon without special attrs."""
 
@@ -695,10 +711,13 @@ def _process_item(
     defindex = str(defindex_int)
     image_url = schema_entry.get("image_url", "")
 
-    warpaint_id, paintkit_name = _extract_paintkit(asset)
+    warpaintable = _is_warpaintable(schema_entry)
+    warpaint_id = paintkit_name = None
+    if warpaintable:
+        warpaint_id, paintkit_name = _extract_paintkit(asset)
 
     base_name = _preferred_base_name(defindex, schema_entry)
-    if warpaint_id is not None:
+    if warpaintable and warpaint_id is not None:
         base_name = f"{base_name} ({paintkit_name})"
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)
@@ -787,7 +806,7 @@ def _process_item(
                 "type": "paint",
             }
         )
-    if warpaint_id is not None:
+    if warpaintable and warpaint_id is not None:
         badges.append(
             {
                 "icon": "\U0001f58c",
@@ -832,9 +851,15 @@ def _process_item(
         "paint_hex": paint_hex,
         "wear_name": wear_name,
         "pattern_seed": pattern_seed,
-        "warpaint_id": warpaint_id,
-        "warpaint_name": paintkit_name,
-        "paintkit_name": paintkit_name,
+        "warpaint_id": (
+            warpaint_id if warpaintable and warpaint_id is not None else None
+        ),
+        "warpaint_name": (
+            paintkit_name if warpaintable and warpaint_id is not None else None
+        ),
+        "paintkit_name": (
+            paintkit_name if warpaintable and warpaint_id is not None else None
+        ),
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,
