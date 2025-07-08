@@ -352,7 +352,7 @@ def test_paint_and_paintkit_badges(monkeypatch):
                 "quality": 6,
                 "attributes": [
                     {"defindex": 142, "float_value": 3100495},
-                    {"defindex": 834, "float_value": 350},
+                    {"defindex": 214, "float_value": 350},
                 ],
             }
         ]
@@ -402,7 +402,7 @@ def test_paintkit_appended_to_name(monkeypatch):
             {
                 "defindex": 15141,
                 "quality": 15,
-                "attributes": [{"defindex": 834, "float_value": 350}],
+                "attributes": [{"defindex": 214, "float_value": 350}],
             }
         ]
     }
@@ -424,7 +424,7 @@ def test_warpaint_unknown_defaults_unknown(monkeypatch):
             {
                 "defindex": 15141,
                 "quality": 15,
-                "attributes": [{"defindex": 834, "float_value": 999}],
+                "attributes": [{"defindex": 214, "float_value": 999}],
             }
         ]
     }
@@ -436,6 +436,26 @@ def test_warpaint_unknown_defaults_unknown(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] == 999
     assert item["warpaint_name"] == "Unknown"
+
+
+def test_paintkit_legacy_attribute_fallback(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 350
+    assert item["paintkit_name"] == "Warhawk"
 
 
 def test_kill_eater_fields(monkeypatch):

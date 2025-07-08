@@ -39,7 +39,7 @@ def test_load_files_success(tmp_path, monkeypatch, caplog):
     assert "Loaded 1 attributes" in out
 
 
-def test_warpaint_map_reversed(tmp_path, monkeypatch):
+def test_warpaint_map_correct(tmp_path, monkeypatch):
     cache_dir = tmp_path / "cache" / "schema"
     cache_dir.mkdir(parents=True)
     (cache_dir / "warpaints.json").write_text(json.dumps({"Warhawk": 80}))
@@ -47,10 +47,10 @@ def test_warpaint_map_reversed(tmp_path, monkeypatch):
     monkeypatch.setattr(ld, "BASE_DIR", tmp_path)
     warpaints = ld.load_json("schema/warpaints.json")
     ld.PAINTKIT_NAMES = {str(k): v for k, v in warpaints.items()}
-    ld.PAINTKIT_NAMES_BY_ID = {str(v): k for k, v in ld.PAINTKIT_NAMES.items()}
+    ld.PAINTKIT_NAMES_BY_ID = {str(k): v for k, v in ld.PAINTKIT_NAMES.items()}
 
     assert ld.PAINTKIT_NAMES == {"Warhawk": 80}
-    assert ld.PAINTKIT_NAMES_BY_ID == {"80": "Warhawk"}
+    assert ld.PAINTKIT_NAMES_BY_ID == {"Warhawk": 80}
 
 
 def test_load_files_missing(tmp_path, monkeypatch):

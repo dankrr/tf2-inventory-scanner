@@ -109,7 +109,7 @@ warpaints = load_json("schema/warpaints.json")
 PAINTKIT_NAMES = (
     {str(k): v for k, v in warpaints.items()} if isinstance(warpaints, dict) else {}
 )
-PAINTKIT_NAMES_BY_ID = {str(v): k for k, v in PAINTKIT_NAMES.items()}
+PAINTKIT_NAMES_BY_ID = {str(k): v for k, v in PAINTKIT_NAMES.items()}
 
 
 def clean_items_game(raw: dict | str) -> Dict[str, Any]:

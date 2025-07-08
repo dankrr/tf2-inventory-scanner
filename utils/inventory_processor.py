@@ -313,37 +313,36 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
 def _extract_paintkit(asset: Dict[str, Any]) -> tuple[int, str] | None:
     """Return paintkit ``(id, name)`` tuple if present."""
 
-    _refresh_attr_classes()
+    warpaint_id: int | None = None
+
+    # Primary: attribute defindex 214 (set_item_paintkit)
     for attr in asset.get("attributes", []):
-        idx = attr.get("defindex")
-        attr_class = _get_attr_class(idx)
-        if attr_class in PAINTKIT_CLASSES or idx == 834:
+        if attr.get("defindex") == 214:
             raw = attr.get("float_value")
-            warpaint_id = None
             if raw is not None:
                 try:
                     warpaint_id = int(float(raw))
                 except (TypeError, ValueError):
                     warpaint_id = None
-            if warpaint_id is None:
-                raw = attr.get("value")
-                try:
-                    warpaint_id = int(float(raw)) if raw is not None else None
-                except (TypeError, ValueError):
-                    continue
+            break
 
-            if warpaint_id is None:
-                continue
+    # Fallback: legacy defindex 834
+    if warpaint_id is None:
+        for attr in asset.get("attributes", []):
+            if attr.get("defindex") == 834:
+                raw = attr.get("float_value")
+                if raw is not None:
+                    try:
+                        warpaint_id = int(float(raw))
+                    except (TypeError, ValueError):
+                        warpaint_id = None
+                break
 
-            if idx == 834 and attr_class not in PAINTKIT_CLASSES:
-                logger.warning("Using numeric fallback for paintkit index %s", idx)
+    if warpaint_id is None:
+        return None
 
-            name = local_data.PAINTKIT_NAMES_BY_ID.get(
-                str(warpaint_id),
-                "Unknown",
-            )
-            return warpaint_id, name
-    return None
+    name = local_data.PAINTKIT_NAMES_BY_ID.get(str(warpaint_id), "Unknown")
+    return warpaint_id, name
 
 
 def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
