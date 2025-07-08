@@ -265,6 +265,7 @@ def api_constants():
         {
             "paint_colors": consts.PAINT_COLORS,
             "sheen_names": consts.SHEEN_NAMES,
+            "killstreak_sheen_colors": consts.KILLSTREAK_SHEEN_COLORS,
             "killstreak_tiers": consts.KILLSTREAK_TIERS,
             "killstreak_effects": consts.KILLSTREAK_EFFECTS,
             "origin_map": consts.ORIGIN_MAP,
