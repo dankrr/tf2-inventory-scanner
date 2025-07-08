@@ -34,7 +34,7 @@
   {% set quality = item.quality %}
   {% if item.strange or quality == 'Strange' %}
     {% set _ = title_parts.append('Strange') %}
-  {% elif quality and quality not in ('Unique', 'Normal') %}
+  {% elif quality and quality not in ('Unique', 'Normal', 'Decorated Weapon') %}
     {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
       {% set _ = title_parts.append(quality) %}
     {% endif %}
