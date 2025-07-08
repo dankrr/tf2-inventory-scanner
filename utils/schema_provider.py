@@ -22,6 +22,7 @@ class SchemaProvider:
         "origins": "/raw/schema/originNames",
         "parts": "/properties/strangeParts",
         "paintkits": "/properties/paintkits",
+        "wears": "/properties/wears",
         "qualities": "/properties/qualities",
         "defindexes": "/properties/defindexes",
         "string_lookups": "/raw/schema/string_lookups",
@@ -45,6 +46,7 @@ class SchemaProvider:
         self.paintkits_map: Dict[int, str] | None = None
         self.warpaints: Dict[str, int] | None = None
         self._warpaints_by_id: Dict[int, str] | None = None
+        self.wears_map: Dict[int, str] | None = None
         self.qualities_map: Dict[str, int] | None = None
         self.defindex_names: Dict[int, str] | None = None
         self.origins_by_index: Dict[int, str] | None = None
@@ -144,6 +146,23 @@ class SchemaProvider:
                 mapping[int(k)] = v
             elif str(v).isdigit():
                 mapping[int(v)] = k
+        return mapping
+
+    def _load_wears(self, force: bool = False) -> Dict[int, str]:
+        raw = self._load("wears", self.ENDPOINTS["wears"], force)
+        if isinstance(raw, dict):
+            mapping = self._to_int_map(raw)
+        elif isinstance(raw, list):
+            mapping = {
+                int(e.get("id")): str(e.get("name"))
+                for e in raw
+                if isinstance(e, dict) and "id" in e and "name" in e
+            }
+        else:
+            mapping = {}
+        if mapping != raw:
+            path = self._cache_file("wears")
+            path.write_text(json.dumps(mapping, indent=2))
         return mapping
 
     # ------------------------------------------------------------------
@@ -330,7 +349,21 @@ class SchemaProvider:
         return {}
 
     def get_wears(self, *, force: bool = False) -> Dict[int, str]:
-        return {}
+        if self.wears_map is None or force:
+            self.wears_map = self._load_wears(force)
+        return self.wears_map
+
+    def get_wear_name(self, level: int) -> str | None:
+        mapping = self.get_wears()
+        try:
+            key = int(level)
+        except (TypeError, ValueError):
+            return None
+        return mapping.get(key)
+
+    def refresh_wears(self) -> None:
+        _ = self._load_wears(force=True)
+        self.wears_map = None
 
     def get_crateseries(self, *, force: bool = False) -> Dict[int, int]:
         return {}

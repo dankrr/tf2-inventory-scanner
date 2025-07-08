@@ -21,6 +21,7 @@ def test_schema_provider(monkeypatch, tmp_path):
         "/properties/effects": {"Burning Flames": {"id": 13, "name": "Burning Flames"}},
         "/properties/paints": {"A Color Similar to Slate": 3100495},
         "/properties/paintkits": {"Warhawk": 350},
+        "/properties/wears": {"1": "FN", "FN": 1},
         "/raw/schema/originNames": {"0": "Timed Drop"},
         "/properties/strangeParts": {"Kills": {"id": 64, "name": "Kills"}},
         "/properties/qualities": {"Normal": 0},
@@ -44,6 +45,8 @@ def test_schema_provider(monkeypatch, tmp_path):
     assert provider.get_paintkits() == {350: "Warhawk"}
     assert provider.get_warpaints() == {"Warhawk": 350}
     assert provider.warpaints_by_id == {350: "Warhawk"}
+    assert provider.get_wears() == {1: "FN"}
+    assert provider.get_wear_name(1) == "FN"
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
@@ -59,6 +62,7 @@ def test_schema_provider(monkeypatch, tmp_path):
     provider.get_parts()
     provider.get_qualities()
     provider.get_string_lookups()
+    provider.get_wears()
 
     for endpoint in payloads:
         assert calls[endpoint] == 1
@@ -77,6 +81,7 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
             "value": [{"id": 3100495, "name": "A Color Similar to Slate"}]
         },
         "/properties/paintkits": {"value": [{"id": 350, "name": "Warhawk"}]},
+        "/properties/wears": {"value": [{"id": 1, "name": "FN"}]},
         "/raw/schema/originNames": {"value": [{"id": 0, "name": "Timed Drop"}]},
         "/properties/strangeParts": {"value": [{"id": 64, "name": "Kills"}]},
         "/properties/qualities": {"value": [{"id": 0, "name": "Normal"}]},
@@ -100,6 +105,8 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     assert provider.get_paintkits() == {350: "Warhawk"}
     assert provider.get_warpaints() == {"Warhawk": 350}
     assert provider.warpaints_by_id == {350: "Warhawk"}
+    assert provider.get_wears() == {1: "FN"}
+    assert provider.get_wear_name(1) == "FN"
     assert provider.get_origins() == {0: "Timed Drop"}
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
