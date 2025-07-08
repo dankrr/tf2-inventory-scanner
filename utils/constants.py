@@ -32,6 +32,17 @@ SHEEN_NAMES = {
     7: "Hot Rod",
 }
 
+# Map of sheen id -> (name, hex color)
+KILLSTREAK_SHEEN_COLORS = {
+    1: ("Team Shine", "#B2B2B2"),
+    2: ("Deadly Daffodil", "#FFF428"),
+    3: ("Manndarin", "#FF8D1F"),
+    4: ("Mean Green", "#7FFF4F"),
+    5: ("Agonizing Emerald", "#70B04A"),
+    6: ("Villainous Violet", "#8847FF"),
+    7: ("Hot Rod", "#AA0000"),
+}
+
 # Map of item origin id -> human readable string
 ORIGIN_MAP = {
     0: "Timed Drop",

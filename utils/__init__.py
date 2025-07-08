@@ -5,6 +5,7 @@ from .constants import (
     KILLSTREAK_EFFECTS,
     ORIGIN_MAP,
     KILLSTREAK_BADGE_ICONS,
+    KILLSTREAK_SHEEN_COLORS,
     SPELL_MAP,
 )
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
@@ -22,6 +23,7 @@ __all__ = [
     "PAINT_SPELL_MAP",
     "ORIGIN_MAP",
     "KILLSTREAK_BADGE_ICONS",
+    "KILLSTREAK_SHEEN_COLORS",
     "ValuationService",
     "get_valuation_service",
     "_wear_tier",
