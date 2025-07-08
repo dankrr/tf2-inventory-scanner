@@ -52,7 +52,7 @@ CRATE_SERIES_CLASSES: set[str] = set()
 SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
 SPECIAL_KILLSTREAK_ATTRS: set[int] = {2013, 2014, 2025}
 SPECIAL_FESTIVIZER_ATTRS: set[int] = {2053}
-SPECIAL_PAINTKIT_ATTRS: set[int] = {834, 866, 867, 725}
+SPECIAL_PAINTKIT_ATTRS: set[int] = {834, 866, 867, 725, 749}
 
 
 def _refresh_attr_classes() -> None:
@@ -319,25 +319,19 @@ def _extract_paintkit(
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = _get_attr_class(idx)
-        if idx in (214, 834) or attr_class in PAINTKIT_CLASSES:
-            raw = attr.get("float_value")
-            warpaint_id = None
-            if raw is not None:
-                try:
-                    warpaint_id = int(float(raw))
-                except (TypeError, ValueError):
-                    return None, None
-            if warpaint_id is None:
-                raw = attr.get("value")
-                try:
-                    warpaint_id = int(float(raw)) if raw is not None else None
-                except (TypeError, ValueError):
-                    return None, None
-
+        if idx in (834, 749) or attr_class in PAINTKIT_CLASSES:
+            raw = attr.get("value")
+            if raw is None:
+                raw = attr.get("float_value")
+            try:
+                warpaint_id = int(float(raw)) if raw is not None else None
+            except (TypeError, ValueError):
+                logger.warning("Invalid paintkit id: %r", raw)
+                continue
             if not warpaint_id:
-                return None, None
+                continue
 
-            if idx == 834 and attr_class not in PAINTKIT_CLASSES:
+            if idx in (834, 749) and attr_class not in PAINTKIT_CLASSES:
                 logger.warning("Using numeric fallback for paintkit index %s", idx)
 
             name = local_data.PAINTKIT_NAMES_BY_ID.get(str(warpaint_id))
