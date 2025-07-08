@@ -22,7 +22,8 @@ PAINT_NAMES: Dict[str, str] = {}
 WEAR_NAMES: Dict[str, str] = {}
 KILLSTREAK_NAMES: Dict[str, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
-PAINTKIT_NAMES: Dict[str, str] = {}
+# will be populated at import time
+PAINTKIT_NAMES: Dict[str, str]
 CRATE_SERIES_NAMES: Dict[str, str] = {}
 CURRENCIES: Dict[str, Any] = {}
 FOOTPRINT_SPELL_MAP: Dict[int, str] = {}
@@ -53,6 +54,7 @@ SPELL_DISPLAY_NAMES: Dict[str, str] = {
     "set_item_color_wear_override": "Sinister Staining",
 }
 
+# Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 # schema.autobot.tf cache files
 DEFAULT_ATTRIBUTES_FILE = BASE_DIR / "cache" / "schema" / "attributes.json"
@@ -88,6 +90,26 @@ PAINTKIT_FILE = Path(os.getenv("TF2_PAINTKIT_FILE", DEFAULT_PAINTKIT_FILE))
 CRATE_SERIES_FILE = Path(os.getenv("TF2_CRATE_SERIES_FILE", DEFAULT_CRATE_SERIES_FILE))
 STRING_LOOKUPS_FILE = Path(
     os.getenv("TF2_STRING_LOOKUPS_FILE", DEFAULT_STRING_LOOKUPS_FILE)
+)
+
+
+def load_json(relative: str) -> Any:
+    """Return parsed JSON from ``BASE_DIR / "cache" / relative`` or ``{}``."""
+
+    path = BASE_DIR / "cache" / relative
+    if not path.exists():
+        return {}
+    try:
+        with path.open() as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+# Preload cached paintkit names at import time
+warpaints = load_json("schema/warpaints.json")
+PAINTKIT_NAMES = (
+    {str(v): k for k, v in warpaints.items()} if isinstance(warpaints, dict) else {}
 )
 
 
@@ -306,7 +328,6 @@ def load_files(
     KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
     KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
-    PAINTKIT_NAMES = _load_paint_id_map(PAINTKIT_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
 
     FOOTPRINT_SPELL_MAP = {}
