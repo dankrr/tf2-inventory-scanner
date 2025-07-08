@@ -109,7 +109,7 @@ def load_json(relative: str) -> Any:
 # Preload cached paintkit names at import time
 warpaints = load_json("schema/warpaints.json")
 PAINTKIT_NAMES = (
-    {str(v): k for k, v in warpaints.items()} if isinstance(warpaints, dict) else {}
+    {str(k): v for k, v in warpaints.items()} if isinstance(warpaints, dict) else {}
 )
 
 

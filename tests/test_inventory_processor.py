@@ -360,7 +360,7 @@ def test_paint_and_paintkit_badges(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {9000: {"item_name": "Painted", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Test Paint"}, False)
-    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Test Kit"}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Test Kit": 350}, False)
 
     items = ip.enrich_inventory(data)
     badges = items[0]["badges"]
@@ -406,7 +406,7 @@ def test_paintkit_appended_to_name(monkeypatch):
         ]
     }
     ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower"}}
-    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"350": "Warhawk"}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
     item = items[0]
