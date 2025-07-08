@@ -311,6 +311,31 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
     return None
 
 
+def _extract_wear_float(asset: Dict[str, Any]) -> float | None:
+    """Return wear float value if present."""
+
+    _refresh_attr_classes()
+    for attr in asset.get("attributes", []):
+        idx = attr.get("defindex")
+        attr_class = _get_attr_class(idx)
+        if attr_class in WEAR_CLASSES or idx in (725, 749):
+            raw = attr.get("float_value")
+            if raw is None:
+                raw = attr.get("value")
+            try:
+                val = float(raw)
+            except (TypeError, ValueError):
+                logger.warning("Invalid wear value: %r", raw)
+                continue
+            if 0 <= val <= 1:
+                return val
+
+    wear_float, _ = _decode_seed_info(asset.get("attributes", []))
+    if wear_float is not None and 0 <= wear_float <= 1:
+        return wear_float
+    return None
+
+
 def _slug_to_paintkit_name(slug: str) -> str:
     """Return a human readable paintkit name from schema slug."""
 
@@ -326,26 +351,42 @@ def _extract_paintkit(
     """Return ``(paintkit_id, name)`` or ``(None, None)`` if not present."""
 
     _refresh_attr_classes()
+    paintkit_id = None
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = _get_attr_class(idx)
-        if idx in (834, 749) or attr_class in PAINTKIT_CLASSES:
+        if idx == 834 or attr_class in PAINTKIT_CLASSES:
             raw = attr.get("value")
             if raw is None:
                 raw = attr.get("float_value")
             try:
-                warpaint_id = int(float(raw)) if raw is not None else None
+                paintkit_id = int(float(raw)) if raw is not None else None
             except (TypeError, ValueError):
                 logger.warning("Invalid paintkit id: %r", raw)
+                paintkit_id = None
                 continue
-            if warpaint_id is None:
-                continue
+            if paintkit_id is not None:
+                if idx == 834 and attr_class not in PAINTKIT_CLASSES:
+                    logger.warning("Using numeric fallback for paintkit index %s", idx)
+                name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
+                return paintkit_id, (name or "Unknown")
 
-            if idx in (834, 749) and attr_class not in PAINTKIT_CLASSES:
-                logger.warning("Using numeric fallback for paintkit index %s", idx)
-
-            name = local_data.PAINTKIT_NAMES_BY_ID.get(str(warpaint_id))
-            return warpaint_id, (name or "Unknown")
+    if paintkit_id is None:
+        for attr in asset.get("attributes", []):
+            idx = attr.get("defindex")
+            if idx == 749:
+                raw = attr.get("value")
+                if raw is None:
+                    raw = attr.get("float_value")
+                try:
+                    paintkit_id = int(float(raw)) if raw is not None else None
+                except (TypeError, ValueError):
+                    logger.warning("Invalid paintkit id: %r", raw)
+                    continue
+                if paintkit_id is not None:
+                    logger.warning("Using numeric fallback for paintkit index %s", idx)
+                    name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
+                    return paintkit_id, (name or "Unknown")
 
     schema_name = schema_entry.get("name")
     if isinstance(schema_name, str):
@@ -853,6 +894,7 @@ def _process_item(
     paintkit_id = paintkit_name = None
     target_weapon_def = target_weapon_name = None
     wear_name = _extract_wear(asset)
+    wear_float = _extract_wear_float(asset)
 
     if warpaint_tool:
         (
@@ -871,12 +913,7 @@ def _process_item(
         if paintkit_id is not None:
             warpaintable = True
 
-    is_skin = bool(
-        not warpaint_tool
-        and warpaintable
-        and _has_attr(asset, 834)
-        and _has_attr(asset, 749)
-    )
+    is_skin = bool(not warpaint_tool and schema_entry and _has_attr(asset, 834))
 
     base_weapon = _preferred_base_name(defindex, schema_entry)
     if not schema_entry:
@@ -1027,6 +1064,7 @@ def _process_item(
         "paint_name": paint_name,
         "paint_hex": paint_hex,
         "wear_name": wear_name,
+        "wear_float": wear_float,
         "pattern_seed": pattern_seed,
         "skin_name": skin_name,
         "composite_name": composite_name,
