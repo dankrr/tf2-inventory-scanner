@@ -541,6 +541,32 @@ def test_warpaint_value_preferred_over_float(monkeypatch):
     assert item["resolved_name"] == "Warhawk Flamethrower"
 
 
+def test_warpaint_tool_resolved(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 9536,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        9536: {
+            "item_name": "War Paint",
+            "item_class": "tool",
+            "tool": {"type": "paintkit"},
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["resolved_name"] == "Warhawk War Paint"
+    assert item["base_weapon"] is None
+    assert item["skin_name"] is None
+
+
 def test_warpaint_index_749(monkeypatch):
     data = {
         "items": [
