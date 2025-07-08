@@ -531,6 +531,33 @@ def test_warpaintable_inferred_from_item_class(monkeypatch):
     assert item["name"] == "Decorated Weapon Tester (Warhawk)"
 
 
+def test_warpaint_resolved_from_schema_name(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15154,
+                "quality": 15,
+                "attributes": [],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15154: {
+            "name": "warbird_sniperrifle_airwolf",
+            "item_name": "Sniper Rifle",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Airwolf": 82}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"82": "Airwolf"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 82
+    assert item["warpaint_name"] == "Airwolf"
+    assert item["name"] == "Decorated Weapon Sniper Rifle (Airwolf)"
+
+
 def test_kill_eater_fields(monkeypatch):
     data = {
         "items": [
