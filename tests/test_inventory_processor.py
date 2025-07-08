@@ -1068,6 +1068,32 @@ def test_skin_detection(monkeypatch):
     assert item["resolved_name"] == "Warhawk Flamethrower"
 
 
+def test_skin_attribute_order(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 749, "float_value": 0.04},
+                    {"defindex": 834, "value": 350},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {"item_name": "Flamethrower", "craft_class": "weapon"}
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["paintkit_id"] == 350
+    assert item["wear_name"] == "Factory New"
+    assert item["display_name"] == "Warhawk Flamethrower"
+    assert item["wear_float"] == 0.04
+
+
 def test_extract_wear_attr_749(monkeypatch):
     ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
     asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}
