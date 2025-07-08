@@ -148,13 +148,14 @@ def test_enrich_inventory_preserves_absolute_url():
     assert items[0]["image_url"] == url
 
 
-def test_enrich_inventory_skips_unknown_defindex():
+def test_enrich_inventory_unknown_defindex_kept():
     data = {"items": [{"defindex": 1}, {"defindex": 2}]}
     ld.ITEMS_BY_DEFINDEX = {1: {"item_name": "One", "image_url": "a"}}
     ld.QUALITIES_BY_INDEX = {}
     items = ip.enrich_inventory(data)
-    assert len(items) == 1
+    assert len(items) == 2
     assert items[0]["name"] == "One"
+    assert items[1]["base_name"] == "Unknown Weapon"
 
 
 def test_custom_name_stored_separately(monkeypatch):
@@ -506,6 +507,27 @@ def test_warpaint_invalid_value(monkeypatch):
     item = items[0]
     assert item["warpaint_id"] is None
     assert item["warpaint_name"] is None
+
+
+def test_unknown_defindex_preserves_warpaint(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 99999,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["base_name"].startswith("Unknown Weapon")
+    assert item["warpaint_id"] == 350
+    assert item["warpaint_name"] == "Warhawk"
 
 
 def test_warpaintable_inferred_from_item_class(monkeypatch):
