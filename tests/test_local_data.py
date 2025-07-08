@@ -40,26 +40,14 @@ def test_load_files_success(tmp_path, monkeypatch, caplog):
 
 
 def test_warpaint_map_reversed(tmp_path, monkeypatch):
-    attr_file = tmp_path / "attributes.json"
-    particles_file = tmp_path / "particles.json"
-    items_file = tmp_path / "items.json"
-    qual_file = tmp_path / "qualities.json"
-    curr_file = tmp_path / "currencies.json"
-    paintkit_file = tmp_path / "warpaints.json"
+    cache_dir = tmp_path / "cache" / "schema"
+    cache_dir.mkdir(parents=True)
+    (cache_dir / "warpaints.json").write_text(json.dumps({"Warhawk": 80}))
 
-    for f in (attr_file, particles_file, items_file, qual_file):
-        f.write_text("[]")
-    curr_file.write_text(json.dumps({"metal": {"value_raw": 1.0}}))
-    paintkit_file.write_text(json.dumps({"Warhawk": 80}))
+    monkeypatch.setattr(ld, "BASE_DIR", tmp_path)
+    warpaints = ld.load_json("schema/warpaints.json")
+    ld.PAINTKIT_NAMES = {str(v): k for k, v in warpaints.items()}
 
-    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
-    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
-    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
-    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
-    monkeypatch.setattr(ld, "PAINTKIT_FILE", paintkit_file)
-    monkeypatch.setattr(ld, "CURRENCIES_FILE", curr_file)
-
-    ld.load_files()
     assert ld.PAINTKIT_NAMES == {"80": "Warhawk"}
 
 
