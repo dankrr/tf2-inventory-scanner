@@ -6,7 +6,7 @@ import pytest
 
 
 def test_refresh_flag_triggers_update(monkeypatch, capsys):
-    called = {"schema": None, "prices": False}
+    called = {"schema": None, "prices": False, "wears": False}
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
@@ -24,6 +24,15 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     monkeypatch.setattr(
         "utils.schema_provider.SchemaProvider.refresh_all", fake_refresh
     )
+
+    def fake_refresh_wears(self):
+        called["wears"] = True
+        print("\N{CHECK MARK} Saved cache/schema/wears.json")
+
+    monkeypatch.setattr(
+        "utils.schema_provider.SchemaProvider.refresh_wears",
+        fake_refresh_wears,
+    )
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
         lambda refresh=True: called.__setitem__("prices", True) or Path("prices.json"),
@@ -39,6 +48,8 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "Fetching items..." in out
     assert "✓ Saved cache/schema/items.json (0 entries)" in out
+    assert "✓ Saved cache/schema/wears.json" in out
     assert called["schema"] is True
     assert called["prices"] is True
     assert called["curr"] is True
+    assert called["wears"] is True

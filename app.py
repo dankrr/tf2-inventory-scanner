@@ -43,6 +43,7 @@ if ARGS.refresh:
     )
     provider = SchemaProvider(cache_dir="cache/schema")
     provider.refresh_all(verbose=True)
+    provider.refresh_wears()
     price_path = ensure_prices_cached(refresh=True)
     curr_path = ensure_currencies_cached(refresh=True)
     print(f"\N{CHECK MARK} Saved {price_path}")
