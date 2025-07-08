@@ -51,5 +51,8 @@
     {% set base = item.composite_name or item.base_name or item.display_name or item.name %}
   {% endif %}
   {% set _ = title_parts.append(base) %}
+  {% if item.wear_name %}
+    {% set _ = title_parts.append('(' ~ item.wear_name ~ ')') %}
+  {% endif %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
 </div>

@@ -10,4 +10,9 @@
       <span class="unusual-effect">{{ item.unusual_effect_name }}</span>
     </p>
   {% endif %}
+  {% if item.wear_name or item.wear_float is defined %}
+    <p><strong>Wear:</strong>
+      {{ item.wear_name }}{% if item.wear_float is defined and item.wear_float is not none %} ({{ '%.2f'|format(item.wear_float) }}){% endif %}
+    </p>
+  {% endif %}
 </div>
