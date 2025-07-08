@@ -1,7 +1,7 @@
 import struct
 import pytest
 
-from utils.wear_helpers import _wear_tier, _decode_seed_info
+from utils.wear_helpers import _wear_tier, _decode_seed_info, wear_tier_from_float
 from utils import local_data
 
 
@@ -59,3 +59,11 @@ def test_decode_seed_info_attr_classes(monkeypatch):
     wear, seed = _decode_seed_info(attrs)
     assert wear == pytest.approx(wear_val)
     assert seed == 789
+
+
+def test_wear_tier_from_float():
+    assert wear_tier_from_float(0.0) == 0
+    assert wear_tier_from_float(0.1) == 1
+    assert wear_tier_from_float(0.2) == 2
+    assert wear_tier_from_float(0.4) == 3
+    assert wear_tier_from_float(0.9) == 4

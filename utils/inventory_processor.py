@@ -9,7 +9,7 @@ from pathlib import Path
 from . import steam_api_client, local_data
 from .helpers import best_match_from_keys
 from .valuation_service import ValuationService, get_valuation_service
-from .wear_helpers import _wear_tier, _decode_seed_info
+from .wear_helpers import _wear_tier, _decode_seed_info, wear_tier_from_float
 from .constants import (
     KILLSTREAK_TIERS,
     KILLSTREAK_LABELS,
@@ -299,7 +299,8 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
                 continue
             if not 0 <= val <= 1:
                 logger.warning("Wear value out of range: %s", val)
-            name = local_data.WEAR_NAMES.get(str(int(val)))
+            tier = wear_tier_from_float(val)
+            name = local_data.WEAR_NAMES.get(str(tier))
             return name or _wear_tier(val)
         elif idx in (725, 749):
             logger.warning("Using numeric fallback for wear index %s", idx)
@@ -313,12 +314,14 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
                 continue
             if not 0 <= val <= 1:
                 logger.warning("Wear value out of range: %s", val)
-            name = local_data.WEAR_NAMES.get(str(int(val)))
+            tier = wear_tier_from_float(val)
+            name = local_data.WEAR_NAMES.get(str(tier))
             return name or _wear_tier(val)
 
     wear_float, _ = _decode_seed_info(asset.get("attributes", []))
     if wear_float is not None:
-        name = local_data.WEAR_NAMES.get(str(int(wear_float)))
+        tier = wear_tier_from_float(wear_float)
+        name = local_data.WEAR_NAMES.get(str(tier))
         return name or _wear_tier(wear_float)
 
     return None
@@ -771,7 +774,8 @@ def _extract_warpaint_tool_info(
             except (TypeError, ValueError):
                 continue
             if 0 <= val <= 1:
-                name = local_data.WEAR_NAMES.get(str(int(val)))
+                tier = wear_tier_from_float(val)
+                name = local_data.WEAR_NAMES.get(str(tier))
                 wear_name = name or _wear_tier(val)
         elif idx == 2014:
             raw = (
