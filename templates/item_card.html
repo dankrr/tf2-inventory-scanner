@@ -47,10 +47,9 @@
   {% set _ = title_parts.append(base) %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
   {% if item.warpaint_name %}
-    {% if item.base_weapon %}
-      <div class="badge warpaint-badge">Paintkit: {{ item.warpaint_name }}</div>
-    {% else %}
-      <div class="badge warpaint-badge">Warpaint: {{ item.warpaint_name }}</div>
+    {% set wp_badge = item.badges | selectattr('type', 'equalto', 'warpaint') | first %}
+    {% if wp_badge %}
+      <div class="badge warpaint-badge" title="{{ item.warpaint_name }}">{{ wp_badge.icon }}</div>
     {% endif %}
   {% endif %}
   {% if item.is_war_paint_tool and item.target_weapon_name %}
