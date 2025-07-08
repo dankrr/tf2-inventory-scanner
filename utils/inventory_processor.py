@@ -328,7 +328,7 @@ def _extract_paintkit(
             except (TypeError, ValueError):
                 logger.warning("Invalid paintkit id: %r", raw)
                 continue
-            if not warpaint_id:
+            if warpaint_id is None:
                 continue
 
             if idx in (834, 749) and attr_class not in PAINTKIT_CLASSES:

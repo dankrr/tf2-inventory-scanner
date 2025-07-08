@@ -469,24 +469,26 @@ def test_no_warpaint_attribute(monkeypatch):
     assert item["name"] == "Decorated Weapon Flamethrower"
 
 
-def test_warpaint_zero_ignored(monkeypatch):
+def test_warpaint_zero_resolves(monkeypatch):
     data = {
         "items": [
             {
                 "defindex": 15141,
                 "quality": 15,
-                "attributes": [{"defindex": 834, "float_value": 0}],
+                "attributes": [{"defindex": 834, "value": 0}],
             }
         ]
     }
     ld.ITEMS_BY_DEFINDEX = {
         15141: {"item_name": "Flamethrower", "craft_class": "weapon"}
     }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Red Rock Roscoe": 0}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"0": "Red Rock Roscoe"}, False)
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     items = ip.enrich_inventory(data)
     item = items[0]
-    assert item["warpaint_id"] is None
-    assert item["warpaint_name"] is None
+    assert item["warpaint_id"] == 0
+    assert item["warpaint_name"] == "Red Rock Roscoe"
 
 
 def test_warpaint_invalid_value(monkeypatch):
