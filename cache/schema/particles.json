@@ -1,0 +1,3736 @@
+[
+  {
+    "system": "burningplayer_red",
+    "id": 1,
+    "attach_to_rootbone": false,
+    "name": "Particle 1"
+  },
+  {
+    "system": "burningplayer_flyingbits",
+    "id": 2,
+    "attach_to_rootbone": false,
+    "name": "Flying Bits"
+  },
+  {
+    "system": "particle_nemesis_burst_blue",
+    "id": 3,
+    "attach_to_rootbone": false,
+    "attachment": "muzzle1",
+    "name": "Nemesis Burst"
+  },
+  {
+    "system": "community_sparkle",
+    "id": 4,
+    "attach_to_rootbone": false,
+    "name": "Community Sparkle"
+  },
+  {
+    "system": "halopoint",
+    "id": 5,
+    "attach_to_rootbone": false,
+    "attachment": "halopoint1",
+    "name": "Holy Glow"
+  },
+  {
+    "system": "superrare_confetti_green",
+    "id": 6,
+    "attach_to_rootbone": false,
+    "name": "Green Confetti"
+  },
+  {
+    "system": "superrare_confetti_purple",
+    "id": 7,
+    "attach_to_rootbone": false,
+    "name": "Purple Confetti"
+  },
+  {
+    "system": "superrare_ghosts",
+    "id": 8,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Haunted Ghosts"
+  },
+  {
+    "system": "superrare_greenenergy",
+    "id": 9,
+    "attach_to_rootbone": true,
+    "name": "Green Energy"
+  },
+  {
+    "system": "superrare_purpleenergy",
+    "id": 10,
+    "attach_to_rootbone": true,
+    "name": "Purple Energy"
+  },
+  {
+    "system": "superrare_circling_tf",
+    "id": 11,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Circling TF Logo"
+  },
+  {
+    "system": "superrare_flies",
+    "id": 12,
+    "attach_to_rootbone": true,
+    "name": "Massed Flies"
+  },
+  {
+    "system": "superrare_burning1",
+    "id": 13,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Burning Flames"
+  },
+  {
+    "system": "superrare_burning2",
+    "id": 14,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Scorching Flames"
+  },
+  {
+    "system": "superrare_plasma1",
+    "id": 15,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Searing Plasma"
+  },
+  {
+    "system": "superrare_plasma2",
+    "id": 16,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Vivid Plasma"
+  },
+  {
+    "system": "superrare_beams1",
+    "id": 17,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sunbeams"
+  },
+  {
+    "system": "superrare_circling_peacesign",
+    "id": 18,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Circling Peace Sign"
+  },
+  {
+    "system": "superrare_circling_heart",
+    "id": 19,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Circling Heart"
+  },
+  {
+    "system": "stamp_spin",
+    "id": 20,
+    "attach_to_rootbone": true,
+    "name": "Map Stamps"
+  },
+  {
+    "system": "drg_pipe_smoke",
+    "id": 28,
+    "attach_to_rootbone": false,
+    "attachment": "cig_drg_smoke",
+    "name": "Genteel Smoke"
+  },
+  {
+    "system": "unusual_storm",
+    "id": 29,
+    "attach_to_rootbone": true,
+    "name": "Stormy Storm"
+  },
+  {
+    "system": "unusual_blizzard",
+    "id": 30,
+    "attach_to_rootbone": true,
+    "name": "Blizzardy Storm"
+  },
+  {
+    "system": "unusual_orbit_nutsnbolts",
+    "id": 31,
+    "attach_to_rootbone": true,
+    "name": "Nuts n' Bolts"
+  },
+  {
+    "system": "unusual_orbit_planets",
+    "id": 32,
+    "attach_to_rootbone": true,
+    "name": "Orbiting Planets"
+  },
+  {
+    "system": "unusual_orbit_fire",
+    "id": 33,
+    "attach_to_rootbone": true,
+    "name": "Orbiting Fire"
+  },
+  {
+    "system": "unusual_bubbles",
+    "id": 34,
+    "attach_to_rootbone": true,
+    "name": "Bubbling"
+  },
+  {
+    "system": "unusual_smoking",
+    "id": 35,
+    "attach_to_rootbone": true,
+    "name": "Smoking"
+  },
+  {
+    "system": "unusual_steaming",
+    "id": 36,
+    "attach_to_rootbone": true,
+    "name": "Steaming"
+  },
+  {
+    "system": "unusual_orbit_jack_flaming",
+    "id": 37,
+    "attach_to_rootbone": true,
+    "name": "Flaming Lantern"
+  },
+  {
+    "system": "unusual_fullmoon_cloudy",
+    "id": 38,
+    "attach_to_rootbone": true,
+    "name": "Cloudy Moon"
+  },
+  {
+    "system": "unusual_bubbles_green",
+    "id": 39,
+    "attach_to_rootbone": true,
+    "name": "Cauldron Bubbles"
+  },
+  {
+    "system": "unusual_orbit_fire_dark",
+    "id": 40,
+    "attach_to_rootbone": true,
+    "name": "Eerie Orbiting Fire"
+  },
+  {
+    "system": "unusual_storm_knives",
+    "id": 43,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Knifestorm"
+  },
+  {
+    "system": "unusual_skull_misty",
+    "id": 44,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Misty Skull"
+  },
+  {
+    "system": "unusual_fullmoon_cloudy_green",
+    "id": 45,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Harvest Moon"
+  },
+  {
+    "system": "unusual_fullmoon_cloudy_secret",
+    "id": 46,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "It's a Secret to Everybody"
+  },
+  {
+    "system": "unusual_storm_spooky",
+    "id": 47,
+    "attach_to_rootbone": true,
+    "attachment": "muzzle",
+    "name": "Stormy 13th Hour"
+  },
+  {
+    "system": "unusual_orbit_cards_teamcolor_blue",
+    "id": 55,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Attrib_Particle55"
+  },
+  {
+    "system": "unusual_zap_yellow",
+    "id": 56,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Kill-a-Watt"
+  },
+  {
+    "system": "unusual_zap_green",
+    "id": 57,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Terror-Watt"
+  },
+  {
+    "system": "unusual_hearts_bubbling",
+    "id": 58,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Cloud 9"
+  },
+  {
+    "system": "unusual_orbit_cards_teamcolor_red",
+    "id": 59,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Aces High"
+  },
+  {
+    "system": "unusual_orbit_cash",
+    "id": 60,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Dead Presidents"
+  },
+  {
+    "system": "unusual_crisp_spotlights",
+    "id": 61,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Miami Nights"
+  },
+  {
+    "system": "unusual_spotlights",
+    "id": 62,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Disco Beat Down"
+  },
+  {
+    "system": "unusual_robot_holo_glow_green",
+    "id": 63,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Phosphorous"
+  },
+  {
+    "system": "unusual_robot_holo_glow_orange",
+    "id": 64,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sulphurous"
+  },
+  {
+    "system": "unusual_robot_orbit_binary",
+    "id": 65,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Memory Leak"
+  },
+  {
+    "system": "unusual_robot_orbit_binary2",
+    "id": 66,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Overclocked"
+  },
+  {
+    "system": "unusual_robot_orbiting_sparks",
+    "id": 67,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Electrostatic"
+  },
+  {
+    "system": "unusual_robot_orbiting_sparks2",
+    "id": 68,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Power Surge"
+  },
+  {
+    "system": "unusual_robot_radioactive",
+    "id": 69,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Anti-Freeze"
+  },
+  {
+    "system": "unusual_robot_time_warp",
+    "id": 70,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Time Warp"
+  },
+  {
+    "system": "unusual_robot_time_warp2",
+    "id": 71,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Green Black Hole"
+  },
+  {
+    "system": "unusual_robot_radioactive2",
+    "id": 72,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Roboactive"
+  },
+  {
+    "system": "unusual_spellbook_circle_green",
+    "id": 73,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Arcana"
+  },
+  {
+    "system": "unusual_spellbook_circle_purple",
+    "id": 74,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Spellbound"
+  },
+  {
+    "system": "unusual_bats_flaming_proxy_green",
+    "id": 75,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Chiroptera Venenata"
+  },
+  {
+    "system": "unusual_bats_flaming_proxy_purple",
+    "id": 76,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Poisoned Shadows"
+  },
+  {
+    "system": "unusual_bats_flaming_proxy_orange",
+    "id": 77,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Something Burning This Way Comes"
+  },
+  {
+    "system": "unusual_meteor_shower_parent_orange",
+    "id": 78,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Hellfire"
+  },
+  {
+    "system": "unusual_meteor_shower_parent_purple",
+    "id": 79,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Darkblaze"
+  },
+  {
+    "system": "unusual_meteor_shower_parent_green",
+    "id": 80,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Demonflame"
+  },
+  {
+    "system": "unusual_tentmonster_purple_parent",
+    "id": 81,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Bonzo the All-Gnawing"
+  },
+  {
+    "system": "unusual_eyes_purple_parent",
+    "id": 82,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Amaranthine"
+  },
+  {
+    "system": "unusual_eyes_orange_parent",
+    "id": 83,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Stare from Beyond"
+  },
+  {
+    "system": "unusual_eyes_green_parent",
+    "id": 84,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "The Ooze"
+  },
+  {
+    "system": "unusual_souls_purple_parent",
+    "id": 85,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ghastly Ghosts Jr"
+  },
+  {
+    "system": "unusual_souls_green_parent",
+    "id": 86,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunted Phantasm Jr"
+  },
+  {
+    "system": "unusual_eotl_frostbite",
+    "id": 87,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frostbite"
+  },
+  {
+    "system": "unusual_eotl_oribiting_burning_duck_parent",
+    "id": 88,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Molten Mallard"
+  },
+  {
+    "system": "unusual_eotl_sunrise",
+    "id": 89,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Morning Glory"
+  },
+  {
+    "system": "unusual_eotl_sunset",
+    "id": 90,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Death at Dusk"
+  },
+  {
+    "system": "unusual_invasion_abduction",
+    "id": 91,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Abduction"
+  },
+  {
+    "system": "unusual_invasion_atomic",
+    "id": 92,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Atomic"
+  },
+  {
+    "system": "unusual_invasion_atomic_green",
+    "id": 93,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Subatomic"
+  },
+  {
+    "system": "unusual_invasion_boogaloop",
+    "id": 94,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Electric Hat Protector"
+  },
+  {
+    "system": "unusual_invasion_boogaloop_2",
+    "id": 95,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Magnetic Hat Protector"
+  },
+  {
+    "system": "unusual_invasion_boogaloop_3",
+    "id": 96,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Voltaic Hat Protector"
+  },
+  {
+    "system": "unusual_invasion_codex",
+    "id": 97,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Galactic Codex"
+  },
+  {
+    "system": "unusual_invasion_codex_2",
+    "id": 98,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ancient Codex"
+  },
+  {
+    "system": "unusual_invasion_nebula",
+    "id": 99,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Nebula"
+  },
+  {
+    "system": "unusual_hw_deathbydisco_parent",
+    "id": 100,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Death by Disco"
+  },
+  {
+    "system": "unusual_mystery_parent",
+    "id": 101,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "It's a Mystery to Everyone"
+  },
+  {
+    "system": "unusual_mystery_parent_green",
+    "id": 102,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "It's a Puzzle to Me"
+  },
+  {
+    "system": "unusual_nether_blue",
+    "id": 103,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ether Trail"
+  },
+  {
+    "system": "unusual_nether_pink",
+    "id": 104,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Nether Trail"
+  },
+  {
+    "system": "unusual_eldritch_flames_purple",
+    "id": 105,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ancient Eldritch"
+  },
+  {
+    "system": "unusual_eldritch_flames_orange",
+    "id": 106,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Eldritch Flame"
+  },
+  {
+    "system": "unusual_universe",
+    "id": 107,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Neutron Star"
+  },
+  {
+    "system": "unusual_tesla_flash",
+    "id": 108,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Tesla Coil"
+  },
+  {
+    "system": "unusual_star_green_parent",
+    "id": 109,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Starstorm Insomnia"
+  },
+  {
+    "system": "unusual_star_purple_parent",
+    "id": 110,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Starstorm Slumber"
+  },
+  {
+    "system": "unusual_bubble_mess_parent_green",
+    "id": 111,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Brain Drain"
+  },
+  {
+    "system": "unusual_bubble_mess_parent_orange",
+    "id": 112,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Open Mind"
+  },
+  {
+    "system": "unusual_bubble_mess_parent_purple",
+    "id": 113,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Head of Steam"
+  },
+  {
+    "system": "unusual_constellations_blue",
+    "id": 114,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Galactic Gateway"
+  },
+  {
+    "system": "unusual_constellations_pink",
+    "id": 115,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "The Eldritch Opening"
+  },
+  {
+    "system": "unusual_constellations_purple",
+    "id": 116,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "The Dark Doorway"
+  },
+  {
+    "system": "unusual_symbols_parent_fire",
+    "id": 117,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ring of Fire"
+  },
+  {
+    "system": "unusual_symbols_parent_dead",
+    "id": 118,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Vicious Circle"
+  },
+  {
+    "system": "unusual_symbols_parent_lightning",
+    "id": 119,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "White Lightning"
+  },
+  {
+    "system": "unusual_crystalball",
+    "id": 120,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Omniscient Orb"
+  },
+  {
+    "system": "unusual_psychic_eye",
+    "id": 121,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Clairvoyance"
+  },
+  {
+    "system": "unusual_dimension_parent",
+    "id": 122,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fifth Dimension"
+  },
+  {
+    "system": "unusual_aura_purple_parent",
+    "id": 123,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Vicious Vortex"
+  },
+  {
+    "system": "unusual_aura_green_parent",
+    "id": 124,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Menacing Miasma"
+  },
+  {
+    "system": "unusual_aura_red_parent",
+    "id": 125,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Abyssal Aura"
+  },
+  {
+    "system": "unusual_forest_scene_parent_purple",
+    "id": 126,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Wicked Wood"
+  },
+  {
+    "system": "unusual_forest_scene_parent_green",
+    "id": 127,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ghastly Grove"
+  },
+  {
+    "system": "unusual_magicsmoke_purple_parent",
+    "id": 128,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Mystical Medley"
+  },
+  {
+    "system": "unusual_magicsmoke_green_parent",
+    "id": 129,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ethereal Essence"
+  },
+  {
+    "system": "unusual_magicsmoke_blue_parent",
+    "id": 130,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Twisted Radiance"
+  },
+  {
+    "system": "unusual_vortex_energy_parent_p",
+    "id": 131,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Violet Vortex"
+  },
+  {
+    "system": "unusual_vortex_energy_parent_g",
+    "id": 132,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Verdant Vortex"
+  },
+  {
+    "system": "unusual_vortex_energy_parent_o",
+    "id": 133,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Valiant Vortex"
+  },
+  {
+    "system": "unusual_sparkling_lights_parent02",
+    "id": 134,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sparkling Lights"
+  },
+  {
+    "system": "unusual_icecave_parent",
+    "id": 135,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frozen Icefall"
+  },
+  {
+    "system": "unusual_aurora_parent_green",
+    "id": 136,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fragmented Gluons"
+  },
+  {
+    "system": "unusual_aurora_parent_orange",
+    "id": 137,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fragmented Quarks"
+  },
+  {
+    "system": "unusual_aurora_parent_purple",
+    "id": 138,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fragmented Photons"
+  },
+  {
+    "system": "unusual_polygon_teamcolor_red",
+    "id": 139,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Defragmenting Reality"
+  },
+  {
+    "system": "unusual_polygon_teamcolor_blue",
+    "id": 140,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Attrib_Particle140"
+  },
+  {
+    "system": "unusual_polygon_green",
+    "id": 141,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fragmenting Reality"
+  },
+  {
+    "system": "unusual_polygon_amber",
+    "id": 142,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Refragmenting Reality"
+  },
+  {
+    "system": "unusual_snowfall_blue",
+    "id": 143,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Snowfallen"
+  },
+  {
+    "system": "unusual_snowfall_white",
+    "id": 144,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Snowblinded"
+  },
+  {
+    "system": "unusual_mayor_balloonicorn_teamcolor_red",
+    "id": 145,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Pyroland Daydream"
+  },
+  {
+    "system": "unusual_mayor_balloonicorn_teamcolor_blue",
+    "id": 146,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Attrib_Particle146"
+  },
+  {
+    "system": "unusual_circling_spell_green_parent",
+    "id": 147,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Verdatica"
+  },
+  {
+    "system": "unusual_circling_spell_orange_parent",
+    "id": 148,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Aromatica"
+  },
+  {
+    "system": "unusual_circling_spell_purple_parent",
+    "id": 149,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Chromatica"
+  },
+  {
+    "system": "unusual_circling_spell_blue_parent",
+    "id": 150,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Prismatica"
+  },
+  {
+    "system": "unusual_bees",
+    "id": 151,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Bee Swarm"
+  },
+  {
+    "system": "unusual_playflies_green_parent",
+    "id": 152,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frisky Fireflies"
+  },
+  {
+    "system": "unusual_playflies_orange_parent",
+    "id": 153,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Smoldering Spirits"
+  },
+  {
+    "system": "unusual_playflies_purple_parent",
+    "id": 154,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Wandering Wisps"
+  },
+  {
+    "system": "unusual_kaleido_scope_parent",
+    "id": 155,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Kaleidoscope"
+  },
+  {
+    "system": "unusual_face_parent_G",
+    "id": 156,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Green Giggler"
+  },
+  {
+    "system": "unusual_face_parent_O",
+    "id": 157,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Laugh-O-Lantern"
+  },
+  {
+    "system": "unusual_face_parent_P",
+    "id": 158,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Plum Prankster"
+  },
+  {
+    "system": "unusual_undead_mayor_balloonicorn",
+    "id": 159,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Pyroland Nightmare"
+  },
+  {
+    "system": "unusual_gargoyle",
+    "id": 160,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Gravelly Ghoul"
+  },
+  {
+    "system": "unusual_gargoyle2",
+    "id": 161,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Vexed Volcanics"
+  },
+  {
+    "system": "unusual_candy_parent",
+    "id": 162,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Gourdian Angel"
+  },
+  {
+    "system": "unusual_pumpkinhead_parent",
+    "id": 163,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Pumpkin Party"
+  },
+  {
+    "system": "unusual_froststorm_blue_parent",
+    "id": 164,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frozen Fractals"
+  },
+  {
+    "system": "unusual_froststorm_purple_parent",
+    "id": 165,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Lavender Landfall"
+  },
+  {
+    "system": "unusual_froststorm_yellow_parent",
+    "id": 166,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Special Snowfall"
+  },
+  {
+    "system": "unusual_swirlybeams_goldpurple_parent",
+    "id": 167,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Divine Desire"
+  },
+  {
+    "system": "unusual_swirlybeams_pinkblue_parent",
+    "id": 168,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Distant Dream"
+  },
+  {
+    "system": "unusual_icetornado_blue_parent",
+    "id": 169,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Violent Wintertide"
+  },
+  {
+    "system": "unusual_icetornado_purple_parent",
+    "id": 170,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Blighted Snowstorm"
+  },
+  {
+    "system": "unusual_icetornado_white_parent",
+    "id": 171,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Pale Nimbus"
+  },
+  {
+    "system": "unusual_genplasmos_parent",
+    "id": 172,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Genus Plasmos"
+  },
+  {
+    "system": "unusual_genplasmos_b_parent",
+    "id": 173,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Serenus Lumen"
+  },
+  {
+    "system": "unusual_genplasmos_c_parent",
+    "id": 174,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ventum Maris"
+  },
+  {
+    "system": "unusual_mistletoe_teamcolor_red",
+    "id": 175,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Mirthful Mistletoe"
+  },
+  {
+    "system": "unusual_mistletoe_teamcolor_blue",
+    "id": 176,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Attrib_Particle176"
+  },
+  {
+    "system": "unusual_breaker_green_parent",
+    "id": 177,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Resonation"
+  },
+  {
+    "system": "unusual_breaker_orange_parent",
+    "id": 178,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Aggradation"
+  },
+  {
+    "system": "unusual_breaker_purple_parent",
+    "id": 179,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Lucidation"
+  },
+  {
+    "system": "unusual_star_parent",
+    "id": 180,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Stunning"
+  },
+  {
+    "system": "unusual_magic_stingers_orange_parent",
+    "id": 181,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ardentum Saturnalis"
+  },
+  {
+    "system": "unusual_magic_stingers_pink_parent",
+    "id": 182,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fragrancium Elementalis"
+  },
+  {
+    "system": "unusual_magic_stingers_teamcolor_red",
+    "id": 183,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Reverium Irregularis"
+  },
+  {
+    "system": "unusual_magic_stingers_teamcolor_blue",
+    "id": 184,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Attrib_Particle184"
+  },
+  {
+    "system": "unusual_flowers_parent",
+    "id": 185,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Perennial Petals"
+  },
+  {
+    "system": "unusual_bloomhead_orangepurple_parent",
+    "id": 186,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Flavorsome Sunset"
+  },
+  {
+    "system": "unusual_bloomhead_pinkgreen_parent",
+    "id": 187,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Raspberry Bloom"
+  },
+  {
+    "system": "unusual_magicalorb_parent",
+    "id": 188,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Iridescence"
+  },
+  {
+    "system": "unusual_demonhorns_green_parent",
+    "id": 189,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Tempered Thorns"
+  },
+  {
+    "system": "unusual_demonhorns_orange_parent",
+    "id": 190,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Devilish Diablo"
+  },
+  {
+    "system": "unusual_demonhorns_purple_parent",
+    "id": 191,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Severed Serration"
+  },
+  {
+    "system": "unusual_souls_shades_parent",
+    "id": 192,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Shrieking Shades"
+  },
+  {
+    "system": "unusual_souls_teamcolor_red",
+    "id": 193,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Restless Wraiths"
+  },
+  {
+    "system": "unusual_souls_teamcolor_blue",
+    "id": 194,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Restless Wraiths"
+  },
+  {
+    "system": "unusual_phantomcrown_green_parent",
+    "id": 195,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Infernal Wraith"
+  },
+  {
+    "system": "unusual_phantomcrown_purple_parent",
+    "id": 196,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Phantom Crown"
+  },
+  {
+    "system": "unusual_phantomcrown_yellow_parent",
+    "id": 197,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ancient Specter"
+  },
+  {
+    "system": "unusual_lurking_eyes_parent_g",
+    "id": 198,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Viridescent Peeper"
+  },
+  {
+    "system": "unusual_lurking_eyes_parent_o",
+    "id": 199,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Eyes of Molten"
+  },
+  {
+    "system": "unusual_lurking_eyes_parent_p",
+    "id": 200,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ominous Stare"
+  },
+  {
+    "system": "unusual_pumpkin_moon_parent",
+    "id": 201,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Pumpkin Moon"
+  },
+  {
+    "system": "unusual_wacky_spooky_ghost_parent_g",
+    "id": 202,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frantic Spooker"
+  },
+  {
+    "system": "unusual_wacky_spooky_ghost_parent_o",
+    "id": 203,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frightened Poltergeist"
+  },
+  {
+    "system": "unusual_wacky_spooky_ghost_parent_p",
+    "id": 204,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Energetic Haunter"
+  },
+  {
+    "system": "unusual_smissmas_tree_parent",
+    "id": 205,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Smissmas Tree"
+  },
+  {
+    "system": "unusual_tree3_yellow_parent",
+    "id": 206,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Hospitable Festivity"
+  },
+  {
+    "system": "unusual_tree3_teamcolor_red",
+    "id": 207,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Condescending Embrace"
+  },
+  {
+    "system": "unusual_tree3_teamcolor_blue",
+    "id": 208,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Condescending Embrace"
+  },
+  {
+    "system": "unusual_sparkletree_gold_parent",
+    "id": 209,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sparkling Spruce"
+  },
+  {
+    "system": "unusual_sparkletree_silver_parent",
+    "id": 210,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Glittering Juniper"
+  },
+  {
+    "system": "unusual_sparkletree_RGB_parent",
+    "id": 211,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Prismatic Pine"
+  },
+  {
+    "system": "unusual_fairylights_green_parent",
+    "id": 212,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Spiraling Lights"
+  },
+  {
+    "system": "unusual_fairylights_purple_parent",
+    "id": 213,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Twisting Lights"
+  },
+  {
+    "system": "unusual_spire_star_parent",
+    "id": 214,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Stardust Pathway"
+  },
+  {
+    "system": "unusual_spire_snowball_parent",
+    "id": 215,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Flurry Rush"
+  },
+  {
+    "system": "unusual_spire_firework_teamcolor_red",
+    "id": 216,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Spark of Smissmas"
+  },
+  {
+    "system": "unusual_spire_firework_teamcolor_blue",
+    "id": 217,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Spark of Smissmas"
+  },
+  {
+    "system": "unusual_snowflake_parent",
+    "id": 218,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Polar Forecast"
+  },
+  {
+    "system": "unusual_antlers_gold_parent",
+    "id": 219,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Shining Stag"
+  },
+  {
+    "system": "unusual_antlers_purple_parent",
+    "id": 220,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Holiday Horns"
+  },
+  {
+    "system": "unusual_antlers_teamcolor_red",
+    "id": 221,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ardent Antlers"
+  },
+  {
+    "system": "unusual_antlers_teamcolor_blue",
+    "id": 222,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ardent Antlers"
+  },
+  {
+    "system": "unusual_festive_lights_lights1_parent",
+    "id": 223,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Festive Lights"
+  },
+  {
+    "system": "unusual_spycrabs_teamcolor_red",
+    "id": 224,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Crustacean Sensation"
+  },
+  {
+    "system": "unusual_spycrabs_teamcolor_blue",
+    "id": 225,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Crustacean Sensation"
+  },
+  {
+    "system": "unusual_sprinkles_teamcolor_red",
+    "id": 226,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frosted Decadence"
+  },
+  {
+    "system": "unusual_sprinkles_teamcolor_blue",
+    "id": 227,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frosted Decadence"
+  },
+  {
+    "system": "unusual_sprinkles_rainbow_parent",
+    "id": 228,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sprinkled Delights"
+  },
+  {
+    "system": "unusual_liquidmagic_green_parent",
+    "id": 229,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Terrestrial Favor"
+  },
+  {
+    "system": "unusual_liquidmagic_ocean_parent",
+    "id": 230,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Tropical Thrill"
+  },
+  {
+    "system": "unusual_liquidmagic_pink_parent",
+    "id": 231,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Flourishing Passion"
+  },
+  {
+    "system": "unusual_firework_blue_red_parent",
+    "id": 232,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Dazzling Fireworks"
+  },
+  {
+    "system": "unusual_firework_green_yellow_parent",
+    "id": 233,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Blazing Fireworks"
+  },
+  {
+    "system": "unusual_firework_orange_yellow_parent",
+    "id": 234,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Shimmering Fireworks"
+  },
+  {
+    "system": "unusual_firework_pgb_parent",
+    "id": 235,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Twinkling Fireworks"
+  },
+  {
+    "system": "unusual_firework_purple_yellow_parent",
+    "id": 236,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sparkling Fireworks"
+  },
+  {
+    "system": "unusual_firework_rainbow_parent",
+    "id": 237,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Glowing Fireworks"
+  },
+  {
+    "system": "unusual_firework_wgb_parent",
+    "id": 238,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Glimmering Fireworks"
+  },
+  {
+    "system": "unusual_lanterns_teamcolor_red",
+    "id": 239,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Flying Lights"
+  },
+  {
+    "system": "unusual_lanterns_teamcolor_blue",
+    "id": 240,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Flying Lights"
+  },
+  {
+    "system": "unusual_lanterns_green_parent",
+    "id": 241,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Limelight"
+  },
+  {
+    "system": "unusual_lanterns_yellow_parent",
+    "id": 242,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Shining Star"
+  },
+  {
+    "system": "unusual_coldcosmos_parent",
+    "id": 243,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Cold Cosmos"
+  },
+  {
+    "system": "unusual_helix_parent",
+    "id": 244,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Refracting Fractals"
+  },
+  {
+    "system": "unusual_stardust_teamcolor_red",
+    "id": 245,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Startrance"
+  },
+  {
+    "system": "unusual_stardust_teamcolor_blue",
+    "id": 246,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Startrance"
+  },
+  {
+    "system": "unusual_stardust_green_parent",
+    "id": 247,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Starlush"
+  },
+  {
+    "system": "unusual_stardust_orange_parent",
+    "id": 248,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Starfire"
+  },
+  {
+    "system": "unusual_stardust_white_parent",
+    "id": 249,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Stardust"
+  },
+  {
+    "system": "unusual_erupt_alien_parent",
+    "id": 250,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Contagious Eruption"
+  },
+  {
+    "system": "unusual_erupt_daydream_parent",
+    "id": 251,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Daydream Eruption"
+  },
+  {
+    "system": "unusual_erupt_volcan_parent",
+    "id": 252,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Volcanic Eruption"
+  },
+  {
+    "system": "unusual_supernova_parent",
+    "id": 253,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Divine Sunlight"
+  },
+  {
+    "system": "unusual_audio_soundwave_green_parent",
+    "id": 254,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Audiophile"
+  },
+  {
+    "system": "unusual_audio_soundwave_orange_parent",
+    "id": 255,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Soundwave"
+  },
+  {
+    "system": "unusual_audio_soundwave_purple_parent",
+    "id": 256,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Synesthesia"
+  },
+  {
+    "system": "unusual_kraken_green_parent",
+    "id": 257,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunted Kraken"
+  },
+  {
+    "system": "unusual_kraken_purple_parent",
+    "id": 258,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Eerie Kraken"
+  },
+  {
+    "system": "unusual_ghostaxe_parent_green",
+    "id": 259,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Soulful Slice"
+  },
+  {
+    "system": "unusual_ghostaxe_parent_purple",
+    "id": 260,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Horsemann's Hack"
+  },
+  {
+    "system": "unusual_hauntedforever_teamcolor_red",
+    "id": 261,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunted Forever!"
+  },
+  {
+    "system": "unusual_hauntedforever_teamcolor_blue",
+    "id": 262,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunted Forever!"
+  },
+  {
+    "system": "unusual_hauntedforever_green_parent",
+    "id": 263,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Forever and Forever!"
+  },
+  {
+    "system": "unusual_hauntedforever_purple_parent",
+    "id": 264,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Cursed Forever!"
+  },
+  {
+    "system": "unusual_moths_parent",
+    "id": 265,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Moth Plague"
+  },
+  {
+    "system": "unusual_eyeboss_parent",
+    "id": 266,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Malevolent Monoculi"
+  },
+  {
+    "system": "unusual_ghostly_flame_teamcolor_red",
+    "id": 267,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunted Wick"
+  },
+  {
+    "system": "unusual_ghostly_flame_teamcolor_blue",
+    "id": 268,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunted Wick"
+  },
+  {
+    "system": "unusual_ghostly_flame_parent_orange",
+    "id": 269,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Wicked Wick"
+  },
+  {
+    "system": "unusual_ghostly_flame_parent_purple",
+    "id": 270,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Spectral Wick"
+  },
+  {
+    "system": "unusual_sheetmusic_gold_parent",
+    "id": 271,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Musical Maelstrom"
+  },
+  {
+    "system": "unusual_sheetmusic_green_parent",
+    "id": 272,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Verdant Virtuoso"
+  },
+  {
+    "system": "unusual_sheetmusic_silver_parent",
+    "id": 273,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Silver Serenade"
+  },
+  {
+    "system": "unusual_constellation_teamcolor_red",
+    "id": 274,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Cosmic Constellations"
+  },
+  {
+    "system": "unusual_constellation_teamcolor_blue",
+    "id": 275,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Cosmic Constellations"
+  },
+  {
+    "system": "unusual_constellation_green_parent",
+    "id": 276,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Dazzling Constellations"
+  },
+  {
+    "system": "unusual_blood_snow_parent",
+    "id": 277,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Tainted Frost"
+  },
+  {
+    "system": "unusual_aestheticneons_parent",
+    "id": 278,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Starlight Haze"
+  },
+  {
+    "system": "unusual_hardcarry_teamcolor_red",
+    "id": 279,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Hard Carry"
+  },
+  {
+    "system": "unusual_hardcarry_teamcolor_blue",
+    "id": 280,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Hard Carry"
+  },
+  {
+    "system": "unusual_jellyfish_teamcolor_red",
+    "id": 281,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Jellyfish Field"
+  },
+  {
+    "system": "unusual_jellyfish_teamcolor_blue",
+    "id": 282,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Jellyfish Field"
+  },
+  {
+    "system": "unusual_jellyfish_green_parent",
+    "id": 283,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Jellyfish Hunter"
+  },
+  {
+    "system": "unusual_jellyfish_purple_parent",
+    "id": 284,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Jellyfish Jam"
+  },
+  {
+    "system": "unusual_shootingstar_green_parent",
+    "id": 285,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Global Clusters"
+  },
+  {
+    "system": "unusual_shootingstar_purple_parent",
+    "id": 286,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Celestial Starburst"
+  },
+  {
+    "system": "unusual_shootingstar_orange_parent",
+    "id": 287,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sylicone Succiduous"
+  },
+  {
+    "system": "unusual_sakura_smokebomb",
+    "id": 288,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sakura Smoke Bomb"
+  },
+  {
+    "system": "unusual_australian_riches",
+    "id": 289,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Treasure Trove"
+  },
+  {
+    "system": "unusual_buble_parent",
+    "id": 290,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Bubble Breeze"
+  },
+  {
+    "system": "unusual_fireflies",
+    "id": 291,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fireflies"
+  },
+  {
+    "system": "unusual_mountainhalo_parent",
+    "id": 292,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Mountain Halo"
+  },
+  {
+    "system": "unusual_risingstar_green_parent",
+    "id": 293,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Celestial Summit"
+  },
+  {
+    "system": "unusual_risingstar_purple_parent",
+    "id": 294,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Stellar Ascent"
+  },
+  {
+    "system": "unusual_sapper_teamcolor_red",
+    "id": 295,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sapped"
+  },
+  {
+    "system": "unusual_sapper_teamcolor_blue",
+    "id": 296,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sapped"
+  },
+  {
+    "system": "unusual_devilish_teamcolor_red",
+    "id": 297,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Hellspawned Horns"
+  },
+  {
+    "system": "unusual_devilish_teamcolor_blue",
+    "id": 298,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Hellspawned Horns"
+  },
+  {
+    "system": "unusual_devilish_green_parent",
+    "id": 299,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Demonic Impaler"
+  },
+  {
+    "system": "unusual_devilish_purple_parent",
+    "id": 300,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Revenant's Rack"
+  },
+  {
+    "system": "unusual_sixthsense_teamcolor_red",
+    "id": 301,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sixth Sense"
+  },
+  {
+    "system": "unusual_sixthsense_teamcolor_blue",
+    "id": 302,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sixth Sense"
+  },
+  {
+    "system": "unusual_sixthsense_pink_parent",
+    "id": 303,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Amygdala"
+  },
+  {
+    "system": "unusual_skullhead_parent",
+    "id": 304,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "The Bone Zone"
+  },
+  {
+    "system": "unusual_spiderweb_parent",
+    "id": 305,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Arachne's Web"
+  },
+  {
+    "system": "unusual_deepsmoke_parent_g",
+    "id": 306,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Acidic Climate"
+  },
+  {
+    "system": "unusual_deepsmoke_parent_p",
+    "id": 307,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Otherworldly Weather"
+  },
+  {
+    "system": "unusual_deepsmoke_parent_o",
+    "id": 308,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Nightmarish Storm"
+  },
+  {
+    "system": "unusual_icearrow_teamcolor_red",
+    "id": 309,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Icestruck"
+  },
+  {
+    "system": "unusual_icearrow_teamcolor_blue",
+    "id": 310,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Icestruck"
+  },
+  {
+    "system": "unusual_goldarrow_parent",
+    "id": 311,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Goldstruck"
+  },
+  {
+    "system": "unusual_aestheticsigns_teamcolor_red",
+    "id": 312,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Radiant Rivalry"
+  },
+  {
+    "system": "unusual_aestheticsigns_teamcolor_blue",
+    "id": 313,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Radiant Rivalry"
+  },
+  {
+    "system": "unusual_aestheticsigns_mannco_parent",
+    "id": 314,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Radiant Legacy"
+  },
+  {
+    "system": "unusual_frosty_flavours_teamcolor_red",
+    "id": 315,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frosty Flavours"
+  },
+  {
+    "system": "unusual_frosty_flavours_teamcolor_blue",
+    "id": 316,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frosty Flavours"
+  },
+  {
+    "system": "unusual_frosty_mint_glow_parent",
+    "id": 317,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Mint Frost"
+  },
+  {
+    "system": "unusual_northstar_teamcolor_red",
+    "id": 318,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "North Star"
+  },
+  {
+    "system": "unusual_northstar_teamcolor_blue",
+    "id": 319,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "North Star"
+  },
+  {
+    "system": "unusual_northstar_parent_purple",
+    "id": 320,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Prettiest Star"
+  },
+  {
+    "system": "unusual_orbitingstar_parent",
+    "id": 321,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Festive Falling Star"
+  },
+  {
+    "system": "unusual_firefly_teamcolor_red",
+    "id": 322,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Lunar Lights"
+  },
+  {
+    "system": "unusual_firefly_teamcolor_blue",
+    "id": 323,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Lunar Lights"
+  },
+  {
+    "system": "unusual_firefly_purple_parent",
+    "id": 324,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Fairy Lights"
+  },
+  {
+    "system": "unusual_firefly_green_parent",
+    "id": 325,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Natural Lights"
+  },
+  {
+    "system": "unusual_corrodedknight_teamcolor_red",
+    "id": 327,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Loyalist's Coronet"
+  },
+  {
+    "system": "unusual_corrodedknight_teamcolor_blue",
+    "id": 328,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Loyalist's Coronet"
+  },
+  {
+    "system": "unusual_corrodedknight_parent_silver",
+    "id": 329,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Knight's Prideful Spirit"
+  },
+  {
+    "system": "unusual_corrodedknight_parent_golden",
+    "id": 330,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Baron's Cherished Chaplet"
+  },
+  {
+    "system": "unusual_poseidon_teamcolor_red",
+    "id": 331,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Lure of the Deep"
+  },
+  {
+    "system": "unusual_poseidon_teamcolor_blue",
+    "id": 332,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Lure of the Deep"
+  },
+  {
+    "system": "unusual_poseidon_parent_green",
+    "id": 333,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Violent Viridian"
+  },
+  {
+    "system": "unusual_poseidon_parent_purple",
+    "id": 334,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Magenta Monstrum"
+  },
+  {
+    "system": "unusual_rainglow_parent",
+    "id": 335,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Rainbow Reverie"
+  },
+  {
+    "system": "unusual_cubancigar_parent",
+    "id": 336,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Cuban Smoke"
+  },
+  {
+    "system": "unusual_mohawk_teamcolor_red",
+    "id": 337,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Melting Mohawk"
+  },
+  {
+    "system": "unusual_mohawk_teamcolor_blue",
+    "id": 338,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Melting Mohawk"
+  },
+  {
+    "system": "unusual_mohawk_parent_green",
+    "id": 339,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Scorched Scalp"
+  },
+  {
+    "system": "unusual_mohawk_parent_purple",
+    "id": 340,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ignited Crest"
+  },
+  {
+    "system": "unusual_rare_shine_glow_parent",
+    "id": 341,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Rare Shine"
+  },
+  {
+    "system": "unusual_horstars_teamcolor_red",
+    "id": 342,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Distant Drift"
+  },
+  {
+    "system": "unusual_horstars_teamcolor_blue",
+    "id": 343,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Distant Drift"
+  },
+  {
+    "system": "unusual_electric_parent_white",
+    "id": 344,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Warp Drive"
+  },
+  {
+    "system": "unusual_electric_parent_gold",
+    "id": 345,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Overdrive"
+  },
+  {
+    "system": "unusual_butterflyhead_teamcolor_red",
+    "id": 346,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Butterfly Season"
+  },
+  {
+    "system": "unusual_butterflyhead_teamcolor_blue",
+    "id": 347,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Butterfly Season"
+  },
+  {
+    "system": "unusual_hippieaura_parent",
+    "id": 348,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Psycho-delic"
+  },
+  {
+    "system": "unusual_butterfly_parent",
+    "id": 349,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Bewitching Bugs"
+  },
+  {
+    "system": "unusual_spectral_fire_parent",
+    "id": 350,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Spectral Fire"
+  },
+  {
+    "system": "unusual_galactic_fire_parent",
+    "id": 351,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Galactic Flame"
+  },
+  {
+    "system": "unusual_frank_green_parent",
+    "id": 352,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Revived Recharge"
+  },
+  {
+    "system": "unusual_frank_purple_parent",
+    "id": 353,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Undead Electricity"
+  },
+  {
+    "system": "unusual_frank_yellow_parent",
+    "id": 354,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frankencharged"
+  },
+  {
+    "system": "unusual_skullsmoke_green_parent",
+    "id": 355,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Phantom Plague"
+  },
+  {
+    "system": "unusual_skullsmoke_purple_parent",
+    "id": 356,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Haunting Haze"
+  },
+  {
+    "system": "unusual_pigeons_green_parent",
+    "id": 357,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Vicious Vampires"
+  },
+  {
+    "system": "unusual_pigeons_purple_parent",
+    "id": 358,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ravenous Ravens"
+  },
+  {
+    "system": "unusual_pigeons_white_parent",
+    "id": 359,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Delightful Doves"
+  },
+  {
+    "system": "unusual_stove_teamcolor_red",
+    "id": 360,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Searing Stove"
+  },
+  {
+    "system": "unusual_stove_teamcolor_blue",
+    "id": 361,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Searing Stove"
+  },
+  {
+    "system": "unusual_electricfire_teamcolor_red",
+    "id": 362,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "\u00dcber Blaze"
+  },
+  {
+    "system": "unusual_electricfire_teamcolor_blue",
+    "id": 363,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "\u00dcber Blaze"
+  },
+  {
+    "system": "unusual_sizzling_parent",
+    "id": 364,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Sizzling"
+  },
+  {
+    "system": "unusual_icrown_teamcolor_red",
+    "id": 365,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Crystal Crown"
+  },
+  {
+    "system": "unusual_icrown_teamcolor_blue",
+    "id": 366,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Crystal Crown"
+  },
+  {
+    "system": "unusual_icrown_parent_purple",
+    "id": 367,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Halcyon Halo"
+  },
+  {
+    "system": "unusual_timeghosts_parent",
+    "id": 368,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Ghosts of Smissmas Time"
+  },
+  {
+    "system": "unusual_aurora_parent",
+    "id": 369,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Aurora Skies"
+  },
+  {
+    "system": "unusual_bokehsparkle_parent",
+    "id": 370,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Shining Bokeh"
+  },
+  {
+    "system": "unusual_playful_purple_parent",
+    "id": 371,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Playful Aurora"
+  },
+  {
+    "system": "unusual_playful_yellow_parent",
+    "id": 372,
+    "attach_to_rootbone": true,
+    "attachment": "unusual",
+    "name": "Frisky Morning"
+  },
+  {
+    "system": "weapon_unusual_hot",
+    "id": 701,
+    "attach_to_rootbone": false,
+    "attachment": "unusual_0",
+    "name": "Hot"
+  },
+  {
+    "system": "weapon_unusual_isotope",
+    "id": 702,
+    "attach_to_rootbone": false,
+    "attachment": "unusual_0",
+    "name": "Isotope"
+  },
+  {
+    "system": "weapon_unusual_cool",
+    "id": 703,
+    "attach_to_rootbone": false,
+    "attachment": "unusual_0",
+    "name": "Cool"
+  },
+  {
+    "system": "weapon_unusual_energyorb",
+    "id": 704,
+    "attach_to_rootbone": false,
+    "attachment": "unusual_0",
+    "name": "Energy Orb"
+  },
+  {
+    "system": "killstreak_eyeglow_1_teamcolor_red",
+    "id": 2001,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2001"
+  },
+  {
+    "system": "killstreak_t1_lvl1",
+    "id": 2002,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2002"
+  },
+  {
+    "system": "killstreak_t2_lvl1",
+    "id": 2003,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2003"
+  },
+  {
+    "system": "killstreak_t3_lvl1",
+    "id": 2004,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2004"
+  },
+  {
+    "system": "killstreak_t4_lvl1",
+    "id": 2005,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2005"
+  },
+  {
+    "system": "killstreak_t5_lvl1",
+    "id": 2006,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2006"
+  },
+  {
+    "system": "killstreak_t6_lvl1",
+    "id": 2007,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2007"
+  },
+  {
+    "system": "killstreak_t7_lvl1",
+    "id": 2008,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle2008"
+  },
+  {
+    "system": "utaunt_firework_teamcolor_red",
+    "id": 3001,
+    "attach_to_rootbone": false,
+    "name": "Showstopper"
+  },
+  {
+    "system": "utaunt_firework_teamcolor_blue",
+    "id": 3002,
+    "attach_to_rootbone": false,
+    "name": "Showstopper"
+  },
+  {
+    "system": "utaunt_beams_yellow",
+    "id": 3003,
+    "attach_to_rootbone": false,
+    "name": "Holy Grail"
+  },
+  {
+    "system": "utaunt_disco_party",
+    "id": 3004,
+    "attach_to_rootbone": false,
+    "name": "'72"
+  },
+  {
+    "system": "utaunt_hearts_glow_parent",
+    "id": 3005,
+    "attach_to_rootbone": false,
+    "name": "Fountain of Delight"
+  },
+  {
+    "system": "utaunt_meteor_parent",
+    "id": 3006,
+    "attach_to_rootbone": false,
+    "name": "Screaming Tiger"
+  },
+  {
+    "system": "utaunt_cash_confetti",
+    "id": 3007,
+    "attach_to_rootbone": false,
+    "name": "Skill Gotten Gains"
+  },
+  {
+    "system": "utaunt_tornado_parent_black",
+    "id": 3008,
+    "attach_to_rootbone": false,
+    "name": "Midnight Whirlwind"
+  },
+  {
+    "system": "utaunt_tornado_parent_white",
+    "id": 3009,
+    "attach_to_rootbone": false,
+    "name": "Silver Cyclone"
+  },
+  {
+    "system": "utaunt_lightning_parent",
+    "id": 3010,
+    "attach_to_rootbone": false,
+    "name": "Mega Strike"
+  },
+  {
+    "system": "utaunt_souls_green_parent",
+    "id": 3011,
+    "attach_to_rootbone": false,
+    "name": "Haunted Phantasm"
+  },
+  {
+    "system": "utaunt_souls_purple_parent",
+    "id": 3012,
+    "attach_to_rootbone": false,
+    "name": "Ghastly Ghosts"
+  },
+  {
+    "system": "utaunt_hellpit_parent",
+    "id": 3013,
+    "attach_to_rootbone": false,
+    "name": "Hellish Inferno"
+  },
+  {
+    "system": "utaunt_hellswirl",
+    "id": 3014,
+    "attach_to_rootbone": false,
+    "name": "Spectral Swirl"
+  },
+  {
+    "system": "utaunt_headless",
+    "id": 3015,
+    "attach_to_rootbone": false,
+    "name": "Infernal Flames"
+  },
+  {
+    "system": "utaunt_merasmus",
+    "id": 3016,
+    "attach_to_rootbone": false,
+    "name": "Infernal Smoke"
+  },
+  {
+    "system": "utaunt_bubbles_glow_green_parent",
+    "id": 3017,
+    "attach_to_rootbone": false,
+    "name": "Acidic Bubbles of Envy"
+  },
+  {
+    "system": "utaunt_bubbles_glow_orange_parent",
+    "id": 3018,
+    "attach_to_rootbone": false,
+    "name": "Flammable Bubbles of Attraction"
+  },
+  {
+    "system": "utaunt_bubbles_glow_purple_parent",
+    "id": 3019,
+    "attach_to_rootbone": false,
+    "name": "Poisonous Bubbles of Regret"
+  },
+  {
+    "system": "utaunt_firework_dragon_parent",
+    "id": 3020,
+    "attach_to_rootbone": false,
+    "name": "Roaring Rockets"
+  },
+  {
+    "system": "utaunt_smoke_moon_parent",
+    "id": 3021,
+    "attach_to_rootbone": false,
+    "name": "Spooky Night"
+  },
+  {
+    "system": "utaunt_smoke_moon_green_parent",
+    "id": 3022,
+    "attach_to_rootbone": false,
+    "name": "Ominous Night"
+  },
+  {
+    "system": "utaunt_arcane_purple_parent",
+    "id": 3023,
+    "attach_to_rootbone": false,
+    "name": "Bewitched"
+  },
+  {
+    "system": "utaunt_arcane_green_parent",
+    "id": 3024,
+    "attach_to_rootbone": false,
+    "name": "Accursed"
+  },
+  {
+    "system": "utaunt_arcane_yellow_parent",
+    "id": 3025,
+    "attach_to_rootbone": false,
+    "name": "Enchanted"
+  },
+  {
+    "system": "utaunt_electric_mist_parent",
+    "id": 3026,
+    "attach_to_rootbone": false,
+    "name": "Static Mist"
+  },
+  {
+    "system": "utaunt_electricity_cloud_parent_WP",
+    "id": 3027,
+    "attach_to_rootbone": false,
+    "name": "Eerie Lightning"
+  },
+  {
+    "system": "utaunt_electricity_cloud_parent_WB",
+    "id": 3028,
+    "attach_to_rootbone": false,
+    "name": "Terrifying Thunder"
+  },
+  {
+    "system": "utaunt_electricity_cloud_parent_WY",
+    "id": 3029,
+    "attach_to_rootbone": false,
+    "name": "Jarate Shock"
+  },
+  {
+    "system": "utaunt_portalswirl_purple_parent",
+    "id": 3030,
+    "attach_to_rootbone": false,
+    "name": "Nether Void"
+  },
+  {
+    "system": "utaunt_present_parent",
+    "id": 3031,
+    "attach_to_rootbone": false,
+    "name": "Good-Hearted Goodies"
+  },
+  {
+    "system": "utaunt_snowring_icy_parent",
+    "id": 3032,
+    "attach_to_rootbone": false,
+    "name": "Wintery Wisp"
+  },
+  {
+    "system": "utaunt_snowring_space_parent",
+    "id": 3033,
+    "attach_to_rootbone": false,
+    "name": "Arctic Aurora"
+  },
+  {
+    "system": "utaunt_spirit_winter_parent",
+    "id": 3034,
+    "attach_to_rootbone": false,
+    "name": "Winter Spirit"
+  },
+  {
+    "system": "utaunt_spirit_festive_parent",
+    "id": 3035,
+    "attach_to_rootbone": false,
+    "name": "Festive Spirit"
+  },
+  {
+    "system": "utaunt_spirit_magical_parent",
+    "id": 3036,
+    "attach_to_rootbone": false,
+    "name": "Magical Spirit"
+  },
+  {
+    "system": "utaunt_astralbodies_greenorange_parent",
+    "id": 3037,
+    "attach_to_rootbone": false,
+    "name": "Spectral Escort"
+  },
+  {
+    "system": "utaunt_astralbodies_tealpurple_parent",
+    "id": 3038,
+    "attach_to_rootbone": false,
+    "name": "Astral Presence"
+  },
+  {
+    "system": "utaunt_astralbodies_teamcolor_red",
+    "id": 3039,
+    "attach_to_rootbone": false,
+    "name": "Arcane Assistance"
+  },
+  {
+    "system": "utaunt_astralbodies_teamcolor_blue",
+    "id": 3040,
+    "attach_to_rootbone": false,
+    "name": "Arcane Assistance"
+  },
+  {
+    "system": "utaunt_glowyplayer_green_parent",
+    "id": 3041,
+    "attach_to_rootbone": false,
+    "name": "Emerald Allurement"
+  },
+  {
+    "system": "utaunt_glowyplayer_orange_parent",
+    "id": 3042,
+    "attach_to_rootbone": false,
+    "name": "Pyrophoric Personality"
+  },
+  {
+    "system": "utaunt_glowyplayer_purple_parent",
+    "id": 3043,
+    "attach_to_rootbone": false,
+    "name": "Spellbound Aspect"
+  },
+  {
+    "system": "utaunt_electricity_parent",
+    "id": 3044,
+    "attach_to_rootbone": false,
+    "name": "Static Shock"
+  },
+  {
+    "system": "utaunt_electricity_purple_parent",
+    "id": 3045,
+    "attach_to_rootbone": false,
+    "name": "Veno Shock"
+  },
+  {
+    "system": "utaunt_spider_green_parent",
+    "id": 3046,
+    "attach_to_rootbone": false,
+    "name": "Toxic Terrors"
+  },
+  {
+    "system": "utaunt_spider_orange_parent",
+    "id": 3047,
+    "attach_to_rootbone": false,
+    "name": "Arachnid Assault"
+  },
+  {
+    "system": "utaunt_spider_purple_parent",
+    "id": 3048,
+    "attach_to_rootbone": false,
+    "name": "Creepy Crawlies"
+  },
+  {
+    "system": "utaunt_tf2smissmas_tree_parent",
+    "id": 3049,
+    "attach_to_rootbone": false,
+    "name": "Delightful Star"
+  },
+  {
+    "system": "utaunt_tf2smissmas_tree_parent_w",
+    "id": 3050,
+    "attach_to_rootbone": false,
+    "name": "Frosted Star"
+  },
+  {
+    "system": "utaunt_spirits_blue_parent",
+    "id": 3051,
+    "attach_to_rootbone": false,
+    "name": "Apotheosis"
+  },
+  {
+    "system": "utaunt_spirits_purple_parent",
+    "id": 3052,
+    "attach_to_rootbone": false,
+    "name": "Ascension"
+  },
+  {
+    "system": "utaunt_balloonicorn_reindeer_teamcolor_red",
+    "id": 3053,
+    "attach_to_rootbone": false,
+    "name": "Reindoonicorn Rancher"
+  },
+  {
+    "system": "utaunt_balloonicorn_reindeer_teamcolor_blue",
+    "id": 3054,
+    "attach_to_rootbone": false,
+    "name": "Reindoonicorn Rancher"
+  },
+  {
+    "system": "utaunt_twinkling_rgb_parent",
+    "id": 3055,
+    "attach_to_rootbone": false,
+    "name": "Twinkling Lights"
+  },
+  {
+    "system": "utaunt_twinkling_goldsilver_parent",
+    "id": 3056,
+    "attach_to_rootbone": false,
+    "name": "Shimmering Lights"
+  },
+  {
+    "system": "utaunt_chain_green_parent",
+    "id": 3059,
+    "attach_to_rootbone": false,
+    "name": "Spectral Shackles"
+  },
+  {
+    "system": "utaunt_chain_purple_parent",
+    "id": 3060,
+    "attach_to_rootbone": false,
+    "name": "Cursed Confinement"
+  },
+  {
+    "system": "utaunt_tarotcard_teamcolor_red",
+    "id": 3061,
+    "attach_to_rootbone": false,
+    "name": "Cavalier de Carte"
+  },
+  {
+    "system": "utaunt_tarotcard_teamcolor_blue",
+    "id": 3062,
+    "attach_to_rootbone": false,
+    "name": "Cavalier de Carte"
+  },
+  {
+    "system": "utaunt_tarotcard_orange_parent",
+    "id": 3063,
+    "attach_to_rootbone": false,
+    "name": "Hollow Flourish"
+  },
+  {
+    "system": "utaunt_tarotcard_purple_parent",
+    "id": 3064,
+    "attach_to_rootbone": false,
+    "name": "Magic Shuffle"
+  },
+  {
+    "system": "utaunt_elebound_green_parent",
+    "id": 3065,
+    "attach_to_rootbone": false,
+    "name": "Vigorous Pulse"
+  },
+  {
+    "system": "utaunt_elebound_purple_parent",
+    "id": 3066,
+    "attach_to_rootbone": false,
+    "name": "Thundering Spirit"
+  },
+  {
+    "system": "utaunt_elebound_yellow_parent",
+    "id": 3067,
+    "attach_to_rootbone": false,
+    "name": "Galvanic Defiance"
+  },
+  {
+    "system": "utaunt_wispy_parent_g",
+    "id": 3068,
+    "attach_to_rootbone": false,
+    "name": "Wispy Halos"
+  },
+  {
+    "system": "utaunt_wispy_parent_p",
+    "id": 3069,
+    "attach_to_rootbone": false,
+    "name": "Nether Wisps"
+  },
+  {
+    "system": "utaunt_auroraglow_green_parent",
+    "id": 3070,
+    "attach_to_rootbone": false,
+    "name": "Aurora Borealis"
+  },
+  {
+    "system": "utaunt_auroraglow_orange_parent",
+    "id": 3071,
+    "attach_to_rootbone": false,
+    "name": "Aurora Australis"
+  },
+  {
+    "system": "utaunt_auroraglow_purple_parent",
+    "id": 3072,
+    "attach_to_rootbone": false,
+    "name": "Aurora Polaris"
+  },
+  {
+    "system": "utaunt_snowswirl_purple_parent",
+    "id": 3073,
+    "attach_to_rootbone": false,
+    "name": "Amethyst Winds"
+  },
+  {
+    "system": "utaunt_snowswirl_yellow_parent",
+    "id": 3074,
+    "attach_to_rootbone": false,
+    "name": "Golden Gusts"
+  },
+  {
+    "system": "utaunt_snowswirl_teamcolor_red",
+    "id": 3075,
+    "attach_to_rootbone": false,
+    "name": "Smissmas Swirls"
+  },
+  {
+    "system": "utaunt_snowswirl_teamcolor_blue",
+    "id": 3076,
+    "attach_to_rootbone": false,
+    "name": "Smissmas Swirls"
+  },
+  {
+    "system": "utaunt_treespiral_green_parent",
+    "id": 3077,
+    "attach_to_rootbone": false,
+    "name": "Minty Cypress"
+  },
+  {
+    "system": "utaunt_treespiral_purple_parent",
+    "id": 3078,
+    "attach_to_rootbone": false,
+    "name": "Pristine Pine"
+  },
+  {
+    "system": "utaunt_treespiral_teamcolor_red",
+    "id": 3079,
+    "attach_to_rootbone": false,
+    "name": "Sparkly Spruce"
+  },
+  {
+    "system": "utaunt_treespiral_teamcolor_blue",
+    "id": 3080,
+    "attach_to_rootbone": false,
+    "name": "Sparkly Spruce"
+  },
+  {
+    "system": "utaunt_gifts_teamcolor_red",
+    "id": 3081,
+    "attach_to_rootbone": false,
+    "name": "Festive Fever"
+  },
+  {
+    "system": "utaunt_gifts_teamcolor_blue",
+    "id": 3082,
+    "attach_to_rootbone": false,
+    "name": "Festive Fever"
+  },
+  {
+    "system": "utaunt_glitter_parent_gold",
+    "id": 3083,
+    "attach_to_rootbone": false,
+    "name": "Golden Glimmer"
+  },
+  {
+    "system": "utaunt_glitter_parent_silver",
+    "id": 3084,
+    "attach_to_rootbone": false,
+    "name": "Frosty Silver"
+  },
+  {
+    "system": "utaunt_glitter_teamcolor_red",
+    "id": 3085,
+    "attach_to_rootbone": false,
+    "name": "Glamorous Dazzle"
+  },
+  {
+    "system": "utaunt_glitter_teamcolor_blue",
+    "id": 3086,
+    "attach_to_rootbone": false,
+    "name": "Glamorous Dazzle"
+  },
+  {
+    "system": "utaunt_ice_parent",
+    "id": 3087,
+    "attach_to_rootbone": false,
+    "name": "Sublime Snowstorm"
+  },
+  {
+    "system": "utaunt_marigoldritual_teamcolor_red",
+    "id": 3088,
+    "attach_to_rootbone": false,
+    "name": "Marigold Ritual"
+  },
+  {
+    "system": "utaunt_marigoldritual_teamcolor_blue",
+    "id": 3089,
+    "attach_to_rootbone": false,
+    "name": "Marigold Ritual"
+  },
+  {
+    "system": "utaunt_poison_parent_green",
+    "id": 3090,
+    "attach_to_rootbone": false,
+    "name": "Pungent Poison"
+  },
+  {
+    "system": "utaunt_poison_parent_orange",
+    "id": 3091,
+    "attach_to_rootbone": false,
+    "name": "Blazed Brew"
+  },
+  {
+    "system": "utaunt_poison_parent_purple",
+    "id": 3092,
+    "attach_to_rootbone": false,
+    "name": "Mysterious Mixture"
+  },
+  {
+    "system": "utaunt_runeprison_green_parent",
+    "id": 3093,
+    "attach_to_rootbone": false,
+    "name": "Linguistic Deviation"
+  },
+  {
+    "system": "utaunt_runeprison_yellow_parent",
+    "id": 3094,
+    "attach_to_rootbone": false,
+    "name": "Aurelian Seal"
+  },
+  {
+    "system": "utaunt_runeprison_teamcolor_red",
+    "id": 3095,
+    "attach_to_rootbone": false,
+    "name": "Runic Imprisonment"
+  },
+  {
+    "system": "utaunt_runeprison_teamcolor_blue",
+    "id": 3096,
+    "attach_to_rootbone": false,
+    "name": "Runic Imprisonment"
+  },
+  {
+    "system": "utaunt_prismatichaze_parent",
+    "id": 3097,
+    "attach_to_rootbone": false,
+    "name": "Prismatic Haze"
+  },
+  {
+    "system": "utaunt_risingsprit_teamcolor_red",
+    "id": 3098,
+    "attach_to_rootbone": false,
+    "name": "Rising Ritual"
+  },
+  {
+    "system": "utaunt_risingsprit_teamcolor_blue",
+    "id": 3099,
+    "attach_to_rootbone": false,
+    "name": "Rising Ritual"
+  },
+  {
+    "system": "utaunt_hands_teamcolor_red",
+    "id": 3100,
+    "attach_to_rootbone": false,
+    "name": "Bloody Grip"
+  },
+  {
+    "system": "utaunt_hands_teamcolor_blue",
+    "id": 3101,
+    "attach_to_rootbone": false,
+    "name": "Bloody Grip"
+  },
+  {
+    "system": "utaunt_hands_green_parent",
+    "id": 3102,
+    "attach_to_rootbone": false,
+    "name": "Toxic Grip"
+  },
+  {
+    "system": "utaunt_hands_orange_parent",
+    "id": 3103,
+    "attach_to_rootbone": false,
+    "name": "Infernal Grip"
+  },
+  {
+    "system": "utaunt_hands_purple_parent",
+    "id": 3104,
+    "attach_to_rootbone": false,
+    "name": "Death Grip"
+  },
+  {
+    "system": "utaunt_storm_parent_g",
+    "id": 3105,
+    "attach_to_rootbone": false,
+    "name": "Charged Arcane"
+  },
+  {
+    "system": "utaunt_storm_parent_k",
+    "id": 3106,
+    "attach_to_rootbone": false,
+    "name": "Thunderous Rage"
+  },
+  {
+    "system": "utaunt_storm_parent_o",
+    "id": 3107,
+    "attach_to_rootbone": false,
+    "name": "Convulsive Fiery"
+  },
+  {
+    "system": "utaunt_festivelights_teamcolor_red",
+    "id": 3108,
+    "attach_to_rootbone": false,
+    "name": "Festivized Formation"
+  },
+  {
+    "system": "utaunt_festivelights_teamcolor_blue",
+    "id": 3109,
+    "attach_to_rootbone": false,
+    "name": "Festivized Formation"
+  },
+  {
+    "system": "utaunt_glow_spirit_parent_cr",
+    "id": 3110,
+    "attach_to_rootbone": false,
+    "name": "Twirling Spirits"
+  },
+  {
+    "system": "utaunt_glow_spirit_parent_og",
+    "id": 3111,
+    "attach_to_rootbone": false,
+    "name": "Squash n' Twist"
+  },
+  {
+    "system": "utaunt_glow_spirit_parent_pp",
+    "id": 3112,
+    "attach_to_rootbone": false,
+    "name": "Midnight Sparklers"
+  },
+  {
+    "system": "utaunt_snowflakesaura_parent",
+    "id": 3113,
+    "attach_to_rootbone": false,
+    "name": "Boundless Blizzard"
+  },
+  {
+    "system": "utaunt_sun_sand_rays_parent",
+    "id": 3114,
+    "attach_to_rootbone": false,
+    "name": "Solar Scorched"
+  },
+  {
+    "system": "utaunt_undersea_teamcolor_red",
+    "id": 3115,
+    "attach_to_rootbone": false,
+    "name": "Deepsea Rave"
+  },
+  {
+    "system": "utaunt_undersea_teamcolor_blue",
+    "id": 3116,
+    "attach_to_rootbone": false,
+    "name": "Deepsea Rave"
+  },
+  {
+    "system": "utaunt_lavalamp_green_parent",
+    "id": 3117,
+    "attach_to_rootbone": false,
+    "name": "Blooming Beacon"
+  },
+  {
+    "system": "utaunt_lavalamp_purple_parent",
+    "id": 3118,
+    "attach_to_rootbone": false,
+    "name": "Beaming Beacon"
+  },
+  {
+    "system": "utaunt_lavalamp_yellow_parent",
+    "id": 3119,
+    "attach_to_rootbone": false,
+    "name": "Blazing Beacon"
+  },
+  {
+    "system": "utaunt_fish_parent",
+    "id": 3120,
+    "attach_to_rootbone": false,
+    "name": "Floppin' Frenzy"
+  },
+  {
+    "system": "utaunt_rainbow_teamcolor_red",
+    "id": 3121,
+    "attach_to_rootbone": false,
+    "name": "Pastel Trance"
+  },
+  {
+    "system": "utaunt_rainbow_teamcolor_blue",
+    "id": 3122,
+    "attach_to_rootbone": false,
+    "name": "Pastel Trance"
+  },
+  {
+    "system": "utaunt_wild_meadows_parent",
+    "id": 3123,
+    "attach_to_rootbone": false,
+    "name": "Wildflower Meadows"
+  },
+  {
+    "system": "utaunt_krakenmouth_green_parent",
+    "id": 3124,
+    "attach_to_rootbone": false,
+    "name": "Deep-sea Devourer"
+  },
+  {
+    "system": "utaunt_krakenmouth_purple_parent",
+    "id": 3125,
+    "attach_to_rootbone": false,
+    "name": "Eldritch Horror"
+  },
+  {
+    "system": "utaunt_leaftaunt_parent",
+    "id": 3126,
+    "attach_to_rootbone": false,
+    "name": "Autumn Leaves"
+  },
+  {
+    "system": "utaunt_graveparty_parent",
+    "id": 3127,
+    "attach_to_rootbone": false,
+    "name": "Dead Man's Party"
+  },
+  {
+    "system": "utaunt_spellsplash_parent",
+    "id": 3128,
+    "attach_to_rootbone": false,
+    "name": "Potion Explosion"
+  },
+  {
+    "system": "utaunt_cremation_purple_parent",
+    "id": 3129,
+    "attach_to_rootbone": false,
+    "name": "Haunted Cremation"
+  },
+  {
+    "system": "utaunt_cremation_black_parent",
+    "id": 3130,
+    "attach_to_rootbone": false,
+    "name": "Cremation"
+  },
+  {
+    "system": "utaunt_snowfall_parent",
+    "id": 3131,
+    "attach_to_rootbone": false,
+    "name": "Snowfall"
+  },
+  {
+    "system": "utaunt_constellations_teamcolor_red",
+    "id": 3132,
+    "attach_to_rootbone": false,
+    "name": "Galactic Connection"
+  },
+  {
+    "system": "utaunt_constellations_teamcolor_blue",
+    "id": 3133,
+    "attach_to_rootbone": false,
+    "name": "Galactic Connection"
+  },
+  {
+    "system": "utaunt_constellations_purple_parent",
+    "id": 3134,
+    "attach_to_rootbone": false,
+    "name": "Dark Twilight"
+  },
+  {
+    "system": "utaunt_constellations_pink_parent",
+    "id": 3135,
+    "attach_to_rootbone": false,
+    "name": "Eldritch Rift"
+  },
+  {
+    "system": "utaunt_wispyworks_orangegreen_parent",
+    "id": 3136,
+    "attach_to_rootbone": false,
+    "name": "Selfless Sensation"
+  },
+  {
+    "system": "utaunt_wispyworks_purpleblue_parent",
+    "id": 3137,
+    "attach_to_rootbone": false,
+    "name": "Distant Desire"
+  },
+  {
+    "system": "utaunt_wispyworks_yellowpurple_parent",
+    "id": 3138,
+    "attach_to_rootbone": false,
+    "name": "Glamorous Glance"
+  },
+  {
+    "system": "utaunt_innerblizzard_teamcolor_red",
+    "id": 3139,
+    "attach_to_rootbone": false,
+    "name": "Permafrost Essence"
+  },
+  {
+    "system": "utaunt_innerblizzard_teamcolor_blue",
+    "id": 3140,
+    "attach_to_rootbone": false,
+    "name": "Permafrost Essence"
+  },
+  {
+    "system": "utaunt_innerblizzard_purple_parent",
+    "id": 3141,
+    "attach_to_rootbone": false,
+    "name": "Arctic Delight"
+  },
+  {
+    "system": "utaunt_spotlight_parent",
+    "id": 3142,
+    "attach_to_rootbone": false,
+    "name": "Winning Spirit"
+  },
+  {
+    "system": "utaunt_pedalfly_teamcolor_red",
+    "id": 3143,
+    "attach_to_rootbone": false,
+    "name": "Petal Prance"
+  },
+  {
+    "system": "utaunt_pedalfly_teamcolor_blue",
+    "id": 3144,
+    "attach_to_rootbone": false,
+    "name": "Petal Prance"
+  },
+  {
+    "system": "utaunt_dragonfly_teamcolor_red",
+    "id": 3145,
+    "attach_to_rootbone": false,
+    "name": "Dragonflies' Embrace"
+  },
+  {
+    "system": "utaunt_dragonfly_teamcolor_blue",
+    "id": 3146,
+    "attach_to_rootbone": false,
+    "name": "Dragonflies' Embrace"
+  },
+  {
+    "system": "utaunt_dragonfly_green_parent",
+    "id": 3147,
+    "attach_to_rootbone": false,
+    "name": "Dragonflies' Nature"
+  },
+  {
+    "system": "utaunt_dragonfly_purple_parent",
+    "id": 3148,
+    "attach_to_rootbone": false,
+    "name": "Dragonflies' Lucent"
+  },
+  {
+    "system": "utaunt_demigodery_teamcolor_red",
+    "id": 3149,
+    "attach_to_rootbone": false,
+    "name": "Electrocution"
+  },
+  {
+    "system": "utaunt_demigodery_teamcolor_blue",
+    "id": 3150,
+    "attach_to_rootbone": false,
+    "name": "Electrocution"
+  },
+  {
+    "system": "utaunt_signalflares_teamcolor_red",
+    "id": 3151,
+    "attach_to_rootbone": false,
+    "name": "Distress Signal"
+  },
+  {
+    "system": "utaunt_signalflares_teamcolor_blue",
+    "id": 3152,
+    "attach_to_rootbone": false,
+    "name": "Distress Signal"
+  },
+  {
+    "system": "utaunt_signalflares_green_parent",
+    "id": 3153,
+    "attach_to_rootbone": false,
+    "name": "Carioca's Call"
+  },
+  {
+    "system": "utaunt_celebrationtime_teamcolor_red",
+    "id": 3154,
+    "attach_to_rootbone": false,
+    "name": "Fiesta Royale"
+  },
+  {
+    "system": "utaunt_celebrationtime_teamcolor_blue",
+    "id": 3155,
+    "attach_to_rootbone": false,
+    "name": "Fiesta Royale"
+  },
+  {
+    "system": "utaunt_celebrationtime_yellow_parent",
+    "id": 3156,
+    "attach_to_rootbone": false,
+    "name": "Grand Jubilee"
+  },
+  {
+    "system": "utaunt_god_lava_teamcolor_red",
+    "id": 3157,
+    "attach_to_rootbone": false,
+    "name": "Elemental"
+  },
+  {
+    "system": "utaunt_god_lava_teamcolor_blue",
+    "id": 3158,
+    "attach_to_rootbone": false,
+    "name": "Elemental"
+  },
+  {
+    "system": "utaunt_god_gold_parent",
+    "id": 3159,
+    "attach_to_rootbone": false,
+    "name": "Godlike"
+  },
+  {
+    "system": "utaunt_aestheticlogo_teamcolor_red",
+    "id": 3160,
+    "attach_to_rootbone": false,
+    "name": "Teamwork Valorance"
+  },
+  {
+    "system": "utaunt_aestheticlogo_teamcolor_blue",
+    "id": 3161,
+    "attach_to_rootbone": false,
+    "name": "Teamwork Valorance"
+  },
+  {
+    "system": "utaunt_aestheticlogo_orange_parent",
+    "id": 3162,
+    "attach_to_rootbone": false,
+    "name": "Legacy Logo"
+  },
+  {
+    "system": "utaunt_desert_wind_parent",
+    "id": 3163,
+    "attach_to_rootbone": false,
+    "name": "Desert Wind"
+  },
+  {
+    "system": "utaunt_desert_monsoon_parent",
+    "id": 3164,
+    "attach_to_rootbone": false,
+    "name": "Monsoon Season"
+  },
+  {
+    "system": "utaunt_treasure_teamcolor_red",
+    "id": 3165,
+    "attach_to_rootbone": false,
+    "name": "Bountiful Riches"
+  },
+  {
+    "system": "utaunt_treasure_teamcolor_blue",
+    "id": 3166,
+    "attach_to_rootbone": false,
+    "name": "Bountiful Riches"
+  },
+  {
+    "system": "utaunt_hearttreasure_parent",
+    "id": 3167,
+    "attach_to_rootbone": false,
+    "name": "Luxurious Lover"
+  },
+  {
+    "system": "utaunt_wiggletube_teamcolor_red",
+    "id": 3168,
+    "attach_to_rootbone": false,
+    "name": "Amatory"
+  },
+  {
+    "system": "utaunt_wiggletube_teamcolor_blue",
+    "id": 3169,
+    "attach_to_rootbone": false,
+    "name": "Amatory"
+  },
+  {
+    "system": "utaunt_wiggletube_coffee_parent",
+    "id": 3170,
+    "attach_to_rootbone": false,
+    "name": "Electrum"
+  },
+  {
+    "system": "utaunt_flowerrain_teamcolor_red",
+    "id": 3171,
+    "attach_to_rootbone": false,
+    "name": "Sakura Blessings"
+  },
+  {
+    "system": "utaunt_flowerrain_teamcolor_blue",
+    "id": 3172,
+    "attach_to_rootbone": false,
+    "name": "Sakura Blessings"
+  },
+  {
+    "system": "utaunt_flowerrain_purple_parent",
+    "id": 3173,
+    "attach_to_rootbone": false,
+    "name": "Violent Violets"
+  },
+  {
+    "system": "utaunt_poweraura_teamcolor_red",
+    "id": 3174,
+    "attach_to_rootbone": false,
+    "name": "Power Pressure"
+  },
+  {
+    "system": "utaunt_poweraura_teamcolor_blue",
+    "id": 3175,
+    "attach_to_rootbone": false,
+    "name": "Power Pressure"
+  },
+  {
+    "system": "utaunt_poweraura_green_parent",
+    "id": 3176,
+    "attach_to_rootbone": false,
+    "name": "Magnifying Momentum"
+  },
+  {
+    "system": "utaunt_poweraura_purple_parent",
+    "id": 3177,
+    "attach_to_rootbone": false,
+    "name": "Charging Catalyst"
+  },
+  {
+    "system": "utaunt_poweraura_yellow_parent",
+    "id": 3178,
+    "attach_to_rootbone": false,
+    "name": "Amplifying Aura"
+  },
+  {
+    "system": "utaunt_mysticfusion_parent",
+    "id": 3179,
+    "attach_to_rootbone": false,
+    "name": "Mystic Fusion"
+  },
+  {
+    "system": "utaunt_confetti_gy_parent",
+    "id": 3180,
+    "attach_to_rootbone": false,
+    "name": "Obnoxious Confetti"
+  },
+  {
+    "system": "utaunt_confetti_pp_parent",
+    "id": 3181,
+    "attach_to_rootbone": false,
+    "name": "Lovable Confetti"
+  },
+  {
+    "system": "utaunt_confetti_yp_parent",
+    "id": 3182,
+    "attach_to_rootbone": false,
+    "name": "Confetti Celebration"
+  },
+  {
+    "system": "utaunt_heavyrain_parent",
+    "id": 3183,
+    "attach_to_rootbone": false,
+    "name": "Heavy Rain"
+  },
+  {
+    "system": "utaunt_field_parent",
+    "id": 3184,
+    "attach_to_rootbone": false,
+    "name": "Pumpkin Patch"
+  },
+  {
+    "system": "utaunt_whitesmissmas_parent",
+    "id": 3185,
+    "attach_to_rootbone": false,
+    "name": "Snowy Day"
+  },
+  {
+    "system": "utaunt_busysnow_teamcolor_red",
+    "id": 3186,
+    "attach_to_rootbone": false,
+    "name": "Snowy Spirit"
+  },
+  {
+    "system": "utaunt_busysnow_teamcolor_blue",
+    "id": 3187,
+    "attach_to_rootbone": false,
+    "name": "Snowy Spirit"
+  },
+  {
+    "system": "utaunt_busysnow_parent_p",
+    "id": 3188,
+    "attach_to_rootbone": false,
+    "name": "Lavender Sensation"
+  },
+  {
+    "system": "utaunt_busysnow_parent_g",
+    "id": 3189,
+    "attach_to_rootbone": false,
+    "name": "Verdant Phenomenon"
+  },
+  {
+    "system": "utaunt_roses_teamcolor_red",
+    "id": 3190,
+    "attach_to_rootbone": false,
+    "name": "Award Winning"
+  },
+  {
+    "system": "utaunt_roses_teamcolor_blue",
+    "id": 3191,
+    "attach_to_rootbone": false,
+    "name": "Award Winning"
+  },
+  {
+    "system": "utaunt_roses_gold_parent",
+    "id": 3192,
+    "attach_to_rootbone": false,
+    "name": "Operatic Triumph"
+  },
+  {
+    "system": "utaunt_tangledlights_parent",
+    "id": 3193,
+    "attach_to_rootbone": false,
+    "name": "Tangled Lights"
+  },
+  {
+    "system": "killstreak_eyeglow_4_teamcolor_red",
+    "id": 22001,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22001"
+  },
+  {
+    "system": "killstreak_t1_lvl2",
+    "id": 22002,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22002"
+  },
+  {
+    "system": "killstreak_t2_lvl2",
+    "id": 22003,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22003"
+  },
+  {
+    "system": "killstreak_t3_lvl2",
+    "id": 22004,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22004"
+  },
+  {
+    "system": "killstreak_t4_lvl2",
+    "id": 22005,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22005"
+  },
+  {
+    "system": "killstreak_t5_lvl2",
+    "id": 22006,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22006"
+  },
+  {
+    "system": "killstreak_t6_lvl2",
+    "id": 22007,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22007"
+  },
+  {
+    "system": "killstreak_t7_lvl2",
+    "id": 22008,
+    "attach_to_rootbone": false,
+    "name": "Attrib_Particle22008"
+  }
+]

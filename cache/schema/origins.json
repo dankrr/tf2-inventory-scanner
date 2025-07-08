@@ -1,0 +1,122 @@
+[
+  {
+    "origin": 0,
+    "name": "Timed Drop"
+  },
+  {
+    "origin": 1,
+    "name": "Achievement"
+  },
+  {
+    "origin": 2,
+    "name": "Purchased"
+  },
+  {
+    "origin": 3,
+    "name": "Traded"
+  },
+  {
+    "origin": 4,
+    "name": "Crafted"
+  },
+  {
+    "origin": 5,
+    "name": "Store Promotion"
+  },
+  {
+    "origin": 6,
+    "name": "Gifted"
+  },
+  {
+    "origin": 7,
+    "name": "Support Granted"
+  },
+  {
+    "origin": 8,
+    "name": "Found in Crate"
+  },
+  {
+    "origin": 9,
+    "name": "Earned"
+  },
+  {
+    "origin": 10,
+    "name": "Third-Party Promotion"
+  },
+  {
+    "origin": 11,
+    "name": "Wrapped Gift"
+  },
+  {
+    "origin": 12,
+    "name": "Halloween Drop"
+  },
+  {
+    "origin": 13,
+    "name": "Steam Purchase"
+  },
+  {
+    "origin": 14,
+    "name": "Foreign Item"
+  },
+  {
+    "origin": 15,
+    "name": "CD Key"
+  },
+  {
+    "origin": 16,
+    "name": "Collection Reward"
+  },
+  {
+    "origin": 17,
+    "name": "Preview Item"
+  },
+  {
+    "origin": 18,
+    "name": "Steam Workshop Contribution"
+  },
+  {
+    "origin": 19,
+    "name": "Periodic score reward"
+  },
+  {
+    "origin": 20,
+    "name": "MvM Badge completion reward"
+  },
+  {
+    "origin": 21,
+    "name": "MvM Squad surplus reward"
+  },
+  {
+    "origin": 22,
+    "name": "Recipe output"
+  },
+  {
+    "origin": 23,
+    "name": "Quest Drop"
+  },
+  {
+    "origin": 24,
+    "name": "Quest Loaner Item"
+  },
+  {
+    "origin": 25,
+    "name": "Trade-Up"
+  },
+  {
+    "origin": 26,
+    "name": "Viral Competitive Beta Pass Spread"
+  },
+  {
+    "origin": 27,
+    "name": "CYOA Blood Money Purchase"
+  },
+  {
+    "origin": 28,
+    "name": "War Paint"
+  },
+  {
+    "origin": 29,
+    "name": "Untradable Free Contract Reward"
+  }
+]
