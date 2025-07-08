@@ -658,6 +658,33 @@ def test_warpaint_resolved_from_schema_name_mk_ii(monkeypatch):
     assert item["name"] == "Decorated Weapon Boomstick (Carpet Bomber Mk.II)"
 
 
+def test_warpaint_resolved_from_schema_name_nutcracker(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15157,
+                "quality": 15,
+                "attributes": [],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15157: {
+            "name": "warbird_rocketlauncher_nutcracker_mk_ii",
+            "item_name": "Rocket Launcher",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Nutcracker Mk.II": 161}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"161": "Nutcracker Mk.II"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 161
+    assert item["warpaint_name"] == "Nutcracker Mk.II"
+    assert item["name"] == "Decorated Weapon Rocket Launcher (Nutcracker Mk.II)"
+
+
 def test_warpaint_resolved_with_best_match(monkeypatch):
     data = {
         "items": [
