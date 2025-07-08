@@ -10,7 +10,9 @@ A Flask web app that inspects one or more Steam users' Team Fortress 2 inventori
    ```bash
    python -m venv venv
    source venv/bin/activate
-   pip install -r requirements.txt -r requirements-test.txt
+   pip install -r requirements.txt
+   pip install -r requirements-test.txt  # includes pytest-cov
+   pip install pre-commit
    ```
 2. Copy the example environment file and set your API key:
    ```bash
@@ -102,7 +104,8 @@ HTML coverage is written to `htmlcov/`.
 
 Running the full test suite requires the additional packages listed in
 `requirements-test.txt`. Install them alongside the main requirements before
-invoking `pytest`.
+invoking `pytest`. CI runs tests with coverage options, so the `pytest-cov`
+plugin must be available (it's included in `requirements-test.txt`).
 
 Many tests also expect cached schema files under `cache/schema/`. You can refresh
 these files with:
