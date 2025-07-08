@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Tuple
 import logging
 import re
-import difflib
 from html import unescape
 
 import json
 from pathlib import Path
 
 from . import steam_api_client, local_data
+from .helpers import best_match_from_keys
 from .valuation_service import ValuationService, get_valuation_service
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
@@ -365,14 +365,10 @@ def _extract_paintkit(
                 warpaint_name = _slug_to_paintkit_name(paint_slug)
                 warpaint_id = local_data.PAINTKIT_NAMES.get(warpaint_name)
                 if warpaint_id is None:
-                    matches = difflib.get_close_matches(
-                        warpaint_name,
-                        list(local_data.PAINTKIT_NAMES.keys()),
-                        n=1,
-                        cutoff=0.6,
+                    match = best_match_from_keys(
+                        warpaint_name, local_data.PAINTKIT_NAMES.keys()
                     )
-                    if matches:
-                        match = matches[0]
+                    if match:
                         warpaint_id = local_data.PAINTKIT_NAMES.get(match)
                         warpaint_name = match
                 if warpaint_id is not None:

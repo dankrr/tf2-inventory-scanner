@@ -10,6 +10,7 @@ from .constants import (
 from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .valuation_service import ValuationService, get_valuation_service
+from .helpers import best_match_from_keys
 
 __all__ = [
     "PAINT_COLORS",
@@ -25,4 +26,5 @@ __all__ = [
     "get_valuation_service",
     "_wear_tier",
     "_decode_seed_info",
+    "best_match_from_keys",
 ]
