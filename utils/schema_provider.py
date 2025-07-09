@@ -26,6 +26,7 @@ class SchemaProvider:
         "qualities": "/properties/qualities",
         "defindexes": "/properties/defindexes",
         "string_lookups": "/raw/schema/string_lookups",
+        "kill_eater_score_types": "/raw/schema/kill_eater_score_types",
     }
 
     def __init__(
