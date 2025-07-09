@@ -74,11 +74,11 @@ if USE_SESSIONS:
 
 def _sync(coro):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
     except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    return loop.run_until_complete(coro)
+        return asyncio.run(coro)
+    else:
+        return loop.run_until_complete(coro)
 
 
 def get_sync_test_client():
