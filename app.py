@@ -211,11 +211,25 @@ def fetch_and_process_single_user(steamid64: int) -> str:
 
 def _setup_test_mode() -> None:
     """Initialize test mode and preload inventory data."""
+
     global TEST_STEAMID, TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
 
-    steamid = input("Enter SteamID64 for test inventory: ").strip()
     cache_dir = Path("cached_inventories")
     cache_dir.mkdir(exist_ok=True)
+    last_file = cache_dir / "last.txt"
+
+    steamid: str | None = None
+    if last_file.exists():
+        last = last_file.read_text().strip()
+        ans = input(f"Reuse last test inventory ({last})? (y/n): ").strip().lower()
+        if ans.startswith("y"):
+            steamid = last
+
+    if not steamid:
+        steamid = input("Enter SteamID64 for test inventory: ").strip()
+
+    last_file.write_text(steamid)
+
     cache_file = cache_dir / f"{steamid}.json"
 
     while True:
@@ -309,7 +323,9 @@ def index():
     )
 
 
-if TEST_MODE:
+if TEST_MODE and (
+    os.getenv("WERKZEUG_RUN_MAIN") == "true" or not os.getenv("WERKZEUG_RUN_MAIN")
+):
     _setup_test_mode()
 
 
