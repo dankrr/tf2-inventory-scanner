@@ -1,0 +1,9 @@
+{% for item in items if not item._hidden %}
+  {% set idx = loop.index0 %}
+  <div class="item-wrapper">
+    {% include "item_card.html" %}
+    {% if item.price_string %}
+      <div class="item-price">{{ item.formatted_price }}</div>
+    {% endif %}
+  </div>
+{% endfor %}

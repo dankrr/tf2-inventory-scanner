@@ -98,6 +98,7 @@ function retryInventory(id) {
       if (newCard) {
         card.replaceWith(newCard);
       }
+      streamInventory(id);
       attachHandlers();
       updateRefreshButton();
       showResults();
@@ -110,6 +111,26 @@ function retryInventory(id) {
       }
       updateRefreshButton();
     });
+}
+
+function streamInventory(id) {
+  const es = new EventSource('/inventory_chunk/' + id);
+  es.addEventListener('chunk', e => {
+    const card = document.getElementById('user-' + id);
+    if (!card) return;
+    let container = card.querySelector('.inventory-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'inventory-container';
+      card.textContent = '';
+      card.appendChild(container);
+    }
+    container.insertAdjacentHTML('beforeend', e.data);
+    attachItemModal();
+  });
+  es.addEventListener('done', () => {
+    es.close();
+  });
 }
 
 function updateRefreshButton() {
@@ -155,7 +176,9 @@ function refreshAll() {
 }
 
 function loadUsers(ids) {
-  loadBatch(ids);
+  loadBatch(ids).then(() => {
+    ids.forEach(id => streamInventory(id));
+  });
 }
 
 function showResults() {

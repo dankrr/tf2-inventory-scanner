@@ -113,6 +113,9 @@
             {% for user in users %}
                 {% include "_user.html" %}
             {% endfor %}
+            {% for steamid in ids %}
+                <div id="user-{{ steamid }}">Loading inventory…</div>
+            {% endfor %}
         </div>
     </div>
 
