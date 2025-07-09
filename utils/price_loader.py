@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .constants import KILLSTREAK_TIERS
 
-import requests
+import aiohttp
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -64,7 +64,7 @@ def _require_key() -> str:
     return key
 
 
-def ensure_prices_cached(refresh: bool = False) -> Path:
+async def ensure_prices_cached(refresh: bool = False) -> Path:
     """Download price dump from backpack.tf if needed and return cache path."""
 
     path = PRICES_FILE
@@ -73,9 +73,12 @@ def ensure_prices_cached(refresh: bool = False) -> Path:
 
     url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
     try:
-        resp = requests.get(url, timeout=5, headers={"accept": "application/json"})
-        resp.raise_for_status()
-        data = resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                url, timeout=5, headers={"accept": "application/json"}
+            ) as resp:
+                resp.raise_for_status()
+                data = await resp.json()
     except Exception as exc:  # requests or JSON
         logger.warning("Failed to fetch prices: %s", exc)
         if path.exists():
@@ -87,7 +90,7 @@ def ensure_prices_cached(refresh: bool = False) -> Path:
     return path
 
 
-def ensure_currencies_cached(refresh: bool = False) -> Path:
+async def ensure_currencies_cached(refresh: bool = False) -> Path:
     """Download currency exchange rates from backpack.tf."""
 
     path = CURRENCIES_FILE
@@ -96,9 +99,12 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
 
     url = f"https://backpack.tf/api/IGetCurrencies/v1?raw=1&key={_require_key()}"
     try:
-        resp = requests.get(url, timeout=5, headers={"accept": "application/json"})
-        resp.raise_for_status()
-        data = resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                url, timeout=5, headers={"accept": "application/json"}
+            ) as resp:
+                resp.raise_for_status()
+                data = await resp.json()
     except Exception as exc:  # requests or JSON
         logger.warning("Failed to fetch currencies: %s", exc)
         if path.exists():

@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import importlib
+import asyncio
 
 import pytest
 
@@ -16,11 +17,11 @@ def app(monkeypatch):
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
-        lambda refresh=False: Path("prices.json"),
+        lambda refresh=False: asyncio.sleep(0, result=Path("prices.json")),
     )
     monkeypatch.setattr(
         "utils.price_loader.ensure_currencies_cached",
-        lambda refresh=False: Path("currencies.json"),
+        lambda refresh=False: asyncio.sleep(0, result=Path("currencies.json")),
     )
     monkeypatch.setattr(
         "utils.price_loader.build_price_map",

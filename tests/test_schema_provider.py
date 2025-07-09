@@ -1,3 +1,4 @@
+import asyncio
 import utils.schema_provider as sp
 
 
@@ -5,10 +6,16 @@ class DummyResp:
     def __init__(self, payload):
         self.payload = payload
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        pass
+
     def raise_for_status(self):
         pass
 
-    def json(self):
+    async def json(self):
         return self.payload
 
 
@@ -29,12 +36,19 @@ def test_schema_provider(monkeypatch, tmp_path):
     }
     calls = {key: 0 for key in payloads}
 
-    def fake_get(self, url, timeout=20):
-        endpoint = url.replace(provider.base_url, "")
-        calls[endpoint] += 1
-        return DummyResp(payloads[endpoint])
+    class DummySession:
+        async def __aenter__(self):
+            return self
 
-    monkeypatch.setattr(sp.requests.Session, "get", fake_get)
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, timeout=20):
+            endpoint = url.replace(provider.base_url, "")
+            calls[endpoint] += 1
+            return DummyResp(payloads[endpoint])
+
+    monkeypatch.setattr(sp.aiohttp, "ClientSession", lambda: DummySession())
 
     assert provider.get_items() == {5021: {"item_name": "Key"}}
     assert provider.get_item_by_defindex(5021) == {"item_name": "Key"}
@@ -85,11 +99,18 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
         },
     }
 
-    def fake_get(self, url, timeout=20):
-        endpoint = url.replace(provider.base_url, "")
-        return DummyResp(payloads[endpoint])
+    class DummySession:
+        async def __aenter__(self):
+            return self
 
-    monkeypatch.setattr(sp.requests.Session, "get", fake_get)
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, timeout=20):
+            endpoint = url.replace(provider.base_url, "")
+            return DummyResp(payloads[endpoint])
+
+    monkeypatch.setattr(sp.aiohttp, "ClientSession", lambda: DummySession())
 
     assert provider.get_items() == {5021: {"defindex": 5021, "item_name": "Key"}}
     assert provider.get_attributes() == {
@@ -110,7 +131,7 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     provider = sp.SchemaProvider(base_url="https://example.com", cache_dir=tmp_path)
 
     monkeypatch.setattr(
-        sp.requests.Session,
+        sp.aiohttp.ClientSession,
         "get",
         lambda self, url, timeout=20: DummyResp({}),
     )
@@ -128,7 +149,7 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
     printed: list[str] = []
     monkeypatch.setattr("builtins.print", lambda msg: printed.append(msg))
 
-    provider.refresh_all(verbose=True)
+    asyncio.run(provider.refresh_all(verbose=True))
 
     for key in provider.ENDPOINTS:
         assert provider._cache_file(key).exists()

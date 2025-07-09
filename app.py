@@ -42,9 +42,9 @@ if ARGS.refresh:
         "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
     )
     provider = SchemaProvider(cache_dir="cache/schema")
-    provider.refresh_all(verbose=True)
-    price_path = ensure_prices_cached(refresh=True)
-    curr_path = ensure_currencies_cached(refresh=True)
+    asyncio.run(provider.refresh_all(verbose=True))
+    price_path = asyncio.run(ensure_prices_cached(refresh=True))
+    curr_path = asyncio.run(ensure_currencies_cached(refresh=True))
     print(f"\N{CHECK MARK} Saved {price_path}")
     print(f"\N{CHECK MARK} Saved {curr_path}")
     print(
@@ -125,8 +125,8 @@ app.test_request_context = patched_test_request_context
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
-_prices_path = ensure_prices_cached(refresh=ARGS.refresh)
-_currencies_path = ensure_currencies_cached(refresh=ARGS.refresh)
+_prices_path = _sync(ensure_prices_cached(refresh=ARGS.refresh))
+_currencies_path = _sync(ensure_currencies_cached(refresh=ARGS.refresh))
 try:
     with open(_currencies_path) as f:
         local_data.CURRENCIES = json.load(f)["response"]["currencies"]

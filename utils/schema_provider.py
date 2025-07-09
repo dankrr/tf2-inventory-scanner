@@ -6,7 +6,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-import requests
+import asyncio
+import aiohttp
 
 
 class SchemaProvider:
@@ -35,7 +36,6 @@ class SchemaProvider:
         self.base_url = base_url.rstrip("/")
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        self._session = requests.Session()
         self._logger = logging.getLogger(__name__)
         self.items_by_defindex: Dict[int, Any] | None = None
         self.attributes_by_defindex: Dict[int, Any] | None = None
@@ -51,18 +51,19 @@ class SchemaProvider:
         self.string_lookups: Dict[str, str] | None = None
 
     # ------------------------------------------------------------------
-    def _fetch(self, endpoint: str) -> Any:
+    async def _fetch(self, endpoint: str) -> Any:
         url = f"{self.base_url}{endpoint}"
-        resp = self._session.get(url, timeout=20)
-        resp.raise_for_status()
-        return resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=20) as resp:
+                resp.raise_for_status()
+                return await resp.json()
 
     def _cache_file(self, key: str) -> Path:
         if key == "paintkits":
             return self.cache_dir / "warpaints.json"
         return self.cache_dir / f"{key}.json"
 
-    def _load(self, key: str, endpoint: str, force: bool = False) -> Any:
+    async def _load(self, key: str, endpoint: str, force: bool = False) -> Any:
         path = self._cache_file(key)
         data: Any | None = None
         if not force and path.exists():
@@ -71,7 +72,7 @@ class SchemaProvider:
                 with path.open() as f:
                     data = json.load(f)
         if data is None:
-            fetched = self._fetch(endpoint)
+            fetched = await self._fetch(endpoint)
             if isinstance(fetched, dict) and "value" in fetched:
                 data = fetched["value"]
             else:
@@ -113,12 +114,12 @@ class SchemaProvider:
         return {}
 
     # ------------------------------------------------------------------
-    def refresh_all(self, verbose: bool = False) -> None:
+    async def refresh_all(self, verbose: bool = False) -> None:
         """Force refresh of all schema files."""
         for key, ep in self.ENDPOINTS.items():
             if verbose:
                 print(f"Fetching {key}...")
-            data = self._load(key, ep, force=True)
+            data = await self._load(key, ep, force=True)
             count = len(data) if hasattr(data, "__len__") else 0
             if verbose:
                 path = self._cache_file(key)
@@ -149,13 +150,15 @@ class SchemaProvider:
     # ------------------------------------------------------------------
     def get_items(self, *, force: bool = False) -> Dict[int, Any]:
         if self.items_by_defindex is None or force:
-            data = self._load("items", self.ENDPOINTS["items"], force)
+            data = asyncio.run(self._load("items", self.ENDPOINTS["items"], force))
             self.items_by_defindex = self._unwrap_and_index(data, "defindex")
         return self.items_by_defindex
 
     def get_attributes(self, *, force: bool = False) -> Dict[int, Any]:
         if self.attributes_by_defindex is None or force:
-            data = self._load("attributes", self.ENDPOINTS["attributes"], force)
+            data = asyncio.run(
+                self._load("attributes", self.ENDPOINTS["attributes"], force)
+            )
             self.attributes_by_defindex = self._unwrap_and_index(data, "defindex")
         return self.attributes_by_defindex
 
@@ -170,7 +173,7 @@ class SchemaProvider:
 
     def get_effects(self, *, force: bool = False) -> Dict[int, Any]:
         if self.effects_by_index is None or force:
-            data = self._load("effects", self.ENDPOINTS["effects"], force)
+            data = asyncio.run(self._load("effects", self.ENDPOINTS["effects"], force))
             mapping = self._unwrap_and_index(data, "id")
             if mapping and all(not isinstance(v, dict) for v in mapping.values()):
                 mapping = {
@@ -181,7 +184,7 @@ class SchemaProvider:
 
     def get_paints(self, *, force: bool = False) -> Dict[str, int]:
         if self.paints_map is None or force:
-            data = self._load("paints", self.ENDPOINTS["paints"], force)
+            data = asyncio.run(self._load("paints", self.ENDPOINTS["paints"], force))
             if isinstance(data, dict) and "value" in data:
                 data = data["value"]
             if isinstance(data, list):
@@ -200,7 +203,7 @@ class SchemaProvider:
 
     def get_origins(self, *, force: bool = False) -> Dict[int, str]:
         if self.origins_by_index is None or force:
-            data = self._load("origins", self.ENDPOINTS["origins"], force)
+            data = asyncio.run(self._load("origins", self.ENDPOINTS["origins"], force))
             mapping: Dict[int, str] = {}
             if isinstance(data, list):
                 for origin in data:
@@ -219,7 +222,9 @@ class SchemaProvider:
 
     def get_string_lookups(self, *, force: bool = False) -> Dict[str, str]:
         if self.string_lookups is None or force:
-            data = self._load("string_lookups", self.ENDPOINTS["string_lookups"], force)
+            data = asyncio.run(
+                self._load("string_lookups", self.ENDPOINTS["string_lookups"], force)
+            )
             if isinstance(data, dict) and "value" in data:
                 data = data["value"]
             if isinstance(data, list):
@@ -236,13 +241,15 @@ class SchemaProvider:
 
     def get_parts(self, *, force: bool = False) -> Dict[int, Any]:
         if self.parts_by_defindex is None or force:
-            data = self._load("parts", self.ENDPOINTS["parts"], force)
+            data = asyncio.run(self._load("parts", self.ENDPOINTS["parts"], force))
             self.parts_by_defindex = self._unwrap_and_index(data, "id")
         return self.parts_by_defindex
 
     def get_qualities(self, *, force: bool = False) -> Dict[str, int]:
         if self.qualities_map is None or force:
-            data = self._load("qualities", self.ENDPOINTS["qualities"], force)
+            data = asyncio.run(
+                self._load("qualities", self.ENDPOINTS["qualities"], force)
+            )
             if isinstance(data, dict) and "value" in data:
                 data = data["value"]
             if isinstance(data, list):
@@ -262,7 +269,9 @@ class SchemaProvider:
     # Compatibility helpers -------------------------------------------------
     def get_defindexes(self, *, force: bool = False) -> Dict[int, Any]:
         if self.defindex_names is None or force:
-            data = self._load("defindexes", self.ENDPOINTS["defindexes"], force)
+            data = asyncio.run(
+                self._load("defindexes", self.ENDPOINTS["defindexes"], force)
+            )
             if isinstance(data, dict):
                 self.defindex_names = self._from_name_map(data)
             else:
@@ -290,7 +299,9 @@ class SchemaProvider:
     # Stub helpers kept for backward compatibility --------------------------
     def get_paintkits(self, *, force: bool = False) -> Dict[int, str]:
         if self.paintkits_map is None or force:
-            data = self._load("paintkits", self.ENDPOINTS["paintkits"], force)
+            data = asyncio.run(
+                self._load("paintkits", self.ENDPOINTS["paintkits"], force)
+            )
             if isinstance(data, list):
                 mapping = {
                     int(e["id"]): str(e["name"])
