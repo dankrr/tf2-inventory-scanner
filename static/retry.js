@@ -23,6 +23,54 @@ function hideScanToast() {
   setTimeout(() => toast.classList.add('hidden'), 300);
 }
 
+function loadBatch(ids) {
+  if (!ids || !ids.length) return Promise.resolve();
+  ids.forEach(id => {
+    let card = document.getElementById('user-' + id);
+    if (!card) {
+      card = document.createElement('div');
+      card.id = 'user-' + id;
+      card.dataset.steamid = id;
+      card.className = 'user-card user-box loading';
+      document.getElementById('user-container').appendChild(card);
+    } else {
+      card.classList.remove('failed', 'success');
+      card.classList.add('loading');
+    }
+  });
+  updateScanToast(1, ids.length);
+  return fetch('/fetch_batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  })
+    .then(r => r.json())
+    .then(data => {
+      (data.html || []).forEach(html => appendCard(html));
+      (data.failed || []).forEach(id => {
+        const card = document.getElementById('user-' + id);
+        if (card) {
+          card.classList.remove('loading');
+          card.classList.add('failed');
+        }
+      });
+      attachHandlers();
+      updateRefreshButton();
+      hideScanToast();
+    })
+    .catch(() => {
+      ids.forEach(id => {
+        const card = document.getElementById('user-' + id);
+        if (card) {
+          card.classList.remove('loading');
+          card.classList.add('failed');
+        }
+      });
+      updateRefreshButton();
+      hideScanToast();
+    });
+}
+
 function retryInventory(id) {
   let card = document.getElementById('user-' + id);
   if (card) {
@@ -99,35 +147,15 @@ function refreshAll() {
   const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
     el => el.dataset.steamid
   );
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(ids[i]);
-    }
+  loadBatch(ids).then(() => {
     btn.disabled = false;
     btn.textContent = original;
     attachHandlers();
-    hideScanToast();
-  })();
+  });
 }
 
 function loadUsers(ids) {
-  if (!ids || !ids.length) return;
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      const id = ids[i];
-      if (!document.getElementById('user-' + id)) {
-        const placeholder = document.createElement('div');
-        placeholder.id = 'user-' + id;
-        placeholder.dataset.steamid = id;
-        placeholder.className = 'user-card user-box loading';
-        document.getElementById('user-container').appendChild(placeholder);
-      }
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(id);
-    }
-    hideScanToast();
-  })();
+  loadBatch(ids);
 }
 
 function showResults() {

@@ -108,7 +108,7 @@ QUALITY_MAP = {
     3: ("Vintage", "#28344a"),
     5: ("Unusual", "#4f3363"),
     6: ("Unique", "#957e04"),
-    11: ("Strange", "#7a4121"),
+    11: ("Strange", "#CF6A32"),
     13: ("Haunted", "#0c8657"),
     14: ("Collector's", "#1c0101"),
     15: ("Decorated Weapon", "#949494"),
