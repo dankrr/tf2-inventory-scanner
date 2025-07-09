@@ -41,6 +41,14 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   python app.py --refresh  # fetch latest schema files (shows progress)
   python main.py --refresh
   ```
+
+### `wears.json` cache
+
+`wears.json` stores the mapping of wear tiers (Factory New, Field-Tested, etc.)
+used by the app. It is retrieved from the `/properties/wears` schema endpoint.
+Run `python app.py --refresh` (or `python main.py --refresh`) whenever you want
+to refresh this file along with the rest of the schema cache.
+
 - Inspect a single user's inventory from the command line (defaults to a demo
   ID if omitted):
   ```bash
