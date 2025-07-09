@@ -2,6 +2,9 @@ import os
 import re
 import asyncio
 import time
+import queue
+import concurrent.futures
+import threading
 from pathlib import Path
 import json
 import argparse
@@ -60,6 +63,8 @@ TEST_INVENTORY_STATUS: str = ""
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
+
+fetch_queue: queue.Queue[tuple[str, int]] = queue.Queue()
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -203,6 +208,51 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     return SimpleNamespace(**user)
 
 
+def fetch_inventory_concurrently(
+    steam_ids: List[str], max_workers: int = 4, max_retries: int = 1
+) -> tuple[List[SimpleNamespace], List[str]]:
+    """Fetch multiple inventories concurrently using worker threads."""
+
+    for sid in steam_ids:
+        fetch_queue.put((sid, 0))
+
+    results: List[SimpleNamespace] = []
+    failed: List[str] = []
+    lock = threading.Lock()
+
+    def worker() -> None:
+        while True:
+            try:
+                steamid, tries = fetch_queue.get_nowait()
+            except queue.Empty:
+                break
+            try:
+                data = build_user_data(str(steamid))
+                if data.get("status") == "parsed":
+                    user = normalize_user_payload(data)
+                    with lock:
+                        results.append(user)
+                else:
+                    raise RuntimeError("inventory not parsed")
+            except Exception:
+                app.logger.exception("Failed to fetch %s", steamid)
+                if tries < max_retries:
+                    fetch_queue.put((steamid, tries + 1))
+                else:
+                    with lock:
+                        failed.append(str(steamid))
+            finally:
+                fetch_queue.task_done()
+
+    futures = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = [ex.submit(worker) for _ in range(max_workers)]
+        for fut in concurrent.futures.as_completed(futures):
+            app.logger.info("Worker finished: %s", fut)
+
+    return results, failed
+
+
 def fetch_and_process_single_user(steamid64: int) -> str:
     user = build_user_data(str(steamid64))
     user = normalize_user_payload(user)
@@ -270,6 +320,17 @@ def _setup_test_mode() -> None:
 def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
     return fetch_and_process_single_user(steamid64)
+
+
+@app.post("/fetch_batch")
+def fetch_batch() -> Any:
+    """Fetch multiple inventories concurrently and return rendered HTML."""
+
+    data = request.get_json(silent=True) or {}
+    ids = [str(i) for i in data.get("ids", []) if i]
+    results, failed = fetch_inventory_concurrently(ids)
+    html = [render_template("_user.html", user=u) for u in results]
+    return jsonify({"html": html, "failed": failed})
 
 
 @app.get("/api/constants")
