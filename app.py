@@ -169,13 +169,20 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     t2 = time.perf_counter()
 
     items = inv_result.get("items", [])
+    error: str | None = None
     if not isinstance(items, list):
+        error = "Invalid inventory payload"
         items = []
     else:
         items = stack_items(items)
     status = inv_result.get("status", "failed")
+    if status not in {"parsed", "private"}:
+        error = error or f"Inventory {status}"
+        status = "failed"
 
     summary.update({"steamid": steamid64, "items": items, "status": status})
+    if error:
+        summary["error"] = error
 
     inventory_fetch_ms = int((t2 - t1) * 1000)
     merge_ms = int((time.perf_counter() - t2) * 1000)
@@ -207,6 +214,23 @@ def fetch_and_process_single_user(steamid64: int) -> str:
     user = build_user_data(str(steamid64))
     user = normalize_user_payload(user)
     return render_template("_user.html", user=user)
+
+
+async def fetch_batch_async(ids: List[str]) -> List[Dict[str, str]]:
+    """Concurrently fetch data for all provided SteamIDs."""
+    tasks = [build_user_data_async(str(i)) for i in ids]
+    users = await asyncio.gather(*tasks)
+    rendered: List[Dict[str, str]] = []
+    for user in users:
+        user_ns = normalize_user_payload(user)
+        html = render_template("_user.html", user=user_ns)
+        rendered.append({"steamid": user["steamid"], "html": html})
+    return rendered
+
+
+def fetch_and_process_batch(ids: List[str]) -> List[Dict[str, str]]:
+    """Synchronously run ``fetch_batch_async``."""
+    return asyncio.run(fetch_batch_async(ids))
 
 
 def _setup_test_mode() -> None:
@@ -270,6 +294,16 @@ def _setup_test_mode() -> None:
 def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
     return fetch_and_process_single_user(steamid64)
+
+
+@app.post("/fetch_batch")
+def fetch_batch_route():
+    """Return rendered user cards for the provided SteamIDs."""
+    payload = request.get_json(silent=True) or {}
+    ids = payload.get("ids") or []
+    ids = [str(i) for i in ids if i]
+    results = fetch_and_process_batch(ids) if ids else []
+    return jsonify({"results": results})
 
 
 @app.get("/api/constants")

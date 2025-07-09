@@ -113,21 +113,41 @@ function refreshAll() {
 
 function loadUsers(ids) {
   if (!ids || !ids.length) return;
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      const id = ids[i];
-      if (!document.getElementById('user-' + id)) {
-        const placeholder = document.createElement('div');
-        placeholder.id = 'user-' + id;
-        placeholder.dataset.steamid = id;
-        placeholder.className = 'user-card user-box loading';
-        document.getElementById('user-container').appendChild(placeholder);
-      }
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(id);
+  const container = document.getElementById('user-container');
+  ids.forEach(id => {
+    if (!document.getElementById('user-' + id)) {
+      const placeholder = document.createElement('div');
+      placeholder.id = 'user-' + id;
+      placeholder.dataset.steamid = id;
+      placeholder.className = 'user-card user-box loading';
+      container.appendChild(placeholder);
     }
-    hideScanToast();
-  })();
+  });
+  updateScanToast(1, ids.length);
+  fetch('/fetch_batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  })
+    .then(r => r.json())
+    .then(data => {
+      (data.results || []).forEach(res => {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = res.html;
+        const card = wrapper.firstElementChild;
+        if (!card) return;
+        const existing = document.getElementById('user-' + res.steamid);
+        if (existing) {
+          existing.replaceWith(card);
+        } else {
+          container.appendChild(card);
+        }
+      });
+      attachHandlers();
+      updateRefreshButton();
+      showResults();
+    })
+    .finally(() => hideScanToast());
 }
 
 function showResults() {
