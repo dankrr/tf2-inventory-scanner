@@ -42,7 +42,7 @@ def test_quantity_badge_rendered(monkeypatch):
         "status": "parsed",
         "items": [item],
     }
-    with mod.app.app_context():
+    with mod.app.test_request_context():
         user_ns = mod.normalize_user_payload(user)
         html = render_template_string(HTML, user=user_ns)
     soup = BeautifulSoup(html, "html.parser")
