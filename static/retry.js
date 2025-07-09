@@ -188,17 +188,15 @@ function refreshAll() {
   });
 }
 
-function loadUsers(ids) {
-  if (!ids || !ids.length) return Promise.resolve();
-  const promises = [];
-  ids.forEach(id => {
+async function loadUsers(ids) {
+  if (!ids || !ids.length) return;
+  for (const id of ids) {
     applyLoadingState(id);
-    promises.push(fetchAndInsertSingle(id));
-  });
-  updateRefreshButton();
-  return Promise.all(promises).then(() => {
-    showResults();
-  });
+    updateRefreshButton();
+    await fetchAndInsertSingle(id);
+    await new Promise(res => setTimeout(res, 150));
+  }
+  showResults();
 }
 
 function handleScanSubmit(e) {
