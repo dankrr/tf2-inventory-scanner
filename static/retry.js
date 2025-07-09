@@ -23,51 +23,52 @@ function hideScanToast() {
   setTimeout(() => toast.classList.add('hidden'), 300);
 }
 
-function loadBatch(ids) {
-  if (!ids || !ids.length) return Promise.resolve();
-  ids.forEach(id => {
-    let card = document.getElementById('user-' + id);
-    if (!card) {
-      card = document.createElement('div');
-      card.id = 'user-' + id;
-      card.dataset.steamid = id;
-      card.className = 'user-card user-box loading';
-      document.getElementById('user-container').appendChild(card);
-    } else {
-      card.classList.remove('failed', 'success');
-      card.classList.add('loading');
-    }
-  });
-  updateScanToast(1, ids.length);
-  return fetch('/fetch_batch', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids })
-  })
-    .then(r => r.json())
-    .then(data => {
-      (data.html || []).forEach(html => appendCard(html));
-      (data.failed || []).forEach(id => {
-        const card = document.getElementById('user-' + id);
-        if (card) {
-          card.classList.remove('loading');
-          card.classList.add('failed');
-        }
-      });
+let pendingIDs = [];
+let loadingNext = false;
+
+function lazyLoadNext() {
+  if (loadingNext || !pendingIDs.length) return;
+  loadingNext = true;
+  const id = pendingIDs.shift();
+  let card = document.getElementById('user-' + id);
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'user-' + id;
+    card.dataset.steamid = id;
+    card.className = 'user-card user-box loading';
+    document.getElementById('user-container').appendChild(card);
+  } else {
+    card.classList.remove('failed', 'success');
+    card.classList.add('loading');
+  }
+  updateScanToast(window.initialIds.length - pendingIDs.length, window.initialIds.length);
+  fetch('/retry/' + id, { method: 'POST' })
+    .then(r => r.text())
+    .then(html => {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      const newCard = wrapper.firstElementChild;
+      if (newCard) {
+        card.replaceWith(newCard);
+      }
+      streamInventory(id);
       attachHandlers();
       updateRefreshButton();
-      hideScanToast();
+      showResults();
     })
     .catch(() => {
-      ids.forEach(id => {
-        const card = document.getElementById('user-' + id);
-        if (card) {
-          card.classList.remove('loading');
-          card.classList.add('failed');
-        }
-      });
+      const existing = document.getElementById('user-' + id);
+      if (existing) {
+        existing.classList.remove('loading');
+        existing.classList.add('failed');
+      }
       updateRefreshButton();
-      hideScanToast();
+    })
+    .finally(() => {
+      loadingNext = false;
+      if (!pendingIDs.length) {
+        hideScanToast();
+      }
     });
 }
 
@@ -168,17 +169,15 @@ function refreshAll() {
   const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
     el => el.dataset.steamid
   );
-  loadBatch(ids).then(() => {
-    btn.disabled = false;
-    btn.textContent = original;
-    attachHandlers();
-  });
+  pendingIDs.push(...ids);
+  btn.disabled = false;
+  btn.textContent = original;
+  lazyLoadNext();
 }
 
 function loadUsers(ids) {
-  loadBatch(ids).then(() => {
-    ids.forEach(id => streamInventory(id));
-  });
+  pendingIDs.push(...ids);
+  lazyLoadNext();
 }
 
 function showResults() {
@@ -214,6 +213,23 @@ function initImageObserver() {
     });
   }, { rootMargin: '300px' });
   document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
+}
+
+function initLazyLoader() {
+  const sentinel = document.getElementById('lazy-load-sentinel');
+  if (!sentinel) return;
+  if (!('IntersectionObserver' in window)) {
+    if (pendingIDs.length) lazyLoadNext();
+    return;
+  }
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        lazyLoadNext();
+      }
+    });
+  });
+  observer.observe(sentinel);
 }
 
 function attachItemModal() {
@@ -255,8 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', refreshAll);
   }
   if (window.initialIds && window.initialIds.length) {
-    loadUsers(window.initialIds);
+    pendingIDs = window.initialIds.slice();
   }
+  initLazyLoader();
+  lazyLoadNext();
   attachItemModal();
   initImageObserver();
   if (window.modal && typeof window.modal.initModal === 'function') {
