@@ -668,10 +668,10 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     return " ".join(parts)
 
 
-def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
+async def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
     """Return inventory data and status using the Steam API helper."""
 
-    status, data = steam_api_client.fetch_inventory(steamid)
+    status, data = await steam_api_client.fetch_inventory(steamid)
     if status not in ("parsed", "incomplete"):
         data = {"items": []}
     else:

@@ -1,3 +1,4 @@
+import asyncio
 import utils.steam_api_client as sac
 from utils.id_parser import extract_steam_ids
 
@@ -12,11 +13,11 @@ def test_extract_ids_from_status_block():
     #   316 "Short" [U:1:2] 00:01 50 0 active
     """
     ids = extract_steam_ids(text)
-    steam64 = [sac.convert_to_steam64(i) for i in ids]
+    steam64 = [asyncio.run(sac.convert_to_steam64(i)) for i in ids]
     assert steam64 == [
-        sac.convert_to_steam64("[U:1:876151635]"),
-        sac.convert_to_steam64("[U:1:1137042230]"),
-        sac.convert_to_steam64("[U:1:2]"),
+        asyncio.run(sac.convert_to_steam64("[U:1:876151635]")),
+        asyncio.run(sac.convert_to_steam64("[U:1:1137042230]")),
+        asyncio.run(sac.convert_to_steam64("[U:1:2]")),
     ]
     assert "Xanmangamer" not in ids
     assert "active" not in ids

@@ -27,7 +27,7 @@ def app(monkeypatch):
 
 def test_killstreak_badge_color(app):
     item = {"killstreak_name": "Professional Killstreak", "sheen_color": "#8847ff"}
-    with app.app_context():
+    with app.test_request_context():
         html = render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     badge = soup.find("span", class_="killstreak-badge")
