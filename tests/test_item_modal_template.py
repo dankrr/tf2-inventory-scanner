@@ -45,3 +45,23 @@ def test_modal_shows_wear_info(app):
     assert "Wear:" in text
     assert "Field-Tested" in text
     assert "0.23" in text
+
+
+def test_modal_shows_wear_float_only(app):
+    item = {"wear_float": 0.55}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text()
+    assert "Wear:" in text
+    assert "0.55" in text
+
+
+def test_modal_shows_wear_name_only(app):
+    item = {"wear_name": "Minimal Wear"}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text()
+    assert "Wear:" in text
+    assert "Minimal Wear" in text

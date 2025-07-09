@@ -67,3 +67,23 @@ def test_wear_tier_from_float():
     assert wear_tier_from_float(0.2) == 2
     assert wear_tier_from_float(0.4) == 3
     assert wear_tier_from_float(0.9) == 4
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (-0.5, 0),
+        (0.06, 0),
+        (0.07, 1),
+        (0.149, 1),
+        (0.15, 2),
+        (0.379, 2),
+        (0.38, 3),
+        (0.449, 3),
+        (0.45, 4),
+        (1.0, 4),
+        (3.0, 4),
+    ],
+)
+def test_wear_tier_from_float_boundaries(value, expected):
+    assert wear_tier_from_float(value) == expected
