@@ -324,7 +324,7 @@ def index():
 
 
 if TEST_MODE and (
-    os.getenv("WERKZEUG_RUN_MAIN") == "true" or not os.getenv("WERKZEUG_RUN_MAIN")
+    os.getenv("WERKZEUG_RUN_MAIN") == "true" or os.getenv("FLASK_DEBUG") != "1"
 ):
     _setup_test_mode()
 
