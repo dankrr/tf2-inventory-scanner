@@ -30,7 +30,7 @@ function lazyLoadNext() {
   if (loadingNext || !pendingIDs.length) return;
   loadingNext = true;
   const id = pendingIDs.shift();
-  let card = document.getElementById('user-' + id);
+  let card = document.querySelector('[data-steamid="' + id + '"]');
   if (!card) {
     card = document.createElement('div');
     card.id = 'user-' + id;
@@ -40,6 +40,7 @@ function lazyLoadNext() {
   } else {
     card.classList.remove('failed', 'success');
     card.classList.add('loading');
+    card.innerHTML = '';
   }
   updateScanToast(window.initialIds.length - pendingIDs.length, window.initialIds.length);
   fetch('/retry/' + id, { method: 'POST' })
@@ -73,10 +74,11 @@ function lazyLoadNext() {
 }
 
 function retryInventory(id) {
-  let card = document.getElementById('user-' + id);
+  let card = document.querySelector('[data-steamid="' + id + '"]');
   if (card) {
     card.classList.remove('failed', 'success');
     card.classList.add('loading');
+    card.innerHTML = '';
   } else {
     card = document.createElement('div');
     card.id = 'user-' + id;
@@ -166,9 +168,13 @@ function refreshAll() {
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
-    el => el.dataset.steamid
-  );
+  const failedCards = Array.from(document.querySelectorAll('.user-box.failed'));
+  const ids = failedCards.map(el => el.dataset.steamid);
+  failedCards.forEach(card => {
+    card.innerHTML = '';
+    card.classList.remove('failed', 'success');
+    card.classList.add('loading');
+  });
   pendingIDs.push(...ids);
   btn.disabled = false;
   btn.textContent = original;
