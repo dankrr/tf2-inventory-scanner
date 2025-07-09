@@ -190,6 +190,8 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     status = inv_result.get("status", "failed")
 
     summary.update({"steamid": steamid64, "items": items, "status": status})
+    if status != "parsed" and status != "private":
+        summary["error"] = "Inventory not parsed or empty"
 
     inventory_fetch_ms = int((t2 - t1) * 1000)
     merge_ms = int((time.perf_counter() - t2) * 1000)
@@ -237,12 +239,16 @@ def fetch_inventory_concurrently(
                 break
             try:
                 data = build_user_data(str(steamid))
-                if data.get("status") == "parsed":
-                    user = normalize_user_payload(data)
-                    with lock:
-                        results.append(user)
-                else:
-                    raise RuntimeError("inventory not parsed")
+                user = normalize_user_payload(data)
+                with lock:
+                    results.append(user)
+                if user.status != "parsed":
+                    app.logger.warning("%s: inventory not parsed", steamid)
+                    if tries < max_retries:
+                        fetch_queue.put((steamid, tries + 1))
+                    else:
+                        with lock:
+                            failed.append(str(steamid))
             except Exception:
                 app.logger.exception("Failed to fetch %s", steamid)
                 if tries < max_retries:
