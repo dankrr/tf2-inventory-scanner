@@ -22,6 +22,17 @@ from .constants import (
     SPELL_MAP,
 )
 
+SHEEN_COLORS = {
+    "Team Shine - Red": "#F30000",
+    "Team Shine - Blue": "#0062FF",
+    "Mean Green": "#00FF00",
+    "Villianous Violet": "#662C91",
+    "Agonising Emerald": "#05BE00",
+    "Deadly Daffodil": "#FFFF00",
+    "Manndarin": "#FF8500",
+    "Hot Rod": "#FF3E84",
+}
+
 
 logger = logging.getLogger(__name__)
 
@@ -975,10 +986,13 @@ def _process_item(
 
     ks_tier_val = _extract_killstreak_tier(asset)
     ks_tier, sheen_name, sheen_id = _extract_killstreak(asset)
-    sheen_color = (
-        KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
-        if sheen_id is not None
-        else None
+    sheen_color = SHEEN_COLORS.get(
+        sheen_name,
+        (
+            KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
+            if sheen_id is not None
+            else None
+        ),
     )
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)

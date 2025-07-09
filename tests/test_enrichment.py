@@ -67,7 +67,9 @@ def test_enrichment_full_attributes(monkeypatch):
     assert item["killstreak_name"] == "Professional"
     assert item["sheen"] == "Manndarin"
     assert item["sheen_name"] == "Manndarin"
-    assert item["sheen_color"] == KILLSTREAK_SHEEN_COLORS[3][1]
+    assert item["sheen_color"] == ip.SHEEN_COLORS.get(
+        item["sheen_name"], KILLSTREAK_SHEEN_COLORS[3][1]
+    )
     assert item["killstreak_effect"] == "Cerebral Discharge"
     assert item["wear_name"] == "Field-Tested"
     assert item["strange_count"] == 10
