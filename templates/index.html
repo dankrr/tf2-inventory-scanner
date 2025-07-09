@@ -89,13 +89,15 @@
     <div class="page-container">
     <main class="content-wrap">
     <h1>TF2 Inventory Checker</h1>
-    {% with msgs = get_flashed_messages() %}
-        {% if msgs %}
-            <ul class="flash">
-            {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    {% if use_sessions %}
+        {% with msgs = get_flashed_messages() %}
+            {% if msgs %}
+                <ul class="flash">
+                {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
     <form id="scan-form" method="post" class="input-form">
         <label for="steamids" class="visually-hidden">Steam IDs</label>
         <div class="input-wrapper">

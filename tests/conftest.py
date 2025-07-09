@@ -4,6 +4,7 @@ import importlib
 import asyncio
 
 import pytest
+import pytest_asyncio
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -14,6 +15,7 @@ def app(monkeypatch):
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setenv("USE_SESSIONS", "true")
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
@@ -34,15 +36,13 @@ def app(monkeypatch):
     return mod.app
 
 
-import pytest_asyncio
-
-
 @pytest_asyncio.fixture
 async def test_app(monkeypatch):
     """Return Quart app with env and schema mocks."""
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setenv("USE_SESSIONS", "true")
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
