@@ -99,20 +99,14 @@ function refreshAll() {
   const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
     el => el.dataset.steamid
   );
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(ids[i]);
-    }
+  loadUsers(ids).finally(() => {
     btn.disabled = false;
     btn.textContent = original;
-    attachHandlers();
-    hideScanToast();
-  })();
+  });
 }
 
 function loadUsers(ids) {
-  if (!ids || !ids.length) return;
+  if (!ids || !ids.length) return Promise.resolve();
   const container = document.getElementById('user-container');
   ids.forEach(id => {
     if (!document.getElementById('user-' + id)) {
@@ -124,7 +118,7 @@ function loadUsers(ids) {
     }
   });
   updateScanToast(1, ids.length);
-  fetch('/fetch_batch', {
+  return fetch('/fetch_batch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids })
