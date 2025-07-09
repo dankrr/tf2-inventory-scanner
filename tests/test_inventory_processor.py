@@ -1,12 +1,11 @@
 import asyncio
 from pathlib import Path
 import aiohttp
-import requests
 import pytest
 from utils import inventory_processor as ip
 from utils import steam_api_client as sac
 from utils import local_data as ld
-import responses
+from utils.valuation_service import ValuationService
 
 
 @pytest.fixture(autouse=True)
@@ -323,7 +322,7 @@ def test_fetch_inventory_handles_http_error(monkeypatch):
         ),
         ({"status": 200, "json": {"result": {"status": 1, "items": []}}}, "incomplete"),
         ({"status": 200, "json": {"result": {"status": 15}}}, "private"),
-        ({"body": requests.ConnectionError()}, "failed"),
+        ({"body": aiohttp.ClientError()}, "failed"),
     ],
 )
 def test_fetch_inventory_statuses(monkeypatch, payload, expected):

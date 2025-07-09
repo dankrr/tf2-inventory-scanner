@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Flask web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema.
+A Quart web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema.
 
 ## Setup
 
@@ -26,7 +26,7 @@ A Flask web app that inspects one or more Steam users' Team Fortress 2 inventori
 
 Run the application locally and open `http://localhost:5000` in your browser:
 ```bash
-python app.py
+hypercorn app:app
 ```
 Submit any supported SteamID format. Each user panel shows the avatar, TF2 playtime, and an item grid.
 
