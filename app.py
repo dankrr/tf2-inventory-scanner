@@ -323,13 +323,9 @@ def index():
     )
 
 
-if TEST_MODE and (
-    os.getenv("WERKZEUG_RUN_MAIN") == "true" or os.getenv("FLASK_DEBUG") != "1"
-):
-    _setup_test_mode()
-
-
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     kill_process_on_port(port)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    if TEST_MODE:
+        _setup_test_mode()
+    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)
