@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, jsonify
+from quart import Quart, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
 from utils.inventory_processor import enrich_inventory
 import utils.inventory_processor as ip
@@ -59,7 +59,69 @@ TEST_INVENTORY_STATUS: str = ""
 
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
-app = Flask(__name__)
+app = Quart(__name__)
+_quart_test_client = app.test_client
+_quart_request_context = app.test_request_context
+
+
+def _sync(coro):
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop.run_until_complete(coro)
+
+
+def get_sync_test_client():
+    client = _quart_test_client()
+
+    class SyncClient:
+        class SyncResponse:
+            def __init__(self, resp):
+                self.resp = resp
+
+            def get_data(self, *args, **kwargs):
+                return _sync(self.resp.get_data(*args, **kwargs))
+
+            def get_json(self, *args, **kwargs):
+                return _sync(self.resp.get_json(*args, **kwargs))
+
+            def __getattr__(self, name):
+                return getattr(self.resp, name)
+
+        def get(self, *args, **kwargs):
+            resp = _sync(client.get(*args, **kwargs))
+            return self.SyncResponse(resp)
+
+        def post(self, *args, **kwargs):
+            resp = _sync(client.post(*args, **kwargs))
+            return self.SyncResponse(resp)
+
+        def __getattr__(self, name):
+            return getattr(client, name)
+
+    return SyncClient()
+
+
+app.test_client = get_sync_test_client
+
+
+def patched_test_request_context(path: str = "/", *args, **kwargs):
+    ctx = _quart_request_context(path, *args, **kwargs)
+
+    class SyncContext:
+        def __enter__(self):
+            _sync(ctx.__aenter__())
+            return ctx
+
+        def __exit__(self, exc_type, exc, tb):
+            return _sync(ctx.__aexit__(exc_type, exc, tb))
+
+    return SyncContext()
+
+
+app.test_request_context = patched_test_request_context
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -160,8 +222,8 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     return {"items": items, "status": status}
 
 
-async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
-    """Asynchronously build user card data."""
+async def build_user_data(steamid64: str) -> Dict[str, Any]:
+    """Build user card data."""
     inv_task = asyncio.to_thread(fetch_inventory, steamid64)
     t1 = time.perf_counter()
     summary = await asyncio.to_thread(get_player_summary, steamid64)
@@ -196,12 +258,6 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     return summary
 
 
-def build_user_data(steamid64: str) -> Dict[str, Any]:
-    """Return a dictionary for rendering a single user card."""
-
-    return asyncio.run(build_user_data_async(steamid64))
-
-
 def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     """Return a namespace with ``items`` guaranteed to be a list."""
 
@@ -210,15 +266,15 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     return SimpleNamespace(**user)
 
 
-def fetch_and_process_single_user(steamid64: int) -> str:
-    user = build_user_data(str(steamid64))
+async def fetch_and_process_single_user(steamid64: int) -> str:
+    user = await build_user_data(str(steamid64))
     user = normalize_user_payload(user)
-    return render_template("_user.html", user=user)
+    return await render_template("_user.html", user=user)
 
 
-async def fetch_batch_async(ids: List[str]) -> List[Dict[str, str]]:
+async def fetch_and_process_batch(ids: List[str]) -> List[Dict[str, str]]:
     """Concurrently fetch data for all provided SteamIDs."""
-    tasks = [build_user_data_async(str(i)) for i in ids]
+    tasks = [build_user_data(str(i)) for i in ids]
     users = await asyncio.gather(*tasks)
     rendered: List[Dict[str, str]] = []
     seen: set[str] = set()
@@ -228,14 +284,9 @@ async def fetch_batch_async(ids: List[str]) -> List[Dict[str, str]]:
             continue
         seen.add(sid)
         user_ns = normalize_user_payload(user)
-        html = render_template("_user.html", user=user_ns)
+        html = await render_template("_user.html", user=user_ns)
         rendered.append({"steamid": sid, "html": html})
     return rendered
-
-
-def fetch_and_process_batch(ids: List[str]) -> List[Dict[str, str]]:
-    """Synchronously run ``fetch_batch_async``."""
-    return asyncio.run(fetch_batch_async(ids))
 
 
 def _setup_test_mode() -> None:
@@ -290,24 +341,24 @@ def _setup_test_mode() -> None:
             raise SystemExit(1)
 
     TEST_STEAMID = steamid
-    user = normalize_user_payload(build_user_data(steamid))
+    user = normalize_user_payload(asyncio.run(build_user_data(steamid)))
     app.config["PRELOADED_USERS"] = [user]
     app.config["TEST_STEAMID"] = steamid
 
 
 @app.post("/retry/<int:steamid64>")
-def retry_single(steamid64: int):
+async def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
-    return fetch_and_process_single_user(steamid64)
+    return await fetch_and_process_single_user(steamid64)
 
 
 @app.post("/fetch_batch")
-def fetch_batch_route():
+async def fetch_batch_route():
     """Return rendered user cards for the provided SteamIDs."""
-    payload = request.get_json(silent=True) or {}
+    payload = await request.get_json(silent=True) or {}
     ids = payload.get("ids") or []
     ids = [str(i) for i in ids if i]
-    results = fetch_and_process_batch(ids) if ids else []
+    results = await fetch_and_process_batch(ids) if ids else []
     seen: set[str] = set()
     unique: List[Dict[str, str]] = []
     for res in results:
@@ -320,7 +371,7 @@ def fetch_batch_route():
 
 
 @app.get("/api/constants")
-def api_constants():
+async def api_constants():
     """Return static constant mappings for client usage."""
     return jsonify(
         {
@@ -338,7 +389,7 @@ def api_constants():
 
 
 @app.route("/", methods=["GET", "POST"])
-def index():
+async def index():
     users: List[Dict[str, Any]] = []
     steamids_input = ""
     ids: List[str] = []
@@ -347,7 +398,8 @@ def index():
         users = app.config.get("PRELOADED_USERS", [])
         steamids_input = app.config.get("TEST_STEAMID", "")
     if request.method == "POST":
-        steamids_input = request.form.get("steamids", "")
+        form = await request.form
+        steamids_input = form.get("steamids", "")
         tokens = re.split(r"\s+", steamids_input.strip())
         raw_ids = extract_steam_ids(steamids_input)
         invalid = [t for t in tokens if t and t not in raw_ids]
@@ -355,13 +407,13 @@ def index():
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if not ids:
             flash("No valid Steam IDs found!")
-            return render_template(
+            return await render_template(
                 "index.html",
                 users=users,
                 steamids=steamids_input,
                 ids=[],
             )
-    return render_template(
+    return await render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
@@ -375,4 +427,10 @@ if __name__ == "__main__":
     kill_process_on_port(port)
     if TEST_MODE:
         _setup_test_mode()
-    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)
+    from hypercorn.asyncio import serve
+    from hypercorn.config import Config
+
+    config = Config()
+    config.bind = [f"0.0.0.0:{port}"]
+    config.use_reloader = not TEST_MODE
+    asyncio.run(serve(app, config))
