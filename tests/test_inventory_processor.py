@@ -842,10 +842,39 @@ def test_kill_eater_fields(monkeypatch):
     monkeypatch.setattr(
         ld, "STRANGE_PART_NAMES", {"64": "Kills", "70": "Robots"}, False
     )
+    monkeypatch.setattr(ld, "KILL_EATER_TYPES", {64: "Kills", 70: "Robots"}, False)
     items = ip.enrich_inventory(data)
     item = items[0]
     assert item["strange_count"] == 10
     assert item["score_type"] == "Kills"
+
+
+def test_strange_part_badge(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 222,
+                "quality": 11,
+                "attributes": [
+                    {"defindex": 214, "value": 3},
+                    {"defindex": 292, "value": 64},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {222: {"item_name": "Gun", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {11: "Strange"}
+    monkeypatch.setattr(ld, "KILL_EATER_TYPES", {64: "Kills"}, False)
+
+    items = ip.enrich_inventory(data)
+    badges = items[0]["badges"]
+    assert {
+        "icon": "\U0001f4ca",
+        "title": "Strange Part \u2022 Kills \u2192 3",
+        "label": "Kills",
+        "color": "#CF6A32",
+        "type": "strange_part",
+    } in badges
 
 
 def test_plain_craft_weapon_filtered():
