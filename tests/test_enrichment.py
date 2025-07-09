@@ -59,6 +59,7 @@ def test_enrichment_full_attributes(monkeypatch):
     monkeypatch.setattr(
         ld, "STRANGE_PART_NAMES", {"64": "Kills", "70": "Robots"}, False
     )
+    monkeypatch.setattr(ld, "KILL_EATER_TYPES", {64: "Kills", 70: "Robots"}, False)
 
     items = ip.enrich_inventory(data)
     item = items[0]

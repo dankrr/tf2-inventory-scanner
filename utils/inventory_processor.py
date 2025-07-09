@@ -662,6 +662,12 @@ def _extract_kill_eater_info(
     return counts, types
 
 
+def _part_name(type_id: int) -> str:
+    """Return kill-eater type name for ``type_id``."""
+
+    return local_data.KILL_EATER_TYPES.get(type_id) or f"Unknown (sp{type_id})"
+
+
 def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     """Return the display name prefixed with quality and killstreak info."""
 
@@ -1069,6 +1075,21 @@ def _process_item(
             }
         )
 
+    for idx, count in sorted(kill_eater_counts.items()):
+        part_type = score_types.get(idx)
+        if part_type is None:
+            continue
+        part = _part_name(part_type)
+        badges.append(
+            {
+                "icon": "\U0001f4ca",
+                "title": f"Strange Part \u2022 {part} \u2192 {count}",
+                "label": part,
+                "color": "#CF6A32",
+                "type": "strange_part",
+            }
+        )
+
     if warpaint_tool or (warpaintable and paintkit_id is not None):
         display_name = resolved_name
 
@@ -1143,10 +1164,7 @@ def _process_item(
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),
         "score_type": (
-            _PARTS_BY_ID.get(score_types.get(1))
-            or local_data.STRANGE_PART_NAMES.get(str(score_types.get(1)))
-            if score_types.get(1) is not None
-            else None
+            _part_name(score_types.get(1)) if score_types.get(1) is not None else None
         ),
     }
     if valuation_service is not None:
