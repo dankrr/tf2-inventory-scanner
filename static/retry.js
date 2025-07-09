@@ -95,6 +95,20 @@ function showLoadingCard(id) {
   container.appendChild(placeholder);
 }
 
+function applyLoadingState(id) {
+  const card = document.getElementById('user-' + id);
+  if (card) {
+    card.classList.remove('failed', 'success');
+    card.classList.add('loading');
+    const pill = card.querySelector('.status-pill');
+    if (pill) {
+      pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
+    }
+  } else {
+    showLoadingCard(id);
+  }
+}
+
 function fetchAndInsertSingle(id) {
   const placeholder =
     document.getElementById('loading-' + id) || document.getElementById('user-' + id);
@@ -110,10 +124,11 @@ function fetchAndInsertSingle(id) {
         } else {
           document.getElementById('user-container').appendChild(newCard);
         }
+        newCard.classList.add('fade-in');
+        setTimeout(() => newCard.classList.add('show'), 10);
       }
       attachHandlers();
       updateRefreshButton();
-      showResults();
     })
     .catch(() => {
       const existing = placeholder;
@@ -128,18 +143,7 @@ function fetchAndInsertSingle(id) {
 }
 
 function retryInventory(id) {
-  let card = document.getElementById('user-' + id);
-  if (card) {
-    card.classList.remove('failed', 'success');
-    card.classList.add('loading');
-    const pill = card.querySelector('.status-pill');
-    if (pill) {
-      pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
-    }
-  } else {
-    showLoadingCard(id);
-    card = document.getElementById('loading-' + id);
-  }
+  applyLoadingState(id);
   fetchAndInsertSingle(id);
 }
 
@@ -188,15 +192,13 @@ function loadUsers(ids) {
   if (!ids || !ids.length) return Promise.resolve();
   const promises = [];
   ids.forEach(id => {
-    if (
-      !document.getElementById('user-' + id) &&
-      !document.getElementById('loading-' + id)
-    ) {
-      showLoadingCard(id);
-    }
+    applyLoadingState(id);
     promises.push(fetchAndInsertSingle(id));
   });
-  return Promise.all(promises);
+  updateRefreshButton();
+  return Promise.all(promises).then(() => {
+    showResults();
+  });
 }
 
 function handleScanSubmit(e) {
