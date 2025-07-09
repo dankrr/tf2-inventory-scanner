@@ -1,12 +1,12 @@
+import asyncio
+from pathlib import Path
+import aiohttp
+import requests
+import pytest
 from utils import inventory_processor as ip
 from utils import steam_api_client as sac
 from utils import local_data as ld
-from utils.valuation_service import ValuationService
-from pathlib import Path
-import asyncio
-import requests
 import responses
-import pytest
 
 
 @pytest.fixture(autouse=True)
@@ -258,31 +258,58 @@ def test_get_inventories_adds_user_agent(monkeypatch):
     captured = {}
 
     class DummyResp:
-        def __init__(self, status=200):
-            self.status_code = status
+        status = 200
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
 
         def raise_for_status(self):
-            if self.status_code != 200:
-                raise requests.HTTPError(response=self)
+            pass
 
-        def json(self):
+        async def json(self):
             return {"result": {"items": []}}
 
-    def fake_get(url, headers=None, timeout=10):
-        captured["ua"] = headers.get("User-Agent") if headers else None
-        return DummyResp()
+    class DummyRequestCtx:
+        def __init__(self, resp):
+            self.resp = resp
 
-    monkeypatch.setattr(sac.requests, "get", fake_get)
-    sac.get_inventories(["1"])
+        def __await__(self):
+            async def _coro():
+                return self.resp
+
+            return _coro().__await__()
+
+        async def __aenter__(self):
+            return self.resp
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    class DummySession:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url, headers=None, timeout=None):
+            captured["ua"] = headers.get("User-Agent") if headers else None
+            return DummyRequestCtx(DummyResp())
+
+    monkeypatch.setattr(aiohttp, "ClientSession", lambda *a, **k: DummySession())
+    asyncio.run(sac.get_inventories(["1"]))
     assert captured["ua"] == "Mozilla/5.0"
 
 
 def test_fetch_inventory_handles_http_error(monkeypatch):
-    def fake_fetch(_id):
+    async def fake_fetch(_id):
         return "failed", {}
 
     monkeypatch.setattr(sac, "fetch_inventory", fake_fetch)
-    data, status = ip.fetch_inventory("1")
+    data, status = asyncio.run(ip.fetch_inventory("1"))
     assert data == {"items": []}
     assert status == "failed"
 
@@ -305,9 +332,54 @@ def test_fetch_inventory_statuses(monkeypatch, payload, expected):
         "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
         "?key=x&steamid=1"
     )
-    with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, url, **payload)
-        status, data = sac.fetch_inventory("1")
+
+    class DummyResp:
+        status = payload.get("status", 200)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        def raise_for_status(self):
+            if self.status >= 400:
+                raise aiohttp.ClientResponseError(None, None, status=self.status)
+
+        async def json(self):
+            return payload.get("json", {})
+
+    class DummyRequestCtx:
+        def __init__(self, resp):
+            self.resp = resp
+
+        def __await__(self):
+            async def _coro():
+                return self.resp
+
+            return _coro().__await__()
+
+        async def __aenter__(self):
+            return self.resp
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    class DummySession:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        def get(self, url_arg, **kwargs):
+            assert url_arg == url
+            if "body" in payload:
+                raise aiohttp.ClientError()
+            return DummyRequestCtx(DummyResp())
+
+    monkeypatch.setattr(aiohttp, "ClientSession", lambda *a, **k: DummySession())
+    status, data = asyncio.run(sac.fetch_inventory("1"))
     assert status == expected
 
 
@@ -342,7 +414,7 @@ def test_user_template_safe(monkeypatch, status):
         status=status,
     )
 
-    with app.app.app_context():
+    with app.app.test_request_context():
         app.render_template("_user.html", user=user)
 
 

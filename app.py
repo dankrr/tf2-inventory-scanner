@@ -181,7 +181,7 @@ def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 def get_player_summary(steamid64: str) -> Dict[str, Any]:
     """Return profile name, avatar URL and TF2 playtime for a user."""
     print(f"Fetching player summary for {steamid64}")
-    players = sac.get_player_summaries([steamid64])
+    players = asyncio.run(sac.get_player_summaries([steamid64]))
     profile = f"https://steamcommunity.com/profiles/{steamid64}"
     if players:
         player = players[0]
@@ -192,7 +192,7 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
         username = steamid64
         avatar = ""
 
-    playtime = sac.get_tf2_playtime_hours(steamid64)
+    playtime = asyncio.run(sac.get_tf2_playtime_hours(steamid64))
 
     return {
         "username": username,
@@ -210,7 +210,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
         status = TEST_INVENTORY_STATUS or "parsed"
         data = TEST_INVENTORY_RAW
     else:
-        status, data = sac.fetch_inventory(steamid64)
+        status, data = asyncio.run(sac.fetch_inventory(steamid64))
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
@@ -327,7 +327,7 @@ def _setup_test_mode() -> None:
                 TEST_INVENTORY_STATUS = "parsed"
                 print("Loaded cached inventory for testing.")
                 break
-        status, data = sac.fetch_inventory(steamid)
+        status, data = asyncio.run(sac.fetch_inventory(steamid))
         if status != "failed":
             TEST_INVENTORY_RAW = data
             TEST_INVENTORY_STATUS = status
@@ -403,7 +403,7 @@ async def index():
         tokens = re.split(r"\s+", steamids_input.strip())
         raw_ids = extract_steam_ids(steamids_input)
         invalid = [t for t in tokens if t and t not in raw_ids]
-        ids = [sac.convert_to_steam64(t) for t in raw_ids]
+        ids = [await sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if not ids:
             flash("No valid Steam IDs found!")

@@ -52,7 +52,7 @@ def test_item_badges_rendered(app):
         "status": "parsed",
         "items": [item],
     }
-    with app.app_context():
+    with app.test_request_context():
         app_module = importlib.import_module("app")
         user_ns = app_module.normalize_user_payload(user)
         html = render_template_string(HTML, user=user_ns)
