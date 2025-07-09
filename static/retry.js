@@ -35,6 +35,53 @@ function showToast(message) {
   }, 3000);
 }
 
+function extractSteamIds(text) {
+  const tokens = String(text || '')
+    .trim()
+    .split(/\s+/);
+  const ids = [];
+  const seen = new Set();
+  const id2 = /^STEAM_0:[01]:\d+$/;
+  const id3 = /^\[U:1:\d+\]$/;
+  const id64 = /^\d{17}$/;
+  tokens.forEach(t => {
+    if (!t) return;
+    if (id2.test(t) || id3.test(t) || id64.test(t)) {
+      if (!seen.has(t)) {
+        seen.add(t);
+        ids.push(t);
+      }
+    }
+  });
+  return ids;
+}
+
+function convertToSteam64(id) {
+  if (/^\d{17}$/.test(id)) return id;
+  if (id.startsWith('STEAM_')) {
+    const parts = id.split(':');
+    if (parts.length === 3) {
+      const y = parseInt(parts[1].split('_')[1] || parts[1], 10);
+      const z = parseInt(parts[2], 10);
+      if (!Number.isNaN(y) && !Number.isNaN(z)) {
+        const accountId = z * 2 + y;
+        return String(accountId + 76561197960265728);
+      }
+    }
+  }
+  let m = id.match(/^\[U:(\d+):(\d+)\]$/);
+  if (m) {
+    const z = parseInt(m[2], 10);
+    if (!Number.isNaN(z)) return String(z + 76561197960265728);
+  }
+  m = id.match(/^\[U:1:(\d+)\]$/);
+  if (m) {
+    const z = parseInt(m[1], 10);
+    if (!Number.isNaN(z)) return String(z + 76561197960265728);
+  }
+  return null;
+}
+
 function showLoadingCard(id) {
   const container = document.getElementById('user-container');
   if (!container) return;
@@ -152,6 +199,24 @@ function loadUsers(ids) {
   return Promise.all(promises);
 }
 
+function handleScanSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('steamids');
+  if (!input) return;
+  const raw = input.value || '';
+  const ids = extractSteamIds(raw)
+    .map(convertToSteam64)
+    .filter(Boolean);
+  if (!ids.length) {
+    showToast('No valid Steam IDs found!');
+    return;
+  }
+  const container = document.getElementById('user-container');
+  if (container) container.innerHTML = '';
+  updateScanToast(0, ids.length);
+  loadUsers(ids).finally(() => hideScanToast());
+}
+
 function showResults() {
   const results = document.getElementById('results');
   if (!results) return;
@@ -195,6 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('refresh-failed-btn');
   if (btn) {
     btn.addEventListener('click', refreshAll);
+  }
+  const form = document.getElementById('scan-form');
+  if (form) {
+    form.addEventListener('submit', handleScanSubmit);
   }
   if (window.initialIds && window.initialIds.length) {
     loadUsers(window.initialIds);
