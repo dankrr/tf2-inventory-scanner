@@ -22,6 +22,8 @@ PAINT_NAMES: Dict[str, str] = {}
 WEAR_NAMES: Dict[str, str] = {}
 KILLSTREAK_NAMES: Dict[str, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
+# Map of kill-eater type id -> type name
+KILL_EATER_TYPES: Dict[int, str] = {}
 # will be populated at import time
 PAINTKIT_NAMES: Dict[str, str]
 PAINTKIT_NAMES_BY_ID: Dict[str, str]
@@ -76,6 +78,9 @@ DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
 DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "schema" / "warpaints.json"
 DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
 DEFAULT_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "string_lookups.json"
+DEFAULT_KILL_EATER_TYPES_FILE = (
+    BASE_DIR / "cache" / "schema" / "kill_eater_score_types.json"
+)
 EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
 DEFAULT_EFFECT_NAMES_FILE = BASE_DIR / "data" / "effect_names.json"
 EFFECT_NAMES_FILE = Path(os.getenv("TF2_EFFECT_NAMES_FILE", DEFAULT_EFFECT_NAMES_FILE))
@@ -88,6 +93,9 @@ PAINTKIT_FILE = Path(os.getenv("TF2_PAINTKIT_FILE", DEFAULT_PAINTKIT_FILE))
 CRATE_SERIES_FILE = Path(os.getenv("TF2_CRATE_SERIES_FILE", DEFAULT_CRATE_SERIES_FILE))
 STRING_LOOKUPS_FILE = Path(
     os.getenv("TF2_STRING_LOOKUPS_FILE", DEFAULT_STRING_LOOKUPS_FILE)
+)
+KILL_EATER_TYPES_FILE = Path(
+    os.getenv("TF2_KILL_EATER_TYPES_FILE", DEFAULT_KILL_EATER_TYPES_FILE)
 )
 
 
@@ -161,13 +169,43 @@ def _load_paint_id_map(path: Path) -> Dict[str, str]:
     return {}
 
 
+def _load_kill_eater_types(path: Path) -> Dict[int, str]:
+    """Return mapping of kill-eater type id -> name."""
+
+    if not path.exists():
+        return {}
+    try:
+        with path.open() as f:
+            data = json.load(f)
+        if isinstance(data, dict) and "value" in data:
+            data = data["value"]
+        if isinstance(data, list):
+            mapping = {}
+            for entry in data:
+                if not isinstance(entry, dict):
+                    continue
+                try:
+                    idx = int(entry.get("type"))
+                except (TypeError, ValueError):
+                    continue
+                name = entry.get("type_name")
+                if name is not None:
+                    mapping[idx] = str(name)
+            return mapping
+        if isinstance(data, dict):
+            return {int(k): str(v) for k, v in data.items() if str(k).isdigit()}
+    except Exception:
+        pass
+    return {}
+
+
 def load_files(
     *, auto_refetch: bool = False, verbose: bool = False
 ) -> Tuple[Dict[int, Any], Dict[int, Any]]:
     """Load local schema files from the schema.autobot.tf cache."""
 
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
-    global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
+    global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES, KILL_EATER_TYPES
     global FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 
     required = {
@@ -177,7 +215,10 @@ def load_files(
         "particles": PARTICLES_FILE.resolve(),
         "currencies": CURRENCIES_FILE.resolve(),
     }
-    optional = {"string_lookups": STRING_LOOKUPS_FILE.resolve()}
+    optional = {
+        "string_lookups": STRING_LOOKUPS_FILE.resolve(),
+        "kill_eater_score_types": KILL_EATER_TYPES_FILE.resolve(),
+    }
 
     missing = {k: p for k, p in required.items() if not p.exists()}
     if missing:
@@ -328,6 +369,7 @@ def load_files(
     KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
+    KILL_EATER_TYPES = _load_kill_eater_types(KILL_EATER_TYPES_FILE)
 
     FOOTPRINT_SPELL_MAP = {}
     PAINT_SPELL_MAP = {}
@@ -383,6 +425,7 @@ def load_files(
         ("strange parts", STRANGE_PART_NAMES, STRANGE_PART_FILE),
         ("paintkits", PAINTKIT_NAMES, PAINTKIT_FILE),
         ("crate series", CRATE_SERIES_NAMES, CRATE_SERIES_FILE),
+        ("kill eater types", KILL_EATER_TYPES, KILL_EATER_TYPES_FILE),
     ]:
         if mapping and verbose:
             logging.info(
