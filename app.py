@@ -29,6 +29,9 @@ if not os.getenv("STEAM_API_KEY"):
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
     )
 
+# USE_SESSIONS=false disables flash messages and anything else that relies on the session
+USE_SESSIONS = os.getenv("USE_SESSIONS", "false").lower() == "true"
+
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--refresh", action="store_true")
 parser.add_argument("--verbose", action="store_true")
@@ -62,6 +65,11 @@ STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 app = Quart(__name__)
 _quart_test_client = app.test_client
 _quart_request_context = app.test_request_context
+
+if USE_SESSIONS:
+    # enable session support when USE_SESSIONS=true
+    # otherwise flash messages and other session features are disabled
+    app.secret_key = os.getenv("SECRET_KEY", "fallback-key")
 
 
 def _sync(coro):
