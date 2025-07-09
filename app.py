@@ -240,15 +240,22 @@ def fetch_inventory_concurrently(
             try:
                 data = build_user_data(str(steamid))
                 user = normalize_user_payload(data)
-                with lock:
-                    results.append(user)
-                if user.status != "parsed":
+
+                should_retry = user.status != "parsed" and user.status != "private"
+
+                if should_retry:
                     app.logger.warning("%s: inventory not parsed", steamid)
                     if tries < max_retries:
                         fetch_queue.put((steamid, tries + 1))
                     else:
                         with lock:
                             failed.append(str(steamid))
+                            if not any(u.steamid == user.steamid for u in results):
+                                results.append(user)
+                else:
+                    with lock:
+                        if not any(u.steamid == user.steamid for u in results):
+                            results.append(user)
             except Exception:
                 app.logger.exception("Failed to fetch %s", steamid)
                 if tries < max_retries:
