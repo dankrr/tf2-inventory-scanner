@@ -333,8 +333,8 @@ button {
   margin-right: 4px;
 }
 .item-img {
-  max-width: 64px;
-  max-height: 64px;
+  max-width: 32px;
+  max-height: 32px;
   margin-bottom: 6px;
   position: relative;
   z-index: 2;

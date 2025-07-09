@@ -155,7 +155,7 @@
     }
 
     const details = attrs.join('') + spells;
-    const imgTag = '<img src="' + esc(data.image_url || '') + '" width="64" height="64" alt="">';
+    const imgTag = '<img src="' + esc(data.image_url || '') + '" width="32" height="32" alt="">';
     return imgTag + '<div id="modal-details">' + details + '</div>';
   }
 
