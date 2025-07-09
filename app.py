@@ -414,18 +414,21 @@ async def index():
         ids = [await sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if not ids:
-            flash("No valid Steam IDs found!")
+            if USE_SESSIONS:
+                flash("No valid Steam IDs found!")
             return await render_template(
                 "index.html",
                 users=users,
                 steamids=steamids_input,
                 ids=[],
+                use_sessions=USE_SESSIONS,
             )
     return await render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
         ids=ids,
+        use_sessions=USE_SESSIONS,
         debug_ms=MAX_MERGE_MS if os.getenv("FLASK_DEBUG") else None,
     )
 
