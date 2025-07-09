@@ -45,7 +45,9 @@ Submit any supported SteamID format. Each user panel shows the avatar, TF2 playt
   ```bash
   python main.py <steamid>
   ```
-- Use `--test` to run offline against cached data.
+ - Use `--test` to run offline against cached data. The last SteamID entered is
+   saved to `cached_inventories/last.txt` and you'll be prompted to reuse it on
+   subsequent runs.
 - List warpaints present in cached inventories:
   ```bash
   python scripts/list_warpaints.py
