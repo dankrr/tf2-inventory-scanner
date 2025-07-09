@@ -1,3 +1,4 @@
+import json
 import utils.schema_provider as sp
 
 
@@ -111,6 +112,30 @@ def test_schema_provider_list_payload(monkeypatch, tmp_path):
     assert provider.get_parts() == {64: {"id": 64, "name": "Kills"}}
     assert provider.get_qualities() == {"Normal": 0}
     assert provider.get_string_lookups() == {"KillEaterEventType": "Kills"}
+
+
+def test_get_wears_mixed_payload(monkeypatch, tmp_path):
+    provider = sp.SchemaProvider(base_url="https://example.com", cache_dir=tmp_path)
+
+    payload = {
+        "0": "FN",
+        "FN": 0,
+        "1": "MW",
+        "FT": "2",
+    }
+
+    def fake_get(self, url, timeout=20):
+        return DummyResp(payload)
+
+    monkeypatch.setattr(sp.requests.Session, "get", fake_get)
+
+    mapping = provider.get_wears()
+    assert mapping == {0: "FN", 1: "MW", 2: "FT"}
+
+    path = provider._cache_file("wears")
+    assert path.exists()
+    cached = json.loads(path.read_text())
+    assert {int(k): v for k, v in cached.items()} == mapping
 
 
 def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
