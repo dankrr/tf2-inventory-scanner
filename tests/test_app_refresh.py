@@ -1,6 +1,7 @@
 import importlib
 import sys
 from pathlib import Path
+import asyncio
 
 import pytest
 
@@ -15,7 +16,7 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         "pathlib.Path.mkdir", lambda self, parents=True, exist_ok=True: None
     )
 
-    def fake_refresh(self, verbose: bool = False):
+    async def fake_refresh(self, verbose: bool = False):
         called["schema"] = verbose
         if verbose:
             print("Fetching items...")
@@ -26,11 +27,15 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     )
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
-        lambda refresh=True: called.__setitem__("prices", True) or Path("prices.json"),
+        lambda refresh=True: asyncio.sleep(
+            0, result=called.__setitem__("prices", True) or Path("prices.json")
+        ),
     )
     monkeypatch.setattr(
         "utils.price_loader.ensure_currencies_cached",
-        lambda refresh=True: called.__setitem__("curr", True) or Path("curr.json"),
+        lambda refresh=True: asyncio.sleep(
+            0, result=called.__setitem__("curr", True) or Path("curr.json")
+        ),
     )
     monkeypatch.setattr(sys, "argv", ["app.py", "--refresh", "--verbose"])
     sys.modules.pop("app", None)

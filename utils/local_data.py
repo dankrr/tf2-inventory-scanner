@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Tuple
 import logging
+import asyncio
 
 import vdf
 from .schema_provider import SchemaProvider
@@ -186,9 +187,9 @@ def load_files(
         provider = SchemaProvider(cache_dir=required["attributes"].parent)
         for key, path in missing.items():
             if key == "currencies":
-                ensure_currencies_cached(refresh=True)
+                asyncio.run(ensure_currencies_cached(refresh=True))
             else:
-                provider._load(key, provider.ENDPOINTS[key], force=True)
+                asyncio.run(provider._load(key, provider.ENDPOINTS[key], force=True))
             if verbose:
                 logging.info(
                     "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
@@ -198,7 +199,7 @@ def load_files(
     if optional_missing and auto_refetch:
         for key, path in optional_missing.items():
             provider = SchemaProvider(cache_dir=path.parent)
-            provider._load(key, provider.ENDPOINTS[key], force=True)
+            asyncio.run(provider._load(key, provider.ENDPOINTS[key], force=True))
             if verbose:
                 logging.info(
                     "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
