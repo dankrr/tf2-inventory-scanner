@@ -1,6 +1,7 @@
 (function (global) {
   let initialized = false;
   let closeTimer = null;
+  const effectCache = new Set();
 
   function getModal() {
     return document.getElementById('item-modal');
@@ -58,6 +59,16 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  function preloadEffect(effectId) {
+    if (!effectId || effectCache.has(effectId)) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = '/static/images/effects/' + effectId + '.png';
+    document.head.appendChild(link);
+    effectCache.add(effectId);
   }
 
   function generateModalHTML(data) {
@@ -184,6 +195,7 @@
     if (!box) return;
     if (effectId) {
       const url = '/static/images/effects/' + effectId + '.png';
+      preloadEffect(effectId);
       box.innerHTML = '<img src="' + url + '" alt="">';
     } else {
       box.innerHTML = '';
@@ -222,5 +234,6 @@
     generateModalHTML,
     updateHeader,
     setParticleBackground,
+    preloadEffect,
   };
 })(window);

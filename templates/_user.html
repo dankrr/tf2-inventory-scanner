@@ -39,6 +39,7 @@
       </button>
         <div class="inventory-container">
           {% for item in user.items if not item._hidden %}
+            {% set idx = loop.index0 %}
             {# ↑ keep border-color for quality #}
             <div class="item-wrapper">
               {% include "item_card.html" %}
