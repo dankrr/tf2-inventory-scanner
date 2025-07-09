@@ -26,6 +26,7 @@ def test_inventory_chunk_streams(app, monkeypatch):
 
 def test_index_shows_loading(app):
     client = app.test_client()
-    resp = client.post("/", data={"steamids": "123"})
+    steamid = "76561198034301681"
+    resp = client.post("/", data={"steamids": steamid})
     html = resp.get_data(as_text=True)
     assert "Loading inventory" in html

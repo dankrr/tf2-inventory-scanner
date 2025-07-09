@@ -18,7 +18,7 @@
     <img class="particle-bg" src="/static/images/effects/{{ item.unusual_effect_id }}.png" alt="effect" loading="lazy">
   {% endif %}
   {% if item.image_url %}
-    <img class="item-img" src="{{ item.image_url }}" data-src="{{ item.image_url }}" alt="{{ item.display_name }}" width="64" height="64" loading="lazy" {% if idx is defined and idx < 30 %}preload="auto"{% endif %} onerror="this.style.display='none';">
+    <img class="item-img" src="{{ item.image_url }}" data-src="{{ item.image_url }}" alt="{{ item.display_name }}" width="32" height="32" loading="lazy" {% if idx is defined and idx < 30 %}preload="auto"{% endif %} onerror="this.style.display='none';">
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
