@@ -230,6 +230,7 @@ def fetch_inventory_concurrently(
     results: List[SimpleNamespace] = []
     failed: List[str] = []
     lock = threading.Lock()
+    seen_ids: set[str] = set()
 
     def worker() -> None:
         while True:
@@ -237,6 +238,11 @@ def fetch_inventory_concurrently(
                 steamid, tries = fetch_queue.get_nowait()
             except queue.Empty:
                 break
+            with lock:
+                if steamid in seen_ids:
+                    fetch_queue.task_done()
+                    continue
+                seen_ids.add(steamid)
             try:
                 data = build_user_data(str(steamid))
                 user = normalize_user_payload(data)
