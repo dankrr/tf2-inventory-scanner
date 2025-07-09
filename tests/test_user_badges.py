@@ -1,6 +1,7 @@
 import importlib
 import json
 from pathlib import Path
+import asyncio
 
 import pytest
 from flask import render_template_string
@@ -16,11 +17,11 @@ def app(monkeypatch):
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
-        lambda refresh=False: Path("prices.json"),
+        lambda refresh=False: asyncio.sleep(0, result=Path("prices.json")),
     )
     monkeypatch.setattr(
         "utils.price_loader.ensure_currencies_cached",
-        lambda refresh=False: Path("currencies.json"),
+        lambda refresh=False: asyncio.sleep(0, result=Path("currencies.json")),
     )
     monkeypatch.setattr(
         "utils.price_loader.build_price_map",

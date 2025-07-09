@@ -1,5 +1,6 @@
 import json
 import pytest
+import asyncio
 
 from utils import local_data as ld
 
@@ -92,7 +93,7 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
         },
     }
 
-    def fake_fetch(self, endpoint):
+    async def fake_fetch(self, endpoint):
         for key, ep in ld.SchemaProvider.ENDPOINTS.items():
             if endpoint == ep:
                 return payloads[key]
@@ -101,7 +102,7 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
     monkeypatch.setattr(ld.SchemaProvider, "_fetch", fake_fetch)
     monkeypatch.setattr(
         "utils.price_loader.ensure_currencies_cached",
-        lambda refresh=True: currencies_file,
+        lambda refresh=True: asyncio.sleep(0, result=currencies_file),
     )
     currencies_file.write_text(json.dumps({"metal": {"value_raw": 1.0}}))
 
