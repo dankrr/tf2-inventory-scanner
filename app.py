@@ -13,7 +13,15 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    flash,
+    jsonify,
+    Response,
+    stream_with_context,
+)
 from utils.id_parser import extract_steam_ids
 from utils.inventory_processor import enrich_inventory
 import utils.inventory_processor as ip
@@ -67,6 +75,7 @@ app = Flask(__name__)
 fetch_queue: queue.Queue[tuple[str, int]] = queue.Queue()
 
 MAX_MERGE_MS = 0
+CHUNK_SIZE = 20
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 _prices_path = ensure_prices_cached(refresh=ARGS.refresh)
 _currencies_path = ensure_currencies_cached(refresh=ARGS.refresh)
@@ -331,6 +340,23 @@ def fetch_batch() -> Any:
     results, failed = fetch_inventory_concurrently(ids)
     html = [render_template("_user.html", user=u) for u in results]
     return jsonify({"html": html, "failed": failed})
+
+
+@app.get("/inventory_chunk/<int:steamid64>")
+def inventory_chunk(steamid64: int) -> Response:
+    """Stream item card HTML in chunks for a user."""
+
+    def generate() -> Any:
+        user = build_user_data(str(steamid64))
+        user = normalize_user_payload(user)
+        items = [i for i in user.items if not getattr(i, "_hidden", False)]
+        for i in range(0, len(items), CHUNK_SIZE):
+            chunk = items[i : i + CHUNK_SIZE]
+            html = render_template("_item_cards.html", items=chunk)
+            yield f"event: chunk\ndata: {html}\n\n"
+        yield "event: done\ndata: \n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
 
 
 @app.get("/api/constants")
