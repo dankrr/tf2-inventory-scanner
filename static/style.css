@@ -292,6 +292,26 @@ button {
   pointer-events:none;
   z-index:3;
 }
+.item-value-box{
+  position:absolute;
+  right:2px;
+  bottom:2px;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  padding:1px 3px;
+  border-radius:4px;
+  font-size:11px;
+  pointer-events:none;
+  z-index:3;
+}
+.sheen-label{
+  display:inline-block;
+  margin-left:4px;
+  padding:2px 4px;
+  border-radius:4px;
+  background:rgba(0,0,0,0.4);
+  font-weight:600;
+}
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
 }

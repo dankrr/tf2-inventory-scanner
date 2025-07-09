@@ -4,6 +4,11 @@
           style="background-color: {{ item.sheen_color or '#f97316' }};">
       {{ item.killstreak_name }}
     </span>
+    {% if item.sheen_name %}
+      <span class="sheen-label" style="color: {{ item.sheen_color or '#f97316' }}; text-shadow: 0 0 4px {{ item.sheen_color or '#f97316' }};">
+        {{ item.sheen_name }}
+      </span>
+    {% endif %}
   {% endif %}
   {% if item.unusual_effect_name %}
     <p><strong>Unusual Effect:</strong>

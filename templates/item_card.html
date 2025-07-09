@@ -55,4 +55,7 @@
     {% set _ = title_parts.append('(' ~ item.wear_name ~ ')') %}
   {% endif %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
+  {% if item.price_string %}
+    <div class="item-value-box">{{ item.formatted_price }}</div>
+  {% endif %}
 </div>
