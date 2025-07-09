@@ -221,10 +221,15 @@ async def fetch_batch_async(ids: List[str]) -> List[Dict[str, str]]:
     tasks = [build_user_data_async(str(i)) for i in ids]
     users = await asyncio.gather(*tasks)
     rendered: List[Dict[str, str]] = []
+    seen: set[str] = set()
     for user in users:
+        sid = user.get("steamid")
+        if not sid or sid in seen:
+            continue
+        seen.add(sid)
         user_ns = normalize_user_payload(user)
         html = render_template("_user.html", user=user_ns)
-        rendered.append({"steamid": user["steamid"], "html": html})
+        rendered.append({"steamid": sid, "html": html})
     return rendered
 
 
@@ -303,7 +308,15 @@ def fetch_batch_route():
     ids = payload.get("ids") or []
     ids = [str(i) for i in ids if i]
     results = fetch_and_process_batch(ids) if ids else []
-    return jsonify({"results": results})
+    seen: set[str] = set()
+    unique: List[Dict[str, str]] = []
+    for res in results:
+        sid = res.get("steamid")
+        if not sid or sid in seen:
+            continue
+        seen.add(sid)
+        unique.append(res)
+    return jsonify({"results": unique})
 
 
 @app.get("/api/constants")
