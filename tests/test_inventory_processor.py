@@ -1,6 +1,7 @@
 from utils import inventory_processor as ip
 from utils import steam_api_client as sac
 from utils import local_data as ld
+from utils.inventory_processor import QUALITY_MAP
 from utils.valuation_service import ValuationService
 from pathlib import Path
 import requests
@@ -36,7 +37,7 @@ def test_enrich_inventory():
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Strange Rocket Launcher"
     assert items[0]["quality"] == "Strange"
-    assert items[0]["quality_color"] == "#CF6A32"
+    assert items[0]["quality_color"] == QUALITY_MAP[11][1]
     assert items[0]["image_url"].startswith(
         "https://steamcommunity-a.akamaihd.net/economy/image/"
     )
