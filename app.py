@@ -125,19 +125,22 @@ def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(grouped.values())
 
 
-async def get_player_summary(steamid64: str) -> Dict[str, Any]:
-    """Return profile name, avatar URL and TF2 playtime for a user."""
+async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
+    """Return profile name, avatar URL and TF2 playtime for a user.
+
+    Returns ``None`` if the player summary could not be retrieved.
+    """
     print(f"Fetching player summary for {steamid64}")
     players = await sac.get_player_summaries_async([steamid64])
-    profile = f"https://steamcommunity.com/profiles/{steamid64}"
-    if players:
-        player = players[0]
-        username = player.get("personaname", steamid64)
-        avatar = player.get("avatarfull", "")
-        profile = player.get("profileurl", profile)
-    else:
-        username = steamid64
-        avatar = ""
+    if not players:
+        return None
+
+    player = players[0]
+    profile = player.get(
+        "profileurl", f"https://steamcommunity.com/profiles/{steamid64}"
+    )
+    username = player.get("personaname", steamid64)
+    avatar = player.get("avatarfull", "")
 
     playtime = await sac.get_tf2_playtime_hours_async(steamid64)
 
@@ -169,12 +172,17 @@ async def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     return {"items": items, "status": status}
 
 
-async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
-    """Asynchronously build user card data."""
+async def build_user_data_async(steamid64: str) -> Dict[str, Any] | None:
+    """Asynchronously build user card data.
+
+    Returns ``None`` if the user summary could not be retrieved.
+    """
     t1 = time.perf_counter()
     summary_task = asyncio.create_task(get_player_summary(steamid64))
     inv_task = asyncio.create_task(fetch_inventory(steamid64))
     summary, inv_result = await asyncio.gather(summary_task, inv_task)
+    if summary is None:
+        return None
     t2 = time.perf_counter()
 
     items = inv_result.get("items", [])
@@ -221,18 +229,18 @@ async def fetch_and_process_single_user(steamid64: int) -> str:
 async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
     """Return rendered user cards and a list of IDs that failed."""
 
-    tasks: Dict[str, asyncio.Task] = {}
-    for sid in ids:
-        sid_str = str(sid)
-        if sid_str not in tasks:
-            tasks[sid_str] = asyncio.create_task(build_user_data_async(sid_str))
+    unique_ids = list(dict.fromkeys(str(s) for s in ids))
+
+    tasks: Dict[str, asyncio.Task] = {
+        sid: asyncio.create_task(build_user_data_async(sid)) for sid in unique_ids
+    }
 
     results = await asyncio.gather(*tasks.values())
     html_snippets: List[str] = []
     failed_ids: List[str] = []
     seen: set[str] = set()
 
-    for _, user in zip(tasks.keys(), results):
+    for _, user in zip(unique_ids, results):
         if not user or not isinstance(user, dict):
             continue
         if not user.get("username") and not user.get("personaname"):

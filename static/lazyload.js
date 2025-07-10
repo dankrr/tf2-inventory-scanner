@@ -33,13 +33,10 @@ function initLazyLoad() {
   }
 }
 
-function refreshLazyLoad() {
+window.refreshLazyLoad = function () {
   document
     .querySelectorAll('img[data-src]')
     .forEach(img => observer && observer.observe(img));
-}
+};
 
-document.addEventListener('DOMContentLoaded', () => {
-  initLazyLoad();
-  window.refreshLazyLoad = refreshLazyLoad;
-});
+document.addEventListener('DOMContentLoaded', initLazyLoad);
