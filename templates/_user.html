@@ -1,4 +1,4 @@
-<div id="user-{{ user.steamid }}" class="user-card user-box {{ user.status }}" data-steamid="{{ user.steamid }}">
+<div id="user-{{ user.steamid }}" class="user-card user-box {{ user.status }}{% if user.status == 'failed' %} retry-card{% endif %}" data-steamid="{{ user.steamid }}">
   <div class="user-header">
     <div class="user-profile">
       <a href="{{ user.profile }}" target="_blank" class="avatar-link">

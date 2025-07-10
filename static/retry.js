@@ -90,25 +90,32 @@ function attachHandlers() {
   attachItemModal();
 }
 
-function refreshAll() {
+async function refreshAll() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
-    el => el.dataset.steamid
+  const cards = Array.from(
+    document.querySelectorAll('.retry-card[data-steamid]')
   );
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(ids[i]);
-    }
-    btn.disabled = false;
-    btn.textContent = original;
-    attachHandlers();
-    hideScanToast();
-  })();
+  const total = cards.length;
+  const BATCH_SIZE = 3;
+  let current = 0;
+  for (let i = 0; i < cards.length; i += BATCH_SIZE) {
+    const batch = cards.slice(i, i + BATCH_SIZE);
+    const tasks = batch.map(card => {
+      card.classList.add('loading');
+      updateScanToast(++current, total);
+      return retryInventory(card.dataset.steamid);
+    });
+    await Promise.all(tasks);
+    await new Promise(res => setTimeout(res, 300));
+  }
+  btn.disabled = false;
+  btn.textContent = original;
+  attachHandlers();
+  hideScanToast();
 }
 
 function loadUsers(ids) {
