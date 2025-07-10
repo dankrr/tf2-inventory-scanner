@@ -82,7 +82,15 @@ except Exception:
 
 # --- Utility functions ------------------------------------------------------
 
-IGNORED_STACK_KEYS = {"level", "custom_description", "custom_name", "origin"}
+IGNORED_STACK_KEYS = {
+    "level",
+    "custom_description",
+    "custom_name",
+    "origin",
+    "id",
+    "original_id",
+    "inventory",
+}
 
 
 def kill_process_on_port(port: int) -> None:
