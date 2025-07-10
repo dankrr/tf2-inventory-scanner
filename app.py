@@ -116,10 +116,10 @@ def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(grouped.values())
 
 
-def get_player_summary(steamid64: str) -> Dict[str, Any]:
+async def get_player_summary(steamid64: str) -> Dict[str, Any]:
     """Return profile name, avatar URL and TF2 playtime for a user."""
     print(f"Fetching player summary for {steamid64}")
-    players = sac.get_player_summaries([steamid64])
+    players = await sac.get_player_summaries_async([steamid64])
     profile = f"https://steamcommunity.com/profiles/{steamid64}"
     if players:
         player = players[0]
@@ -130,7 +130,7 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
         username = steamid64
         avatar = ""
 
-    playtime = sac.get_tf2_playtime_hours(steamid64)
+    playtime = await sac.get_tf2_playtime_hours_async(steamid64)
 
     return {
         "username": username,
@@ -140,7 +140,7 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
     }
 
 
-def fetch_inventory(steamid64: str) -> Dict[str, Any]:
+async def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     """Fetch TF2 inventory items for a user and return items with a status."""
     global TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
 
@@ -148,7 +148,7 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
         status = TEST_INVENTORY_STATUS or "parsed"
         data = TEST_INVENTORY_RAW
     else:
-        status, data = sac.fetch_inventory(steamid64)
+        status, data = await sac.fetch_inventory_async(steamid64)
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
@@ -162,10 +162,10 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
 
 async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     """Asynchronously build user card data."""
-    inv_task = asyncio.to_thread(fetch_inventory, steamid64)
     t1 = time.perf_counter()
-    summary = await asyncio.to_thread(get_player_summary, steamid64)
-    inv_result = await inv_task
+    summary_task = asyncio.create_task(get_player_summary(steamid64))
+    inv_task = asyncio.create_task(fetch_inventory(steamid64))
+    summary, inv_result = await asyncio.gather(summary_task, inv_task)
     t2 = time.perf_counter()
 
     items = inv_result.get("items", [])
@@ -241,7 +241,7 @@ async def _setup_test_mode() -> None:
                 TEST_INVENTORY_STATUS = "parsed"
                 print("Loaded cached inventory for testing.")
                 break
-        status, data = sac.fetch_inventory(steamid)
+        status, data = await sac.fetch_inventory_async(steamid)
         if status != "failed":
             TEST_INVENTORY_RAW = data
             TEST_INVENTORY_STATUS = status
