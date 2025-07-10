@@ -93,6 +93,14 @@ All modal behaviour is centralized in `static/modal.js`. Other scripts use
 its helper functions and should never manipulate the modal DOM directly.
 Use `showItemModal(html)` to populate and display the dialog.
 
+## Lazy Loading
+
+Item images and unusual effect overlays are lazily loaded via
+`static/lazyload.js`. The script uses `IntersectionObserver` to replace each
+image's `data-src` attribute with `src` only when the card scrolls into view.
+This avoids downloading hundreds of images on page load while keeping the
+markup simple.
+
 ## Spells
 
 Halloween spell detection now relies on a static map of known spells. For each
