@@ -307,7 +307,9 @@ def index():
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if not ids:
-            flash("No valid Steam IDs found!")
+            flash(
+                "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
+            )
             return render_template(
                 "index.html",
                 users=users,
