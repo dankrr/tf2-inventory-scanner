@@ -1,4 +1,3 @@
-import pytest
 from utils.id_parser import extract_steam_ids
 
 
@@ -13,10 +12,10 @@ def test_extract_ids_from_mixed_input():
     """
     ids = extract_steam_ids(text)
     assert ids == [
-        "[U:1:1110742403]",
+        "76561199071008131",
         "76561198881990960",
-        "STEAM_0:0:88939219",
-        "[U:1:99950348]",
+        "76561198138144166",
+        "76561198060216076",
     ]
 
 
@@ -31,7 +30,7 @@ def test_extract_ids_from_status_block():
     """
     ids = extract_steam_ids(text)
     assert ids == [
-        "[U:1:876151635]",
-        "[U:1:1137042230]",
-        "[U:1:2]",
+        "76561198836417363",
+        "76561199097307958",
+        "76561197960265730",
     ]
