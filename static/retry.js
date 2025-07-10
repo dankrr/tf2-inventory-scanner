@@ -57,10 +57,23 @@ function retryInventory(id) {
     });
 }
 
+function getFailedUsers() {
+  return [...document.querySelectorAll('.user.failed')]
+    .filter(div => !div.classList.contains('private'))
+    .map(div => div.dataset.steamid);
+}
+
+function updateFailedCount() {
+  const countEl = document.getElementById('failed-count');
+  if (countEl) {
+    countEl.textContent = getFailedUsers().length;
+  }
+}
+
 function updateRefreshButton() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
-  const failures = document.querySelectorAll('.user.failed').length;
+  const failures = getFailedUsers().length;
   if (failures === 0) {
     btn.disabled = true;
     btn.textContent = 'Nothing to Refresh';
@@ -70,9 +83,13 @@ function updateRefreshButton() {
     btn.textContent = `Refresh Failed (${failures})`;
     btn.classList.remove('btn-disabled');
   }
+  updateFailedCount();
 }
 
-document.addEventListener('DOMContentLoaded', updateRefreshButton);
+document.addEventListener('DOMContentLoaded', () => {
+  updateRefreshButton();
+  updateFailedCount();
+});
 
 function handleRetryClick(event) {
   const btn = event.currentTarget;
@@ -96,18 +113,17 @@ async function refreshAll() {
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const cards = Array.from(
-    document.querySelectorAll('.user.failed[data-steamid]')
-  );
-  const total = cards.length;
+  const ids = getFailedUsers();
+  const total = ids.length;
   const BATCH_SIZE = 3;
   let current = 0;
-  for (let i = 0; i < cards.length; i += BATCH_SIZE) {
-    const batch = cards.slice(i, i + BATCH_SIZE);
-    const tasks = batch.map(card => {
-      card.classList.add('loading');
+  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+    const batch = ids.slice(i, i + BATCH_SIZE);
+    const tasks = batch.map(id => {
+      const card = document.getElementById('user-' + id);
+      if (card) card.classList.add('loading');
       updateScanToast(++current, total);
-      return retryInventory(card.dataset.steamid);
+      return retryInventory(id);
     });
     await Promise.all(tasks);
     await new Promise(res => setTimeout(res, 300));
@@ -115,6 +131,8 @@ async function refreshAll() {
   btn.disabled = false;
   btn.textContent = original;
   attachHandlers();
+  updateRefreshButton();
+  updateFailedCount();
   hideScanToast();
 }
 
