@@ -27,7 +27,10 @@ def test_post_invalid_ids_flash(app):
     resp = client.post("/", data={"steamids": "foobar"})
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "No valid Steam IDs found!" in html
+    assert (
+        "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
+        in html
+    )
 
 
 def test_post_valid_ids_sets_initial_ids(app):
