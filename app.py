@@ -135,13 +135,18 @@ app.test_request_context = patched_test_request_context
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
-_prices_path = _sync(ensure_prices_cached(refresh=ARGS.refresh))
-_currencies_path = _sync(ensure_currencies_cached(refresh=ARGS.refresh))
-try:
-    with open(_currencies_path) as f:
-        local_data.CURRENCIES = json.load(f)["response"]["currencies"]
-except Exception:
-    local_data.CURRENCIES = {}
+
+
+@app.before_serving
+async def _load_price_data() -> None:
+    await ensure_prices_cached(refresh=ARGS.refresh)
+    curr_path = await ensure_currencies_cached(refresh=ARGS.refresh)
+    try:
+        with open(curr_path) as f:
+            local_data.CURRENCIES = json.load(f)["response"]["currencies"]
+    except Exception:
+        local_data.CURRENCIES = {}
+
 
 # --- Utility functions ------------------------------------------------------
 
