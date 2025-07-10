@@ -2,7 +2,7 @@
 
 ## 🧠 Project Summary
 
-This is a Python Flask web application that allows a user to input one or more Steam IDs in various formats. The app resolves each ID to a SteamID64, fetches the user’s TF2 inventory, enriches it with item prices from backpack.tf, and displays the following:
+This is a Python async-enabled Flask (or Quart) web application that allows a user to input one or more Steam IDs in various formats. The app resolves each ID to a SteamID64, fetches the user’s TF2 inventory, enriches it with item prices from backpack.tf, and displays the following:
 
 - Steam username
 - Steam avatar (clickable, linking to profile)
@@ -25,6 +25,8 @@ To register a new scanning agent, place its module under `utils/` (or create a
 new top-level script) and add any reusable functions to `utils/__init__.py`.
 Update tests and documentation accordingly, then run `pre-commit` before
 submitting a pull request.
+
+- All future agents and utility modules must use `async def` and `httpx.AsyncClient` for network-bound operations.
 
 ---
 
@@ -71,12 +73,13 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
 
 ## 💻 Flask Application Behavior
 
-1. User submits one or more Steam IDs in a form
+1. User submits one or more Steam IDs (processed concurrently via async tasks)
 2. App parses and filters valid IDs
 3. For each user:
    - Resolves SteamID
    - Fetches profile summary and TF2 hours
    - Fetches inventory and item prices
+   - Uses `asyncio.gather()` to process SteamIDs concurrently
 4. Displays a panel per user:
    - Avatar (clickable)
    - Username
@@ -91,19 +94,21 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
 - Structure all logic in `app.py`
 - Template in `templates/index.html`
 - Do **not modify** 'image_url' or unrelated template files
-- Use `requests` with timeouts and error handling
+- Use `httpx.AsyncClient` with timeouts and `async def` methods
+- Avoid `asyncio.run()` in runtime code; use top-level async with Quart or Flask 2.0+
 - Raise `ValueError` early if required API keys are missing
 - Cache `prices` during each POST cycle to avoid duplicate fetches
+- Prefer `asyncio.gather()` for bulk user/inventory fetches
 
 ---
 
-## ✨ Style & Formatting Rules
+## ⏱️ Async Conventions
 
-- Use `black` for formatting Python files
-- Use `Jinja2` for HTML with simple loops and conditions
-- Use `<img>` width `64` for avatars and `32` for items
-- Profile links should open in a new tab
-- Always use HTTPS endpoints where available
+- Use `async def` for all I/O-bound logic (Steam API, schema, inventory, pricing).
+- Use `httpx.AsyncClient()` with appropriate timeouts and headers.
+- Prefer `asyncio.gather()` or task groups for processing batches of users.
+- Ensure `app.py` or server uses async-compatible Flask version (or Quart).
+- Avoid spawning new event loops (e.g., via `asyncio.run()`) inside route handlers.
 
 ---
 
@@ -115,6 +120,8 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
   - Private inventories
   - Missing keys
 - Return an empty inventory list + error message if fetch fails
+- Use `pytest-asyncio` or `quart.testing` for async route and client testing.
+- Refactor existing tests to await async methods.
 
 ---
 
@@ -155,5 +162,3 @@ When updating Markdown files:
 any Codex automation working on this repository. It outlines accepted Steam ID
 formats, required APIs, and coding conventions. Use it when extending the
 project or adding new modules to ensure consistency across contributions.
-
-
