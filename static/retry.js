@@ -71,9 +71,16 @@ function updateRefreshButton() {
 
 document.addEventListener('DOMContentLoaded', updateRefreshButton);
 
+function handleRetryClick(event) {
+  const btn = event.currentTarget;
+  if (!btn) return;
+  retryInventory(btn.dataset.steamid);
+}
+
 function attachHandlers() {
   document.querySelectorAll('.retry-button').forEach(btn => {
-    btn.addEventListener('click', () => retryInventory(btn.dataset.steamid));
+    btn.removeEventListener('click', handleRetryClick);
+    btn.addEventListener('click', handleRetryClick);
   });
   updateRefreshButton();
 
