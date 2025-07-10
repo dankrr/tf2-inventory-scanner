@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import argparse
 import psutil
+import re
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -77,6 +78,8 @@ def _sync(coro):
     except RuntimeError:
         return asyncio.run(coro)
     else:
+        if loop.is_running():
+            return loop.create_task(coro)
         return loop.run_until_complete(coro)
 
 
@@ -406,7 +409,27 @@ async def index():
     if request.method == "POST":
         form = await request.form
         steamids_input = form.get("steamids", "")
-        ids = extract_steam_ids(steamids_input)
+        tokens = re.split(r"\s+", steamids_input.strip())
+        tokens = [t for t in tokens if t]
+        ids = []
+        invalid: List[str] = []
+        seen: set[str] = set()
+        for token in tokens:
+            if not extract_steam_ids(token):
+                invalid.append(token)
+                continue
+            try:
+                if re.fullmatch(r"\d{17}", token):
+                    sid = token
+                else:
+                    sid = await sac.convert_to_steam64(token)
+            except Exception:  # noqa: BLE001
+                invalid.append(token)
+                continue
+            if sid not in seen:
+                seen.add(sid)
+                ids.append(sid)
+        app.logger.info("Parsed %s IDs, ignored %s tokens", len(ids), len(invalid))
         if not ids:
             if USE_SESSIONS:
                 flash("No valid Steam IDs found!")
