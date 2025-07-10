@@ -96,7 +96,7 @@
             </ul>
         {% endif %}
     {% endwith %}
-    <form method="post" class="input-form">
+    <form method="post" class="input-form" id="scan-form">
         <label for="steamids" class="visually-hidden">Steam IDs</label>
         <div class="input-wrapper">
             <i class="fa-brands fa-steam input-steam-icon"></i>
@@ -160,6 +160,7 @@
     </script>
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
+    <script src="{{ url_for('static', filename='submit.js') }}"></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
