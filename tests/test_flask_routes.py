@@ -29,7 +29,10 @@ async def test_post_invalid_ids_flash(async_client):
     resp = await async_client.post("/", data={"steamids": "foobar"})
     assert resp.status_code == 200
     html = resp.text
-    assert "No valid Steam IDs found!" in html
+    assert (
+        "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
+        in html
+    )
 
 
 @pytest.mark.asyncio

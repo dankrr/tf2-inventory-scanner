@@ -385,7 +385,9 @@ async def index():
         if ids:
             users, failed_ids = await fetch_and_process_many(ids)
         else:
-            flash("No valid Steam IDs found!")
+            flash(
+                "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
+            )
             return render_template(
                 "index.html",
                 users=users,
