@@ -345,7 +345,9 @@ async def index():
         invalid = [t for t in tokens if t and t not in raw_ids]
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
-        if not ids:
+        if ids:
+            users = await fetch_and_process_many(ids)
+        else:
             flash("No valid Steam IDs found!")
             return render_template(
                 "index.html",
