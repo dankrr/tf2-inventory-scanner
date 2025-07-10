@@ -383,6 +383,8 @@ async def index():
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if ids:
+            if invalid:
+                flash(f"Ignored {len(invalid)} invalid input(s).")
             users, failed_ids = await fetch_and_process_many(ids)
         else:
             flash(

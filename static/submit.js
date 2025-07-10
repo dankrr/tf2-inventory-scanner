@@ -42,13 +42,32 @@ async function fetchUserCard(id) {
   }
 }
 
+function extractSteamIds(text) {
+  const tokens = text.trim().split(/\s+/);
+  const steam2 = /^STEAM_0:[01]:\d+$/;
+  const steam3 = /^\[U:1:\d+\]$/;
+  const steam64 = /^\d{17}$/;
+  const ids = [];
+  const seen = new Set();
+  for (const token of tokens) {
+    if (!token) continue;
+    if (steam2.test(token) || steam3.test(token) || steam64.test(token)) {
+      if (!seen.has(token)) {
+        seen.add(token);
+        ids.push(token);
+      }
+    }
+  }
+  return ids;
+}
+
 function handleSubmit(e) {
   e.preventDefault();
   const container = document.getElementById('user-container');
   if (!container) return;
   container.innerHTML = '';
   const text = document.getElementById('steamids').value || '';
-  const ids = Array.from(new Set(text.split(/\s+/).filter(Boolean)));
+  const ids = extractSteamIds(text);
   ids.forEach(id => {
     const ph = createPlaceholder(id);
     container.appendChild(ph);
