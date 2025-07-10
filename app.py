@@ -1,5 +1,4 @@
 import os
-import re
 import asyncio
 import time
 from pathlib import Path
@@ -295,17 +294,21 @@ def index():
     users: List[Dict[str, Any]] = []
     steamids_input = ""
     ids: List[str] = []
-    invalid: List[str] = []
+    fail_count = 0
     if request.method == "GET" and app.config.get("PRELOADED_USERS"):
         users = app.config.get("PRELOADED_USERS", [])
         steamids_input = app.config.get("TEST_STEAMID", "")
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
-        tokens = re.split(r"\s+", steamids_input.strip())
         raw_ids = extract_steam_ids(steamids_input)
-        invalid = [t for t in tokens if t and t not in raw_ids]
-        ids = [sac.convert_to_steam64(t) for t in raw_ids]
-        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
+        for token in raw_ids:
+            try:
+                ids.append(sac.convert_to_steam64(token))
+            except Exception:
+                fail_count += 1
+        if fail_count > 0:
+            flash(f"Ignored {fail_count} invalid IDs.")
+        print(f"Parsed {len(ids)} valid IDs, {fail_count} conversions failed")
         if not ids:
             flash(
                 "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
