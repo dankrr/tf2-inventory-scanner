@@ -7,23 +7,23 @@ STEAMID64_RE = re.compile(r"\b\d{17}\b")
 
 
 def extract_steam_ids(raw_text: str) -> List[str]:
-    """Extract potential SteamID tokens from free-form text.
+    """Return valid SteamID tokens found in ``raw_text``.
 
-    The function splits the input on whitespace and returns unique tokens in the
-    order encountered. Tokens matching ``STEAMID2``, ``STEAMID3`` or
-    ``STEAMID64`` patterns are kept, but any other non-empty strings are also
-    returned so they may be resolved as vanity URLs later.
+    The function scans the input for SteamID64, SteamID2 and SteamID3 patterns
+    and returns them in the order encountered, skipping any other text. Duplicate
+    IDs are removed while preserving first occurrence order.
     """
 
-    tokens = re.split(r"\s+", raw_text.strip())
+    pattern = re.compile(
+        r"(STEAM_0:[01]:\d+|\[U:1:\d+\]|\b7656119\d{10}\b)", re.IGNORECASE
+    )
     ids: List[str] = []
     seen: set[str] = set()
 
-    for token in tokens:
-        token = token.strip('"')
-        if not token:
-            continue
+    for match in pattern.finditer(raw_text):
+        token = match.group(0)
         if token not in seen:
             seen.add(token)
             ids.append(token)
+
     return ids

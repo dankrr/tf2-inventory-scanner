@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Coverage and CI badges in the README.
 - SchemaProvider class for fetching schema properties.
 - Paintkits endpoint cached as `warpaints.json`.
+- Strict Steam ID extraction that filters invalid tokens.
 
 ### Changed
 - Updated schema caching logic and UI (previous releases).
