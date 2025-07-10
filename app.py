@@ -25,7 +25,7 @@ from utils.price_loader import (
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
-    raise RuntimeError(
+    raise ValueError(
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
     )
 

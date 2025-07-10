@@ -9,7 +9,7 @@ def test_missing_env_vars_raises(monkeypatch):
     monkeypatch.delenv("STEAM_API_KEY", raising=False)
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     sys.modules.pop("app", None)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         importlib.import_module("app")
 
 
