@@ -69,12 +69,12 @@ function convertToSteam64(id) {
       }
     }
   }
-  let m = id.match(/^\[U:(\d+):(\d+)\]$/);
+  let m = id.match(/^\[U:(\d+):(\d+)\]$/i);
   if (m) {
     const z = parseInt(m[2], 10);
     if (!Number.isNaN(z)) return String(z + 76561197960265728);
   }
-  m = id.match(/^\[U:1:(\d+)\]$/);
+  m = id.match(/^\[U:1:(\d+)\]$/i);
   if (m) {
     const z = parseInt(m[1], 10);
     if (!Number.isNaN(z)) return String(z + 76561197960265728);

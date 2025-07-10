@@ -141,12 +141,12 @@ async def convert_to_steam64(id_str: str) -> str:
         account_id = z * 2 + y
         return str(account_id + 76561197960265728)
 
-    if id_str.startswith("[U:"):
-        match = re.match(r"\[U:(\d+):(\d+)\]", id_str)
+    if id_str.upper().startswith("[U:"):
+        match = re.match(r"\[U:(\d+):(\d+)\]", id_str, re.IGNORECASE)
         if match:
             z = int(match.group(2))
             return str(z + 76561197960265728)
-        match = re.match(r"\[U:1:(\d+)\]", id_str)
+        match = re.match(r"\[U:1:(\d+)\]", id_str, re.IGNORECASE)
         if match:
             z = int(match.group(1))
             return str(z + 76561197960265728)

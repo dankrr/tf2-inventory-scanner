@@ -8,6 +8,7 @@ import pytest
 def test_convert_to_steam64():
     assert asyncio.run(sac.convert_to_steam64("STEAM_0:1:4")) == "76561197960265737"
     assert asyncio.run(sac.convert_to_steam64("[U:1:4]")) == "76561197960265732"
+    assert asyncio.run(sac.convert_to_steam64("[u:1:4]")) == "76561197960265732"
 
 
 @pytest.fixture(autouse=True)
