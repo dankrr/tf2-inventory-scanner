@@ -1,19 +1,17 @@
 from utils import constants
-import asyncio
+import pytest
 
 
-def test_api_constants_route(async_client):
-    async def run():
-        resp = await async_client.get("/api/constants")
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert data["paint_colors"]["3100495"][0] == "A Color Similar to Slate"
-        assert data["sheen_names"]["1"] == constants.SHEEN_NAMES[1]
-        assert (
-            data["killstreak_sheen_colors"]["2"][0]
-            == constants.KILLSTREAK_SHEEN_COLORS[2][0]
-        )
-        assert data["killstreak_tiers"]["3"] == constants.KILLSTREAK_TIERS[3]
-        assert data["origin_map"]["0"] == constants.ORIGIN_MAP[0]
-
-    asyncio.run(run())
+@pytest.mark.asyncio
+async def test_api_constants_route(async_client):
+    resp = await async_client.get("/api/constants")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["paint_colors"]["3100495"][0] == "A Color Similar to Slate"
+    assert data["sheen_names"]["1"] == constants.SHEEN_NAMES[1]
+    assert (
+        data["killstreak_sheen_colors"]["2"][0]
+        == constants.KILLSTREAK_SHEEN_COLORS[2][0]
+    )
+    assert data["killstreak_tiers"]["3"] == constants.KILLSTREAK_TIERS[3]
+    assert data["origin_map"]["0"] == constants.ORIGIN_MAP[0]
