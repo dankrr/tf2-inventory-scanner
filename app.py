@@ -304,7 +304,13 @@ def index():
         tokens = re.split(r"\s+", steamids_input.strip())
         raw_ids = extract_steam_ids(steamids_input)
         invalid = [t for t in tokens if t and t not in raw_ids]
-        ids = [sac.convert_to_steam64(t) for t in raw_ids]
+        ids: List[str] = []
+        seen64: set[str] = set()
+        for t in raw_ids:
+            sid = sac.convert_to_steam64(t)
+            if sid not in seen64:
+                seen64.add(sid)
+                ids.append(sid)
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if not ids:
             flash("No valid Steam IDs found!")

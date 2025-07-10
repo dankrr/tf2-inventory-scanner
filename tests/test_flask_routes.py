@@ -1,4 +1,5 @@
 import importlib
+from utils import steam_api_client as sac
 
 
 def test_get_home_displays_preloaded_user(app):
@@ -63,3 +64,14 @@ def test_hidden_items_not_rendered(app):
     html = resp.get_data(as_text=True)
     assert "Visible" in html
     assert "Hid" not in html
+
+
+def test_duplicate_ids_coalesced(app):
+    client = app.test_client()
+    tokens = "STEAM_0:1:4 [U:1:9]"
+    steam64 = sac.convert_to_steam64("STEAM_0:1:4")
+    resp = client.post("/", data={"steamids": tokens})
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    # SteamID should appear exactly once in the page
+    assert html.count(steam64) == 1
