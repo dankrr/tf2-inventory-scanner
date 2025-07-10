@@ -140,32 +140,39 @@ function showResults() {
   }, 10);
 }
 
+function handleItemClick(event) {
+  const card = event.currentTarget || event;
+  let data = card.dataset.item;
+  if (!data) return;
+  try {
+    data = JSON.parse(data);
+  } catch (e) {
+    return;
+  }
+  if (window.modal && typeof window.modal.updateHeader === 'function') {
+    window.modal.updateHeader(data);
+  }
+  if (window.modal && typeof window.modal.setParticleBackground === 'function') {
+    window.modal.setParticleBackground(data.unusual_effect_id);
+  }
+  if (window.modal && typeof window.modal.generateModalHTML === 'function') {
+    const html = window.modal.generateModalHTML(data);
+    if (window.modal.showItemModal) {
+      window.modal.showItemModal(html);
+    }
+  }
+  if (window.modal && typeof window.modal.renderBadges === 'function') {
+    window.modal.renderBadges(data.badges);
+  }
+}
+
 function attachItemModal() {
-  document.querySelectorAll('.item-card').forEach(card => {
-    card.addEventListener('click', () => {
-      let data = card.dataset.item;
-      if (!data) return;
-      try {
-        data = JSON.parse(data);
-      } catch (e) {
-        return;
-      }
-      if (window.modal && typeof window.modal.updateHeader === 'function') {
-        window.modal.updateHeader(data);
-      }
-      if (window.modal && typeof window.modal.setParticleBackground === 'function') {
-        window.modal.setParticleBackground(data.unusual_effect_id);
-      }
-      if (window.modal && typeof window.modal.generateModalHTML === 'function') {
-        const html = window.modal.generateModalHTML(data);
-        if (window.modal.showItemModal) {
-          window.modal.showItemModal(html);
-        }
-      }
-      if (window.modal && typeof window.modal.renderBadges === 'function') {
-        window.modal.renderBadges(data.badges);
-      }
-    });
+  const container = document.getElementById('user-container');
+  if (!container) return;
+  container.querySelectorAll('.item-card').forEach(card => {
+    if (card.dataset.handler) return;
+    card.dataset.handler = 'true';
+    card.addEventListener('click', handleItemClick);
   });
 }
 
@@ -178,7 +185,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.initialIds && window.initialIds.length) {
     loadUsers(window.initialIds);
   }
-  attachItemModal();
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
   }
