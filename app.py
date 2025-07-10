@@ -218,16 +218,19 @@ async def fetch_and_process_single_user(steamid64: int) -> str:
     return render_template("_user.html", user=user)
 
 
-async def fetch_and_process_many(ids: List[str]) -> List[str]:
-    """Return rendered user cards for all ``ids`` concurrently."""
+async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
+    """Return rendered user cards and a list of IDs that failed."""
 
     tasks = [build_user_data_async(sid) for sid in ids]
     users = await asyncio.gather(*tasks)
     html_snippets: List[str] = []
+    failed_ids: List[str] = []
     for user in users:
         user_ns = normalize_user_payload(user)
+        if user_ns.status == "failed":
+            failed_ids.append(user_ns.steamid)
         html_snippets.append(render_template("_user.html", user=user_ns))
-    return html_snippets
+    return html_snippets, failed_ids
 
 
 async def _setup_test_mode() -> None:
@@ -307,7 +310,7 @@ async def api_users():
     except ValueError:
         return jsonify({"error": "Invalid Steam ID"}), 400
 
-    snippets = await fetch_and_process_many(ids)
+    snippets, _ = await fetch_and_process_many(ids)
     return jsonify({"html": snippets})
 
 
@@ -335,9 +338,11 @@ async def index():
     steamids_input = ""
     ids: List[str] = []
     invalid: List[str] = []
+    failed_ids: List[str] = []
     if request.method == "GET" and app.config.get("PRELOADED_USERS"):
         users = app.config.get("PRELOADED_USERS", [])
         steamids_input = app.config.get("TEST_STEAMID", "")
+        failed_ids = [u.steamid for u in users if getattr(u, "status", "") == "failed"]
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
         tokens = re.split(r"\s+", steamids_input.strip())
@@ -346,7 +351,7 @@ async def index():
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if ids:
-            users = await fetch_and_process_many(ids)
+            users, failed_ids = await fetch_and_process_many(ids)
         else:
             flash("No valid Steam IDs found!")
             return render_template(
@@ -354,12 +359,14 @@ async def index():
                 users=users,
                 steamids=steamids_input,
                 ids=[],
+                failed_ids=[],
             )
     return render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
         ids=ids,
+        failed_ids=failed_ids,
         debug_ms=MAX_MERGE_MS if os.getenv("FLASK_DEBUG") else None,
     )
 

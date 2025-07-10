@@ -23,9 +23,10 @@ async def test_fetch_many_concurrent(monkeypatch, app):
 
     with app.test_request_context():
         start = time.perf_counter()
-        results = await mod.fetch_and_process_many(["1", "2", "3"])
+        results, failed = await mod.fetch_and_process_many(["1", "2", "3"])
         duration = time.perf_counter() - start
     assert len(results) == 3
+    assert failed == []
     assert duration < 0.15
 
 
@@ -34,7 +35,7 @@ async def test_api_users_returns_html(monkeypatch, async_client):
     mod = importlib.import_module("app")
 
     async def fake_fetch(ids):
-        return [f"<div>{i}</div>" for i in ids]
+        return [f"<div>{i}</div>" for i in ids], []
 
     monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
 
