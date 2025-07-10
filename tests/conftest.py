@@ -1,9 +1,11 @@
 import sys
 from pathlib import Path
 import importlib
-import asyncio
 
 import pytest
+import pytest_asyncio
+from asgiref.wsgi import WsgiToAsgi
+import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -34,17 +36,11 @@ def app(monkeypatch):
     return mod.app
 
 
-class AsyncTestClient:
-    def __init__(self, client):
-        self._client = client
-
-    async def get(self, *args, **kwargs):
-        return await asyncio.to_thread(self._client.get, *args, **kwargs)
-
-    async def post(self, *args, **kwargs):
-        return await asyncio.to_thread(self._client.post, *args, **kwargs)
-
-
-@pytest.fixture
-def async_client(app):
-    return AsyncTestClient(app.test_client())
+@pytest_asyncio.fixture
+async def async_client(app):
+    asgi_app = WsgiToAsgi(app)
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(
+        transport=transport, base_url="http://testserver"
+    ) as client:
+        yield client

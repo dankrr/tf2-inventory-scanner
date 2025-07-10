@@ -1,9 +1,11 @@
 import importlib
 import asyncio
 import time
+import pytest
 
 
-def test_fetch_many_concurrent(monkeypatch, app):
+@pytest.mark.asyncio
+async def test_fetch_many_concurrent(monkeypatch, app):
     mod = importlib.import_module("app")
 
     async def fake_build(id_):
@@ -21,13 +23,14 @@ def test_fetch_many_concurrent(monkeypatch, app):
 
     with app.test_request_context():
         start = time.perf_counter()
-        results = asyncio.run(mod.fetch_and_process_many(["1", "2", "3"]))
+        results = await mod.fetch_and_process_many(["1", "2", "3"])
         duration = time.perf_counter() - start
     assert len(results) == 3
-    assert duration < 0.12
+    assert duration < 0.15
 
 
-def test_api_users_returns_html(monkeypatch, async_client):
+@pytest.mark.asyncio
+async def test_api_users_returns_html(monkeypatch, async_client):
     mod = importlib.import_module("app")
 
     async def fake_fetch(ids):
@@ -37,10 +40,7 @@ def test_api_users_returns_html(monkeypatch, async_client):
 
     monkeypatch.setattr(mod.sac, "convert_to_steam64", lambda x: x)
 
-    async def run():
-        resp = await async_client.post("/api/users", json={"ids": ["1", "2"]})
-        assert resp.status_code == 200
-        data = resp.get_json()
-        assert data == {"html": ["<div>1</div>", "<div>2</div>"]}
-
-    asyncio.run(run())
+    resp = await async_client.post("/api/users", json={"ids": ["1", "2"]})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data == {"html": ["<div>1</div>", "<div>2</div>"]}

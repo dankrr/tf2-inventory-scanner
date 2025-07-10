@@ -1,10 +1,11 @@
-import asyncio
 import types
+import pytest
 
 from utils import steam_api_client as sac
 
 
-def test_get_player_summaries(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_player_summaries(monkeypatch):
     monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
     payload = {"response": {"players": [{"steamid": "1", "personaname": "Bob"}]}}
 
@@ -26,11 +27,12 @@ def test_get_player_summaries(monkeypatch):
             )
 
     monkeypatch.setattr(sac.httpx, "AsyncClient", DummyAsyncClient)
-    players = asyncio.run(sac.get_player_summaries_async(["1"]))
+    players = await sac.get_player_summaries_async(["1"])
     assert players == payload["response"]["players"]
 
 
-def test_get_tf2_playtime_hours(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_tf2_playtime_hours(monkeypatch):
     monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
     payload = {"response": {"games": [{"appid": 440, "playtime_forever": 90}]}}
 
@@ -52,5 +54,5 @@ def test_get_tf2_playtime_hours(monkeypatch):
             )
 
     monkeypatch.setattr(sac.httpx, "AsyncClient", DummyAsyncClient)
-    hours = asyncio.run(sac.get_tf2_playtime_hours_async("1"))
+    hours = await sac.get_tf2_playtime_hours_async("1")
     assert hours == 1.5
