@@ -1,8 +1,8 @@
 import re
 from typing import List
 
-STEAMID2_RE = re.compile(r"STEAM_0:[01]:\d+")
-STEAMID3_RE = re.compile(r"\[U:1:\d+\]")
+STEAMID2_RE = re.compile(r"STEAM_0:[01]:\d+", re.IGNORECASE)
+STEAMID3_RE = re.compile(r"\[U:[01]:\d+\]", re.IGNORECASE)
 STEAMID64_RE = re.compile(r"\b\d{17}\b")
 
 
@@ -61,7 +61,8 @@ def extract_steam_ids(raw_text: str) -> List[str]:
     """
 
     pattern = re.compile(
-        r"(STEAM_0:[01]:\d+|\[U:1:\d+\]|\b7656119\d{10}\b)", re.IGNORECASE
+        r"(STEAM_0:[01]:\d+|\[U:[01]:\d+\]|\b7656119\d{10}\b)",
+        re.IGNORECASE,
     )
     ids: List[str] = []
     seen: set[str] = set()

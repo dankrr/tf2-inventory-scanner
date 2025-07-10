@@ -34,3 +34,15 @@ def test_extract_ids_from_status_block():
         "76561199097307958",
         "76561197960265730",
     ]
+
+
+def test_extract_ids_with_embedded_tokens():
+    text = (
+        "Yyffjjuggv [U:1:86514219]. Bbbkiiyccc "
+        '# 2 "Player" STEAM_0:0:12345678 00:03 50 0 active'
+    )
+    ids = extract_steam_ids(text)
+    assert ids == [
+        "76561198046779947",
+        "76561197984957084",
+    ]
