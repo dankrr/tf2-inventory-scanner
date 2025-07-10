@@ -179,7 +179,7 @@ async def extract_steam_ids(raw_text: str, resolve_vanity: bool = False) -> List
     import re
 
     pattern = re.compile(
-        r"(STEAM_0:[01]:\d+|\[U:1:\d+\]|\b7656119\d{10}\b|https?://steamcommunity\.com/(?:profiles/\d{17}|id/[A-Za-z0-9_-]+))",
+        r"(STEAM_0:[01]:\d+|\[U:[01]:\d+\]|\b7656119\d{10}\b|https?://steamcommunity\.com/(?:profiles/\d{17}|id/[A-Za-z0-9_-]+))",
         re.IGNORECASE,
     )
 
