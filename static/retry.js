@@ -11,7 +11,7 @@ function appendCard(html) {
 function updateScanToast(current, total) {
   const toast = document.getElementById('scan-toast');
   if (!toast) return;
-  toast.textContent = `\u{1F504} Scanning ${current} of ${total} inventories...`;
+  toast.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> Scanning ${current} of ${total} inventories...`;
   toast.classList.remove('hidden');
   toast.classList.add('show');
 }
