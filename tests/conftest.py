@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import importlib
+import asyncio
 
 import pytest
 
@@ -31,3 +32,19 @@ def app(monkeypatch):
     importlib.reload(mod)
     mod.app.secret_key = "test"
     return mod.app
+
+
+class AsyncTestClient:
+    def __init__(self, client):
+        self._client = client
+
+    async def get(self, *args, **kwargs):
+        return await asyncio.to_thread(self._client.get, *args, **kwargs)
+
+    async def post(self, *args, **kwargs):
+        return await asyncio.to_thread(self._client.post, *args, **kwargs)
+
+
+@pytest.fixture
+def async_client(app):
+    return AsyncTestClient(app.test_client())

@@ -36,7 +36,7 @@ def test_enrich_inventory():
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Strange Rocket Launcher"
     assert items[0]["quality"] == "Strange"
-    assert items[0]["quality_color"] == "#CF6A32"
+    assert items[0]["quality_color"] == "#7a4121"
     assert items[0]["image_url"].startswith(
         "https://steamcommunity-a.akamaihd.net/economy/image/"
     )

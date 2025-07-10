@@ -189,12 +189,6 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     return summary
 
 
-def build_user_data(steamid64: str) -> Dict[str, Any]:
-    """Return a dictionary for rendering a single user card."""
-
-    return asyncio.run(build_user_data_async(steamid64))
-
-
 def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     """Return a namespace with ``items`` guaranteed to be a list."""
 
@@ -203,13 +197,13 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     return SimpleNamespace(**user)
 
 
-def fetch_and_process_single_user(steamid64: int) -> str:
-    user = build_user_data(str(steamid64))
+async def fetch_and_process_single_user(steamid64: int) -> str:
+    user = await build_user_data_async(str(steamid64))
     user = normalize_user_payload(user)
     return render_template("_user.html", user=user)
 
 
-def _setup_test_mode() -> None:
+async def _setup_test_mode() -> None:
     """Initialize test mode and preload inventory data."""
 
     global TEST_STEAMID, TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
@@ -261,15 +255,15 @@ def _setup_test_mode() -> None:
             raise SystemExit(1)
 
     TEST_STEAMID = steamid
-    user = normalize_user_payload(build_user_data(steamid))
+    user = normalize_user_payload(await build_user_data_async(steamid))
     app.config["PRELOADED_USERS"] = [user]
     app.config["TEST_STEAMID"] = steamid
 
 
 @app.post("/retry/<int:steamid64>")
-def retry_single(steamid64: int):
+async def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
-    return fetch_and_process_single_user(steamid64)
+    return await fetch_and_process_single_user(steamid64)
 
 
 @app.get("/api/constants")
@@ -291,7 +285,7 @@ def api_constants():
 
 
 @app.route("/", methods=["GET", "POST"])
-def index():
+async def index():
     users: List[Dict[str, Any]] = []
     steamids_input = ""
     ids: List[str] = []
@@ -327,5 +321,5 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     kill_process_on_port(port)
     if TEST_MODE:
-        _setup_test_mode()
+        asyncio.run(_setup_test_mode())
     app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)
