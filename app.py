@@ -198,6 +198,12 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     return summary
 
 
+async def build_user_data(steamid64: str) -> Dict[str, Any]:
+    """Compatibility wrapper for :func:`build_user_data_async`."""
+
+    return await build_user_data_async(steamid64)
+
+
 def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     """Return a namespace with ``items`` guaranteed to be a list."""
 
