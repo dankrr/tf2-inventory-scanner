@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Coverage and CI badges in the README.
 - SchemaProvider class for fetching schema properties.
 - Paintkits endpoint cached as `warpaints.json`.
+- Async Flask routes with `httpx` replacing `requests` for concurrent HTTP calls.
 
 ### Changed
 - Updated schema caching logic and UI (previous releases).

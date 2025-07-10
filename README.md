@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Flask web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema.
+An async-enabled Flask 3 web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema. All routes are `async def` functions and HTTP calls are made with `httpx`.
 
 ## Setup
 
@@ -10,7 +10,7 @@ A Flask web app that inspects one or more Steam users' Team Fortress 2 inventori
    ```bash
    python -m venv venv
    source venv/bin/activate
-   pip install -r requirements.txt
+   pip install -r requirements.txt  # brings in Flask[async] and httpx
    pip install -r requirements-test.txt  # includes pytest-cov
    pip install pre-commit
    ```
@@ -26,9 +26,16 @@ A Flask web app that inspects one or more Steam users' Team Fortress 2 inventori
 
 Run the application locally and open `http://localhost:5000` in your browser:
 ```bash
-python app.py
+python app.py  # Flask 3 will run the async routes
 ```
 Submit any supported SteamID format. Each user panel shows the avatar, TF2 playtime, and an item grid.
+
+Example using the JSON API:
+```bash
+curl -X POST http://localhost:5000/api/users \
+  -H 'Content-Type: application/json' \
+  -d '{"ids": ["76561197960435530"]}'
+```
 
 ## Development
 
