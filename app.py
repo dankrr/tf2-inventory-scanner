@@ -221,15 +221,27 @@ async def fetch_and_process_single_user(steamid64: int) -> str:
 async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
     """Return rendered user cards and a list of IDs that failed."""
 
-    tasks = [build_user_data_async(sid) for sid in ids]
-    users = await asyncio.gather(*tasks)
+    tasks: Dict[str, asyncio.Task] = {}
+    for sid in ids:
+        sid_str = str(sid)
+        if sid_str not in tasks:
+            tasks[sid_str] = asyncio.create_task(build_user_data_async(sid_str))
+
+    results = await asyncio.gather(*tasks.values())
     html_snippets: List[str] = []
     failed_ids: List[str] = []
-    for user in users:
+    seen: set[str] = set()
+
+    for sid, user in zip(tasks.keys(), results):
         user_ns = normalize_user_payload(user)
+        if sid in seen:
+            print("DUPLICATE PANEL:", sid)
+            continue
+        seen.add(sid)
         if user_ns.status == "failed":
             failed_ids.append(user_ns.steamid)
         html_snippets.append(render_template("_user.html", user=user_ns))
+
     return html_snippets, failed_ids
 
 

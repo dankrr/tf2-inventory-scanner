@@ -45,7 +45,7 @@ function handleSubmit(e) {
   if (!container) return;
   container.innerHTML = '';
   const text = document.getElementById('steamids').value || '';
-  const ids = text.split(/\s+/).filter(Boolean);
+  const ids = Array.from(new Set(text.split(/\s+/).filter(Boolean)));
   ids.forEach(id => {
     const ph = createPlaceholder(id);
     container.appendChild(ph);

@@ -54,9 +54,23 @@ async def get_player_summaries_async(steamids: List[str]) -> List[Dict[str, Any]
                 "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
                 f"?key={key}&steamids={','.join(chunk)}"
             )
-            resp = await client.get(url)
-            resp.raise_for_status()
-            players = resp.json().get("response", {}).get("players", [])
+            try:
+                resp = await client.get(url)
+            except httpx.HTTPError:
+                logger.warning("Player summaries fetch failed for %s", chunk)
+                continue
+            if resp.status_code in (420, 429):
+                logger.warning("Player summaries rate limited for %s", chunk)
+                continue
+            if resp.status_code != 200:
+                logger.warning(
+                    "Player summaries HTTP %s for %s", resp.status_code, chunk
+                )
+                continue
+            try:
+                players = resp.json().get("response", {}).get("players", [])
+            except ValueError:
+                players = []
             results.extend(players)
     return results
 
@@ -250,9 +264,21 @@ async def get_tf2_playtime_hours_async(steamid: str) -> float:
         "format": "json",
     }
     async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url, params=params)
-    resp.raise_for_status()
-    data = resp.json().get("response", {})
+        try:
+            resp = await client.get(url, params=params)
+        except httpx.HTTPError:
+            logger.warning("Playtime fetch failed for %s", steamid)
+            return 0.0
+    if resp.status_code in (420, 429):
+        logger.warning("Playtime rate limited for %s", steamid)
+        return 0.0
+    if resp.status_code != 200:
+        logger.warning("Playtime HTTP %s for %s", resp.status_code, steamid)
+        return 0.0
+    try:
+        data = resp.json().get("response", {})
+    except ValueError:
+        return 0.0
     for game in data.get("games", []):
         if game.get("appid") == 440:
             return game.get("playtime_forever", 0) / 60.0
