@@ -2,7 +2,7 @@
 
 ## Overview
 
-An async-enabled Flask 3 web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, **SteamID2**, and **vanity URLs**, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema. All routes are `async def` functions and HTTP calls are made with `httpx`.
+An async-enabled Flask 3 web app that inspects one or more Steam users' Team Fortress 2 inventories. It accepts **SteamID64**, **SteamID3**, and **SteamID2** formats only, resolves them to SteamID64, and enriches the inventory using the Steam Web API and cached item schema. All routes are `async def` functions and HTTP calls are made with `httpx`.
 
 ## Setup
 

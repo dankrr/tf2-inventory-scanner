@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterator, List, Tuple
 import logging
 import httpx
 import requests
+import re
 from dotenv import load_dotenv
 
 # Ensure .env values are available even when this module is imported early.
@@ -195,43 +196,24 @@ async def fetch_inventory_async(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
 
 def convert_to_steam64(id_str: str) -> str:
-    """Convert Steam identifiers to SteamID64."""
-    import re
+    """Convert Steam identifiers (SteamID64, SteamID2, SteamID3) to SteamID64."""
 
     if re.fullmatch(r"\d{17}", id_str):
         return id_str
 
-    if id_str.startswith("STEAM_"):
-        try:
-            _, y, z = id_str.split(":")
-            y = int(y.split("_")[1]) if "_" in y else int(y)
-            z = int(z)
-        except (ValueError, IndexError):
-            raise ValueError(f"Invalid SteamID2: {id_str}") from None
+    match = re.fullmatch(r"STEAM_0:([01]):(\d+)", id_str)
+    if match:
+        y = int(match.group(1))
+        z = int(match.group(2))
         account_id = z * 2 + y
         return str(account_id + 76561197960265728)
 
-    if id_str.startswith("[U:"):
-        match = re.match(r"\[U:(\d+):(\d+)\]", id_str)
-        if match:
-            z = int(match.group(2))
-            return str(z + 76561197960265728)
-        match = re.match(r"\[U:1:(\d+)\]", id_str)
-        if match:
-            z = int(match.group(1))
-            return str(z + 76561197960265728)
+    match = re.fullmatch(r"\[U:1:(\d+)\]", id_str)
+    if match:
+        z = int(match.group(1))
+        return str(z + 76561197960265728)
 
-    key = _require_key()
-    url = (
-        "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
-        f"?key={key}&vanityurl={id_str}"
-    )
-    r = requests.get(url, timeout=10)
-    r.raise_for_status()
-    data = r.json().get("response", {})
-    if data.get("success") != 1:
-        raise ValueError(f"Unable to resolve vanity URL: {id_str}")
-    return data["steamid"]
+    raise ValueError(f"Invalid Steam ID format: {id_str}")
 
 
 def get_tf2_playtime_hours(steamid: str) -> float:
