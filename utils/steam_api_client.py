@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def _require_key() -> str:
     """Return the Steam API key or raise an error if missing."""
     if not STEAM_API_KEY:
-        raise RuntimeError(
+        raise ValueError(
             "STEAM_API_KEY is required. Set it in the environment or .env file."
         )
     return STEAM_API_KEY
