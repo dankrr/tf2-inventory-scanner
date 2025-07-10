@@ -1,13 +1,3 @@
-function appendCard(html) {
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = html;
-  const card = wrapper.firstElementChild;
-  if (card) {
-    document.getElementById('user-container').appendChild(card);
-    showResults();
-  }
-}
-
 function updateScanToast(current, total) {
   const toast = document.getElementById('scan-toast');
   if (!toast) return;
