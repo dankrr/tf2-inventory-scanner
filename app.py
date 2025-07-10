@@ -1,5 +1,4 @@
 import os
-import re
 import asyncio
 import time
 from pathlib import Path
@@ -401,20 +400,13 @@ async def index():
     users: List[Dict[str, Any]] = []
     steamids_input = ""
     ids: List[str] = []
-    invalid: List[str] = []
     if request.method == "GET" and app.config.get("PRELOADED_USERS"):
         users = app.config.get("PRELOADED_USERS", [])
         steamids_input = app.config.get("TEST_STEAMID", "")
     if request.method == "POST":
         form = await request.form
         steamids_input = form.get("steamids", "")
-        tokens = re.split(r"\s+", steamids_input.strip())
         ids = extract_steam_ids(steamids_input)
-        pattern = re.compile(
-            r"^(STEAM_0:[01]:\d+|\[U:1:\d+\]|7656119\d{10})$", re.IGNORECASE
-        )
-        invalid = [t for t in tokens if t and not pattern.fullmatch(t)]
-        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if not ids:
             if USE_SESSIONS:
                 flash("No valid Steam IDs found!")
