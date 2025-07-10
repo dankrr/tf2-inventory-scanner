@@ -125,10 +125,10 @@ async def fetch_inventory(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
 
 async def convert_to_steam64(id_str: str) -> str:
-    """Convert Steam identifiers to SteamID64."""
+    """Convert Steam identifiers to ``SteamID64`` without vanity fallback."""
     import re
 
-    if re.fullmatch(r"\d{17}", id_str):
+    if re.fullmatch(r"7656119\d{10}", id_str):
         return id_str
 
     if id_str.startswith("STEAM_"):
@@ -142,19 +142,21 @@ async def convert_to_steam64(id_str: str) -> str:
         return str(account_id + 76561197960265728)
 
     if id_str.upper().startswith("[U:"):
-        match = re.match(r"\[U:(\d+):(\d+)\]", id_str, re.IGNORECASE)
+        match = re.match(r"\[U:([01]):(\d+)\]", id_str, re.IGNORECASE)
         if match:
             z = int(match.group(2))
             return str(z + 76561197960265728)
-        match = re.match(r"\[U:1:(\d+)\]", id_str, re.IGNORECASE)
-        if match:
-            z = int(match.group(1))
-            return str(z + 76561197960265728)
+
+    raise ValueError(f"Unrecognized SteamID token: {id_str}")
+
+
+async def resolve_vanity_url(vanity: str) -> str:
+    """Resolve a vanity slug to ``SteamID64`` via the Steam Web API."""
 
     key = _require_key()
     url = (
         "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
-        f"?key={key}&vanityurl={id_str}"
+        f"?key={key}&vanityurl={vanity}"
     )
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
@@ -162,24 +164,29 @@ async def convert_to_steam64(id_str: str) -> str:
             data = await resp.json()
     data = data.get("response", {})
     if data.get("success") != 1:
-        raise ValueError(f"Unable to resolve vanity URL: {id_str}")
+        raise ValueError(f"Unable to resolve vanity URL: {vanity}")
     return data["steamid"]
 
 
-async def extract_steam_ids(raw_text: str, resolve_vanity: bool = False) -> List[str]:
+async def extract_steam_ids(raw_text: str) -> List[str]:
     """Return unique ``SteamID64`` values parsed from ``raw_text``.
 
-    The function scans the input for SteamID64, SteamID2, SteamID3 tokens or
-    profile/vanity URLs. Invalid segments are discarded. When ``resolve_vanity``
-    is ``True`` vanity URLs of the form
-    ``https://steamcommunity.com/id/<name>`` will be resolved via
-    :func:`convert_to_steam64`.
+    Only tokens matching ``SteamID64``, ``SteamID2``, ``SteamID3`` or full
+    profile/vanity URLs are processed. Any other fragments are ignored.
+    Vanity names are resolved **only** when the input includes a full
+    ``https://steamcommunity.com/id/<name>`` URL.
     """
 
     import re
 
     pattern = re.compile(
-        r"(STEAM_0:[01]:\d+|\[U:[01]:\d+\]|\b7656119\d{10}\b|https?://steamcommunity\.com/(?:profiles/\d{17}|id/[A-Za-z0-9_-]+))",
+        r"("  # capture all valid token types in order
+        r"https?://steamcommunity\.com/profiles/7656119\d{10}"
+        r"|https?://steamcommunity\.com/id/[A-Za-z0-9_-]+"
+        r"|STEAM_0:[01]:\d+"
+        r"|\[U:[01]:\d+\]"
+        r"|\b7656119\d{10}\b"
+        r")",
         re.IGNORECASE,
     )
 
@@ -188,19 +195,15 @@ async def extract_steam_ids(raw_text: str, resolve_vanity: bool = False) -> List
 
     for match in pattern.finditer(raw_text):
         token = match.group(0)
-        vanity: str | None = None
-        if token.lower().startswith("http"):
-            slug = token.rstrip("/").split("/")[-1]
-            if token.lower().startswith("https://steamcommunity.com/profiles/"):
-                token = slug
-            else:
-                if not resolve_vanity:
-                    logger.debug("Skipping vanity URL %s", token)
-                    continue
-                vanity = slug
-
         try:
-            sid = await convert_to_steam64(vanity or token)
+            if token.lower().startswith("http"):
+                slug = token.rstrip("/").split("/")[-1]
+                if "/profiles/" in token.lower():
+                    sid = await convert_to_steam64(slug)
+                else:
+                    sid = await resolve_vanity_url(slug)
+            else:
+                sid = await convert_to_steam64(token)
         except Exception as exc:  # noqa: BLE001
             logger.debug("Discarding token %s: %s", token, exc)
             continue

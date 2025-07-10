@@ -124,11 +124,16 @@ def test_extract_steam_ids(monkeypatch):
             "STEAM_0:0:88939219": "76561198138144166",
             "[U:1:1110742403]": "76561199071008131",
             "[U:1:99950348]": "76561198060216076",
-            "foo": "76561198000000000",
         }
         return mapping.get(token, token)
 
+    async def fake_resolve(slug: str) -> str:
+        return {
+            "foo": "76561198000000000",
+        }[slug]
+
     monkeypatch.setattr(sac, "convert_to_steam64", fake_convert)
+    monkeypatch.setattr(sac, "resolve_vanity_url", fake_resolve)
 
     text = """
     #    354 "AnonyMouse"        [U:1:1110742403]
@@ -140,7 +145,7 @@ def test_extract_steam_ids(monkeypatch):
     anotherusername
     """
 
-    ids = asyncio.run(sac.extract_steam_ids(text, resolve_vanity=True))
+    ids = asyncio.run(sac.extract_steam_ids(text))
     assert ids == [
         "76561199071008131",
         "76561198881990960",
@@ -150,17 +155,22 @@ def test_extract_steam_ids(monkeypatch):
     ]
 
 
-def test_extract_steam_ids_skip_vanity(monkeypatch):
+def test_extract_steam_ids_with_vanity(monkeypatch):
     async def fake_convert(token: str) -> str:
         mapping = {
             "STEAM_0:1:1": "76561197960265731",
             "[U:1:2]": "76561197960265730",
-            "foo": "76561198000000000",
         }
         return mapping.get(token, token)
 
+    async def fake_resolve(slug: str) -> str:
+        return {
+            "foo": "76561198000000000",
+        }[slug]
+
     monkeypatch.setattr(sac, "convert_to_steam64", fake_convert)
+    monkeypatch.setattr(sac, "resolve_vanity_url", fake_resolve)
 
     text = "STEAM_0:1:1 foo [U:1:2] https://steamcommunity.com/id/foo"
     ids = asyncio.run(sac.extract_steam_ids(text))
-    assert ids == ["76561197960265731", "76561197960265730"]
+    assert ids == ["76561197960265731", "76561197960265730", "76561198000000000"]
