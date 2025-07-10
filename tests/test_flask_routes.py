@@ -33,13 +33,38 @@ async def test_post_invalid_ids_flash(async_client):
 
 
 @pytest.mark.asyncio
-async def test_post_valid_ids_sets_initial_ids(async_client):
+async def test_post_valid_ids_sets_initial_ids(monkeypatch, async_client):
+    mod = importlib.import_module("app")
+
+    async def fake_fetch(ids):
+        return [f'<div id="user-{i}"></div>' for i in ids]
+
+    monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
+    monkeypatch.setattr(mod.sac, "convert_to_steam64", lambda x: x)
+
     steamid = "76561198034301681"
     resp = await async_client.post("/", data={"steamids": steamid})
     assert resp.status_code == 200
     html = resp.text
     assert steamid in html
     assert "window.initialIds" in html
+
+
+@pytest.mark.asyncio
+async def test_post_returns_user_cards(monkeypatch, async_client):
+    mod = importlib.import_module("app")
+
+    async def fake_fetch(ids):
+        return [f'<div id="user-{i}">User {i}</div>' for i in ids]
+
+    monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
+    monkeypatch.setattr(mod.sac, "convert_to_steam64", lambda x: x)
+
+    steamid = "76561198034301681"
+    resp = await async_client.post("/", data={"steamids": steamid})
+    assert resp.status_code == 200
+    html = resp.text
+    assert f'id="user-{steamid}"' in html
 
 
 @pytest.mark.asyncio

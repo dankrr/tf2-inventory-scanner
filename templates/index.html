@@ -111,7 +111,11 @@
     <div id="results" class="fade-in">
         <div id="user-container">
             {% for user in users %}
-                {% include "_user.html" %}
+                {% if user is string %}
+                    {{ user|safe }}
+                {% else %}
+                    {% include "_user.html" %}
+                {% endif %}
             {% endfor %}
         </div>
     </div>
