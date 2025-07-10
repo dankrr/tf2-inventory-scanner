@@ -189,9 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) {
     btn.addEventListener('click', refreshAll);
   }
-  if (window.initialIds && window.initialIds.length) {
-    loadUsers(window.initialIds);
-  }
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
   }
