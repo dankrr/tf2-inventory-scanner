@@ -25,6 +25,9 @@ async function fetchUserCard(id) {
       if (window.attachHandlers) {
         window.attachHandlers();
       }
+      if (window.refreshLazyLoad) {
+        window.refreshLazyLoad();
+      }
     } else if (placeholder) {
       placeholder.classList.remove('loading');
       placeholder.classList.add('failed');

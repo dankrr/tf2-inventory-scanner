@@ -232,12 +232,16 @@ async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
     failed_ids: List[str] = []
     seen: set[str] = set()
 
-    for sid, user in zip(tasks.keys(), results):
-        user_ns = normalize_user_payload(user)
-        if sid in seen:
-            print("DUPLICATE PANEL:", sid)
+    for _, user in zip(tasks.keys(), results):
+        if not user or not isinstance(user, dict):
             continue
-        seen.add(sid)
+        if not user.get("username") and not user.get("personaname"):
+            continue
+        user_ns = normalize_user_payload(user)
+        if user_ns.steamid in seen:
+            print("DUPLICATE PANEL:", user_ns.steamid)
+            continue
+        seen.add(user_ns.steamid)
         if user_ns.status == "failed":
             failed_ids.append(user_ns.steamid)
         html_snippets.append(render_template("_user.html", user=user_ns))
