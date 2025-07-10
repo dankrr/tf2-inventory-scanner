@@ -46,3 +46,12 @@ def test_extract_ids_with_embedded_tokens():
         "76561198046779947",
         "76561197984957084",
     ]
+
+
+def test_extract_ids_multiple_embedded_tokens():
+    text = "Yyffjiu[U:1:368017243]ggv [U:1:322607312]  Bbbkiiyccc"
+    ids = extract_steam_ids(text)
+    assert ids == [
+        "76561198328282971",
+        "76561198282873040",
+    ]
