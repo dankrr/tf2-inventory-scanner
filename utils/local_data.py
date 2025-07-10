@@ -104,6 +104,18 @@ def load_json(relative: str) -> Any:
         return {}
 
 
+def _normalize_image_url(url: str | None) -> str | None:
+    """Return ``url`` with an HTTPS scheme for Steam CDN links."""
+
+    if isinstance(url, str) and url.startswith("http://media.steampowered.com"):
+        return url.replace(
+            "http://media.steampowered.com",
+            "https://media.steampowered.com",
+            1,
+        )
+    return url
+
+
 # Preload cached paintkit names at import time
 warpaints = load_json("schema/warpaints.json")
 PAINTKIT_NAMES = (
@@ -243,9 +255,20 @@ def load_files(
                 idx = int(entry["defindex"])
             except (TypeError, ValueError):
                 continue
+            entry["image_url"] = _normalize_image_url(entry.get("image_url"))
+            entry["image_url_large"] = _normalize_image_url(
+                entry.get("image_url_large")
+            )
             items_map[idx] = entry
     elif isinstance(raw_items, dict):
-        items_map = {int(k): v for k, v in raw_items.items() if str(k).isdigit()}
+        items_map = {}
+        for k, v in raw_items.items():
+            if not str(k).isdigit() or not isinstance(v, dict):
+                continue
+            idx = int(k)
+            v["image_url"] = _normalize_image_url(v.get("image_url"))
+            v["image_url_large"] = _normalize_image_url(v.get("image_url_large"))
+            items_map[idx] = v
     ITEMS_BY_DEFINDEX = items_map
     if verbose:
         logging.info(
