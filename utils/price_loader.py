@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .constants import KILLSTREAK_TIERS
 
+import httpx
 import requests
 from dotenv import load_dotenv
 
@@ -87,6 +88,32 @@ def ensure_prices_cached(refresh: bool = False) -> Path:
     return path
 
 
+async def ensure_prices_cached_async(refresh: bool = False) -> Path:
+    """Async version of :func:`ensure_prices_cached`."""
+
+    path = PRICES_FILE
+    if path.exists() and not refresh:
+        return path
+
+    url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                url, timeout=5, headers={"accept": "application/json"}
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # httpx or JSON
+            logger.warning("Failed to fetch prices: %s", exc)
+            if path.exists():
+                return path
+            raise RuntimeError("Cannot fetch Backpack.tf prices") from exc
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2))
+    return path
+
+
 def ensure_currencies_cached(refresh: bool = False) -> Path:
     """Download currency exchange rates from backpack.tf."""
 
@@ -104,6 +131,32 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
         if path.exists():
             return path
         raise RuntimeError("Cannot fetch Backpack.tf currencies") from exc
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2))
+    return path
+
+
+async def ensure_currencies_cached_async(refresh: bool = False) -> Path:
+    """Async version of :func:`ensure_currencies_cached`."""
+
+    path = CURRENCIES_FILE
+    if path.exists() and not refresh:
+        return path
+
+    url = f"https://backpack.tf/api/IGetCurrencies/v1?raw=1&key={_require_key()}"
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                url, timeout=5, headers={"accept": "application/json"}
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # httpx or JSON
+            logger.warning("Failed to fetch currencies: %s", exc)
+            if path.exists():
+                return path
+            raise RuntimeError("Cannot fetch Backpack.tf currencies") from exc
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2))

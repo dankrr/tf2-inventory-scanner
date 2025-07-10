@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
+import httpx
 import requests
 
 
@@ -57,6 +58,12 @@ class SchemaProvider:
         resp.raise_for_status()
         return resp.json()
 
+    async def _fetch_async(self, client: httpx.AsyncClient, endpoint: str) -> Any:
+        url = f"{self.base_url}{endpoint}"
+        resp = await client.get(url, timeout=20)
+        resp.raise_for_status()
+        return resp.json()
+
     def _cache_file(self, key: str) -> Path:
         if key == "paintkits":
             return self.cache_dir / "warpaints.json"
@@ -87,6 +94,35 @@ class SchemaProvider:
             path.write_text(json.dumps(data, indent=2))
         elif isinstance(data, dict) and "value" in data:
             # migrate old cache format that stores entire API response
+            data = data["value"]
+            path.write_text(json.dumps(data, indent=2))
+        return data
+
+    async def _load_async(
+        self, client: httpx.AsyncClient, key: str, endpoint: str, force: bool = False
+    ) -> Any:
+        path = self._cache_file(key)
+        data: Any | None = None
+        if not force and path.exists():
+            age = time.time() - path.stat().st_mtime
+            if age < self.TTL:
+                with path.open() as f:
+                    data = json.load(f)
+        if data is None:
+            fetched = await self._fetch_async(client, endpoint)
+            if isinstance(fetched, dict) and "value" in fetched:
+                data = fetched["value"]
+            else:
+                data = fetched
+            if (
+                key == "effects"
+                and isinstance(data, dict)
+                and not any(str(k).isdigit() for k in data)
+                and all(str(v).isdigit() for v in data.values())
+            ):
+                data = {int(v): k for k, v in data.items()}
+            path.write_text(json.dumps(data, indent=2))
+        elif isinstance(data, dict) and "value" in data:
             data = data["value"]
             path.write_text(json.dumps(data, indent=2))
         return data
@@ -123,6 +159,31 @@ class SchemaProvider:
             if verbose:
                 path = self._cache_file(key)
                 print(f"\N{CHECK MARK} Saved {path} ({count} entries)")
+
+        self.items_by_defindex = None
+        self.attributes_by_defindex = None
+        self.paints_map = None
+        self.paintkits_map = None
+        self.warpaints = None
+        self._warpaints_by_id = None
+        self.parts_by_defindex = None
+        self.defindex_names = None
+        self.qualities_map = None
+        self.effects_by_index = None
+        self.origins_by_index = None
+        self.string_lookups = None
+
+    async def refresh_all_async(self, verbose: bool = False) -> None:
+        """Asynchronously refresh all schema files."""
+        async with httpx.AsyncClient() as client:
+            for key, ep in self.ENDPOINTS.items():
+                if verbose:
+                    print(f"Fetching {key}...")
+                data = await self._load_async(client, key, ep, force=True)
+                count = len(data) if hasattr(data, "__len__") else 0
+                if verbose:
+                    path = self._cache_file(key)
+                    print(f"\N{CHECK MARK} Saved {path} ({count} entries)")
 
         self.items_by_defindex = None
         self.attributes_by_defindex = None

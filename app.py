@@ -21,6 +21,8 @@ from utils import constants as consts
 from utils.price_loader import (
     ensure_prices_cached,
     ensure_currencies_cached,
+    ensure_prices_cached_async,
+    ensure_currencies_cached_async,
 )
 
 load_dotenv()
@@ -38,18 +40,25 @@ ARGS, _ = parser.parse_known_args()
 if ARGS.refresh:
     from utils.schema_provider import SchemaProvider
 
-    print(
-        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
-    )
-    provider = SchemaProvider(cache_dir="cache/schema")
-    provider.refresh_all(verbose=True)
-    price_path = ensure_prices_cached(refresh=True)
-    curr_path = ensure_currencies_cached(refresh=True)
-    print(f"\N{CHECK MARK} Saved {price_path}")
-    print(f"\N{CHECK MARK} Saved {curr_path}")
-    print(
-        "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
-    )
+    async def _do_refresh() -> None:
+        print(
+            "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
+        )
+        provider = SchemaProvider(cache_dir="cache/schema")
+        await provider.refresh_all_async(verbose=True)
+        price_path = await ensure_prices_cached_async(refresh=True)
+        curr_path = await ensure_currencies_cached_async(refresh=True)
+        print(f"\N{CHECK MARK} Saved {price_path}")
+        print(f"\N{CHECK MARK} Saved {curr_path}")
+        print(
+            "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
+        )
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.run_until_complete(_do_refresh())
+    except RuntimeError:
+        asyncio.run(_do_refresh())
     raise SystemExit(0)
 
 TEST_MODE = ARGS.test
