@@ -166,6 +166,52 @@ async def convert_to_steam64(id_str: str) -> str:
     return data["steamid"]
 
 
+async def extract_steam_ids(raw_text: str, resolve_vanity: bool = False) -> List[str]:
+    """Return unique ``SteamID64`` values parsed from ``raw_text``.
+
+    The function scans the input for SteamID64, SteamID2, SteamID3 tokens or
+    profile/vanity URLs. Invalid segments are discarded. When ``resolve_vanity``
+    is ``True`` vanity URLs of the form
+    ``https://steamcommunity.com/id/<name>`` will be resolved via
+    :func:`convert_to_steam64`.
+    """
+
+    import re
+
+    pattern = re.compile(
+        r"(STEAM_0:[01]:\d+|\[U:1:\d+\]|\b7656119\d{10}\b|https?://steamcommunity\.com/(?:profiles/\d{17}|id/[A-Za-z0-9_-]+))",
+        re.IGNORECASE,
+    )
+
+    ids: List[str] = []
+    seen: set[str] = set()
+
+    for match in pattern.finditer(raw_text):
+        token = match.group(0)
+        vanity: str | None = None
+        if token.lower().startswith("http"):
+            slug = token.rstrip("/").split("/")[-1]
+            if token.lower().startswith("https://steamcommunity.com/profiles/"):
+                token = slug
+            else:
+                if not resolve_vanity:
+                    logger.debug("Skipping vanity URL %s", token)
+                    continue
+                vanity = slug
+
+        try:
+            sid = await convert_to_steam64(vanity or token)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Discarding token %s: %s", token, exc)
+            continue
+
+        if sid not in seen:
+            seen.add(sid)
+            ids.append(sid)
+
+    return ids
+
+
 async def get_tf2_playtime_hours(steamid: str) -> float:
     """Return TF2 playtime in hours for a Steam user."""
 
