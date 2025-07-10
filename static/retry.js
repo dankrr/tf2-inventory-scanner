@@ -82,8 +82,8 @@ function updateRefreshButton() {
 document.addEventListener('DOMContentLoaded', updateRefreshButton);
 
 function attachHandlers() {
-  document.querySelectorAll('.retry-pill').forEach(el => {
-    el.addEventListener('click', () => retryInventory(el.dataset.steamid));
+  document.querySelectorAll('.retry-button').forEach(btn => {
+    btn.addEventListener('click', () => retryInventory(btn.dataset.steamid));
   });
   updateRefreshButton();
 
