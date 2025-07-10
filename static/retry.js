@@ -41,6 +41,9 @@ function retryInventory(id) {
         card.replaceWith(newCard);
       }
       attachHandlers();
+      if (window.refreshLazyLoad) {
+        window.refreshLazyLoad();
+      }
       updateRefreshButton();
       showResults();
     })
@@ -57,7 +60,7 @@ function retryInventory(id) {
 function updateRefreshButton() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
-  const failures = document.querySelectorAll('.user-box.failed').length;
+  const failures = document.querySelectorAll('.user.failed').length;
   if (failures === 0) {
     btn.disabled = true;
     btn.textContent = 'Nothing to Refresh';
@@ -94,7 +97,7 @@ async function refreshAll() {
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
   const cards = Array.from(
-    document.querySelectorAll('.retry-card[data-steamid]')
+    document.querySelectorAll('.user.failed[data-steamid]')
   );
   const total = cards.length;
   const BATCH_SIZE = 3;
