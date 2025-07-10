@@ -61,14 +61,13 @@ def extract_steam_ids(raw_text: str) -> List[str]:
     """
 
     pattern = re.compile(
-        r"(STEAM_0:[01]:\d+|\[U:[01]:\d+\]|\b7656119\d{10}\b)",
+        rf"({STEAMID2_RE.pattern}|{STEAMID3_RE.pattern}|{STEAMID64_RE.pattern})",
         re.IGNORECASE,
     )
     ids: List[str] = []
     seen: set[str] = set()
 
-    for match in pattern.finditer(raw_text):
-        token = match.group(0)
+    for token in pattern.findall(raw_text):
         try:
             sid = convert_to_steam64(token)
         except ValueError:
