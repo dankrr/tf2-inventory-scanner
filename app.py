@@ -5,13 +5,11 @@ from pathlib import Path
 import json
 import argparse
 import psutil
-import re
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from quart import Quart, render_template, request, flash, jsonify
-from utils.id_parser import extract_steam_ids
 from utils.inventory_processor import enrich_inventory
 import utils.inventory_processor as ip
 
@@ -100,12 +98,12 @@ def get_sync_test_client():
             def __getattr__(self, name):
                 return getattr(self.resp, name)
 
-        def get(self, *args, **kwargs):
-            resp = _sync(client.get(*args, **kwargs))
+        async def get(self, *args, **kwargs):
+            resp = await client.get(*args, **kwargs)
             return self.SyncResponse(resp)
 
-        def post(self, *args, **kwargs):
-            resp = _sync(client.post(*args, **kwargs))
+        async def post(self, *args, **kwargs):
+            resp = await client.post(*args, **kwargs)
             return self.SyncResponse(resp)
 
         def __getattr__(self, name):
@@ -414,30 +412,21 @@ async def index():
     if request.method == "POST":
         form = await request.form
         steamids_input = form.get("steamids", "")
-        tokens = re.split(r"\s+", steamids_input.strip())
-        tokens = [t for t in tokens if t]
-        ids = []
+        ids = await sac.extract_steam_ids(steamids_input)
+        tokens = [t for t in steamids_input.split() if t]
         invalid: List[str] = []
-        seen: set[str] = set()
         for token in tokens:
-            if not extract_steam_ids(token):
-                invalid.append(token)
-                continue
             try:
-                if re.fullmatch(r"\d{17}", token):
-                    sid = token
-                else:
-                    sid = await sac.convert_to_steam64(token)
+                sid = await sac.convert_to_steam64(token)
             except Exception:  # noqa: BLE001
                 invalid.append(token)
                 continue
-            if sid not in seen:
-                seen.add(sid)
-                ids.append(sid)
+            if sid not in ids:
+                invalid.append(token)
         app.logger.info("Parsed %s IDs, ignored %s tokens", len(ids), len(invalid))
         if not ids:
             if USE_SESSIONS:
-                flash("No valid Steam IDs found!")
+                await flash("No valid Steam IDs found!")
             return await render_template(
                 "index.html",
                 users=users,

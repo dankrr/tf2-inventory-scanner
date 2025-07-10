@@ -174,3 +174,13 @@ def test_extract_steam_ids_with_vanity(monkeypatch):
     text = "STEAM_0:1:1 foo [U:1:2] https://steamcommunity.com/id/foo"
     ids = asyncio.run(sac.extract_steam_ids(text))
     assert ids == ["76561197960265731", "76561197960265730", "76561198000000000"]
+
+
+def test_extract_ids_status_sebektam():
+    text = """
+    hostname: s
+    # userid name uniqueid connected ping loss state
+    #   1 \"Sebektam\" [U:1:921725235] 00:01 50 0 active
+    """
+    ids = asyncio.run(sac.extract_steam_ids(text))
+    assert ids == ["76561198881990963"]
