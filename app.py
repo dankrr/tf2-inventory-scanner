@@ -203,6 +203,18 @@ async def fetch_and_process_single_user(steamid64: int) -> str:
     return render_template("_user.html", user=user)
 
 
+async def fetch_and_process_many(ids: List[str]) -> List[str]:
+    """Return rendered user cards for all ``ids`` concurrently."""
+
+    tasks = [build_user_data_async(sid) for sid in ids]
+    users = await asyncio.gather(*tasks)
+    html_snippets: List[str] = []
+    for user in users:
+        user_ns = normalize_user_payload(user)
+        html_snippets.append(render_template("_user.html", user=user_ns))
+    return html_snippets
+
+
 async def _setup_test_mode() -> None:
     """Initialize test mode and preload inventory data."""
 
@@ -264,6 +276,24 @@ async def _setup_test_mode() -> None:
 async def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
     return await fetch_and_process_single_user(steamid64)
+
+
+@app.post("/api/users")
+async def api_users():
+    """Return rendered user cards for multiple Steam IDs."""
+
+    payload = request.get_json(silent=True) or {}
+    ids_raw = payload.get("ids", [])
+    if not isinstance(ids_raw, list):
+        return jsonify({"error": "ids must be a list"}), 400
+
+    try:
+        ids = [sac.convert_to_steam64(str(i)) for i in ids_raw]
+    except ValueError:
+        return jsonify({"error": "Invalid Steam ID"}), 400
+
+    snippets = await fetch_and_process_many(ids)
+    return jsonify({"html": snippets})
 
 
 @app.get("/api/constants")
