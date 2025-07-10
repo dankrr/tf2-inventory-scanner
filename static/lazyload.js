@@ -39,4 +39,8 @@ window.refreshLazyLoad = function () {
     .forEach(img => observer && observer.observe(img));
 };
 
-document.addEventListener('DOMContentLoaded', initLazyLoad);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initLazyLoad);
+} else {
+  initLazyLoad();
+}
