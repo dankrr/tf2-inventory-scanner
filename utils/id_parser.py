@@ -2,7 +2,8 @@ import re
 from typing import List
 
 STEAMID2_RE = re.compile(r"STEAM_0:[01]:\d+", re.IGNORECASE)
-STEAMID3_RE = re.compile(r"\[U:[01]:\d+\]", re.IGNORECASE)
+# Only accept "[U:1:<id>]" tokens from TF2 status output
+STEAMID3_RE = re.compile(r"\[U:1:\d+\]", re.IGNORECASE)
 STEAMID64_RE = re.compile(r"\b\d{17}\b")
 
 
@@ -12,7 +13,8 @@ def convert_to_steam64(token: str) -> str:
     Parameters
     ----------
     token:
-        SteamID in ``SteamID64``, ``SteamID2`` or ``SteamID3`` format.
+        SteamID in ``SteamID64``, ``SteamID2`` or ``SteamID3`` format. ``SteamID3``
+        values must be in the ``[U:1:<id>]`` form.
 
     Returns
     -------
