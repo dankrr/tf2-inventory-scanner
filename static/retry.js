@@ -123,7 +123,11 @@ function loadUsers(ids) {
   (async () => {
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i];
-      if (!document.getElementById('user-' + id)) {
+      const existing = document.getElementById('user-' + id);
+      if (existing && !existing.classList.contains('failed')) {
+        continue;
+      }
+      if (!existing) {
         const placeholder = document.createElement('div');
         placeholder.id = 'user-' + id;
         placeholder.dataset.steamid = id;

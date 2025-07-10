@@ -37,7 +37,7 @@ async def test_post_valid_ids_sets_initial_ids(monkeypatch, async_client):
     mod = importlib.import_module("app")
 
     async def fake_fetch(ids):
-        return [f'<div id="user-{i}"></div>' for i in ids]
+        return [f'<div id="user-{i}"></div>' for i in ids], []
 
     monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
     monkeypatch.setattr(mod.sac, "convert_to_steam64", lambda x: x)
@@ -55,7 +55,7 @@ async def test_post_returns_user_cards(monkeypatch, async_client):
     mod = importlib.import_module("app")
 
     async def fake_fetch(ids):
-        return [f'<div id="user-{i}">User {i}</div>' for i in ids]
+        return [f'<div id="user-{i}">User {i}</div>' for i in ids], []
 
     monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
     monkeypatch.setattr(mod.sac, "convert_to_steam64", lambda x: x)
