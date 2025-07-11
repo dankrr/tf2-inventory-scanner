@@ -240,6 +240,9 @@ button {
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
 }
+.item-card.trade-hold {
+  border: 2px solid #ff4040;
+}
 
 .particle-overlay {
   position: absolute;
