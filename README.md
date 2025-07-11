@@ -114,7 +114,8 @@ Items may be hidden or skipped from pricing based on `static/exclusions.json`.
 Items flagged with `flag_cannot_trade` are treated as untradable **unless** the
 item also contains `steam_market_tradeable_after` or
 `steam_market_marketable_after` in its description data. In that case, the item
-is priced and displayed normally despite the temporary trade hold.
+is priced and displayed normally despite the temporary trade hold. Any
+untradable item without a temporary trade hold is hidden from display.
 
 ## Testing
 
