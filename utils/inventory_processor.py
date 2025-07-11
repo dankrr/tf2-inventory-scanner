@@ -1262,11 +1262,17 @@ def process_inventory(
     data: Dict[str, Any],
     valuation_service: ValuationService | None = None,
 ) -> List[Dict[str, Any]]:
-    """Public wrapper that sorts items by name."""
+    """Return enriched items sorted by descending price."""
     if valuation_service is None:
         valuation_service = get_valuation_service()
     items = enrich_inventory(data, valuation_service)
-    return sorted(items, key=lambda i: i["name"])
+
+    def _sort_key(item: Dict[str, Any]) -> tuple[float, str]:
+        price_info = item.get("price") or {}
+        value = price_info.get("value_raw", 0) or 0
+        return -float(value), item["name"]
+
+    return sorted(items, key=_sort_key)
 
 
 def run_enrichment_test(path: str | None = None) -> None:
