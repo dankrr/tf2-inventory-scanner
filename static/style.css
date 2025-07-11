@@ -260,6 +260,7 @@ button {
 }
 .item-card.uncraftable {
   border-style: dashed;
+  border-width: 2px;
 }
 
 .particle-overlay {
