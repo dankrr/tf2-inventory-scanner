@@ -953,6 +953,7 @@ def _process_item(
         valuation_service = None
 
     uncraftable = bool(asset.get("flag_cannot_craft"))
+    craftable = not uncraftable
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -1199,6 +1200,7 @@ def _process_item(
         "trade_hold_expires": trade_hold_ts,
         "untradable_hold": untradable_hold,
         "uncraftable": uncraftable,
+        "craftable": craftable,
         "_hidden": hide_item,
     }
 
@@ -1214,6 +1216,7 @@ def _process_item(
                 formatted = valuation_service.format_price(
                     item.get("base_name", base_name),
                     qid,
+                    craftable,
                     bool(is_australium),
                     effect_id=effect_id,
                     killstreak_tier=ks_tier_val,
@@ -1225,6 +1228,7 @@ def _process_item(
                 item["price"] = valuation_service.get_price_info(
                     item.get("base_name", base_name),
                     qid,
+                    craftable,
                     bool(is_australium),
                     effect_id=effect_id,
                     killstreak_tier=ks_tier_val,
