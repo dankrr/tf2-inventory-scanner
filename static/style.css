@@ -243,6 +243,9 @@ button {
 .item-card.trade-hold {
   border: 2px solid #ff4040;
 }
+.item-card.uncraftable {
+  border-style: dashed;
+}
 
 .particle-overlay {
   position: absolute;
