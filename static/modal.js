@@ -96,6 +96,14 @@
     ;[
       ['Type', data.item_type_name],
       ['Level', data.level],
+      [
+        'Craftable',
+        typeof data.craftable === 'boolean'
+          ? data.craftable
+            ? 'Craftable'
+            : 'Uncraftable'
+          : null,
+      ],
       ['Origin', data.origin],
     ].forEach(([label, value]) => {
       if (!value) return;
