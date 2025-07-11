@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
+PRICE_MAP_FILE = Path("cache/price_map.json")
 
 
 QUALITY_PREFIXES = (
@@ -221,4 +222,42 @@ def build_price_map(
                         "value_raw": float(value_raw),
                         "currency": str(currency),
                     }
+    return mapping
+
+
+def dump_price_map(
+    price_map: dict[tuple[str, int, bool, bool, int, int], dict],
+    path: Path = PRICE_MAP_FILE,
+) -> Path:
+    """Serialize ``price_map`` to ``path``."""
+
+    data = [[list(key), value] for key, value in price_map.items()]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data))
+    return path
+
+
+def load_price_map(
+    path: Path = PRICE_MAP_FILE,
+) -> dict[tuple[str, int, bool, bool, int, int], dict]:
+    """Load mapping previously saved by :func:`dump_price_map`."""
+
+    with path.open() as f:
+        data = json.load(f)
+
+    mapping: dict[tuple[str, int, bool, bool, int, int], dict] = {}
+    if isinstance(data, list):
+        for key, value in data:
+            if not isinstance(key, list) or len(key) != 6:
+                continue
+            mapping[
+                (
+                    str(key[0]),
+                    int(key[1]),
+                    bool(key[2]),
+                    bool(key[3]),
+                    int(key[4]),
+                    int(key[5]),
+                )
+            ] = value
     return mapping
