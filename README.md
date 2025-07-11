@@ -10,7 +10,8 @@ A lightweight Flask web app for exploring Team Fortress 2 inventories.
 - Resolves usernames and avatars via the Steam API
 - Enriches items with backpack.tf prices
 - Displays playtime and item details
-- Refreshes local schema and price caches with a command-line flag
+- Schema file stored at `data/schema_steam.json` (auto-refreshed every 24 hours)
+- Price caches can be updated manually with a command-line flag
 
 See the [docs](docs/) directory for a full workflow description.
 
@@ -18,13 +19,13 @@ See the [docs](docs/) directory for a full workflow description.
 
 1. Install dependencies
 2. Copy `.env.example` to `.env` and set the API keys
-3. (Optional) Refresh item schema and prices:
+3. (Optional) Force refresh of schema and price caches:
 
 ```bash
 python app.py --refresh --verbose
 ```
 
-4. Run the server:
+4. Run the server (the schema will auto-refresh if older than 24 hours):
 
 ```bash
 python run_hypercorn.py
