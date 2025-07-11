@@ -85,20 +85,12 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         "pathlib.Path.mkdir", lambda self, parents=True, exist_ok=True: None
     )
 
-    def fake_refresh(self, verbose: bool = False):
-        called["schema"] = verbose
-        if verbose:
-            print("Fetching items...")
-            print("\N{CHECK MARK} Saved cache/schema/items.json (0 entries)")
-
-    async def fake_refresh_async(self, verbose: bool = False):
-        fake_refresh(self, verbose)
+    async def fake_load_schema(self, force: bool = False, language: str = "en"):
+        called["schema"] = force
+        print("\N{CHECK MARK} Saved data/schema_steam.json")
 
     monkeypatch.setattr(
-        "utils.schema_provider.SchemaProvider.refresh_all", fake_refresh
-    )
-    monkeypatch.setattr(
-        "utils.schema_provider.SchemaProvider.refresh_all_async", fake_refresh_async
+        "utils.steam_schema.SteamSchemaProvider.load_schema", fake_load_schema
     )
 
     monkeypatch.setattr(
@@ -136,7 +128,7 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         exited = True
     assert exited is True
     out = capsys.readouterr().out
-    assert "Fetching items..." in out
-    assert "✓ Saved cache/schema/items.json (0 entries)" in out
+    assert "refetching TF2 schema" in out
+    assert "✓ Saved data/schema_steam.json" in out
     assert called["schema"] is True
     assert called["prices"] is True

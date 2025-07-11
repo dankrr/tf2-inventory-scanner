@@ -37,16 +37,17 @@ parser.add_argument("--test", action="store_true")
 ARGS, _ = parser.parse_known_args()
 
 if ARGS.refresh:
-    from utils.schema_provider import SchemaProvider
+    from utils.steam_schema import SteamSchemaProvider
 
     async def _do_refresh() -> None:
         print(
             "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
         )
-        provider = SchemaProvider(cache_dir="cache/schema")
-        await provider.refresh_all_async(verbose=True)
+        provider = SteamSchemaProvider(cache_file="data/schema_steam.json")
+        await provider.load_schema(force=True)
         price_path = await ensure_prices_cached_async(refresh=True)
         curr_path = await ensure_currencies_cached_async(refresh=True)
+        print(f"\N{CHECK MARK} Saved {provider.cache_file}")
         print(f"\N{CHECK MARK} Saved {price_path}")
         print(f"\N{CHECK MARK} Saved {curr_path}")
         print(
