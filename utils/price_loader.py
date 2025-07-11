@@ -196,7 +196,7 @@ def build_price_map(
                 craftable = craft_key == "Craftable"
                 entries = tradable.get(craft_key)
 
-                if qid == 5 and isinstance(entries, dict):
+                if isinstance(entries, dict):
                     effect_entries = entries
                 else:
                     entry = entries[0] if isinstance(entries, list) else None

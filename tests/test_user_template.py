@@ -278,6 +278,7 @@ def test_australium_name_omits_strange_prefix(app):
     assert title.text.strip() == "Australium Scattergun"
 
 
+
 def test_professional_killstreak_australium_title(app):
     context = {
         "user": {

@@ -282,3 +282,40 @@ def test_dump_and_load_price_map(tmp_path):
     price_loader.dump_price_map(mapping, path)
     loaded = price_loader.load_price_map(path)
     assert loaded == mapping
+
+
+def test_price_map_dict_entry(tmp_path, monkeypatch):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    url = "https://backpack.tf/api/IGetPrices/v4?raw=1&key=TEST"
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Lugermorph": {
+                    "defindex": [160],
+                    "prices": {
+                        "3": {
+                            "Tradable": {
+                                "Craftable": {
+                                    "0": {
+                                        "value": 12.4,
+                                        "value_raw": 12.4,
+                                        "currency": "keys",
+                                        "last_update": 0,
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, json=payload, status=200)
+        p = price_loader.ensure_prices_cached(refresh=True)
+
+    mapping = price_loader.build_price_map(p)
+    assert ("Lugermorph", 3, True, False, 0, 0) in mapping
