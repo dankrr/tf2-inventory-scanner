@@ -8,10 +8,6 @@ import vdf
 from .schema_provider import SchemaProvider
 from .price_loader import ensure_currencies_cached
 
-# Legacy globals kept for backward compatibility
-TF2_SCHEMA: Dict[str, Any] = {}
-ITEMS_GAME_CLEANED: Dict[str, Any] = {}
-
 # New schema maps sourced from schema.autobot.tf
 SCHEMA_ATTRIBUTES: Dict[int, Dict[str, Any]] = {}
 ITEMS_BY_DEFINDEX: Dict[int, Dict[str, Any]] = {}
