@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - Paintkits endpoint cached as `warpaints.json`.
 - Async Flask routes with `httpx` replacing `requests` for concurrent HTTP calls.
 - IntersectionObserver-based image lazy loading script.
+- Documentation moved to `docs/` with a detailed workflow guide.
+- License changed to an MIT-style Non-Commercial license.
 
 ### Changed
 - Updated schema caching logic and UI (previous releases).
