@@ -18,6 +18,10 @@ See the [docs](docs/) directory for a full workflow description.
 ## Quick Start
 
 1. Install dependencies
+   ```bash
+   pip install -r requirements-test.txt
+   pre-commit install
+   ```
 2. Copy `.env.example` to `.env` and set the API keys
 3. (Optional) Force refresh of schema and price caches:
 
