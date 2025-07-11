@@ -87,6 +87,26 @@ for asset in raw_items:
     asset["name"] = entry.get("item_name") or entry.get("name")
 ```
 
+## Price Data
+
+Item prices from backpack.tf are cached in `cache/prices.json`. The file is a
+direct dump of the `IGetPrices` API and has a top-level `response.items` object
+mapping each item name to a `defindex` list and nested `prices` dictionary. The
+`prices` data is keyed by quality ID and then split into `Tradable` →
+`Craftable` or `Non-Craftable` entries containing price fields like
+`value_raw`, `currency`, and `last_update`.
+
+`utils/price_loader.build_price_map()` converts this structure into a lookup
+table using the tuple `(item_name, quality, craftable, is_australium,
+effect_id, killstreak_tier)` as the key. Example:
+
+```python
+("Mann Co. Supply Crate Key", 6, True, False, 0, 0)
+```
+
+Use `ensure_prices_cached(refresh=True)` or run the app with `--refresh` to
+redownload `prices.json` when backpack.tf updates.
+
 ## Modals
 
 All modal behaviour is centralized in `static/modal.js`. Other scripts use
