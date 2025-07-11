@@ -6,7 +6,7 @@ import pytest
 
 
 def test_refresh_flag_triggers_update(monkeypatch, capsys):
-    called = {"schema": None, "prices": False}
+    called = {"schema": [], "prices": False}
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
@@ -16,7 +16,7 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     )
 
     async def fake_load_schema(self, force: bool = False, language: str = "en"):
-        called["schema"] = force
+        called["schema"].append(force)
         print("\N{CHECK MARK} Saved data/schema_steam.json")
 
     monkeypatch.setattr(
@@ -54,6 +54,6 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "refetching TF2 schema" in out
     assert "✓ Saved data/schema_steam.json" in out
-    assert called["schema"] is True
+    assert called["schema"] == [True]
     assert called["prices"] is True
     assert called["curr"] is True
