@@ -245,7 +245,9 @@ def load_files(
     attr_path = schema_path
     raw_attrs = schema.get("attributes_by_defindex", {})
     if isinstance(raw_attrs, dict):
-        SCHEMA_ATTRIBUTES = {int(k): v for k, v in raw_attrs.items() if str(k).isdigit()}
+        SCHEMA_ATTRIBUTES = {
+            int(k): v for k, v in raw_attrs.items() if str(k).isdigit()
+        }
     else:
         SCHEMA_ATTRIBUTES = {}
     if verbose:
@@ -268,7 +270,9 @@ def load_files(
     ITEMS_BY_DEFINDEX = items_map
     if verbose:
         logging.info(
-            "\N{CHECK MARK} Loaded %d items from %s", len(ITEMS_BY_DEFINDEX), schema_path
+            "\N{CHECK MARK} Loaded %d items from %s",
+            len(ITEMS_BY_DEFINDEX),
+            schema_path,
         )
         if len(ITEMS_BY_DEFINDEX) < 5000:
             logging.info(
@@ -291,7 +295,9 @@ def load_files(
 
     raw_parts = schema.get("particles_by_index", {})
     if isinstance(raw_parts, dict):
-        PARTICLE_NAMES = {int(k): str(v) for k, v in raw_parts.items() if str(k).isdigit()}
+        PARTICLE_NAMES = {
+            int(k): str(v) for k, v in raw_parts.items() if str(k).isdigit()
+        }
     else:
         PARTICLE_NAMES = {}
     if verbose:
