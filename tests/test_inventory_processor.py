@@ -837,12 +837,18 @@ def test_plain_craft_weapon_filtered():
 
 
 @pytest.mark.parametrize("origin", [1, 5, 9, 14])
-def test_plain_craft_weapon_with_special_origin_kept(origin):
+def test_plain_craft_weapon_with_special_origin_hidden(origin, patch_valuation):
     data = {"items": [{"defindex": 10, "quality": 6, "origin": origin}]}
     ld.ITEMS_BY_DEFINDEX = {10: {"item_name": "A", "craft_class": "weapon"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("A", 6, False, 0, 0): {"value_raw": 1, "currency": "metal"}}
+    patch_valuation(price_map)
     items = ip.enrich_inventory(data)
     assert len(items) == 1
+    item = items[0]
+    assert item["_hidden"] is True
+    assert "price" not in item
+    assert "price_string" not in item
 
 
 def test_special_craft_weapon_kept():

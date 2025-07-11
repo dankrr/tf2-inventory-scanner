@@ -18,4 +18,5 @@ All notable changes to this project will be documented in this file.
 - Updated schema caching logic and UI (previous releases).
 - Security audit using git-secrets and pip-audit.
 - Price loader now reads both Craftable and Non-Craftable price entries.
-- Plain craft weapons from achievements or promotions are no longer filtered.
+- Plain craft weapons from achievements or promotions are no longer filtered and
+  such items are hidden without price data.
