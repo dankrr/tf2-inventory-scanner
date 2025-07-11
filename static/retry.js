@@ -58,7 +58,7 @@ function retryInventory(id) {
 }
 
 function getFailedUsers() {
-  return [...document.querySelectorAll('.user.failed')]
+  return [...document.querySelectorAll('.user-card.failed')]
     .filter(div => !div.classList.contains('private'))
     .map(div => div.dataset.steamid);
 }
