@@ -323,6 +323,14 @@ def test_user_template_safe(monkeypatch, status):
         lambda refresh=False: Path("currencies.json"),
     )
     monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
+    monkeypatch.setattr(
+        "utils.price_loader.PRICE_MAP_FILE",
+        Path("price_map.json"),
+    )
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     import importlib
 

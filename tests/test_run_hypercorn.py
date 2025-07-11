@@ -18,6 +18,11 @@ def _mock_app_import(monkeypatch):
         lambda refresh=False: Path("currencies.json"),
     )
     monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
+    monkeypatch.setattr("utils.price_loader.PRICE_MAP_FILE", Path("price_map.json"))
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
     sys.modules.pop("app", None)
     sys.modules.pop("run_hypercorn", None)
     sys.modules.pop("app", None)
