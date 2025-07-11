@@ -181,6 +181,7 @@ def build_price_map(
         base_name = (
             name.replace("Australium ", "") if name.startswith("Australium ") else name
         )
+        base_name = base_name.replace("\n", " ")
         base_name, ks_tier = _extract_killstreak(base_name)
         prices = item.get("prices", {})
         for quality, qdata in prices.items():
