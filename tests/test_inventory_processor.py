@@ -983,6 +983,7 @@ def test_untradable_item_no_price(patch_valuation):
     item = items[0]
     assert "price" not in item
     assert "price_string" not in item
+    assert item["_hidden"] is True
 
 
 def test_trade_hold_item_priced(patch_valuation):
@@ -1036,6 +1037,23 @@ def test_untradable_origin_hidden(origin, patch_valuation):
     data = {
         "items": [
             {"defindex": 44, "quality": 6, "origin": origin, "flag_cannot_trade": True}
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("Widget", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"}}
+
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["_hidden"] is True
+    assert "price" not in item
+
+
+def test_untradable_nonlisted_origin_hidden(patch_valuation):
+    data = {
+        "items": [
+            {"defindex": 44, "quality": 6, "origin": 3, "flag_cannot_trade": True}
         ]
     }
     ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}

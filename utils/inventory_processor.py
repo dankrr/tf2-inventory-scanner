@@ -53,7 +53,6 @@ CRATE_SERIES_CLASSES: set[str] = set()
 # Origins configuration loaded from ``static/exclusions.json`` via ``local_data``
 _exclusions = local_data.load_exclusions()
 CRAFT_WEAPON_ALLOWED_ORIGINS = set(_exclusions.get("craft_weapon_exclusions", []))
-HIDDEN_ORIGINS = set(_exclusions.get("hidden_origins", []))
 
 # Sets of attribute defindexes considered "special" for craft weapon detection
 SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
@@ -949,7 +948,7 @@ def _process_item(
         else:
             tradable_val = 0
 
-    hide_item = tradable_val == 0 and origin_int in HIDDEN_ORIGINS
+    hide_item = tradable_val == 0
     if hide_item:
         valuation_service = None
 
