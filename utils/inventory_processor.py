@@ -905,6 +905,9 @@ def _process_item(
     except (TypeError, ValueError):  # pragma: no cover - fallback handling
         tradable_val = 1
 
+    if asset.get("flag_cannot_trade"):
+        tradable_val = 0
+
     hide_item = tradable_val == 0 and origin_int in HIDDEN_ORIGINS
     if hide_item:
         valuation_service = None

@@ -838,7 +838,11 @@ def test_plain_craft_weapon_filtered():
 
 @pytest.mark.parametrize("origin", [1, 5, 14])
 def test_plain_craft_weapon_with_special_origin_hidden(origin, patch_valuation):
-    data = {"items": [{"defindex": 10, "quality": 6, "origin": origin, "tradable": 0}]}
+    data = {
+        "items": [
+            {"defindex": 10, "quality": 6, "origin": origin, "flag_cannot_trade": True}
+        ]
+    }
     ld.ITEMS_BY_DEFINDEX = {10: {"item_name": "A", "craft_class": "weapon"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("A", 6, False, 0, 0): {"value_raw": 1, "currency": "metal"}}
@@ -968,7 +972,25 @@ def test_price_map_unusual_lookup(patch_valuation):
 
 
 def test_untradable_item_no_price(patch_valuation):
-    data = {"items": [{"defindex": 42, "quality": 6, "tradable": 0}]}
+    data = {"items": [{"defindex": 42, "quality": 6, "flag_cannot_trade": True}]}
+    ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("Answer", 6, False, 0, 0): {"value_raw": 5.33, "currency": "metal"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert "price" not in item
+    assert "price_string" not in item
+
+
+@pytest.mark.parametrize("tradable_val", [None, 1])
+def test_flag_cannot_trade_overrides_tradable(tradable_val, patch_valuation):
+    asset = {"defindex": 42, "quality": 6, "flag_cannot_trade": True}
+    if tradable_val is not None:
+        asset["tradable"] = tradable_val
+    data = {"items": [asset]}
     ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("Answer", 6, False, 0, 0): {"value_raw": 5.33, "currency": "metal"}}
@@ -983,7 +1005,11 @@ def test_untradable_item_no_price(patch_valuation):
 
 @pytest.mark.parametrize("origin", [0, 1, 5, 14])
 def test_untradable_origin_hidden(origin, patch_valuation):
-    data = {"items": [{"defindex": 44, "quality": 6, "origin": origin, "tradable": 0}]}
+    data = {
+        "items": [
+            {"defindex": 44, "quality": 6, "origin": origin, "flag_cannot_trade": True}
+        ]
+    }
     ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("Widget", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"}}
