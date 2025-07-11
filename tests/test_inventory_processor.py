@@ -985,6 +985,34 @@ def test_untradable_item_no_price(patch_valuation):
     assert "price_string" not in item
 
 
+def test_trade_hold_item_priced(patch_valuation):
+    data = {
+        "items": [
+            {
+                "defindex": 42,
+                "quality": 6,
+                "flag_cannot_trade": True,
+                "descriptions": [
+                    {
+                        "value": "Tradable After",
+                        "app_data": {"steam_market_tradeable_after": 1752944400},
+                    }
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {42: {"item_name": "Answer", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("Answer", 6, False, 0, 0): {"value_raw": 5.33, "currency": "metal"}}
+    ld.CURRENCIES = {"keys": {"price": {"value_raw": 50.0}}}
+
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["price"] == price_map[("Answer", 6, False, 0, 0)]
+    assert item["_hidden"] is False
+
+
 @pytest.mark.parametrize("tradable_val", [None, 1])
 def test_flag_cannot_trade_overrides_tradable(tradable_val, patch_valuation):
     asset = {"defindex": 42, "quality": 6, "flag_cannot_trade": True}
@@ -1019,6 +1047,31 @@ def test_untradable_origin_hidden(origin, patch_valuation):
     item = items[0]
     assert item["_hidden"] is True
     assert "price" not in item
+
+
+def test_trade_hold_origin_visible(patch_valuation):
+    data = {
+        "items": [
+            {
+                "defindex": 44,
+                "quality": 6,
+                "origin": 0,
+                "flag_cannot_trade": True,
+                "descriptions": [
+                    {"app_data": {"steam_market_tradeable_after": 1752944400}}
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("Widget", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"}}
+
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["_hidden"] is False
+    assert item["price"] == price_map[("Widget", 6, False, 0, 0)]
 
 
 @pytest.mark.parametrize("origin", [0, 1, 5, 14])

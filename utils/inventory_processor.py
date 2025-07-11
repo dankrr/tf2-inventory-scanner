@@ -872,6 +872,26 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     return True
 
 
+def _has_trade_hold(asset: dict) -> bool:
+    """Return ``True`` if the item has a temporary trade hold."""
+
+    if asset.get("steam_market_tradeable_after") or asset.get(
+        "steam_market_marketable_after"
+    ):
+        return True
+
+    for desc in asset.get("descriptions", []):
+        if not isinstance(desc, dict):
+            continue
+        app_data = desc.get("app_data")
+        if isinstance(app_data, dict) and (
+            app_data.get("steam_market_tradeable_after")
+            or app_data.get("steam_market_marketable_after")
+        ):
+            return True
+    return False
+
+
 def _process_item(
     asset: dict,
     valuation_service: ValuationService | None = None,
@@ -906,7 +926,10 @@ def _process_item(
         tradable_val = 1
 
     if asset.get("flag_cannot_trade"):
-        tradable_val = 0
+        if _has_trade_hold(asset):
+            tradable_val = 1
+        else:
+            tradable_val = 0
 
     hide_item = tradable_val == 0 and origin_int in HIDDEN_ORIGINS
     if hide_item:
