@@ -20,3 +20,4 @@ All notable changes to this project will be documented in this file.
 - Price loader now reads both Craftable and Non-Craftable price entries.
 - Plain craft weapons from achievements or promotions are no longer filtered and
   such items are hidden without price data.
+- Untradable timed-drop items are now marked as hidden.

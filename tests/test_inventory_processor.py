@@ -967,6 +967,19 @@ def test_untradable_item_no_price(patch_valuation):
     assert "price_string" not in item
 
 
+def test_untradable_timed_drop_hidden(patch_valuation):
+    data = {"items": [{"defindex": 44, "quality": 6, "origin": 0, "tradable": 0}]}
+    ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("Widget", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"}}
+
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["_hidden"] is True
+    assert "price" not in item
+
+
 def test_tradable_item_missing_price(patch_valuation):
     data = {"items": [{"defindex": 43, "quality": 6, "tradable": 1}]}
     ld.ITEMS_BY_DEFINDEX = {43: {"item_name": "Bazooka", "image_url": ""}}
