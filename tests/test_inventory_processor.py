@@ -1253,3 +1253,19 @@ def test_extract_wear_attr_749(monkeypatch):
     asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}
     wear = ip._extract_wear(asset)
     assert wear == "Factory New"
+
+
+def test_uncraftable_flag_true():
+    data = {"items": [{"defindex": 111, "quality": 6, "flag_cannot_craft": True}]}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["uncraftable"] is True
+
+
+def test_uncraftable_flag_absent():
+    data = {"items": [{"defindex": 111, "quality": 6}]}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    assert items[0]["uncraftable"] is False

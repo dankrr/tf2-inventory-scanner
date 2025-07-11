@@ -952,6 +952,8 @@ def _process_item(
     if hide_item:
         valuation_service = None
 
+    uncraftable = bool(asset.get("flag_cannot_craft"))
+
     defindex_raw = asset.get("defindex", 0)
     try:
         defindex_int = int(defindex_raw)
@@ -1196,6 +1198,7 @@ def _process_item(
         ),
         "trade_hold_expires": trade_hold_ts,
         "untradable_hold": untradable_hold,
+        "uncraftable": uncraftable,
         "_hidden": hide_item,
     }
 
