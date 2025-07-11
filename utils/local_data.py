@@ -90,6 +90,10 @@ STRING_LOOKUPS_FILE = Path(
     os.getenv("TF2_STRING_LOOKUPS_FILE", DEFAULT_STRING_LOOKUPS_FILE)
 )
 
+# Path to static exclusions file
+DEFAULT_EXCLUSIONS_FILE = BASE_DIR / "static" / "exclusions.json"
+EXCLUSIONS_FILE = Path(os.getenv("TF2_EXCLUSIONS_FILE", DEFAULT_EXCLUSIONS_FILE))
+
 
 def load_json(relative: str) -> Any:
     """Return parsed JSON from ``BASE_DIR / "cache" / relative`` or ``{}``."""
@@ -102,6 +106,21 @@ def load_json(relative: str) -> Any:
             return json.load(f)
     except Exception:
         return {}
+
+
+def load_exclusions() -> Dict[str, Any]:
+    """Return exclusions configuration from :data:`EXCLUSIONS_FILE`."""
+
+    if not EXCLUSIONS_FILE.exists():
+        return {}
+    try:
+        with EXCLUSIONS_FILE.open() as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+    return {}
 
 
 def _normalize_image_url(url: str | None) -> str | None:

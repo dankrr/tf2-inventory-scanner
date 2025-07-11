@@ -50,6 +50,11 @@ PATTERN_SEED_HI_CLASSES: set[str] = set()
 PAINTKIT_CLASSES: set[str] = set()
 CRATE_SERIES_CLASSES: set[str] = set()
 
+# Origins configuration loaded from ``static/exclusions.json`` via ``local_data``
+_exclusions = local_data.load_exclusions()
+CRAFT_WEAPON_ALLOWED_ORIGINS = set(_exclusions.get("craft_weapon_exclusions", []))
+HIDDEN_ORIGINS = set(_exclusions.get("hidden_origins", []))
+
 # Sets of attribute defindexes considered "special" for craft weapon detection
 SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
 SPECIAL_KILLSTREAK_ATTRS: set[int] = {2013, 2014, 2025}
@@ -723,12 +728,6 @@ def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
 
 
 WAR_PAINT_TOOL_DEFINDEXES = {5681, 5682, 5683}
-
-# Origins that should not cause craft weapons to be filtered out
-CRAFT_WEAPON_ALLOWED_ORIGINS = {1, 5, 9, 14}
-
-# Origins that should hide items and disable pricing
-HIDDEN_ORIGINS = {1, 5, 9, 14}
 
 
 def _has_attr(asset: dict, idx: int) -> bool:
