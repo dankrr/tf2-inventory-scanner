@@ -1,4 +1,8 @@
 import utils.schema_provider as sp
+import utils.steam_schema as ss
+from utils.steam_schema import SteamSchemaProvider
+import types
+import pytest
 
 
 class DummyResp:
@@ -147,3 +151,63 @@ def test_refresh_all_resets_attributes_and_creates_files(monkeypatch, tmp_path):
         fname = str(provider._cache_file(key))
         assert f"Fetching {key}..." in printed
         assert f"\N{CHECK MARK} Saved {fname} (0 entries)" in printed
+
+
+@pytest.mark.asyncio
+async def test_steam_schema_provider(monkeypatch, tmp_path):
+    path = tmp_path / "data" / "schema_steam.json"
+    provider = SteamSchemaProvider(cache_file=path)
+
+    monkeypatch.setattr(ss, "_require_key", lambda: "x")
+
+    overview_payload = {
+        "result": {
+            "attributes": [{"defindex": 1, "name": "Attr"}],
+            "attribute_controlled_attached_particles": [{"id": 1, "name": "Particle"}],
+            "qualities": {"1": "Unique"},
+            "originNames": [{"origin": 0, "id": 0, "name": "Drop"}],
+        }
+    }
+
+    items_page1 = {"result": {"items": [{"defindex": 1, "name": "One"}], "next": 2}}
+    items_page2 = {"result": {"items": [{"defindex": 2, "name": "Two"}]}}
+
+    class DummyAsyncClient:
+        def __init__(self, *a, **k):
+            self.calls = []
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def get(self, url, params=None):
+            if url == provider.OVERVIEW_URL:
+                return types.SimpleNamespace(
+                    json=lambda: overview_payload,
+                    raise_for_status=lambda: None,
+                )
+            start = params.get("start")
+            if start is None:
+                return types.SimpleNamespace(
+                    json=lambda: items_page1,
+                    raise_for_status=lambda: None,
+                )
+            assert start == 2
+            return types.SimpleNamespace(
+                json=lambda: items_page2,
+                raise_for_status=lambda: None,
+            )
+
+    monkeypatch.setattr(ss.httpx, "AsyncClient", DummyAsyncClient)
+
+    data = await provider.load_schema(force=True)
+
+    assert data["items_by_defindex"][1]["name"] == "One"
+    assert data["items_by_defindex"][2]["name"] == "Two"
+    assert data["attributes_by_defindex"][1]["name"] == "Attr"
+    assert data["particles_by_index"] == {1: "Particle"}
+    assert data["qualities_by_index"] == {1: "Unique"}
+    assert data["origins_by_index"] == {0: "Drop"}
+    assert path.exists()

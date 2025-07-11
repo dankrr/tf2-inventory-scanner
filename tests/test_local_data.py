@@ -5,7 +5,8 @@ from utils import local_data as ld
 
 
 def test_load_files_success(tmp_path, monkeypatch, caplog):
-    schema_file = tmp_path / "schema_steam.json"
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
 
     schema = {
@@ -57,7 +58,8 @@ def test_load_files_missing(tmp_path, monkeypatch):
 
 
 def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
-    schema_file = tmp_path / "schema_steam.json"
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
     lookups_file = tmp_path / "string_lookups.json"
     currencies_file = tmp_path / "currencies.json"
 
@@ -111,7 +113,8 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
 
 
 def test_load_files_name_key_quality(tmp_path, monkeypatch):
-    schema_file = tmp_path / "schema_steam.json"
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
 
     schema = {
@@ -151,7 +154,8 @@ def test_clean_items_game_parses_all():
 
 
 def test_load_files_string_lookups(tmp_path, monkeypatch):
-    schema_file = tmp_path / "schema_steam.json"
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
     lookups_file = tmp_path / "string_lookups.json"
     currencies_file = tmp_path / "currencies.json"
 
@@ -199,7 +203,8 @@ def test_load_files_string_lookups(tmp_path, monkeypatch):
 
 
 def test_load_files_string_lookups_missing(tmp_path, monkeypatch):
-    schema_file = tmp_path / "schema_steam.json"
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
 
     schema = {
@@ -226,7 +231,8 @@ def test_load_files_string_lookups_missing(tmp_path, monkeypatch):
 
 
 def test_effect_names_file_loaded(tmp_path, monkeypatch):
-    schema_file = tmp_path / "schema_steam.json"
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
     effect_file = tmp_path / "effect_names.json"
 
