@@ -872,24 +872,39 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     return True
 
 
-def _has_trade_hold(asset: dict) -> bool:
-    """Return ``True`` if the item has a temporary trade hold."""
+def _trade_hold_timestamp(asset: dict) -> int | None:
+    """Return a trade hold expiry timestamp if present."""
 
-    if asset.get("steam_market_tradeable_after") or asset.get(
+    ts = asset.get("steam_market_tradeable_after") or asset.get(
         "steam_market_marketable_after"
-    ):
-        return True
+    )
+    try:
+        if ts is not None:
+            return int(ts)
+    except (TypeError, ValueError):
+        pass
 
     for desc in asset.get("descriptions", []):
         if not isinstance(desc, dict):
             continue
         app_data = desc.get("app_data")
-        if isinstance(app_data, dict) and (
-            app_data.get("steam_market_tradeable_after")
-            or app_data.get("steam_market_marketable_after")
-        ):
-            return True
-    return False
+        if not isinstance(app_data, dict):
+            continue
+        ts = app_data.get("steam_market_tradeable_after") or app_data.get(
+            "steam_market_marketable_after"
+        )
+        try:
+            if ts is not None:
+                return int(ts)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _has_trade_hold(asset: dict) -> bool:
+    """Return ``True`` if the item has a temporary trade hold."""
+
+    return _trade_hold_timestamp(asset) is not None
 
 
 def _process_item(
@@ -1177,6 +1192,7 @@ def _process_item(
             if score_types.get(1) is not None
             else None
         ),
+        "trade_hold_expires": _trade_hold_timestamp(asset),
         "_hidden": hide_item,
     }
 
