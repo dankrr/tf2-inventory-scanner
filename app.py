@@ -64,6 +64,7 @@ TEST_MODE = ARGS.test
 TEST_STEAMID: str = ""
 TEST_INVENTORY_RAW: Dict[str, Any] | None = None
 TEST_INVENTORY_STATUS: str = ""
+TEST_API_RESULTS_DIR: Path | None = None
 
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
@@ -138,7 +139,39 @@ async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
     Returns ``None`` if the player summary could not be retrieved.
     """
     print(f"Fetching player summary for {steamid64}")
-    players = await sac.get_player_summaries_async([steamid64])
+    players: List[Dict[str, Any]] | None = None
+    playtime: float | None = None
+
+    if TEST_MODE and steamid64 == TEST_STEAMID:
+        api_dir = Path("cached_inventories") / steamid64 / "api_results"
+        summary_file = api_dir / "player_summaries.json"
+        playtime_file = api_dir / "playtime.json"
+
+        if summary_file.exists():
+            try:
+                with summary_file.open() as f:
+                    players = json.load(f)
+            except Exception:
+                players = None
+        if playtime_file.exists():
+            try:
+                with playtime_file.open() as f:
+                    playtime = json.load(f)
+            except Exception:
+                playtime = None
+
+        if players is None or playtime is None:
+            players = await sac.get_player_summaries_async([steamid64])
+            playtime = await sac.get_tf2_playtime_hours_async(steamid64)
+            api_dir.mkdir(parents=True, exist_ok=True)
+            with summary_file.open("w") as f:
+                json.dump(players, f)
+            with playtime_file.open("w") as f:
+                json.dump(playtime, f)
+    else:
+        players = await sac.get_player_summaries_async([steamid64])
+        playtime = await sac.get_tf2_playtime_hours_async(steamid64)
+
     if not players:
         return None
 
@@ -148,8 +181,6 @@ async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
     )
     username = player.get("personaname", steamid64)
     avatar = player.get("avatarfull", "")
-
-    playtime = await sac.get_tf2_playtime_hours_async(steamid64)
 
     return {
         "username": username,
@@ -288,6 +319,13 @@ async def _setup_test_mode() -> None:
     last_file.write_text(steamid)
 
     cache_file = cache_dir / f"{steamid}.json"
+    api_dir = cache_dir / steamid / "api_results"
+    api_dir.mkdir(parents=True, exist_ok=True)
+    global TEST_API_RESULTS_DIR
+    TEST_API_RESULTS_DIR = api_dir
+    inv_api_file = api_dir / "inventory.json"
+    summary_file = api_dir / "player_summaries.json"
+    playtime_file = api_dir / "playtime.json"
 
     while True:
         if cache_file.exists():
@@ -316,6 +354,26 @@ async def _setup_test_mode() -> None:
         )
         if input("Retry? (y/n): ").strip().lower() != "y":
             raise SystemExit(1)
+
+    # save inventory API result
+    with inv_api_file.open("w") as f:
+        json.dump(TEST_INVENTORY_RAW, f)
+
+    if summary_file.exists():
+        with summary_file.open() as f:
+            summary_data = json.load(f)
+    else:
+        summary_data = await sac.get_player_summaries_async([steamid])
+        with summary_file.open("w") as f:
+            json.dump(summary_data, f)
+
+    if playtime_file.exists():
+        with playtime_file.open() as f:
+            playtime_data = json.load(f)
+    else:
+        playtime_data = await sac.get_tf2_playtime_hours_async(steamid)
+        with playtime_file.open("w") as f:
+            json.dump(playtime_data, f)
 
     TEST_STEAMID = steamid
     user = normalize_user_payload(await build_user_data_async(steamid))
