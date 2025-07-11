@@ -3,7 +3,7 @@ __pycache__/
 data/
 !data/
 !data/effect_names.json
-!data/effect_names.json
+!data/schema_steam.json
 cache/
 !cache/
 cache/*
