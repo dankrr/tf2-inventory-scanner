@@ -145,7 +145,7 @@
 
     if (data.id && (!data.quantity || data.quantity <= 1) && !data._hidden) {
       const url = 'https://next.backpack.tf/item/' + esc(data.id);
-      attrs.push('<div><a href="' + url + '" target="_blank" rel="noopener">History\ud83d\udd0e</a></div>');
+      attrs.push('<div><a href="' + url + '" target="_blank" rel="noopener" class="history-link">History\ud83d\udd0e</a></div>');
     }
 
     const details = attrs.join('') + spells;
