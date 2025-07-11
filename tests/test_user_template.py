@@ -202,3 +202,27 @@ def test_failed_user_has_retry_class(app):
     assert card is not None
     classes = card.get("class", [])
     assert "retry-card" in classes
+
+
+def test_trade_hold_class_rendered(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Widget",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                    "untradable_hold": True,
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    classes = card.get("class", [])
+    assert "trade-hold" in classes

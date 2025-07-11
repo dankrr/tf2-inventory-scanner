@@ -930,6 +930,8 @@ def _process_item(
 
     origin_raw = asset.get("origin")
     tradable_raw = asset.get("tradable", 1)
+    trade_hold_ts = _trade_hold_timestamp(asset)
+    untradable_hold = False
     try:
         origin_int = int(origin_raw)
     except (TypeError, ValueError):
@@ -941,8 +943,9 @@ def _process_item(
         tradable_val = 1
 
     if asset.get("flag_cannot_trade"):
-        if _has_trade_hold(asset):
+        if trade_hold_ts is not None:
             tradable_val = 1
+            untradable_hold = True
         else:
             tradable_val = 0
 
@@ -1192,7 +1195,8 @@ def _process_item(
             if score_types.get(1) is not None
             else None
         ),
-        "trade_hold_expires": _trade_hold_timestamp(asset),
+        "trade_hold_expires": trade_hold_ts,
+        "untradable_hold": untradable_hold,
         "_hidden": hide_item,
     }
 
