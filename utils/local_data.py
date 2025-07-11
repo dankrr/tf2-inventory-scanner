@@ -3,10 +3,14 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Tuple
 import logging
+import asyncio
+import time
 
 import vdf
 from .schema_provider import SchemaProvider
+from .steam_schema import SteamSchemaProvider
 from .price_loader import ensure_currencies_cached
+from . import constants as consts
 
 # Legacy globals kept for backward compatibility
 TF2_SCHEMA: Dict[str, Any] = {}
@@ -89,6 +93,10 @@ CRATE_SERIES_FILE = Path(os.getenv("TF2_CRATE_SERIES_FILE", DEFAULT_CRATE_SERIES
 STRING_LOOKUPS_FILE = Path(
     os.getenv("TF2_STRING_LOOKUPS_FILE", DEFAULT_STRING_LOOKUPS_FILE)
 )
+
+# Path to combined Steam schema
+DEFAULT_STEAM_SCHEMA_FILE = BASE_DIR / "data" / "schema_steam.json"
+STEAM_SCHEMA_FILE = Path(os.getenv("TF2_STEAM_SCHEMA_FILE", DEFAULT_STEAM_SCHEMA_FILE))
 
 # Path to static exclusions file
 DEFAULT_EXCLUSIONS_FILE = BASE_DIR / "static" / "exclusions.json"
@@ -201,29 +209,28 @@ def load_files(
     global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
     global FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 
-    required = {
-        "attributes": ATTRIBUTES_FILE.resolve(),
-        "items": ITEMS_FILE.resolve(),
-        "qualities": QUALITIES_FILE.resolve(),
-        "particles": PARTICLES_FILE.resolve(),
-        "currencies": CURRENCIES_FILE.resolve(),
-    }
+    schema_path = STEAM_SCHEMA_FILE.resolve()
+    curr_path = CURRENCIES_FILE.resolve()
     optional = {"string_lookups": STRING_LOOKUPS_FILE.resolve()}
 
-    missing = {k: p for k, p in required.items() if not p.exists()}
-    if missing:
+    need_schema = not schema_path.exists()
+    if schema_path.exists() and auto_refetch:
+        age = time.time() - schema_path.stat().st_mtime
+        if age >= SteamSchemaProvider.TTL:
+            need_schema = True
+
+    if need_schema:
         if not auto_refetch:
-            raise RuntimeError("Missing " + ", ".join(str(p) for p in missing.values()))
-        provider = SchemaProvider(cache_dir=required["attributes"].parent)
-        for key, path in missing.items():
-            if key == "currencies":
-                ensure_currencies_cached(refresh=True)
-            else:
-                provider._load(key, provider.ENDPOINTS[key], force=True)
-            if verbose:
-                logging.info(
-                    "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
-                )
+            raise RuntimeError(f"Missing {schema_path}")
+        provider = SteamSchemaProvider(cache_file=schema_path)
+        schema = asyncio.run(provider.load_schema(force=True))
+        if verbose:
+            logging.info(
+                "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", schema_path
+            )
+    else:
+        with schema_path.open() as f:
+            schema = json.load(f)
 
     optional_missing = {k: p for k, p in optional.items() if not p.exists()}
     if optional_missing and auto_refetch:
@@ -235,23 +242,12 @@ def load_files(
                     "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", path
                 )
 
-    attr_path = required["attributes"]
-    with attr_path.open() as f:
-        data = json.load(f)
-    raw_attrs = data["value"] if isinstance(data, dict) and "value" in data else data
-    mapping: Dict[int, Any] = {}
-    if isinstance(raw_attrs, list):
-        for entry in raw_attrs:
-            if not isinstance(entry, dict) or "defindex" not in entry:
-                continue
-            try:
-                idx = int(entry["defindex"])
-            except (TypeError, ValueError):
-                continue
-            mapping[idx] = entry
-    elif isinstance(raw_attrs, dict):
-        mapping = {int(k): v for k, v in raw_attrs.items() if str(k).isdigit()}
-    SCHEMA_ATTRIBUTES = mapping
+    attr_path = schema_path
+    raw_attrs = schema.get("attributes_by_defindex", {})
+    if isinstance(raw_attrs, dict):
+        SCHEMA_ATTRIBUTES = {int(k): v for k, v in raw_attrs.items() if str(k).isdigit()}
+    else:
+        SCHEMA_ATTRIBUTES = {}
     if verbose:
         logging.info(
             "\N{CHECK MARK} Loaded %d attributes from %s",
@@ -259,28 +255,9 @@ def load_files(
             attr_path,
         )
 
-    items_path = required["items"]
-    if not items_path.exists():
-        raise RuntimeError(f"Missing {items_path}")
-    with items_path.open() as f:
-        data = json.load(f)
-    raw_items = data["value"] if isinstance(data, dict) and "value" in data else data
+    raw_items = schema.get("items_by_defindex", {})
     items_map: Dict[int, Any] = {}
-    if isinstance(raw_items, list):
-        for entry in raw_items:
-            if not isinstance(entry, dict) or "defindex" not in entry:
-                continue
-            try:
-                idx = int(entry["defindex"])
-            except (TypeError, ValueError):
-                continue
-            entry["image_url"] = _normalize_image_url(entry.get("image_url"))
-            entry["image_url_large"] = _normalize_image_url(
-                entry.get("image_url_large")
-            )
-            items_map[idx] = entry
-    elif isinstance(raw_items, dict):
-        items_map = {}
+    if isinstance(raw_items, dict):
         for k, v in raw_items.items():
             if not str(k).isdigit() or not isinstance(v, dict):
                 continue
@@ -291,59 +268,52 @@ def load_files(
     ITEMS_BY_DEFINDEX = items_map
     if verbose:
         logging.info(
-            "\N{CHECK MARK} Loaded %d items from %s", len(ITEMS_BY_DEFINDEX), items_path
+            "\N{CHECK MARK} Loaded %d items from %s", len(ITEMS_BY_DEFINDEX), schema_path
         )
         if len(ITEMS_BY_DEFINDEX) < 5000:
             logging.info(
                 "\N{WARNING SIGN} items.json may be stale or incomplete. Consider a refresh."
             )
 
-    qual_path = required["qualities"]
-    if not qual_path.exists():
-        raise RuntimeError(f"Missing {qual_path}")
-    with qual_path.open() as f:
-        data = json.load(f)
-    raw_quals = data["value"] if isinstance(data, dict) and "value" in data else data
-    if isinstance(raw_quals, list):
-        QUALITIES_BY_INDEX = {
-            int(e["id"]): str(e["name"])
-            for e in raw_quals
-            if isinstance(e, dict) and "id" in e and "name" in e
-        }
-    elif isinstance(raw_quals, dict):
+    raw_quals = schema.get("qualities_by_index", {})
+    if isinstance(raw_quals, dict):
         by_key = {int(k): str(v) for k, v in raw_quals.items() if str(k).isdigit()}
-        by_value = {int(v): str(k) for k, v in raw_quals.items() if str(v).isdigit()}
-        QUALITIES_BY_INDEX = by_key or by_value
+        by_val = {int(v): str(k) for k, v in raw_quals.items() if str(v).isdigit()}
+        QUALITIES_BY_INDEX = by_key or by_val
     else:
         QUALITIES_BY_INDEX = {}
     if verbose:
         logging.info(
             "\N{CHECK MARK} Loaded %d qualities from %s",
             len(QUALITIES_BY_INDEX),
-            qual_path,
+            schema_path,
         )
 
-    particle_path = required["particles"]
-    if not particle_path.exists():
-        raise RuntimeError(f"Missing {particle_path}")
-    with particle_path.open() as f:
-        data = json.load(f)
-    raw_parts = data["value"] if isinstance(data, dict) and "value" in data else data
-    PARTICLE_NAMES = {
-        int(e.get("id")): str(e.get("name"))
-        for e in raw_parts
-        if isinstance(e, dict) and "id" in e and "name" in e
-    }
+    raw_parts = schema.get("particles_by_index", {})
+    if isinstance(raw_parts, dict):
+        PARTICLE_NAMES = {int(k): str(v) for k, v in raw_parts.items() if str(k).isdigit()}
+    else:
+        PARTICLE_NAMES = {}
     if verbose:
         logging.info(
             "\N{CHECK MARK} Loaded %d particles from %s",
             len(PARTICLE_NAMES),
-            particle_path,
+            schema_path,
         )
 
-    curr_path = required["currencies"]
+    origins = schema.get("origins_by_index", {})
+    consts.ORIGIN_MAP.clear()
+    if isinstance(origins, dict):
+        consts.ORIGIN_MAP.update({int(k): str(v) for k, v in origins.items()})
+
     if not curr_path.exists():
-        raise RuntimeError(f"Missing {curr_path}")
+        if not auto_refetch:
+            raise RuntimeError(f"Missing {curr_path}")
+        ensure_currencies_cached(refresh=True)
+        if verbose:
+            logging.info(
+                "\N{DOWNWARDS ARROW WITH TIP LEFTWARDS} Downloaded %s", curr_path
+            )
     with curr_path.open() as f:
         data = json.load(f)
     raw_curr = (
