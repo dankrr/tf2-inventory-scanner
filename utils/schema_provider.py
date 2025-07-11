@@ -11,7 +11,7 @@ import requests
 
 
 class SchemaProvider:
-    """Fetch and cache TF2 schema data from schema.autobot.tf."""
+    """Fetch and cache TF2 schema data from a remote server."""
 
     TTL = 48 * 60 * 60  # 48 hours
     ENDPOINTS = {
@@ -30,7 +30,7 @@ class SchemaProvider:
 
     def __init__(
         self,
-        base_url: str = "https://schema.autobot.tf",
+        base_url: str = "https://example.com",
         cache_dir: str | Path = "schema",
     ) -> None:
         self.base_url = base_url.rstrip("/")
