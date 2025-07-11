@@ -24,3 +24,13 @@ This document explains how the TF2 Inventory Scanner processes each request.
 
 All network calls are performed asynchronously with `httpx.AsyncClient` to
 fetch multiple users in parallel.
+
+## Refreshing Data
+
+Cached schema and price files live under the `cache/` directory. Run
+
+```bash
+python app.py --refresh --verbose
+```
+
+to update these files before starting the server.
