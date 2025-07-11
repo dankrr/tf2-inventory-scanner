@@ -261,6 +261,7 @@ button {
 .item-card.uncraftable {
   border-style: dashed;
   border-width: 2px;
+  box-shadow: inset 0 0 0 2px #aaa; /* inner border inside quality color */
 }
 
 .particle-overlay {
