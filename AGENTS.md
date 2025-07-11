@@ -66,8 +66,8 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
   - Return values in refined metal (e.g., `5.33 ref`)
 
 ### 📜 Steam Item Schema API:
-- `https://schema.autobot.tf/raw/schema/items`
-  - Used by `SchemaProvider` to cache item metadata
+- `IEconItems_440/GetSchemaOverview` and `IEconItems_440/GetSchemaItems`
+  - Official Steam Web API endpoints used by `SteamSchemaProvider` to cache item metadata
 
 ---
 

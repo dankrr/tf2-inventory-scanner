@@ -1,15 +1,17 @@
 # Refreshing Data
 
-Item schema and price information is cached under `cache/` so the application can
-start quickly and work offline. These files can get stale over time. Use the
-`--refresh` flag to download the latest versions before running the server.
+Item schema data is saved to `data/schema_steam.json` while price files live
+under `cache/`. The schema is refreshed automatically if the file is older than
+24 hours whenever the server starts. Use the `--refresh` flag to force a manual
+download before running the server.
 
 ```bash
 python app.py --refresh --verbose
 ```
 
-The command downloads all TF2 schema files, backpack.tf prices and currency data
-into the `cache/` directory. After it completes, start the server normally:
+The command downloads the latest schema file to `data/schema_steam.json` and
+updates backpack.tf prices and currency data in the `cache/` directory. After it
+completes, start the server normally:
 
 ```bash
 python run_hypercorn.py

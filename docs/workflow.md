@@ -27,7 +27,9 @@ fetch multiple users in parallel.
 
 ## Refreshing Data
 
-Cached schema and price files live under the `cache/` directory. Run
+The combined Steam schema is stored at `data/schema_steam.json` and is refreshed
+automatically if older than 24 hours. Price files remain under the `cache/`
+directory. Run
 
 ```bash
 python app.py --refresh --verbose
