@@ -274,3 +274,11 @@ def test_missing_api_key(monkeypatch):
     monkeypatch.delenv("BPTF_API_KEY", raising=False)
     with pytest.raises(RuntimeError):
         price_loader.ensure_prices_cached(refresh=True)
+
+
+def test_dump_and_load_price_map(tmp_path):
+    mapping = {("A", 6, True, False, 0, 0): {"value_raw": 1, "currency": "metal"}}
+    path = tmp_path / "map.json"
+    price_loader.dump_price_map(mapping, path)
+    loaded = price_loader.load_price_map(path)
+    assert loaded == mapping

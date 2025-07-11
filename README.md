@@ -104,6 +104,10 @@ effect_id, killstreak_tier)` as the key. Example:
 ("Mann Co. Supply Crate Key", 6, True, False, 0, 0)
 ```
 
+The resulting map is serialized to `cache/price_map.json` on first use so
+subsequent startups skip the expensive conversion step. If `prices.json` is
+newer than the map, a fresh mapping is built automatically.
+
 Use `ensure_prices_cached(refresh=True)` or run the app with `--refresh` to
 redownload `prices.json` when backpack.tf updates.
 

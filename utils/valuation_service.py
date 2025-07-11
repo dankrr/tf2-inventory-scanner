@@ -3,7 +3,13 @@ from __future__ import annotations
 from typing import Any, Dict, Tuple
 
 from . import local_data
-from .price_loader import ensure_prices_cached, build_price_map
+from .price_loader import (
+    ensure_prices_cached,
+    build_price_map,
+    load_price_map,
+    dump_price_map,
+    PRICE_MAP_FILE,
+)
 from .price_service import format_price
 
 
@@ -31,8 +37,18 @@ class ValuationService:
         ) = None,
     ) -> None:
         if price_map is None:
-            path = ensure_prices_cached()
-            price_map = build_price_map(path)
+            prices_path = ensure_prices_cached()
+            use_cache = False
+            if PRICE_MAP_FILE.exists():
+                try:
+                    if PRICE_MAP_FILE.stat().st_mtime >= prices_path.stat().st_mtime:
+                        price_map = load_price_map(PRICE_MAP_FILE)
+                        use_cache = True
+                except Exception:
+                    use_cache = False
+            if not use_cache:
+                price_map = build_price_map(prices_path)
+                dump_price_map(price_map, PRICE_MAP_FILE)
         self.price_map = price_map
 
     def get_price_info(
