@@ -143,6 +143,11 @@
       spells += '</ul>';
     }
 
+    if (data.id && (!data.quantity || data.quantity <= 1) && !data._hidden) {
+      const url = 'https://next.backpack.tf/item/' + esc(data.id);
+      attrs.push('<div><a href="' + url + '" target="_blank" rel="noopener">History\ud83d\udd0e</a></div>');
+    }
+
     const details = attrs.join('') + spells;
     const imgTag = '<img src="' + esc(data.image_url || '') + '" width="64" height="64" alt="">';
     return imgTag + '<div id="modal-details">' + details + '</div>';
