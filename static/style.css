@@ -234,11 +234,34 @@ button {
   height: 112px;
   padding: 4px;
   margin: 0;
-  border: 2px solid #FFDD00;
+  border: none; /* border drawn via pseudo-element */
   border-radius: 8px;
   overflow: hidden;
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
+  border-color: #FFDD00;
+  border-style: solid;
+  border-width: 2px;
+}
+
+.item-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-color: inherit;
+  border-style: inherit;
+  border-width: inherit;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2; /* above particle overlays */
+}
+.item-card.trade-hold {
+  border-color: #ff4040;
+}
+.item-card.uncraftable {
+  border-style: dashed;
+  border-width: 2px;
+  box-shadow: inset 0 0 0 2px #aaa; /* inner border inside quality color */
 }
 
 .particle-overlay {
@@ -402,6 +425,20 @@ a.backpack-link:hover {
 
 a.backpack-link:visited {
   color: #ddd;
+}
+
+.history-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.history-link:hover {
+  text-decoration: underline;
+}
+
+.history-link:visited {
+  color: inherit;
 }
 
 .inline-icon {

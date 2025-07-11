@@ -96,6 +96,14 @@
     ;[
       ['Type', data.item_type_name],
       ['Level', data.level],
+      [
+        'Craftable',
+        typeof data.craftable === 'boolean'
+          ? data.craftable
+            ? 'Craftable'
+            : 'Uncraftable'
+          : null,
+      ],
       ['Origin', data.origin],
     ].forEach(([label, value]) => {
       if (!value) return;
@@ -141,6 +149,17 @@
         spells += '<li>' + line + '</li>';
       });
       spells += '</ul>';
+    }
+
+    if (data.id && (!data.quantity || data.quantity <= 1) && !data._hidden) {
+      const url = 'https://next.backpack.tf/item/' + esc(data.id);
+      let link = '<div><a href="' + url + '" target="_blank" rel="noopener" class="history-link">History\ud83d\udd0e</a>';
+      if (data.trade_hold_expires) {
+        const dateStr = new Date(data.trade_hold_expires * 1000).toLocaleString();
+        link += ' Tradable after: ' + esc(dateStr);
+      }
+      link += '</div>';
+      attrs.push(link);
     }
 
     const details = attrs.join('') + spells;

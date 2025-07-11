@@ -17,6 +17,35 @@ def test_stack_items_collapses_duplicates():
     assert result[0]["quantity"] == 2
 
 
+def test_stack_items_ignores_ids(monkeypatch):
+    monkeypatch.setenv("STEAM_API_KEY", "x")
+    monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_prices_cached",
+        lambda refresh=False: Path("prices.json"),
+    )
+    monkeypatch.setattr(
+        "utils.price_loader.ensure_currencies_cached",
+        lambda refresh=False: Path("currencies.json"),
+    )
+    monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
+    monkeypatch.setattr("utils.price_loader.PRICE_MAP_FILE", Path("price_map.json"))
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
+    monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
+    mod = importlib.import_module("app")
+    importlib.reload(mod)
+    items = [
+        {"name": "Crate", "image_url": "", "quality_color": "#fff", "id": 1},
+        {"name": "Crate", "image_url": "", "quality_color": "#fff", "id": 2},
+    ]
+    result = mod.stack_items(items)
+    assert len(result) == 1
+    assert result[0]["quantity"] == 2
+
+
 def test_quantity_badge_rendered(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
@@ -29,6 +58,11 @@ def test_quantity_badge_rendered(monkeypatch):
         lambda refresh=False: Path("currencies.json"),
     )
     monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
+    monkeypatch.setattr("utils.price_loader.PRICE_MAP_FILE", Path("price_map.json"))
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     mod = importlib.import_module("app")
     importlib.reload(mod)

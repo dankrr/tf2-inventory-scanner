@@ -10,4 +10,7 @@
       <span class="unusual-effect">{{ item.unusual_effect_name }}</span>
     </p>
   {% endif %}
+  {% if item.craftable is not none %}
+    <p><strong>{% if item.craftable %}Craftable{% else %}Uncraftable{% endif %}</strong></p>
+  {% endif %}
 </div>

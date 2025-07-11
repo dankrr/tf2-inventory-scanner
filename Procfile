@@ -1,1 +1,1 @@
-web: gunicorn app:app -b 0.0.0.0:${PORT:-5000}
+web: python run_hypercorn.py

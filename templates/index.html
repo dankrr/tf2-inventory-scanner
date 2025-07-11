@@ -7,7 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         img { vertical-align: middle; }
-        .retry-pill:hover {
+        .retry-button:hover {
             background: rgba(255, 0, 0, 0.1);
         }
         .inventory-scroll {
@@ -96,22 +96,26 @@
             </ul>
         {% endif %}
     {% endwith %}
-    <form method="post" class="input-form">
+    <form method="post" class="input-form" id="scan-form">
         <label for="steamids" class="visually-hidden">Steam IDs</label>
         <div class="input-wrapper">
             <i class="fa-brands fa-steam input-steam-icon"></i>
-            <textarea id="steamids" name="steamids" placeholder="Enter SteamID, vanity URL, or multiple IDs…">{{ steamids|default('') }}</textarea>
+            <textarea id="steamids" name="steamids" placeholder="Enter SteamID64, SteamID2, or SteamID3…">{{ steamids|default('') }}</textarea>
         </div>
         <div class="form-actions">
             <button type="submit" class="primary-btn action-button"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
-            <button id="refresh-failed-btn" disabled class="refresh-btn action-button"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
+            <button id="refresh-failed-btn" type="button" disabled class="refresh-btn action-button"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
         </div>
     </form>
 
     <div id="results" class="fade-in">
         <div id="user-container">
             {% for user in users %}
-                {% include "_user.html" %}
+                {% if user is string %}
+                    {{ user|safe }}
+                {% else %}
+                    {% include "_user.html" %}
+                {% endif %}
             {% endfor %}
         </div>
     </div>
@@ -152,10 +156,12 @@
     </div>
 
     <script>
-      window.initialIds = {{ ids|tojson|safe }};
+      window.initialIds = {{ failed_ids|tojson|safe }};
     </script>
+    <script src="{{ url_for('static', filename='lazyload.js') }}"></script>
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
+    <script src="{{ url_for('static', filename='submit.js') }}"></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {

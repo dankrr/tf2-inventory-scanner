@@ -29,5 +29,13 @@ def test_app_uses_mock_schema(monkeypatch):
         "utils.price_loader.build_price_map",
         lambda path: {},
     )
+    monkeypatch.setattr(
+        "utils.price_loader.PRICE_MAP_FILE",
+        Path("price_map.json"),
+    )
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
     app = importlib.import_module("app")
     assert hasattr(app, "app")

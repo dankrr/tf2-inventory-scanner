@@ -12,7 +12,6 @@ from types import SimpleNamespace
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
-from utils.inventory_processor import enrich_inventory
 import utils.inventory_processor as ip
 
 from utils import steam_api_client as sac
@@ -21,11 +20,13 @@ from utils import constants as consts
 from utils.price_loader import (
     ensure_prices_cached,
     ensure_currencies_cached,
+    ensure_prices_cached_async,
+    ensure_currencies_cached_async,
 )
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
-    raise RuntimeError(
+    raise ValueError(
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
     )
 
@@ -38,18 +39,25 @@ ARGS, _ = parser.parse_known_args()
 if ARGS.refresh:
     from utils.schema_provider import SchemaProvider
 
-    print(
-        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
-    )
-    provider = SchemaProvider(cache_dir="cache/schema")
-    provider.refresh_all(verbose=True)
-    price_path = ensure_prices_cached(refresh=True)
-    curr_path = ensure_currencies_cached(refresh=True)
-    print(f"\N{CHECK MARK} Saved {price_path}")
-    print(f"\N{CHECK MARK} Saved {curr_path}")
-    print(
-        "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
-    )
+    async def _do_refresh() -> None:
+        print(
+            "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
+        )
+        provider = SchemaProvider(cache_dir="cache/schema")
+        await provider.refresh_all_async(verbose=True)
+        price_path = await ensure_prices_cached_async(refresh=True)
+        curr_path = await ensure_currencies_cached_async(refresh=True)
+        print(f"\N{CHECK MARK} Saved {price_path}")
+        print(f"\N{CHECK MARK} Saved {curr_path}")
+        print(
+            "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
+        )
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.run_until_complete(_do_refresh())
+    except RuntimeError:
+        asyncio.run(_do_refresh())
     raise SystemExit(0)
 
 TEST_MODE = ARGS.test
@@ -73,7 +81,15 @@ except Exception:
 
 # --- Utility functions ------------------------------------------------------
 
-IGNORED_STACK_KEYS = {"level", "custom_description", "custom_name", "origin"}
+IGNORED_STACK_KEYS = {
+    "level",
+    "custom_description",
+    "custom_name",
+    "origin",
+    "id",
+    "original_id",
+    "inventory",
+}
 
 
 def kill_process_on_port(port: int) -> None:
@@ -116,21 +132,24 @@ def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return list(grouped.values())
 
 
-def get_player_summary(steamid64: str) -> Dict[str, Any]:
-    """Return profile name, avatar URL and TF2 playtime for a user."""
-    print(f"Fetching player summary for {steamid64}")
-    players = sac.get_player_summaries([steamid64])
-    profile = f"https://steamcommunity.com/profiles/{steamid64}"
-    if players:
-        player = players[0]
-        username = player.get("personaname", steamid64)
-        avatar = player.get("avatarfull", "")
-        profile = player.get("profileurl", profile)
-    else:
-        username = steamid64
-        avatar = ""
+async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
+    """Return profile name, avatar URL and TF2 playtime for a user.
 
-    playtime = sac.get_tf2_playtime_hours(steamid64)
+    Returns ``None`` if the player summary could not be retrieved.
+    """
+    print(f"Fetching player summary for {steamid64}")
+    players = await sac.get_player_summaries_async([steamid64])
+    if not players:
+        return None
+
+    player = players[0]
+    profile = player.get(
+        "profileurl", f"https://steamcommunity.com/profiles/{steamid64}"
+    )
+    username = player.get("personaname", steamid64)
+    avatar = player.get("avatarfull", "")
+
+    playtime = await sac.get_tf2_playtime_hours_async(steamid64)
 
     return {
         "username": username,
@@ -140,7 +159,7 @@ def get_player_summary(steamid64: str) -> Dict[str, Any]:
     }
 
 
-def fetch_inventory(steamid64: str) -> Dict[str, Any]:
+async def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     """Fetch TF2 inventory items for a user and return items with a status."""
     global TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
 
@@ -148,11 +167,13 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
         status = TEST_INVENTORY_STATUS or "parsed"
         data = TEST_INVENTORY_RAW
     else:
-        status, data = sac.fetch_inventory(steamid64)
+        status, data = await sac.fetch_inventory_async(steamid64)
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
-            items = enrich_inventory(data, valuation_service=ip.get_valuation_service())
+            items = ip.process_inventory(
+                data, valuation_service=ip.get_valuation_service()
+            )
         except Exception:
             app.logger.exception("Failed to enrich inventory for %s", steamid64)
             status = "failed"
@@ -160,12 +181,17 @@ def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     return {"items": items, "status": status}
 
 
-async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
-    """Asynchronously build user card data."""
-    inv_task = asyncio.to_thread(fetch_inventory, steamid64)
+async def build_user_data_async(steamid64: str) -> Dict[str, Any] | None:
+    """Asynchronously build user card data.
+
+    Returns ``None`` if the user summary could not be retrieved.
+    """
     t1 = time.perf_counter()
-    summary = await asyncio.to_thread(get_player_summary, steamid64)
-    inv_result = await inv_task
+    summary_task = asyncio.create_task(get_player_summary(steamid64))
+    inv_task = asyncio.create_task(fetch_inventory(steamid64))
+    summary, inv_result = await asyncio.gather(summary_task, inv_task)
+    if summary is None:
+        return None
     t2 = time.perf_counter()
 
     items = inv_result.get("items", [])
@@ -189,10 +215,10 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any]:
     return summary
 
 
-def build_user_data(steamid64: str) -> Dict[str, Any]:
-    """Return a dictionary for rendering a single user card."""
+async def build_user_data(steamid64: str) -> Dict[str, Any]:
+    """Compatibility wrapper for :func:`build_user_data_async`."""
 
-    return asyncio.run(build_user_data_async(steamid64))
+    return await build_user_data_async(steamid64)
 
 
 def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
@@ -203,13 +229,44 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     return SimpleNamespace(**user)
 
 
-def fetch_and_process_single_user(steamid64: int) -> str:
-    user = build_user_data(str(steamid64))
+async def fetch_and_process_single_user(steamid64: int) -> str:
+    user = await build_user_data_async(str(steamid64))
     user = normalize_user_payload(user)
     return render_template("_user.html", user=user)
 
 
-def _setup_test_mode() -> None:
+async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
+    """Return rendered user cards and a list of IDs that failed."""
+
+    unique_ids = list(dict.fromkeys(str(s) for s in ids))
+
+    tasks: Dict[str, asyncio.Task] = {
+        sid: asyncio.create_task(build_user_data_async(sid)) for sid in unique_ids
+    }
+
+    results = await asyncio.gather(*tasks.values())
+    html_snippets: List[str] = []
+    failed_ids: List[str] = []
+    seen: set[str] = set()
+
+    for _, user in zip(unique_ids, results):
+        if not user or not isinstance(user, dict):
+            continue
+        if not user.get("username") and not user.get("personaname"):
+            continue
+        user_ns = normalize_user_payload(user)
+        if user_ns.steamid in seen:
+            print("DUPLICATE PANEL:", user_ns.steamid)
+            continue
+        seen.add(user_ns.steamid)
+        if user_ns.status == "failed":
+            failed_ids.append(user_ns.steamid)
+        html_snippets.append(render_template("_user.html", user=user_ns))
+
+    return html_snippets, failed_ids
+
+
+async def _setup_test_mode() -> None:
     """Initialize test mode and preload inventory data."""
 
     global TEST_STEAMID, TEST_INVENTORY_RAW, TEST_INVENTORY_STATUS
@@ -247,7 +304,7 @@ def _setup_test_mode() -> None:
                 TEST_INVENTORY_STATUS = "parsed"
                 print("Loaded cached inventory for testing.")
                 break
-        status, data = sac.fetch_inventory(steamid)
+        status, data = await sac.fetch_inventory_async(steamid)
         if status != "failed":
             TEST_INVENTORY_RAW = data
             TEST_INVENTORY_STATUS = status
@@ -261,15 +318,33 @@ def _setup_test_mode() -> None:
             raise SystemExit(1)
 
     TEST_STEAMID = steamid
-    user = normalize_user_payload(build_user_data(steamid))
+    user = normalize_user_payload(await build_user_data_async(steamid))
     app.config["PRELOADED_USERS"] = [user]
     app.config["TEST_STEAMID"] = steamid
 
 
 @app.post("/retry/<int:steamid64>")
-def retry_single(steamid64: int):
+async def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
-    return fetch_and_process_single_user(steamid64)
+    return await fetch_and_process_single_user(steamid64)
+
+
+@app.post("/api/users")
+async def api_users():
+    """Return rendered user cards for multiple Steam IDs."""
+
+    payload = request.get_json(silent=True) or {}
+    ids_raw = payload.get("ids", [])
+    if not isinstance(ids_raw, list):
+        return jsonify({"error": "ids must be a list"}), 400
+
+    try:
+        ids = [sac.convert_to_steam64(str(i)) for i in ids_raw]
+    except ValueError:
+        return jsonify({"error": "Invalid Steam ID"}), 400
+
+    snippets, _ = await fetch_and_process_many(ids)
+    return jsonify({"html": snippets})
 
 
 @app.get("/api/constants")
@@ -291,14 +366,16 @@ def api_constants():
 
 
 @app.route("/", methods=["GET", "POST"])
-def index():
+async def index():
     users: List[Dict[str, Any]] = []
     steamids_input = ""
     ids: List[str] = []
     invalid: List[str] = []
+    failed_ids: List[str] = []
     if request.method == "GET" and app.config.get("PRELOADED_USERS"):
         users = app.config.get("PRELOADED_USERS", [])
         steamids_input = app.config.get("TEST_STEAMID", "")
+        failed_ids = [u.steamid for u in users if getattr(u, "status", "") == "failed"]
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
         tokens = re.split(r"\s+", steamids_input.strip())
@@ -306,19 +383,27 @@ def index():
         invalid = [t for t in tokens if t and t not in raw_ids]
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
-        if not ids:
-            flash("No valid Steam IDs found!")
+        if ids:
+            if invalid:
+                flash(f"Ignored {len(invalid)} invalid input(s).")
+            users, failed_ids = await fetch_and_process_many(ids)
+        else:
+            flash(
+                "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
+            )
             return render_template(
                 "index.html",
                 users=users,
                 steamids=steamids_input,
                 ids=[],
+                failed_ids=[],
             )
     return render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
         ids=ids,
+        failed_ids=failed_ids,
         debug_ms=MAX_MERGE_MS if os.getenv("FLASK_DEBUG") else None,
     )
 
@@ -327,5 +412,5 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     kill_process_on_port(port)
     if TEST_MODE:
-        _setup_test_mode()
+        asyncio.run(_setup_test_mode())
     app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)

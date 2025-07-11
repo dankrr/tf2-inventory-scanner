@@ -38,7 +38,7 @@ def test_price_map_smoke(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Mann Co. Supply Crate Key", 6, False, 0, 0)
+    key = ("Mann Co. Supply Crate Key", 6, True, False, 0, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "metal"
 
@@ -77,7 +77,7 @@ def test_price_map_non_craftable(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Hat", 5, False, 0, 0)
+    key = ("Hat", 5, False, False, 0, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "keys"
 
@@ -116,7 +116,7 @@ def test_price_map_unusual_effect(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    key = ("Villain's Veil", 5, False, 13, 0)
+    key = ("Villain's Veil", 5, True, False, 13, 0)
     assert key in mapping
     assert mapping[key]["currency"] == "keys"
 
@@ -156,7 +156,7 @@ def test_price_map_australium(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert ("Rocket Launcher", 6, True, 0, 0) in mapping
+    assert ("Rocket Launcher", 6, True, True, 0, 0) in mapping
 
 
 def test_price_map_killstreak(tmp_path, monkeypatch):
@@ -193,7 +193,7 @@ def test_price_map_killstreak(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert ("Rocket Launcher", 6, False, 0, 3) in mapping
+    assert ("Rocket Launcher", 6, True, False, 0, 3) in mapping
 
 
 def test_price_map_quality_killstreak(tmp_path, monkeypatch):
@@ -230,10 +230,92 @@ def test_price_map_quality_killstreak(tmp_path, monkeypatch):
         p = price_loader.ensure_prices_cached(refresh=True)
 
     mapping = price_loader.build_price_map(p)
-    assert ("Rocket Launcher", 11, False, 0, 3) in mapping
+    assert ("Rocket Launcher", 11, True, False, 0, 3) in mapping
+
+
+def test_price_map_newline_name(tmp_path, monkeypatch):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    url = "https://backpack.tf/api/IGetPrices/v4?raw=1&key=TEST"
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Cool War Paint\n(Factory New)": {
+                    "defindex": [1234],
+                    "prices": {
+                        "6": {
+                            "Tradable": {
+                                "Craftable": [
+                                    {
+                                        "value": 10,
+                                        "value_raw": 10.0,
+                                        "currency": "keys",
+                                        "last_update": 0,
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, json=payload, status=200)
+        p = price_loader.ensure_prices_cached(refresh=True)
+
+    mapping = price_loader.build_price_map(p)
+    assert ("Cool War Paint (Factory New)", 6, True, False, 0, 0) in mapping
 
 
 def test_missing_api_key(monkeypatch):
     monkeypatch.delenv("BPTF_API_KEY", raising=False)
     with pytest.raises(RuntimeError):
         price_loader.ensure_prices_cached(refresh=True)
+
+
+def test_dump_and_load_price_map(tmp_path):
+    mapping = {("A", 6, True, False, 0, 0): {"value_raw": 1, "currency": "metal"}}
+    path = tmp_path / "map.json"
+    price_loader.dump_price_map(mapping, path)
+    loaded = price_loader.load_price_map(path)
+    assert loaded == mapping
+
+
+def test_price_map_dict_entry(tmp_path, monkeypatch):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    url = "https://backpack.tf/api/IGetPrices/v4?raw=1&key=TEST"
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Lugermorph": {
+                    "defindex": [160],
+                    "prices": {
+                        "3": {
+                            "Tradable": {
+                                "Craftable": {
+                                    "0": {
+                                        "value": 12.4,
+                                        "value_raw": 12.4,
+                                        "currency": "keys",
+                                        "last_update": 0,
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, json=payload, status=200)
+        p = price_loader.ensure_prices_cached(refresh=True)
+
+    mapping = price_loader.build_price_map(p)
+    assert ("Lugermorph", 3, True, False, 0, 0) in mapping

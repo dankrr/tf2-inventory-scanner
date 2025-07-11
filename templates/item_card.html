@@ -1,6 +1,7 @@
-<div class="item-card"
+<div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}"
      style="--quality-color: {{ item.quality_color }}; border-color: {{ item.quality_color }};"
-     data-item='{{ item|tojson|safe }}'>
+     data-item='{{ item|tojson|safe }}'
+     data-craftable="{{ 'true' if item.craftable else 'false' }}">
   <div class="item-badges">
     {% if item.paint_hex %}
       <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
@@ -15,10 +16,25 @@
     <span class="item-qty">x{{ item.quantity }}</span>
   {% endif %}
   {% if item.unusual_effect_id %}
-    <img class="particle-bg" src="/static/images/effects/{{ item.unusual_effect_id }}.png" alt="effect">
+    <img
+      class="particle-bg"
+      loading="lazy"
+      src="/static/images/effects/{{ item.unusual_effect_id }}.png"
+      data-src="/static/images/effects/{{ item.unusual_effect_id }}.png"
+      alt="effect"
+    >
   {% endif %}
   {% if item.image_url %}
-    <img class="item-img" src="{{ item.image_url }}" alt="{{ item.display_name }}" width="64" height="64" onerror="this.style.display='none';">
+    <img
+      class="item-img"
+      loading="lazy"
+      src="{{ item.image_url }}"
+      data-src="{{ item.image_url }}"
+      alt="{{ item.display_name }}"
+      width="64"
+      height="64"
+      onerror="this.style.display='none';"
+    >
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
@@ -32,11 +48,13 @@
     {% endif %}
   {% endif %}
   {% set quality = item.quality %}
-  {% if item.strange or quality == 'Strange' %}
-    {% set _ = title_parts.append('Strange') %}
-  {% elif quality and quality not in ('Unique', 'Normal', 'Decorated Weapon') %}
-    {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
-      {% set _ = title_parts.append(quality) %}
+  {% if not item.is_australium %}
+    {% if item.strange or quality == 'Strange' %}
+      {% set _ = title_parts.append('Strange') %}
+    {% elif quality and quality not in ('Unique', 'Normal', 'Decorated Weapon') %}
+      {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
+        {% set _ = title_parts.append(quality) %}
+      {% endif %}
     {% endif %}
   {% endif %}
   {% if item.is_war_paint_tool %}
@@ -49,6 +67,9 @@
     {% set base = item.display_name %}
   {% else %}
     {% set base = item.composite_name or item.base_name or item.display_name or item.name %}
+  {% endif %}
+  {% if item.is_australium %}
+    {% set base = 'Australium ' ~ base %}
   {% endif %}
   {% set _ = title_parts.append(base) %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>

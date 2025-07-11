@@ -1,4 +1,4 @@
-<div id="user-{{ user.steamid }}" class="user-card user-box {{ user.status }}" data-steamid="{{ user.steamid }}">
+<div id="user-{{ user.steamid }}" class="user-card user-box {{ user.status }}{% if user.status == 'failed' %} retry-card{% endif %}" data-steamid="{{ user.steamid }}">
   <div class="user-header">
     <div class="user-profile">
       <a href="{{ user.profile }}" target="_blank" class="avatar-link">
@@ -16,15 +16,26 @@
       </div>
     </div>
     <div class="privacy-status">
-      <span class="pill status-pill {{ user.status }}{% if user.status == 'failed' %} retry-pill{% endif %}" {% if user.status == 'failed' %}data-steamid="{{ user.steamid }}" title="Retry scan for this user"{% endif %}>
-        {% if user.status == 'parsed' %}
-          <i class="fa-solid fa-check"></i> Public
-        {% elif user.status == 'private' %}
-          <i class="fa-solid fa-lock"></i> Private
-        {% else %}
-          <i class="fa-solid fa-arrows-rotate"></i> Failed
-        {% endif %}
-      </span>
+      {% if user.status == 'failed' %}
+        <button
+          class="pill status-pill failed retry-button"
+          type="button"
+          data-steamid="{{ user.steamid }}"
+          aria-label="Retry scan for this user"
+        >
+          <i class="fa-solid fa-arrows-rotate"></i> Retry
+        </button>
+      {% else %}
+        <span class="pill status-pill {{ user.status }}">
+          {% if user.status == 'parsed' %}
+            <i class="fa-solid fa-check"></i> Public
+          {% elif user.status == 'private' %}
+            <i class="fa-solid fa-lock"></i> Private
+          {% else %}
+            <i class="fa-solid fa-arrows-rotate"></i> Failed
+          {% endif %}
+        </span>
+      {% endif %}
     </div>
   </div>
   <div class="card-body">

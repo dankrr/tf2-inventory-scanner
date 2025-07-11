@@ -1,11 +1,12 @@
 from utils import constants
+import pytest
 
 
-def test_api_constants_route(app):
-    client = app.test_client()
-    resp = client.get("/api/constants")
+@pytest.mark.asyncio
+async def test_api_constants_route(async_client):
+    resp = await async_client.get("/api/constants")
     assert resp.status_code == 200
-    data = resp.get_json()
+    data = resp.json()
     assert data["paint_colors"]["3100495"][0] == "A Color Similar to Slate"
     assert data["sheen_names"]["1"] == constants.SHEEN_NAMES[1]
     assert (

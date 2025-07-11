@@ -189,3 +189,118 @@ def test_decorated_quality_not_shown(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     assert title.text.strip() == "Warhawk Flamethrower"
+
+
+def test_failed_user_has_retry_class(app):
+    context = {"user": {"steamid": "123", "status": "failed", "items": []}}
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", {"data-steamid": "123"})
+    assert card is not None
+    classes = card.get("class", [])
+    assert "retry-card" in classes
+
+
+def test_trade_hold_class_rendered(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Widget",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                    "untradable_hold": True,
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    classes = card.get("class", [])
+    assert "trade-hold" in classes
+
+
+def test_uncraftable_class_rendered(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Gadget",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                    "uncraftable": True,
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    classes = card.get("class", [])
+    assert "uncraftable" in classes
+
+
+def test_australium_name_omits_strange_prefix(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Strange Australium Scattergun",
+                    "display_name": "Australium Scattergun",
+                    "base_name": "Scattergun",
+                    "is_australium": True,
+                    "quality": "Strange",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert title.text.strip() == "Australium Scattergun"
+
+
+
+def test_professional_killstreak_australium_title(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Professional Killstreak Australium Scattergun",
+                    "display_name": "Australium Scattergun",
+                    "base_name": "Scattergun",
+                    "killstreak_name": "Professional",
+                    "is_australium": True,
+                    "quality": "Strange",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert title.text.strip() == "Professional Killstreak Australium Scattergun"

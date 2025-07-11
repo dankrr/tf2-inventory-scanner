@@ -1,9 +1,9 @@
 import re
 from typing import List
 
-STEAMID2_RE = re.compile(r"STEAM_0:[01]:\d+")
-STEAMID3_RE = re.compile(r"\[U:1:\d+\]")
-STEAMID64_RE = re.compile(r"\b\d{17}\b")
+STEAMID2_RE = re.compile(r"^STEAM_0:[01]:\d+$")
+STEAMID3_RE = re.compile(r"^\[U:1:\d+\]$")
+STEAMID64_RE = re.compile(r"^\d{17}$")
 
 
 def extract_steam_ids(raw_text: str) -> List[str]:

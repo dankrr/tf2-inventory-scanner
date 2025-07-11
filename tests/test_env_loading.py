@@ -9,7 +9,7 @@ def test_missing_env_vars_raises(monkeypatch):
     monkeypatch.delenv("STEAM_API_KEY", raising=False)
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     sys.modules.pop("app", None)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         importlib.import_module("app")
 
 
@@ -25,6 +25,14 @@ def test_env_present_allows_import(monkeypatch):
         lambda refresh=False: Path("currencies.json"),
     )
     monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
+    monkeypatch.setattr(
+        "utils.price_loader.PRICE_MAP_FILE",
+        Path("price_map.json"),
+    )
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     sys.modules.pop("app", None)
     importlib.import_module("app")

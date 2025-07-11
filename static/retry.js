@@ -1,13 +1,3 @@
-function appendCard(html) {
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = html;
-  const card = wrapper.firstElementChild;
-  if (card) {
-    document.getElementById('user-container').appendChild(card);
-    showResults();
-  }
-}
-
 function updateScanToast(current, total) {
   const toast = document.getElementById('scan-toast');
   if (!toast) return;
@@ -51,6 +41,9 @@ function retryInventory(id) {
         card.replaceWith(newCard);
       }
       attachHandlers();
+      if (window.refreshLazyLoad) {
+        window.refreshLazyLoad();
+      }
       updateRefreshButton();
       showResults();
     })
@@ -64,10 +57,23 @@ function retryInventory(id) {
     });
 }
 
+function getFailedUsers() {
+  return [...document.querySelectorAll('.user-card.failed')]
+    .filter(div => !div.classList.contains('private'))
+    .map(div => div.dataset.steamid);
+}
+
+function updateFailedCount() {
+  const countEl = document.getElementById('failed-count');
+  if (countEl) {
+    countEl.textContent = getFailedUsers().length;
+  }
+}
+
 function updateRefreshButton() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
-  const failures = document.querySelectorAll('.user-box.failed').length;
+  const failures = getFailedUsers().length;
   if (failures === 0) {
     btn.disabled = true;
     btn.textContent = 'Nothing to Refresh';
@@ -77,38 +83,57 @@ function updateRefreshButton() {
     btn.textContent = `Refresh Failed (${failures})`;
     btn.classList.remove('btn-disabled');
   }
+  updateFailedCount();
 }
 
-document.addEventListener('DOMContentLoaded', updateRefreshButton);
+document.addEventListener('DOMContentLoaded', () => {
+  updateRefreshButton();
+  updateFailedCount();
+});
+
+function handleRetryClick(event) {
+  const btn = event.currentTarget;
+  if (!btn) return;
+  retryInventory(btn.dataset.steamid);
+}
 
 function attachHandlers() {
-  document.querySelectorAll('.retry-pill').forEach(el => {
-    el.addEventListener('click', () => retryInventory(el.dataset.steamid));
+  document.querySelectorAll('.retry-button').forEach(btn => {
+    btn.removeEventListener('click', handleRetryClick);
+    btn.addEventListener('click', handleRetryClick);
   });
   updateRefreshButton();
 
   attachItemModal();
 }
 
-function refreshAll() {
+async function refreshAll() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const ids = Array.from(document.querySelectorAll('.user-box.failed')).map(
-    el => el.dataset.steamid
-  );
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(ids[i]);
-    }
-    btn.disabled = false;
-    btn.textContent = original;
-    attachHandlers();
-    hideScanToast();
-  })();
+  const ids = getFailedUsers();
+  const total = ids.length;
+  const BATCH_SIZE = 3;
+  let current = 0;
+  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+    const batch = ids.slice(i, i + BATCH_SIZE);
+    const tasks = batch.map(id => {
+      const card = document.getElementById('user-' + id);
+      if (card) card.classList.add('loading');
+      updateScanToast(++current, total);
+      return retryInventory(id);
+    });
+    await Promise.all(tasks);
+    await new Promise(res => setTimeout(res, 300));
+  }
+  btn.disabled = false;
+  btn.textContent = original;
+  attachHandlers();
+  updateRefreshButton();
+  updateFailedCount();
+  hideScanToast();
 }
 
 function loadUsers(ids) {
@@ -116,7 +141,11 @@ function loadUsers(ids) {
   (async () => {
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i];
-      if (!document.getElementById('user-' + id)) {
+      const existing = document.getElementById('user-' + id);
+      if (existing && !existing.classList.contains('failed')) {
+        continue;
+      }
+      if (!existing) {
         const placeholder = document.createElement('div');
         placeholder.id = 'user-' + id;
         placeholder.dataset.steamid = id;
@@ -139,32 +168,39 @@ function showResults() {
   }, 10);
 }
 
+function handleItemClick(event) {
+  const card = event.currentTarget || event;
+  let data = card.dataset.item;
+  if (!data) return;
+  try {
+    data = JSON.parse(data);
+  } catch (e) {
+    return;
+  }
+  if (window.modal && typeof window.modal.updateHeader === 'function') {
+    window.modal.updateHeader(data);
+  }
+  if (window.modal && typeof window.modal.setParticleBackground === 'function') {
+    window.modal.setParticleBackground(data.unusual_effect_id);
+  }
+  if (window.modal && typeof window.modal.generateModalHTML === 'function') {
+    const html = window.modal.generateModalHTML(data);
+    if (window.modal.showItemModal) {
+      window.modal.showItemModal(html);
+    }
+  }
+  if (window.modal && typeof window.modal.renderBadges === 'function') {
+    window.modal.renderBadges(data.badges);
+  }
+}
+
 function attachItemModal() {
-  document.querySelectorAll('.item-card').forEach(card => {
-    card.addEventListener('click', () => {
-      let data = card.dataset.item;
-      if (!data) return;
-      try {
-        data = JSON.parse(data);
-      } catch (e) {
-        return;
-      }
-      if (window.modal && typeof window.modal.updateHeader === 'function') {
-        window.modal.updateHeader(data);
-      }
-      if (window.modal && typeof window.modal.setParticleBackground === 'function') {
-        window.modal.setParticleBackground(data.unusual_effect_id);
-      }
-      if (window.modal && typeof window.modal.generateModalHTML === 'function') {
-        const html = window.modal.generateModalHTML(data);
-        if (window.modal.showItemModal) {
-          window.modal.showItemModal(html);
-        }
-      }
-      if (window.modal && typeof window.modal.renderBadges === 'function') {
-        window.modal.renderBadges(data.badges);
-      }
-    });
+  const container = document.getElementById('user-container');
+  if (!container) return;
+  container.querySelectorAll('.item-card').forEach(card => {
+    if (card.dataset.handler) return;
+    card.dataset.handler = 'true';
+    card.addEventListener('click', handleItemClick);
   });
 }
 
@@ -174,10 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) {
     btn.addEventListener('click', refreshAll);
   }
-  if (window.initialIds && window.initialIds.length) {
-    loadUsers(window.initialIds);
-  }
-  attachItemModal();
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
   }

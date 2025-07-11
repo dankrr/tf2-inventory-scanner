@@ -3,7 +3,13 @@ from __future__ import annotations
 from typing import Any, Dict, Tuple
 
 from . import local_data
-from .price_loader import ensure_prices_cached, build_price_map
+from .price_loader import (
+    ensure_prices_cached,
+    build_price_map,
+    load_price_map,
+    dump_price_map,
+    PRICE_MAP_FILE,
+)
 from .price_service import format_price
 
 
@@ -26,31 +32,62 @@ class ValuationService:
 
     def __init__(
         self,
-        price_map: Dict[Tuple[str, int, bool, int, int], Dict[str, Any]] | None = None,
+        price_map: (
+            Dict[Tuple[str, int, bool, bool, int, int], Dict[str, Any]] | None
+        ) = None,
     ) -> None:
         if price_map is None:
-            path = ensure_prices_cached()
-            price_map = build_price_map(path)
+            if PRICE_MAP_FILE.exists():
+                try:
+                    price_map = load_price_map(PRICE_MAP_FILE)
+                except Exception:
+                    price_map = None
+            if price_map is None:
+                path = ensure_prices_cached()
+                price_map = build_price_map(path)
+                dump_price_map(price_map, PRICE_MAP_FILE)
         self.price_map = price_map
 
     def get_price_info(
         self,
         item_name: str,
         quality: int,
+        craftable: bool = True,
         is_australium: bool = False,
         effect_id: int | None = None,
         killstreak_tier: int | None = None,
     ) -> Dict[str, Any] | None:
         """Return raw price info dict for the item if available."""
-        key = (item_name, quality, is_australium, effect_id or 0, killstreak_tier or 0)
+        key = (
+            item_name,
+            quality,
+            craftable,
+            is_australium,
+            effect_id or 0,
+            killstreak_tier or 0,
+        )
         info = self.price_map.get(key)
         if info is None and killstreak_tier is not None:
             info = self.price_map.get(
-                (item_name, quality, is_australium, effect_id or 0, 0)
+                (
+                    item_name,
+                    quality,
+                    craftable,
+                    is_australium,
+                    effect_id or 0,
+                    0,
+                )
             )
         if info is None and effect_id is not None:
             info = self.price_map.get(
-                (item_name, quality, is_australium, 0, killstreak_tier or 0)
+                (
+                    item_name,
+                    quality,
+                    craftable,
+                    is_australium,
+                    0,
+                    killstreak_tier or 0,
+                )
             )
         return info
 
@@ -58,6 +95,7 @@ class ValuationService:
         self,
         item_name: str,
         quality: int,
+        craftable: bool = True,
         is_australium: bool = False,
         *,
         effect_id: int | None = None,
@@ -68,6 +106,7 @@ class ValuationService:
         info = self.get_price_info(
             item_name,
             quality,
+            craftable,
             is_australium,
             effect_id,
             killstreak_tier,

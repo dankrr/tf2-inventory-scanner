@@ -3,6 +3,9 @@ from pathlib import Path
 import importlib
 
 import pytest
+import pytest_asyncio
+from asgiref.wsgi import WsgiToAsgi
+import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -31,3 +34,13 @@ def app(monkeypatch):
     importlib.reload(mod)
     mod.app.secret_key = "test"
     return mod.app
+
+
+@pytest_asyncio.fixture
+async def async_client(app):
+    asgi_app = WsgiToAsgi(app)
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(
+        transport=transport, base_url="http://testserver"
+    ) as client:
+        yield client

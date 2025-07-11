@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .constants import KILLSTREAK_TIERS
 
+import httpx
 import requests
 from dotenv import load_dotenv
 
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
+PRICE_MAP_FILE = Path("cache/price_map.json")
 
 
 QUALITY_PREFIXES = (
@@ -87,6 +89,32 @@ def ensure_prices_cached(refresh: bool = False) -> Path:
     return path
 
 
+async def ensure_prices_cached_async(refresh: bool = False) -> Path:
+    """Async version of :func:`ensure_prices_cached`."""
+
+    path = PRICES_FILE
+    if path.exists() and not refresh:
+        return path
+
+    url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                url, timeout=5, headers={"accept": "application/json"}
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # httpx or JSON
+            logger.warning("Failed to fetch prices: %s", exc)
+            if path.exists():
+                return path
+            raise RuntimeError("Cannot fetch Backpack.tf prices") from exc
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2))
+    return path
+
+
 def ensure_currencies_cached(refresh: bool = False) -> Path:
     """Download currency exchange rates from backpack.tf."""
 
@@ -110,16 +138,42 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
     return path
 
 
+async def ensure_currencies_cached_async(refresh: bool = False) -> Path:
+    """Async version of :func:`ensure_currencies_cached`."""
+
+    path = CURRENCIES_FILE
+    if path.exists() and not refresh:
+        return path
+
+    url = f"https://backpack.tf/api/IGetCurrencies/v1?raw=1&key={_require_key()}"
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                url, timeout=5, headers={"accept": "application/json"}
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # httpx or JSON
+            logger.warning("Failed to fetch currencies: %s", exc)
+            if path.exists():
+                return path
+            raise RuntimeError("Cannot fetch Backpack.tf currencies") from exc
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2))
+    return path
+
+
 def build_price_map(
     prices_path: Path,
-) -> dict[tuple[str, int, bool, int, int], dict]:
-    """Return mapping of ``(item_name, quality, is_australium, effect_id, killstreak_tier)`` -> price info."""
+) -> dict[tuple[str, int, bool, bool, int, int], dict]:
+    """Return mapping of ``(item_name, quality, craftable, is_australium, effect_id, killstreak_tier)`` -> price info."""
 
     with prices_path.open() as f:
         data = json.load(f)
 
     items = data.get("response", {}).get("items", {})
-    mapping: dict[tuple[str, int, bool, int, int], dict] = {}
+    mapping: dict[tuple[str, int, bool, bool, int, int], dict] = {}
 
     for name, item in items.items():
         is_australium = str(item.get("australium")) == "1" or name.startswith(
@@ -128,6 +182,7 @@ def build_price_map(
         base_name = (
             name.replace("Australium ", "") if name.startswith("Australium ") else name
         )
+        base_name = base_name.replace("\n", " ")
         base_name, ks_tier = _extract_killstreak(base_name)
         prices = item.get("prices", {})
         for quality, qdata in prices.items():
@@ -137,32 +192,72 @@ def build_price_map(
                 continue
 
             tradable = qdata.get("Tradable", {})
-            entries = tradable.get("Craftable")
+            for craft_key in ("Craftable", "Non-Craftable"):
+                craftable = craft_key == "Craftable"
+                entries = tradable.get(craft_key)
 
-            if qid == 5 and isinstance(entries, dict):
-                effect_entries = entries
-            else:
-                if not isinstance(entries, list):
-                    entries = tradable.get("Non-Craftable")
-                entry = entries[0] if isinstance(entries, list) else None
-                effect_entries = {0: entry} if isinstance(entry, dict) else {}
+                if isinstance(entries, dict):
+                    effect_entries = entries
+                else:
+                    entry = entries[0] if isinstance(entries, list) else None
+                    effect_entries = {0: entry} if isinstance(entry, dict) else {}
 
-            for effect_key, entry in effect_entries.items():
-                if not isinstance(entry, dict):
-                    continue
+                for effect_key, entry in effect_entries.items():
+                    if not isinstance(entry, dict):
+                        continue
 
-                value_raw = entry.get("value_raw")
-                currency = entry.get("currency")
-                if value_raw is None or currency is None:
-                    continue
+                    value_raw = entry.get("value_raw")
+                    currency = entry.get("currency")
+                    if value_raw is None or currency is None:
+                        continue
 
-                try:
-                    effect_id = int(effect_key)
-                except (TypeError, ValueError):
-                    effect_id = 0
+                    try:
+                        effect_id = int(effect_key)
+                    except (TypeError, ValueError):
+                        effect_id = 0
 
-                mapping[(base_name, qid, is_australium, effect_id, ks_tier)] = {
-                    "value_raw": float(value_raw),
-                    "currency": str(currency),
-                }
+                    mapping[
+                        (base_name, qid, craftable, is_australium, effect_id, ks_tier)
+                    ] = {
+                        "value_raw": float(value_raw),
+                        "currency": str(currency),
+                    }
+    return mapping
+
+
+def dump_price_map(
+    price_map: dict[tuple[str, int, bool, bool, int, int], dict],
+    path: Path = PRICE_MAP_FILE,
+) -> Path:
+    """Serialize ``price_map`` to ``path``."""
+
+    data = [[list(key), value] for key, value in price_map.items()]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data))
+    return path
+
+
+def load_price_map(
+    path: Path = PRICE_MAP_FILE,
+) -> dict[tuple[str, int, bool, bool, int, int], dict]:
+    """Load mapping previously saved by :func:`dump_price_map`."""
+
+    with path.open() as f:
+        data = json.load(f)
+
+    mapping: dict[tuple[str, int, bool, bool, int, int], dict] = {}
+    if isinstance(data, list):
+        for key, value in data:
+            if not isinstance(key, list) or len(key) != 6:
+                continue
+            mapping[
+                (
+                    str(key[0]),
+                    int(key[1]),
+                    bool(key[2]),
+                    bool(key[3]),
+                    int(key[4]),
+                    int(key[5]),
+                )
+            ] = value
     return mapping

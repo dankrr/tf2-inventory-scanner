@@ -50,6 +50,10 @@ PATTERN_SEED_HI_CLASSES: set[str] = set()
 PAINTKIT_CLASSES: set[str] = set()
 CRATE_SERIES_CLASSES: set[str] = set()
 
+# Origins configuration loaded from ``static/exclusions.json`` via ``local_data``
+_exclusions = local_data.load_exclusions()
+CRAFT_WEAPON_ALLOWED_ORIGINS = set(_exclusions.get("craft_weapon_exclusions", []))
+
 # Sets of attribute defindexes considered "special" for craft weapon detection
 SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
 SPECIAL_KILLSTREAK_ATTRS: set[int] = {2013, 2014, 2025}
@@ -827,6 +831,13 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     except (TypeError, ValueError):
         return False
 
+    try:
+        origin = int(asset.get("origin", -1))
+    except (TypeError, ValueError):
+        origin = -1
+    if origin in CRAFT_WEAPON_ALLOWED_ORIGINS:
+        return False
+
     if quality != 6:
         return False
 
@@ -860,6 +871,41 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     return True
 
 
+def _trade_hold_timestamp(asset: dict) -> int | None:
+    """Return a trade hold expiry timestamp if present."""
+
+    ts = asset.get("steam_market_tradeable_after") or asset.get(
+        "steam_market_marketable_after"
+    )
+    try:
+        if ts is not None:
+            return int(ts)
+    except (TypeError, ValueError):
+        pass
+
+    for desc in asset.get("descriptions", []):
+        if not isinstance(desc, dict):
+            continue
+        app_data = desc.get("app_data")
+        if not isinstance(app_data, dict):
+            continue
+        ts = app_data.get("steam_market_tradeable_after") or app_data.get(
+            "steam_market_marketable_after"
+        )
+        try:
+            if ts is not None:
+                return int(ts)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _has_trade_hold(asset: dict) -> bool:
+    """Return ``True`` if the item has a temporary trade hold."""
+
+    return _trade_hold_timestamp(asset) is not None
+
+
 def _process_item(
     asset: dict,
     valuation_service: ValuationService | None = None,
@@ -880,6 +926,34 @@ def _process_item(
 
     if valuation_service is None:
         valuation_service = get_valuation_service()
+
+    origin_raw = asset.get("origin")
+    tradable_raw = asset.get("tradable", 1)
+    trade_hold_ts = _trade_hold_timestamp(asset)
+    untradable_hold = False
+    try:
+        origin_int = int(origin_raw)
+    except (TypeError, ValueError):
+        origin_int = -1
+
+    try:
+        tradable_val = int(tradable_raw)
+    except (TypeError, ValueError):  # pragma: no cover - fallback handling
+        tradable_val = 1
+
+    if asset.get("flag_cannot_trade"):
+        if trade_hold_ts is not None:
+            tradable_val = 1
+            untradable_hold = True
+        else:
+            tradable_val = 0
+
+    hide_item = tradable_val == 0
+    if hide_item:
+        valuation_service = None
+
+    uncraftable = bool(asset.get("flag_cannot_craft"))
+    craftable = not uncraftable
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -1049,6 +1123,7 @@ def _process_item(
         display_name = resolved_name
 
     item = {
+        "id": asset.get("id"),
         "defindex": defindex,
         "name": name,
         "original_name": original_name,
@@ -1070,7 +1145,7 @@ def _process_item(
         "item_class": schema_entry.get("item_class"),
         "slot_type": schema_entry.get("item_slot") or schema_entry.get("slot_type"),
         "level": asset.get("level"),
-        "origin": ORIGIN_MAP.get(asset.get("origin")),
+        "origin": ORIGIN_MAP.get(origin_int),
         "custom_name": asset.get("custom_name"),
         "custom_description": asset.get("custom_desc"),
         "unusual_effect": effect,
@@ -1122,13 +1197,15 @@ def _process_item(
             if score_types.get(1) is not None
             else None
         ),
+        "trade_hold_expires": trade_hold_ts,
+        "untradable_hold": untradable_hold,
+        "uncraftable": uncraftable,
+        "craftable": craftable,
+        "_hidden": hide_item,
     }
+
     if valuation_service is not None:
-        tradable = asset.get("tradable", 1)
-        try:
-            tradable = int(tradable)
-        except (TypeError, ValueError):  # pragma: no cover - fallback handling
-            tradable = 1
+        tradable = tradable_val
 
         if tradable:
             try:
@@ -1139,6 +1216,7 @@ def _process_item(
                 formatted = valuation_service.format_price(
                     item.get("base_name", base_name),
                     qid,
+                    craftable,
                     bool(is_australium),
                     effect_id=effect_id,
                     killstreak_tier=ks_tier_val,
@@ -1150,6 +1228,7 @@ def _process_item(
                 item["price"] = valuation_service.get_price_info(
                     item.get("base_name", base_name),
                     qid,
+                    craftable,
                     bool(is_australium),
                     effect_id=effect_id,
                     killstreak_tier=ks_tier_val,
@@ -1235,11 +1314,17 @@ def process_inventory(
     data: Dict[str, Any],
     valuation_service: ValuationService | None = None,
 ) -> List[Dict[str, Any]]:
-    """Public wrapper that sorts items by name."""
+    """Return enriched items sorted by descending price."""
     if valuation_service is None:
         valuation_service = get_valuation_service()
     items = enrich_inventory(data, valuation_service)
-    return sorted(items, key=lambda i: i["name"])
+
+    def _sort_key(item: Dict[str, Any]) -> tuple[float, str]:
+        price_info = item.get("price") or {}
+        value = price_info.get("value_raw", 0) or 0
+        return -float(value), item["name"]
+
+    return sorted(items, key=_sort_key)
 
 
 def run_enrichment_test(path: str | None = None) -> None:

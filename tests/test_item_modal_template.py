@@ -20,6 +20,11 @@ def app(monkeypatch):
         lambda refresh=False: Path("currencies.json"),
     )
     monkeypatch.setattr("utils.price_loader.build_price_map", lambda path: {})
+    monkeypatch.setattr("utils.price_loader.PRICE_MAP_FILE", Path("price_map.json"))
+    monkeypatch.setattr(
+        "utils.price_loader.dump_price_map",
+        lambda mapping, path=Path("price_map.json"): path,
+    )
     mod = importlib.import_module("app")
     importlib.reload(mod)
     return mod.app
@@ -34,3 +39,19 @@ def test_killstreak_badge_color(app):
     assert badge is not None
     assert badge.text.strip() == "Professional Killstreak"
     assert "#8847ff" in badge.get("style", "")
+
+
+def test_craftable_text_shown(app):
+    item = {"craftable": True}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    assert "Craftable" in soup.text
+
+
+def test_uncraftable_text_shown(app):
+    item = {"craftable": False}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    assert "Uncraftable" in soup.text

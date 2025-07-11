@@ -90,6 +90,10 @@ STRING_LOOKUPS_FILE = Path(
     os.getenv("TF2_STRING_LOOKUPS_FILE", DEFAULT_STRING_LOOKUPS_FILE)
 )
 
+# Path to static exclusions file
+DEFAULT_EXCLUSIONS_FILE = BASE_DIR / "static" / "exclusions.json"
+EXCLUSIONS_FILE = Path(os.getenv("TF2_EXCLUSIONS_FILE", DEFAULT_EXCLUSIONS_FILE))
+
 
 def load_json(relative: str) -> Any:
     """Return parsed JSON from ``BASE_DIR / "cache" / relative`` or ``{}``."""
@@ -102,6 +106,33 @@ def load_json(relative: str) -> Any:
             return json.load(f)
     except Exception:
         return {}
+
+
+def load_exclusions() -> Dict[str, Any]:
+    """Return exclusions configuration from :data:`EXCLUSIONS_FILE`."""
+
+    if not EXCLUSIONS_FILE.exists():
+        return {}
+    try:
+        with EXCLUSIONS_FILE.open() as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+    return {}
+
+
+def _normalize_image_url(url: str | None) -> str | None:
+    """Return ``url`` with an HTTPS scheme for Steam CDN links."""
+
+    if isinstance(url, str) and url.startswith("http://media.steampowered.com"):
+        return url.replace(
+            "http://media.steampowered.com",
+            "https://media.steampowered.com",
+            1,
+        )
+    return url
 
 
 # Preload cached paintkit names at import time
@@ -243,9 +274,20 @@ def load_files(
                 idx = int(entry["defindex"])
             except (TypeError, ValueError):
                 continue
+            entry["image_url"] = _normalize_image_url(entry.get("image_url"))
+            entry["image_url_large"] = _normalize_image_url(
+                entry.get("image_url_large")
+            )
             items_map[idx] = entry
     elif isinstance(raw_items, dict):
-        items_map = {int(k): v for k, v in raw_items.items() if str(k).isdigit()}
+        items_map = {}
+        for k, v in raw_items.items():
+            if not str(k).isdigit() or not isinstance(v, dict):
+                continue
+            idx = int(k)
+            v["image_url"] = _normalize_image_url(v.get("image_url"))
+            v["image_url_large"] = _normalize_image_url(v.get("image_url_large"))
+            items_map[idx] = v
     ITEMS_BY_DEFINDEX = items_map
     if verbose:
         logging.info(

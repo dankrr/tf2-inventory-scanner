@@ -61,6 +61,27 @@ if (!html2.includes('<li>Ghosts (2)</li>')) {
 if (!html2.includes('<li>Fire</li>')) {
   throw new Error('Spell object not rendered');
 }
+const htmlHistory = modal.generateModalHTML({ id: 123 });
+if (!htmlHistory.includes('https://next.backpack.tf/item/123')) {
+  throw new Error('History link missing');
+}
+const thTs = 1600000000;
+const htmlHold = modal.generateModalHTML({ id: 123, trade_hold_expires: thTs });
+const expectedDate = new Date(thTs * 1000).toLocaleString();
+if (!htmlHold.includes('Tradable after:')) {
+  throw new Error('Trade hold text missing');
+}
+if (!htmlHold.includes(expectedDate)) {
+  throw new Error('Trade hold date missing');
+}
+const htmlStacked = modal.generateModalHTML({ id: 123, quantity: 2 });
+if (htmlStacked.includes('backpack.tf')) {
+  throw new Error('History link should not show for stacked items');
+}
+const htmlHidden = modal.generateModalHTML({ id: 123, _hidden: true });
+if (htmlHidden.includes('backpack.tf')) {
+  throw new Error('History link should not show for hidden items');
+}
 modal.closeModal();
 modal.showItemModal('<p>Race</p>');
 setTimeout(() => {

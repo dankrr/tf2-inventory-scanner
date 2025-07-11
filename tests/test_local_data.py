@@ -263,3 +263,14 @@ def test_effect_names_file_loaded(tmp_path, monkeypatch):
     ld.load_files()
 
     assert ld.EFFECT_NAMES["3009"] == "Silver Cyclone"
+
+
+def test_load_exclusions(tmp_path, monkeypatch):
+    path = tmp_path / "exclusions.json"
+    data = {"hidden_origins": [2], "craft_weapon_exclusions": [3]}
+    path.write_text(json.dumps(data))
+
+    monkeypatch.setattr(ld, "EXCLUSIONS_FILE", path)
+
+    loaded = ld.load_exclusions()
+    assert loaded == data
