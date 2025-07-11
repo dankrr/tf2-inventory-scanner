@@ -894,12 +894,18 @@ def _process_item(
         valuation_service = get_valuation_service()
 
     origin_raw = asset.get("origin")
+    tradable_raw = asset.get("tradable", 1)
     try:
         origin_int = int(origin_raw)
     except (TypeError, ValueError):
         origin_int = -1
 
-    hide_item = origin_int in HIDDEN_ORIGINS
+    try:
+        tradable_val = int(tradable_raw)
+    except (TypeError, ValueError):  # pragma: no cover - fallback handling
+        tradable_val = 1
+
+    hide_item = tradable_val == 0 and origin_int in HIDDEN_ORIGINS
     if hide_item:
         valuation_service = None
 
@@ -1147,14 +1153,6 @@ def _process_item(
         ),
         "_hidden": hide_item,
     }
-    tradable_raw = asset.get("tradable", 1)
-    try:
-        tradable_val = int(tradable_raw)
-    except (TypeError, ValueError):  # pragma: no cover - fallback handling
-        tradable_val = 1
-
-    if origin_int == 0 and tradable_val == 0:
-        item["_hidden"] = True
 
     if valuation_service is not None:
         tradable = tradable_val

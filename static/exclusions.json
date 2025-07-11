@@ -1,4 +1,4 @@
 {
-  "hidden_origins": [1, 5, 9, 14],
+  "hidden_origins": [0, 1, 5, 14],
   "craft_weapon_exclusions": [1, 5, 9, 14]
 }

@@ -836,9 +836,9 @@ def test_plain_craft_weapon_filtered():
     assert items == []
 
 
-@pytest.mark.parametrize("origin", [1, 5, 9, 14])
+@pytest.mark.parametrize("origin", [1, 5, 14])
 def test_plain_craft_weapon_with_special_origin_hidden(origin, patch_valuation):
-    data = {"items": [{"defindex": 10, "quality": 6, "origin": origin}]}
+    data = {"items": [{"defindex": 10, "quality": 6, "origin": origin, "tradable": 0}]}
     ld.ITEMS_BY_DEFINDEX = {10: {"item_name": "A", "craft_class": "weapon"}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("A", 6, False, 0, 0): {"value_raw": 1, "currency": "metal"}}
@@ -849,6 +849,20 @@ def test_plain_craft_weapon_with_special_origin_hidden(origin, patch_valuation):
     assert item["_hidden"] is True
     assert "price" not in item
     assert "price_string" not in item
+
+
+@pytest.mark.parametrize("origin", [1, 5, 14])
+def test_plain_craft_weapon_with_special_origin_visible(origin, patch_valuation):
+    data = {"items": [{"defindex": 10, "quality": 6, "origin": origin, "tradable": 1}]}
+    ld.ITEMS_BY_DEFINDEX = {10: {"item_name": "A", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("A", 6, False, 0, 0): {"value_raw": 1, "currency": "metal"}}
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    assert len(items) == 1
+    item = items[0]
+    assert item["_hidden"] is False
+    assert item["price"] is not None
 
 
 def test_special_craft_weapon_kept():
@@ -967,8 +981,9 @@ def test_untradable_item_no_price(patch_valuation):
     assert "price_string" not in item
 
 
-def test_untradable_timed_drop_hidden(patch_valuation):
-    data = {"items": [{"defindex": 44, "quality": 6, "origin": 0, "tradable": 0}]}
+@pytest.mark.parametrize("origin", [0, 1, 5, 14])
+def test_untradable_origin_hidden(origin, patch_valuation):
+    data = {"items": [{"defindex": 44, "quality": 6, "origin": origin, "tradable": 0}]}
     ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {("Widget", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"}}
@@ -978,6 +993,20 @@ def test_untradable_timed_drop_hidden(patch_valuation):
     item = items[0]
     assert item["_hidden"] is True
     assert "price" not in item
+
+
+@pytest.mark.parametrize("origin", [0, 1, 5, 14])
+def test_tradable_origin_visible(origin, patch_valuation):
+    data = {"items": [{"defindex": 44, "quality": 6, "origin": origin, "tradable": 1}]}
+    ld.ITEMS_BY_DEFINDEX = {44: {"item_name": "Widget", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    price_map = {("Widget", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"}}
+
+    patch_valuation(price_map)
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["_hidden"] is False
+    assert item["price"] is not None
 
 
 def test_tradable_item_missing_price(patch_valuation):
