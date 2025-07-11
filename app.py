@@ -12,7 +12,6 @@ from types import SimpleNamespace
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, jsonify
 from utils.id_parser import extract_steam_ids
-from utils.inventory_processor import enrich_inventory
 import utils.inventory_processor as ip
 
 from utils import steam_api_client as sac
@@ -172,7 +171,9 @@ async def fetch_inventory(steamid64: str) -> Dict[str, Any]:
     items: List[Dict[str, Any]] = []
     if status == "parsed":
         try:
-            items = enrich_inventory(data, valuation_service=ip.get_valuation_service())
+            items = ip.process_inventory(
+                data, valuation_service=ip.get_valuation_service()
+            )
         except Exception:
             app.logger.exception("Failed to enrich inventory for %s", steamid64)
             status = "failed"
