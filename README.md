@@ -108,6 +108,14 @@ item attribute with a defindex from `1004` to `1009`, the numeric value is
 matched against this table to produce the spell name. No schema lookups are
 required and spell names are always resolved offline.
 
+## Inventory Filtering Rules
+
+Items may be hidden or skipped from pricing based on `static/exclusions.json`.
+Items flagged with `flag_cannot_trade` are treated as untradable **unless** the
+item also contains `steam_market_tradeable_after` or
+`steam_market_marketable_after` in its description data. In that case, the item
+is priced and displayed normally despite the temporary trade hold.
+
 ## Testing
 
 Run linting and tests before committing:
