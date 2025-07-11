@@ -26,7 +26,7 @@ An async-enabled Flask 3 web app that inspects one or more Steam users' Team For
 
 Run the application locally and open `http://localhost:5000` in your browser:
 ```bash
-python app.py  # Flask 3 will run the async routes
+python run_hypercorn.py
 ```
 Submit any supported SteamID format. Each user panel shows the avatar, TF2 playtime, and an item grid.
 
@@ -44,7 +44,7 @@ curl -X POST http://localhost:5000/api/users \
   `utils/schema_provider.py`. Paintkit names are written to
   `cache/schema/warpaints.json`. Pass `base_url` to use a mirror. Update it with:
   ```bash
-  python app.py --refresh  # fetch latest schema files (shows progress)
+  python run_hypercorn.py --refresh  # fetch latest schema files (shows progress)
   python main.py --refresh
   ```
 - Inspect a single user's inventory from the command line (defaults to a demo
@@ -128,7 +128,7 @@ Many tests also expect cached schema files under `cache/schema/`. You can refres
 these files with:
 
 ```bash
-python app.py --refresh
+python run_hypercorn.py --refresh
 ```
 
 ## Docker / Deployment
