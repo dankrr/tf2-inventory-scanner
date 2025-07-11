@@ -12,7 +12,7 @@ from .price_loader import ensure_currencies_cached
 TF2_SCHEMA: Dict[str, Any] = {}
 ITEMS_GAME_CLEANED: Dict[str, Any] = {}
 
-# New schema maps sourced from schema.autobot.tf
+# Cached schema maps
 SCHEMA_ATTRIBUTES: Dict[int, Dict[str, Any]] = {}
 ITEMS_BY_DEFINDEX: Dict[int, Dict[str, Any]] = {}
 QUALITIES_BY_INDEX: Dict[int, str] = {}
@@ -54,7 +54,7 @@ SPELL_DISPLAY_NAMES: Dict[str, str] = {
 
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
-# schema.autobot.tf cache files
+# Local schema cache files
 DEFAULT_ATTRIBUTES_FILE = BASE_DIR / "cache" / "schema" / "attributes.json"
 DEFAULT_PARTICLES_FILE = BASE_DIR / "cache" / "schema" / "particles.json"
 DEFAULT_ITEMS_FILE = BASE_DIR / "cache" / "schema" / "items.json"
@@ -195,7 +195,7 @@ def _load_paint_id_map(path: Path) -> Dict[str, str]:
 def load_files(
     *, auto_refetch: bool = False, verbose: bool = False
 ) -> Tuple[Dict[int, Any], Dict[int, Any]]:
-    """Load local schema files from the schema.autobot.tf cache."""
+    """Load local schema files from the local cache."""
 
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
     global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
