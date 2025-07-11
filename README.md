@@ -1,6 +1,5 @@
 # TF2 Inventory Scanner
 
-![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg)
 
 A lightweight Flask web app for exploring Team Fortress 2 inventories.
 
