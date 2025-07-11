@@ -16,6 +16,27 @@ logger = logging.getLogger(__name__)
 
 PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
+PRICE_MAP_FILE = Path("cache/price_map.json")
+
+
+def _key_to_str(key: tuple[str, int, bool, int, int]) -> str:
+    """Return serialized price map key for JSON storage."""
+
+    name, quality, australium, effect, ks = key
+    return f"{name}|{quality}|{1 if australium else 0}|{effect}|{ks}"
+
+
+def _str_to_key(key: str) -> tuple[str, int, bool, int, int]:
+    """Return tuple key from serialized form."""
+
+    name, quality, australium, effect, ks = key.split("|", 4)
+    return (
+        name,
+        int(quality),
+        bool(int(australium)),
+        int(effect),
+        int(ks),
+    )
 
 
 QUALITY_PREFIXES = (
@@ -165,4 +186,42 @@ def build_price_map(
                     "value_raw": float(value_raw),
                     "currency": str(currency),
                 }
+    return mapping
+
+
+def ensure_price_map_cached(refresh: bool = False) -> Path:
+    """Return path to cached price map JSON, building if needed."""
+
+    if PRICE_MAP_FILE.exists() and not refresh:
+        if not PRICES_FILE.exists():
+            return PRICE_MAP_FILE
+        try:
+            if PRICE_MAP_FILE.stat().st_mtime >= PRICES_FILE.stat().st_mtime:
+                return PRICE_MAP_FILE
+        except OSError:
+            pass
+
+    prices_path = ensure_prices_cached(refresh=refresh)
+    price_map = build_price_map(prices_path)
+    data = {_key_to_str(k): v for k, v in price_map.items()}
+    PRICE_MAP_FILE.parent.mkdir(parents=True, exist_ok=True)
+    PRICE_MAP_FILE.write_text(json.dumps(data, indent=2))
+    try:
+        PRICES_FILE.unlink()
+    except FileNotFoundError:
+        pass
+    return PRICE_MAP_FILE
+
+
+def load_price_map(path: Path) -> dict[tuple[str, int, bool, int, int], dict]:
+    """Return price map dictionary from ``path``."""
+
+    with path.open() as f:
+        data = json.load(f)
+    mapping: dict[tuple[str, int, bool, int, int], dict] = {}
+    for key, value in data.items():
+        try:
+            mapping[_str_to_key(key)] = value
+        except Exception:
+            continue
     return mapping

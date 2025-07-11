@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import Any, Dict, Tuple
 
 from . import local_data
-from .price_loader import ensure_prices_cached, build_price_map
+from .price_loader import (
+    ensure_price_map_cached,
+    load_price_map,
+)
 from .price_service import format_price
 
 
@@ -29,8 +32,8 @@ class ValuationService:
         price_map: Dict[Tuple[str, int, bool, int, int], Dict[str, Any]] | None = None,
     ) -> None:
         if price_map is None:
-            path = ensure_prices_cached()
-            price_map = build_price_map(path)
+            path = ensure_price_map_cached()
+            price_map = load_price_map(path)
         self.price_map = price_map
 
     def get_price_info(

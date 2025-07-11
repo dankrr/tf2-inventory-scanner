@@ -18,15 +18,15 @@ def test_app_uses_mock_schema(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
     monkeypatch.setattr(
-        "utils.price_loader.ensure_prices_cached",
-        lambda refresh=False: Path("prices.json"),
+        "utils.price_loader.ensure_price_map_cached",
+        lambda refresh=False: Path("price_map.json"),
     )
     monkeypatch.setattr(
         "utils.price_loader.ensure_currencies_cached",
         lambda refresh=False: Path("currencies.json"),
     )
     monkeypatch.setattr(
-        "utils.price_loader.build_price_map",
+        "utils.price_loader.load_price_map",
         lambda path: {},
     )
     app = importlib.import_module("app")

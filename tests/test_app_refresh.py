@@ -25,8 +25,9 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         "utils.schema_provider.SchemaProvider.refresh_all", fake_refresh
     )
     monkeypatch.setattr(
-        "utils.price_loader.ensure_prices_cached",
-        lambda refresh=True: called.__setitem__("prices", True) or Path("prices.json"),
+        "utils.price_loader.ensure_price_map_cached",
+        lambda refresh=True: called.__setitem__("prices", True)
+        or Path("price_map.json"),
     )
     monkeypatch.setattr(
         "utils.price_loader.ensure_currencies_cached",
