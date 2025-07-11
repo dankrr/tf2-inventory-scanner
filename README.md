@@ -1,4 +1,4 @@
-# TF2 Inventory Scanner ![CI](https://github.com/dankrr/tf2-inventory-scanner/actions/workflows/ci.yml/badge.svg) [![coverage](https://codecov.io/gh/dankrr/tf2-inventory-scanner/branch/main/graph/badge.svg)](https://codecov.io/gh/dankrr/tf2-inventory-scanner)
+# TF2 Inventory Scanner
 
 ## Overview
 
@@ -106,8 +106,8 @@ HTML coverage is written to `htmlcov/`.
 
 Running the full test suite requires the additional packages listed in
 `requirements-test.txt`. Install them alongside the main requirements before
-invoking `pytest`. CI runs tests with coverage options, so the `pytest-cov`
-plugin must be available (it's included in `requirements-test.txt`).
+invoking `pytest`. The test suite uses coverage options from the `pytest-cov`
+plugin, which is included in `requirements-test.txt`.
 
 Many tests also expect cached schema files under `cache/schema/`. You can refresh
 these files with:
