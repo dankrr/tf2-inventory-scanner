@@ -34,3 +34,19 @@ def test_killstreak_badge_color(app):
     assert badge is not None
     assert badge.text.strip() == "Professional Killstreak"
     assert "#8847ff" in badge.get("style", "")
+
+
+def test_craftable_text_shown(app):
+    item = {"craftable": True}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    assert "Craftable" in soup.text
+
+
+def test_uncraftable_text_shown(app):
+    item = {"craftable": False}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    assert "Uncraftable" in soup.text

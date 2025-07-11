@@ -1,6 +1,7 @@
 <div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}"
      style="--quality-color: {{ item.quality_color }}; border-color: {{ item.quality_color }};"
-     data-item='{{ item|tojson|safe }}'>
+     data-item='{{ item|tojson|safe }}'
+     data-craftable="{{ 'true' if item.craftable else 'false' }}">
   <div class="item-badges">
     {% if item.paint_hex %}
       <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
