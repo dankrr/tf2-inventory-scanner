@@ -23,8 +23,8 @@ def test_process_inventory_sorting():
     }
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {
-        ("A", 6, False, 0, 0): {"value_raw": 1.0, "currency": "metal"},
-        ("B", 6, False, 0, 0): {"value_raw": 1.0, "currency": "metal"},
+        ("A", 6, True, False, 0, 0): {"value_raw": 1.0, "currency": "metal"},
+        ("B", 6, True, False, 0, 0): {"value_raw": 1.0, "currency": "metal"},
     }
     service = ValuationService(price_map=price_map)
     items = ip.process_inventory(data, valuation_service=service)
@@ -39,8 +39,8 @@ def test_process_inventory_sorts_by_price():
     }
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {
-        ("A", 6, False, 0, 0): {"value_raw": 2.0, "currency": "metal"},
-        ("B", 6, False, 0, 0): {"value_raw": 5.0, "currency": "metal"},
+        ("A", 6, True, False, 0, 0): {"value_raw": 2.0, "currency": "metal"},
+        ("B", 6, True, False, 0, 0): {"value_raw": 5.0, "currency": "metal"},
     }
     service = ValuationService(price_map=price_map)
     items = ip.process_inventory(data, valuation_service=service)
@@ -76,8 +76,8 @@ async def test_build_user_data_items_sorted(monkeypatch, app):
     }
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     price_map = {
-        ("A", 6, False, 0, 0): {"value_raw": 1.0, "currency": "metal"},
-        ("B", 6, False, 0, 0): {"value_raw": 5.0, "currency": "metal"},
+        ("A", 6, True, False, 0, 0): {"value_raw": 1.0, "currency": "metal"},
+        ("B", 6, True, False, 0, 0): {"value_raw": 5.0, "currency": "metal"},
     }
     service = ValuationService(price_map=price_map)
     monkeypatch.setattr(mod.ip, "get_valuation_service", lambda: service)

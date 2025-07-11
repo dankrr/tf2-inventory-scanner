@@ -165,14 +165,14 @@ async def ensure_currencies_cached_async(refresh: bool = False) -> Path:
 
 def build_price_map(
     prices_path: Path,
-) -> dict[tuple[str, int, bool, int, int], dict]:
-    """Return mapping of ``(item_name, quality, is_australium, effect_id, killstreak_tier)`` -> price info."""
+) -> dict[tuple[str, int, bool, bool, int, int], dict]:
+    """Return mapping of ``(item_name, quality, craftable, is_australium, effect_id, killstreak_tier)`` -> price info."""
 
     with prices_path.open() as f:
         data = json.load(f)
 
     items = data.get("response", {}).get("items", {})
-    mapping: dict[tuple[str, int, bool, int, int], dict] = {}
+    mapping: dict[tuple[str, int, bool, bool, int, int], dict] = {}
 
     for name, item in items.items():
         is_australium = str(item.get("australium")) == "1" or name.startswith(
@@ -190,32 +190,34 @@ def build_price_map(
                 continue
 
             tradable = qdata.get("Tradable", {})
-            entries = tradable.get("Craftable")
+            for craft_key in ("Craftable", "Non-Craftable"):
+                craftable = craft_key == "Craftable"
+                entries = tradable.get(craft_key)
 
-            if qid == 5 and isinstance(entries, dict):
-                effect_entries = entries
-            else:
-                if not isinstance(entries, list):
-                    entries = tradable.get("Non-Craftable")
-                entry = entries[0] if isinstance(entries, list) else None
-                effect_entries = {0: entry} if isinstance(entry, dict) else {}
+                if qid == 5 and isinstance(entries, dict):
+                    effect_entries = entries
+                else:
+                    entry = entries[0] if isinstance(entries, list) else None
+                    effect_entries = {0: entry} if isinstance(entry, dict) else {}
 
-            for effect_key, entry in effect_entries.items():
-                if not isinstance(entry, dict):
-                    continue
+                for effect_key, entry in effect_entries.items():
+                    if not isinstance(entry, dict):
+                        continue
 
-                value_raw = entry.get("value_raw")
-                currency = entry.get("currency")
-                if value_raw is None or currency is None:
-                    continue
+                    value_raw = entry.get("value_raw")
+                    currency = entry.get("currency")
+                    if value_raw is None or currency is None:
+                        continue
 
-                try:
-                    effect_id = int(effect_key)
-                except (TypeError, ValueError):
-                    effect_id = 0
+                    try:
+                        effect_id = int(effect_key)
+                    except (TypeError, ValueError):
+                        effect_id = 0
 
-                mapping[(base_name, qid, is_australium, effect_id, ks_tier)] = {
-                    "value_raw": float(value_raw),
-                    "currency": str(currency),
-                }
+                    mapping[
+                        (base_name, qid, craftable, is_australium, effect_id, ks_tier)
+                    ] = {
+                        "value_raw": float(value_raw),
+                        "currency": str(currency),
+                    }
     return mapping
