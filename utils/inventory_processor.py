@@ -724,6 +724,9 @@ def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
 
 WAR_PAINT_TOOL_DEFINDEXES = {5681, 5682, 5683}
 
+# Origins that should not cause craft weapons to be filtered out
+CRAFT_WEAPON_ALLOWED_ORIGINS = {1, 5, 9, 14}
+
 
 def _has_attr(asset: dict, idx: int) -> bool:
     """Return True if ``asset`` contains an attribute with ``defindex`` ``idx``."""
@@ -825,6 +828,13 @@ def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     try:
         quality = int(asset.get("quality", 0))
     except (TypeError, ValueError):
+        return False
+
+    try:
+        origin = int(asset.get("origin", -1))
+    except (TypeError, ValueError):
+        origin = -1
+    if origin in CRAFT_WEAPON_ALLOWED_ORIGINS:
         return False
 
     if quality != 6:
