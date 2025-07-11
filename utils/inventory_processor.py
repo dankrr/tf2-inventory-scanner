@@ -727,6 +727,9 @@ WAR_PAINT_TOOL_DEFINDEXES = {5681, 5682, 5683}
 # Origins that should not cause craft weapons to be filtered out
 CRAFT_WEAPON_ALLOWED_ORIGINS = {1, 5, 9, 14}
 
+# Origins that should hide items and disable pricing
+HIDDEN_ORIGINS = {1, 5, 9, 14}
+
 
 def _has_attr(asset: dict, idx: int) -> bool:
     """Return True if ``asset`` contains an attribute with ``defindex`` ``idx``."""
@@ -890,6 +893,16 @@ def _process_item(
 
     if valuation_service is None:
         valuation_service = get_valuation_service()
+
+    origin_raw = asset.get("origin")
+    try:
+        origin_int = int(origin_raw)
+    except (TypeError, ValueError):
+        origin_int = -1
+
+    hide_item = origin_int in HIDDEN_ORIGINS
+    if hide_item:
+        valuation_service = None
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -1081,7 +1094,7 @@ def _process_item(
         "item_class": schema_entry.get("item_class"),
         "slot_type": schema_entry.get("item_slot") or schema_entry.get("slot_type"),
         "level": asset.get("level"),
-        "origin": ORIGIN_MAP.get(asset.get("origin")),
+        "origin": ORIGIN_MAP.get(origin_int),
         "custom_name": asset.get("custom_name"),
         "custom_description": asset.get("custom_desc"),
         "unusual_effect": effect,
@@ -1133,6 +1146,7 @@ def _process_item(
             if score_types.get(1) is not None
             else None
         ),
+        "_hidden": hide_item,
     }
     if valuation_service is not None:
         tradable = asset.get("tradable", 1)
