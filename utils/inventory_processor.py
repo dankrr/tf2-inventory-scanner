@@ -1049,6 +1049,7 @@ def _process_item(
         display_name = resolved_name
 
     item = {
+        "id": asset.get("id"),
         "defindex": defindex,
         "name": name,
         "original_name": original_name,
