@@ -1241,15 +1241,14 @@ def _process_item(
     }
 
     # Build composite name for decorated weapons and paint tools
-    if item.get("is_war_paint_tool"):
-        warpaint = item.get("warpaint_name")
-        target = item.get("target_weapon_name")
-        wear = item.get("wear_name")
-        if warpaint and target:
-            suffix = f" ({wear})" if wear else ""
-            item["composite_name"] = f"{warpaint} {target}{suffix}"
-        elif warpaint:
-            item["composite_name"] = warpaint
+    if item.get("warpaint_name") and item.get("target_weapon_name"):
+        wear = item.get("wear_name") or ""
+        suffix = f" ({wear})" if wear else ""
+        item["composite_name"] = (
+            f"{item['warpaint_name']} {item['target_weapon_name']}{suffix}"
+        )
+    elif item.get("is_war_paint_tool") and item.get("warpaint_name"):
+        item["composite_name"] = item["warpaint_name"]
     elif item.get("paintkit_name") and item.get("base_weapon"):
         warpaint = item["paintkit_name"]
         base = item["base_weapon"] or base_weapon
