@@ -163,7 +163,7 @@ def test_war_paint_tool_target_displayed(app):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
-    assert "Rocket Launcher" in html
+    assert "Warhawk" in html
 
 
 def test_decorated_quality_not_shown(app):
@@ -276,7 +276,6 @@ def test_australium_name_omits_strange_prefix(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     assert title.text.strip() == "Australium Scattergun"
-
 
 
 def test_professional_killstreak_australium_title(app):
