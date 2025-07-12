@@ -278,6 +278,44 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     return None, None
 
 
+def _has_paintkit(asset: dict) -> bool:
+    """Return ``True`` if ``asset`` has any paintkit-related attribute."""
+
+    _refresh_attr_classes()
+    for attr in asset.get("attributes", []) or []:
+        idx = attr.get("defindex")
+        attr_class = _get_attr_class(idx)
+        try:
+            idx_int = int(idx)
+        except (TypeError, ValueError):
+            continue
+        if idx_int in (834, 749) or attr_class in PAINTKIT_CLASSES:
+            return True
+    return False
+
+
+def _build_decorated_weapon_name(asset: dict) -> str:
+    """Return the decorated weapon name with wear tier if available."""
+
+    defindex_raw = asset.get("defindex")
+    try:
+        defindex_int = int(defindex_raw)
+    except (TypeError, ValueError):
+        defindex_int = 0
+
+    schema_entry = local_data.ITEMS_BY_DEFINDEX.get(defindex_int, {})
+    paintkit_id, paintkit_name = _extract_paintkit(asset, schema_entry)
+    base_weapon = _preferred_base_name(str(defindex_int), schema_entry)
+    if not schema_entry:
+        base_weapon = "Unknown Weapon"
+
+    wear_name = _extract_wear(asset)
+    composite = f"{paintkit_name or 'Unknown'} {base_weapon}"
+    if wear_name:
+        composite = f"{composite} ({wear_name})"
+    return composite
+
+
 def _extract_pattern_seed(asset: Dict[str, Any]) -> int | None:
     """Return pattern seed if present."""
 
@@ -1203,6 +1241,9 @@ def _process_item(
         "craftable": craftable,
         "_hidden": hide_item,
     }
+
+    if _has_paintkit(asset):
+        item["composite_name"] = _build_decorated_weapon_name(asset)
 
     if valuation_service is not None:
         tradable = tradable_val
