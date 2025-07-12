@@ -863,6 +863,35 @@ def test_warpaint_schema_prefix_paintkitweapon(monkeypatch):
     assert item["resolved_name"] == "Hypergon Brass Beast"
 
 
+def test_warpaint_schema_paintkitweapon_only(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15159,
+                "quality": 15,
+                "attributes": [],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15159: {
+            "name": "paintkitweapon_macabre_web_mk_ii",
+            "item_name": "Iron Bomber",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Macabre Web Mk.II": 163}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"163": "Macabre Web Mk.II"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 163
+    assert item["warpaint_name"] == "Macabre Web Mk.II"
+    assert item["skin_name"] == "Macabre Web Mk.II"
+    assert item["base_weapon"] == "Iron Bomber"
+    assert item["resolved_name"] == "Macabre Web Mk.II Iron Bomber"
+
+
 def test_kill_eater_fields(monkeypatch):
     data = {
         "items": [

@@ -424,6 +424,7 @@ def _extract_paintkit(
             "concealedkiller_",
             "craftsmann_",
         )
+        paint_slug = None
         for prefix in prefixes:
             if schema_name.startswith(prefix):
                 suffix = schema_name[len(prefix) :]
@@ -432,22 +433,27 @@ def _extract_paintkit(
                         suffix = suffix[len(pfx) :]
                         break
                 parts = suffix.split("_", 1)
-                if len(parts) == 2:
-                    paint_slug = parts[1]
-                else:
-                    paint_slug = suffix
-                warpaint_name = _slug_to_paintkit_name(paint_slug)
-                warpaint_id = local_data.PAINTKIT_NAMES.get(warpaint_name)
-                if warpaint_id is None:
-                    match = best_match_from_keys(
-                        warpaint_name, local_data.PAINTKIT_NAMES.keys()
-                    )
-                    if match:
-                        warpaint_id = local_data.PAINTKIT_NAMES.get(match)
-                        warpaint_name = match
-                if warpaint_id is not None:
-                    return warpaint_id, warpaint_name
+                paint_slug = parts[1] if len(parts) == 2 else suffix
                 break
+
+        if paint_slug is None:
+            for pfx in ("paintkitweapon_", "paintkit_weapon_"):
+                if schema_name.startswith(pfx):
+                    paint_slug = schema_name[len(pfx) :]
+                    break
+
+        if paint_slug:
+            warpaint_name = _slug_to_paintkit_name(paint_slug)
+            warpaint_id = local_data.PAINTKIT_NAMES.get(warpaint_name)
+            if warpaint_id is None:
+                match = best_match_from_keys(
+                    warpaint_name, local_data.PAINTKIT_NAMES.keys()
+                )
+                if match:
+                    warpaint_id = local_data.PAINTKIT_NAMES.get(match)
+                    warpaint_name = match
+            if warpaint_id is not None:
+                return warpaint_id, warpaint_name
 
     return None, None
 
