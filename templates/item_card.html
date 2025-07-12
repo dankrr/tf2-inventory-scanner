@@ -58,11 +58,7 @@
     {% endif %}
   {% endif %}
   {% if item.is_war_paint_tool %}
-    {% if item.target_weapon_name %}
-      {% set base = (item.warpaint_name ~ ' ' ~ item.target_weapon_name) %}
-    {% else %}
-      {% set base = item.warpaint_name or item.display_name %}
-    {% endif %}
+  {% set base = item.composite_name or item.warpaint_name or item.display_name or item.name %}
   {% elif item.unusual_effect_id %}
     {% set base = item.display_name %}
   {% else %}
