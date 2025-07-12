@@ -1240,6 +1240,23 @@ def _process_item(
         "_hidden": hide_item,
     }
 
+    # Build composite name for decorated weapons and paint tools
+    if item.get("is_war_paint_tool"):
+        warpaint = item.get("warpaint_name")
+        target = item.get("target_weapon_name")
+        wear = item.get("wear_name")
+        if warpaint and target:
+            suffix = f" ({wear})" if wear else ""
+            item["composite_name"] = f"{warpaint} {target}{suffix}"
+        elif warpaint:
+            item["composite_name"] = warpaint
+    elif item.get("paintkit_name") and item.get("base_weapon"):
+        warpaint = item["paintkit_name"]
+        base = item["base_weapon"] or base_weapon
+        wear = item.get("wear_name")
+        suffix = f" ({wear})" if wear else ""
+        item["composite_name"] = f"{warpaint} {base}{suffix}"
+
     if valuation_service is not None:
         tradable = tradable_val
 
