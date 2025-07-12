@@ -356,7 +356,19 @@ def _extract_wear_float(asset: Dict[str, Any]) -> float | None:
 def _slug_to_paintkit_name(slug: str) -> str:
     """Return a human readable paintkit name from schema slug."""
 
-    if slug.endswith("_mk_ii"):
+    lower = slug.lower()
+    for prefix in ("paintkitweapon_", "paintkit_weapon_"):
+        if lower.startswith(prefix):
+            slug = slug[len(prefix) :]
+            lower = lower[len(prefix) :]
+            break
+
+    # The schema slug may include a "paintkitweapon_" prefix which should be
+    # stripped. We otherwise treat the slug as the paintkit name without
+    # removing additional segments so values like "nutcracker_mk_ii" remain
+    # intact.
+
+    if lower.endswith("_mk_ii"):
         base = slug[:-6]
         return base.replace("_", " ").title() + " Mk.II"
     return slug.replace("_", " ").title()
@@ -415,6 +427,10 @@ def _extract_paintkit(
         for prefix in prefixes:
             if schema_name.startswith(prefix):
                 suffix = schema_name[len(prefix) :]
+                for pfx in ("paintkitweapon_", "paintkit_weapon_"):
+                    if suffix.startswith(pfx):
+                        suffix = suffix[len(pfx) :]
+                        break
                 parts = suffix.split("_", 1)
                 if len(parts) == 2:
                     paint_slug = parts[1]
@@ -1031,9 +1047,9 @@ def _process_item(
         display_base = f"Australium {clean_base}"
 
     quality_id = asset.get("quality", 0)
-    q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
-    if not q_name:
-        q_name = QUALITY_MAP.get(quality_id, ("Unknown",))[0]
+    q_name = local_data.QUALITIES_BY_INDEX.get(
+        quality_id, QUALITY_MAP.get(quality_id, ("Unknown",))[0]
+    )
     q_col = QUALITY_MAP.get(quality_id, ("", "#B2B2B2"))[1]
     name = _build_item_name(display_base, q_name, asset)
 
