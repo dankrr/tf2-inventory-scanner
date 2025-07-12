@@ -50,3 +50,11 @@ Decorated weapons and war‑paint tools often set a `composite_name` combining
 paintkit and weapon name. This field always takes priority when present so
 skins display their full painted name. War‑paint tools follow the same rule,
 showing `Warhawk Rocket Launcher`-style names whenever possible.
+
+## Paintkit Schema Names
+
+Steam's schema occasionally lists decorated weapons or war-paint tools with
+placeholder names such as `"Paintkitweapon"` or `"Paintkittool"`. The scanner
+skips these placeholders. When detected, it uses the item's `composite_name` if
+present or falls back to the target weapon name so skins display the correct
+weapon title.

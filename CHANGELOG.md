@@ -25,3 +25,5 @@ All notable changes to this project will be documented in this file.
   such items are hidden without price data.
 - Untradable timed-drop items are now marked as hidden.
 - Fixed warpaint schema slugs that prefixed names with `paintkitweapon`.
+- `Paintkitweapon` and `Paintkittool` schema names are ignored when a
+  `composite_name` or target weapon name is available.
