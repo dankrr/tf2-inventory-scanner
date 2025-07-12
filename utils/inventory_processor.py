@@ -363,16 +363,11 @@ def _slug_to_paintkit_name(slug: str) -> str:
             lower = lower[len(prefix) :]
             break
 
-    parts = slug.split("_")
-    if len(parts) > 1 and not lower.endswith("_mk_ii"):
-        slug = "_".join(parts[1:])
-        lower = "_".join(lower.split("_")[1:])
 
-    for prefix in ("paintkitweapon_", "paintkit_weapon_"):
-        if lower.startswith(prefix):
-            slug = slug[len(prefix) :]
-            lower = lower[len(prefix) :]
-            break
+    # The schema slug may include a "paintkitweapon_" prefix which should be
+    # stripped. We otherwise treat the slug as the paintkit name without
+    # removing additional segments so values like "nutcracker_mk_ii" remain
+    # intact.
 
     if lower.endswith("_mk_ii"):
         base = slug[:-6]
@@ -433,6 +428,10 @@ def _extract_paintkit(
         for prefix in prefixes:
             if schema_name.startswith(prefix):
                 suffix = schema_name[len(prefix) :]
+                for pfx in ("paintkitweapon_", "paintkit_weapon_"):
+                    if suffix.startswith(pfx):
+                        suffix = suffix[len(pfx) :]
+                        break
                 parts = suffix.split("_", 1)
                 if len(parts) == 2:
                     paint_slug = parts[1]

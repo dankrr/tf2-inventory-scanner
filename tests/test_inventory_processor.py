@@ -839,10 +839,6 @@ def test_warpaint_schema_prefix_paintkitweapon(monkeypatch):
     assert item["resolved_name"] == "Hypergon Brass Beast"
 
 
-def test_slug_to_paintkit_name_prefix_removed():
-    name = ip._slug_to_paintkit_name("paintkitweapon_brassbeast_hypergon")
-    assert name == "Hypergon"
-
 
 def test_kill_eater_fields(monkeypatch):
     data = {
