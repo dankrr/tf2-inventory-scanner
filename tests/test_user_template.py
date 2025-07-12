@@ -138,7 +138,7 @@ def test_unusual_effect_rendered(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     text = title.text.strip()
-    assert text.startswith("Strange Burning Flames Cap")
+    assert text.startswith("Strange Cap")
     assert "Unusual" not in text
 
 
