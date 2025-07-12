@@ -1031,9 +1031,9 @@ def _process_item(
         display_base = f"Australium {clean_base}"
 
     quality_id = asset.get("quality", 0)
-    q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
-    if not q_name:
-        q_name = QUALITY_MAP.get(quality_id, ("Unknown",))[0]
+    q_name = local_data.QUALITIES_BY_INDEX.get(
+        quality_id, QUALITY_MAP.get(quality_id, ("Unknown",))[0]
+    )
     q_col = QUALITY_MAP.get(quality_id, ("", "#B2B2B2"))[1]
     name = _build_item_name(display_base, q_name, asset)
 
