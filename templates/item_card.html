@@ -62,6 +62,8 @@
     {% set base = item.composite_name %}
   {% elif item.is_war_paint_tool and item.warpaint_name and item.target_weapon_name %}
     {% set base = item.warpaint_name ~ ' ' ~ item.target_weapon_name %}
+  {% elif item.is_war_paint_tool %}
+    {% set base = item.warpaint_name or item.display_name or item.name %}
   {% else %}
     {% set base = item.display_base
                   or item.resolved_name
