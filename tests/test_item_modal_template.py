@@ -1,5 +1,6 @@
 import importlib
 from pathlib import Path
+import subprocess
 
 import pytest
 from flask import render_template
@@ -55,3 +56,40 @@ def test_uncraftable_text_shown(app):
         html = render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     assert "Uncraftable" in soup.text
+
+
+def test_modal_title_fallback_chain(tmp_path):
+    script = tmp_path / "test.js"
+    script.write_text(
+        """
+const fs = require('fs');
+const vm = require('vm');
+const code = fs.readFileSync('static/modal.js', 'utf8');
+const elements = {};
+const document = { getElementById: id => (elements[id] ||= { textContent: '' }) };
+const window = { document };
+vm.runInNewContext(code, { window, document });
+const modal = window.modal;
+function check(data, expected) {
+  elements['modal-title'] = { textContent: '' };
+  elements['modal-custom-name'] = { textContent: '' };
+  elements['modal-effect'] = { textContent: '' };
+  modal.updateHeader(data);
+  if (elements['modal-title'].textContent !== expected) {
+    throw new Error('Expected ' + expected + ' got ' + elements['modal-title'].textContent);
+  }
+}
+check({ composite_name: 'Comp' }, 'Comp');
+check({ display_base: 'Base' }, 'Base');
+check({ resolved_name: 'Resolved' }, 'Resolved');
+check({ base_name: 'BN' }, 'BN');
+check({ display_name: 'DN' }, 'DN');
+check({ name: 'Name' }, 'Name');
+console.log('ok');
+"""
+    )
+
+    result = subprocess.run(
+        ["node", str(script)], capture_output=True, text=True, check=True
+    )
+    assert "ok" in result.stdout
