@@ -139,6 +139,33 @@ def test_load_files_name_key_quality(tmp_path, monkeypatch):
     assert ld.QUALITIES_BY_INDEX == {1: "Unique"}
 
 
+def test_load_files_quality_aliases(tmp_path, monkeypatch):
+    schema_file = tmp_path / "data" / "schema_steam.json"
+    schema_file.parent.mkdir(parents=True, exist_ok=True)
+    currencies_file = tmp_path / "currencies.json"
+
+    schema = {
+        "attributes_by_defindex": {"1": {"name": "Attr"}},
+        "items_by_defindex": {"1": {"name": "One"}},
+        "qualities_by_index": {"rarity4": 5},
+        "particles_by_index": {"1": "P"},
+        "origins_by_index": {"0": "Drop"},
+    }
+    schema_file.write_text(json.dumps(schema))
+
+    monkeypatch.setattr(ld, "STEAM_SCHEMA_FILE", schema_file)
+    monkeypatch.setattr(ld, "CURRENCIES_FILE", currencies_file)
+
+    ld.SCHEMA_ATTRIBUTES = {}
+    ld.ITEMS_BY_DEFINDEX = {}
+    ld.PARTICLE_NAMES = {}
+    ld.QUALITIES_BY_INDEX = {}
+    currencies_file.write_text(json.dumps({"metal": {"value_raw": 1.0}}))
+
+    ld.load_files()
+    assert ld.QUALITIES_BY_INDEX == {5: "Unusual"}
+
+
 def test_clean_items_game_parses_all():
     sample = {
         "items_game": {
