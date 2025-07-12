@@ -17,7 +17,7 @@ See the [docs](docs/) directory for a full workflow description.
 
 ## Quick Start
 
-1. Install dependencies
+1. Install test dependencies (required for `pre-commit` and `pytest`)
    ```bash
    pip install -r requirements-test.txt
    pre-commit install
@@ -36,6 +36,17 @@ python run_hypercorn.py
 ```
 
 Open `http://localhost:5000` and submit Steam IDs to inspect.
+
+## Contributing
+
+Install the test dependencies to ensure `pre-commit` and `pytest` work:
+
+```bash
+pip install -r requirements-test.txt
+pre-commit install
+```
+
+Run `pre-commit run --all-files` and `pytest` before opening a pull request.
 
 ## License
 

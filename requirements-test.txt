@@ -1,5 +1,5 @@
-pytest==8.4.0
-pytest-asyncio
+pytest==8.4.
+pytest-asyncio==0.23.7
 pytest-cov==6.2.1
 responses==0.25.0
 Flask[async]==3.1.1
