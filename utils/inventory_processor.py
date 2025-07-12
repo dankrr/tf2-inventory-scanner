@@ -1247,11 +1247,16 @@ def _process_item(
         and item.get("wear_name")
         and not item.get("is_war_paint_tool")
     ):
+        # Fully enriched decorated weapon
         item["composite_name"] = (
             f"{item['paintkit_name']} {item['target_weapon_name']}"
             f" ({item['wear_name']})"
         )
-    elif item.get("warpaint_name") and item.get("target_weapon_name"):
+    elif (
+        item.get("is_war_paint_tool")
+        and item.get("warpaint_name")
+        and item.get("target_weapon_name")
+    ):
         wear = item.get("wear_name") or ""
         suffix = f" ({wear})" if wear else ""
         item["composite_name"] = (
@@ -1259,12 +1264,20 @@ def _process_item(
         )
     elif item.get("is_war_paint_tool") and item.get("warpaint_name"):
         item["composite_name"] = item["warpaint_name"]
-    elif item.get("paintkit_name") and item.get("base_weapon"):
-        warpaint = item["paintkit_name"]
-        base = item["base_weapon"] or base_weapon
-        wear = item.get("wear_name")
-        suffix = f" ({wear})" if wear else ""
-        item["composite_name"] = f"{warpaint} {base}{suffix}"
+    else:
+        # Fallback for partially enriched items
+        if item.get("warpaint_name") and item.get("target_weapon_name"):
+            wear = item.get("wear_name") or ""
+            suffix = f" ({wear})" if wear else ""
+            item["composite_name"] = (
+                f"{item['warpaint_name']} {item['target_weapon_name']}{suffix}"
+            )
+        elif item.get("paintkit_name") and item.get("base_weapon"):
+            warpaint = item["paintkit_name"]
+            base = item["base_weapon"] or base_weapon
+            wear = item.get("wear_name")
+            suffix = f" ({wear})" if wear else ""
+            item["composite_name"] = f"{warpaint} {base}{suffix}"
 
     if valuation_service is not None:
         tradable = tradable_val
