@@ -573,6 +573,29 @@ def test_composite_name_set_for_skin(monkeypatch):
     assert item["composite_name"] == "Warhawk Flamethrower"
 
 
+def test_warpaint_display_base(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {"item_name": "Flamethrower", "craft_class": "weapon"}
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["composite_name"] == "Warhawk Flamethrower"
+    assert item["resolved_name"] == item["composite_name"]
+    assert item["display_base"] == item["composite_name"]
+
+
 def test_warpaint_tool_resolved(monkeypatch):
     data = {
         "items": [

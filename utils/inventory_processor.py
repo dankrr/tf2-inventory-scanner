@@ -1145,6 +1145,7 @@ def _process_item(
         "name": name,
         "original_name": original_name,
         "base_name": base_name,
+        "display_base": display_base,
         "display_name": display_name,
         "is_australium": bool(is_australium),
         "quality": q_name,
