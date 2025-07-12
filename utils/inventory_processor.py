@@ -356,7 +356,19 @@ def _extract_wear_float(asset: Dict[str, Any]) -> float | None:
 def _slug_to_paintkit_name(slug: str) -> str:
     """Return a human readable paintkit name from schema slug."""
 
-    if slug.endswith("_mk_ii"):
+    lower = slug.lower()
+    for prefix in ("paintkitweapon_", "paintkit_weapon_"):
+        if lower.startswith(prefix):
+            slug = slug[len(prefix) :]
+            lower = lower[len(prefix) :]
+            break
+
+    parts = slug.split("_")
+    if len(parts) > 1:
+        slug = "_".join(parts[1:])
+        lower = "_".join(lower.split("_")[1:])
+
+    if lower.endswith("_mk_ii"):
         base = slug[:-6]
         return base.replace("_", " ").title() + " Mk.II"
     return slug.replace("_", " ").title()

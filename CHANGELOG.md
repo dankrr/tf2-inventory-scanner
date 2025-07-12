@@ -24,3 +24,4 @@ All notable changes to this project will be documented in this file.
 - Plain craft weapons from achievements or promotions are no longer filtered and
   such items are hidden without price data.
 - Untradable timed-drop items are now marked as hidden.
+- Fixed warpaint schema slugs that prefixed names with `paintkitweapon`.
