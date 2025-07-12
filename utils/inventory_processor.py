@@ -723,18 +723,30 @@ def _is_placeholder_name(name: str) -> bool:
 def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     """Return human readable base item name."""
 
-    item_name = schema_entry.get("item_name")
+    item_name = _schema_item_name(schema_entry)
     schema_name = schema_entry.get("name")
 
-    if item_name and item_name.lower().startswith(("paintkitweapon", "paintkittool")):
+    if (
+        item_name
+        and isinstance(item_name, str)
+        and item_name.lower().startswith(("paintkitweapon", "paintkittool"))
+    ):
         item_name = None
+
+    if isinstance(schema_name, str):
+        lower = schema_name.lower()
+        if lower.startswith(("paintkitweapon", "paintkittool")) or _is_placeholder_name(
+            schema_name
+        ):
+            schema_name = None
 
     if item_name and not _is_placeholder_name(item_name):
         return item_name
     if schema_name and not _is_placeholder_name(schema_name):
         return schema_name
 
-    return schema_name or item_name or f"Item #{defindex}"
+    sanitized = item_name or schema_name
+    return sanitized or f"Item #{defindex}"
 
 
 def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
@@ -1179,6 +1191,36 @@ def _process_item(
 
     if warpaint_tool or (warpaintable and paintkit_id is not None):
         display_name = resolved_name
+
+    if composite_name:
+        placeholders = {f"Item #{defindex}"}
+        cleaned_item = _schema_item_name(schema_entry)
+        if cleaned_item:
+            placeholders.add(cleaned_item)
+        schema_name_clean = schema_entry.get("name")
+        if isinstance(schema_name_clean, str):
+            placeholders.add(schema_name_clean)
+
+        def _is_placeholder(val: str, disp: bool = False) -> bool:
+            if not val:
+                return True
+            lval = val.lower()
+            if lval.startswith(("paintkitweapon", "paintkittool")):
+                return True
+            if _is_placeholder_name(val):
+                return True
+            if val in placeholders:
+                return True
+            if disp and base_name.startswith("Item #") and val.endswith(base_name):
+                return True
+            return False
+
+        if _is_placeholder(base_name):
+            base_name = composite_name
+        if _is_placeholder(resolved_name):
+            resolved_name = composite_name
+        if _is_placeholder(display_name, True):
+            display_name = composite_name
 
     item = {
         "id": asset.get("id"),
