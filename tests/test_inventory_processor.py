@@ -523,6 +523,34 @@ def test_paintkittool_item_name_cleaned(monkeypatch):
     assert item["item_name"] is None
 
 
+def test_paintkit_placeholders_use_composite(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {
+            "item_name": "Paintkitweapon 999",
+            "name": "Paintkitweapon 999",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    comp = item["composite_name"]
+    assert comp == "Warhawk Item #15141"
+    assert item["base_name"] == comp
+    assert item["display_name"] == comp
+    assert item["resolved_name"] == comp
+
+
 def test_warpaint_unknown_defaults_unknown(monkeypatch):
     data = {
         "items": [
