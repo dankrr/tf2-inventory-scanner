@@ -1337,7 +1337,7 @@ def test_skin_detection(monkeypatch):
     assert item["paintkit_id"] == 350
     assert item["paintkit_name"] == "Warhawk"
     assert item["wear_name"] == "Factory New"
-    assert item["resolved_name"] == "Warhawk Flamethrower"
+    assert item["resolved_name"] == "Warhawk Flamethrower (Factory New)"
 
 
 def test_skin_attribute_order(monkeypatch):
@@ -1362,7 +1362,7 @@ def test_skin_attribute_order(monkeypatch):
     item = items[0]
     assert item["paintkit_id"] == 350
     assert item["wear_name"] == "Factory New"
-    assert item["display_name"] == "Warhawk Flamethrower"
+    assert item["display_name"] == "Warhawk Flamethrower (Factory New)"
     assert item["wear_float"] == 0.04
 
 

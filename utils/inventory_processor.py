@@ -1039,7 +1039,19 @@ def _process_item(
         resolved_name = f"War Paint: {paintkit_name}{suffix}"
     elif warpaintable and paintkit_id is not None:
         skin_name = paintkit_name
-        composite_name = f"{paintkit_name} {base_weapon}"
+
+        # Detect Mk.II from slug or fallback
+        schema_name = schema_entry.get("name", "")
+        mk = (
+            " Mk.II" if "_mk_ii" in schema_name and "Mk.II" not in paintkit_name else ""
+        )
+
+        # Include wear tier if available
+        wear_suffix = f" ({wear_name})" if wear_name else ""
+
+        # Full enriched name
+        composite_name = f"{paintkit_name}{mk} {base_weapon}{wear_suffix}"
+
         resolved_name = composite_name
         display_base = composite_name
 

@@ -172,8 +172,8 @@ def test_decorated_quality_not_shown(app):
             "items": [
                 {
                     "name": "Decorated Weapon Flamethrower",
-                    "composite_name": "Warhawk Flamethrower",
-                    "display_name": "Warhawk Flamethrower",
+                    "composite_name": "Warhawk Flamethrower (Factory New)",
+                    "display_name": "Warhawk Flamethrower (Factory New)",
                     "image_url": "",
                     "quality": "Decorated Weapon",
                     "quality_color": "#fff",
@@ -188,7 +188,7 @@ def test_decorated_quality_not_shown(app):
     soup = BeautifulSoup(html, "html.parser")
     title = soup.find("h2", class_="item-title")
     assert title is not None
-    assert title.text.strip() == "Warhawk Flamethrower"
+    assert title.text.strip() == "Warhawk Flamethrower (Factory New)"
 
 
 def test_failed_user_has_retry_class(app):
@@ -276,7 +276,6 @@ def test_australium_name_omits_strange_prefix(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     assert title.text.strip() == "Australium Scattergun"
-
 
 
 def test_professional_killstreak_australium_title(app):
