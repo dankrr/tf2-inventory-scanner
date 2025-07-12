@@ -67,7 +67,9 @@
     {% set base = item.display_name %}
   {% else %}
     {# Prefer resolved or composite names, fallback to base/display name #}
-    {% set base = item.resolved_name or item.composite_name or item.base_name or item.display_name or item.name %}
+    {% set base = item.display_base or item.resolved_name
+                   or item.composite_name or item.base_name
+                   or item.display_name or item.name %}
   {% endif %}
   {% if item.is_australium %}
     {% set base = 'Australium ' ~ base %}
