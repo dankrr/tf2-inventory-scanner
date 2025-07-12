@@ -363,7 +363,6 @@ def _slug_to_paintkit_name(slug: str) -> str:
             lower = lower[len(prefix) :]
             break
 
-
     # The schema slug may include a "paintkitweapon_" prefix which should be
     # stripped. We otherwise treat the slug as the paintkit name without
     # removing additional segments so values like "nutcracker_mk_ii" remain
@@ -1024,6 +1023,7 @@ def _process_item(
         base_weapon = "Unknown Weapon"
 
     base_name = base_weapon
+    display_base = base_name
     skin_name = None
     composite_name = None
     resolved_name = base_name
@@ -1035,9 +1035,9 @@ def _process_item(
         skin_name = paintkit_name
         composite_name = f"{paintkit_name} {base_weapon}"
         resolved_name = composite_name
+        display_base = composite_name
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)
-    display_base = base_name
     if is_australium:
         clean_base = re.sub(
             r"^(Strange|Unique|Vintage|Haunted|Collector's|Genuine|Unusual)\s+",
