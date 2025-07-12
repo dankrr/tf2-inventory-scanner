@@ -295,9 +295,8 @@ def load_files(
             "rarity4": "Unusual",
         }
         for idx, name in list(QUALITIES_BY_INDEX.items()):
-            canon = rarity_map.get(name)
-            if canon:
-                QUALITIES_BY_INDEX[idx] = canon
+            mapped = rarity_map.get(name.lower(), name)
+            QUALITIES_BY_INDEX[idx] = mapped.title()
     if verbose:
         logging.info(
             "\N{CHECK MARK} Loaded %d qualities from %s",

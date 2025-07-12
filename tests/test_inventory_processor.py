@@ -810,6 +810,35 @@ def test_warpaint_resolved_with_best_match(monkeypatch):
     assert item["warpaint_name"] == "Warhawk"
 
 
+def test_warpaint_schema_prefix_paintkitweapon(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15158,
+                "quality": 15,
+                "attributes": [],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15158: {
+            "name": "warbird_paintkitweapon_brassbeast_hypergon",
+            "item_name": "Brass Beast",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Hypergon": 408}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"408": "Hypergon"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["warpaint_id"] == 408
+    assert item["warpaint_name"] == "Hypergon"
+    assert item["skin_name"] == "Hypergon"
+    assert item["base_weapon"] == "Brass Beast"
+    assert item["resolved_name"] == "Hypergon Brass Beast"
+
+
 def test_kill_eater_fields(monkeypatch):
     data = {
         "items": [
