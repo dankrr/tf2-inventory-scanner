@@ -171,13 +171,36 @@
     const title = document.getElementById('modal-title');
     const custom = document.getElementById('modal-custom-name');
     const effectBox = document.getElementById('modal-effect');
-    if (title) title.textContent = data.composite_name || data.name || '';
+    let titleText = '';
+    if (data.is_war_paint_tool) {
+      if (data.composite_name) {
+        titleText = data.composite_name;
+      } else if (data.warpaint_name && data.target_weapon_name) {
+        titleText = data.warpaint_name + ' ' + data.target_weapon_name;
+      } else {
+        titleText = data.warpaint_name || data.display_name || data.name || '';
+      }
+    } else {
+      titleText =
+        data.composite_name ||
+        data.display_base ||
+        data.resolved_name ||
+        data.base_name ||
+        data.display_name ||
+        data.name ||
+        '';
+      if (data.is_australium) {
+        titleText = 'Australium ' + titleText;
+      }
+    }
+    if (title) title.textContent = titleText;
     if (custom) custom.textContent = data.custom_name || '';
     let effectText = '';
     if (data.unusual_effect) {
-      effectText = typeof data.unusual_effect === 'object'
-        ? data.unusual_effect.name || ''
-        : data.unusual_effect;
+      effectText =
+        typeof data.unusual_effect === 'object'
+          ? data.unusual_effect.name || ''
+          : data.unusual_effect;
     }
     if (effectBox) effectBox.textContent = effectText;
   }
