@@ -1313,6 +1313,31 @@ def test_war_paint_tool_attributes(monkeypatch):
     assert item["resolved_name"] == "War Paint: Warhawk (Field-Tested)"
 
 
+def test_composite_name_for_war_paint_tool(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 5681,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 134, "value": 350},
+                    {"defindex": 725, "float_value": 0.2},
+                    {"defindex": 2014, "value": 222},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        5681: {"item_name": "War Paint", "item_class": "tool"},
+        222: {"item_name": "Rocket Launcher"},
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["composite_name"] == "Warhawk Rocket Launcher (Field-Tested)"
+
+
 def test_skin_detection(monkeypatch):
     data = {
         "items": [
