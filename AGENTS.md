@@ -141,8 +141,16 @@ Use `ResolveVanityURL` or manual conversion logic as needed.
 
 ## ✅ Contributor Setup
 
-All contributors must install and run `pre-commit` to ensure code
-is formatted, linted, and scanned for secrets.
+Install the testing requirements and set up `pre-commit` before
+submitting code:
+
+```bash
+pip install -r requirements-test.txt
+pre-commit install
+```
+
+All contributors must run `pre-commit` to ensure code is formatted,
+linted, and scanned for secrets.
 
 ---
 
