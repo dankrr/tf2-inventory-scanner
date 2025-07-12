@@ -852,6 +852,22 @@ def _is_warpaint_tool(schema_entry: Dict[str, Any]) -> bool:
     return False
 
 
+def _schema_item_name(schema_entry: Dict[str, Any]) -> str | None:
+    """Return sanitized ``item_name`` from ``schema_entry``."""
+
+    item_name = schema_entry.get("item_name")
+    if not isinstance(item_name, str):
+        return item_name
+
+    lower = item_name.lower()
+    if lower.startswith("paintkit") and (
+        _is_warpaint_tool(schema_entry) or _is_warpaintable(schema_entry)
+    ):
+        return None
+
+    return item_name
+
+
 def _is_plain_craft_weapon(asset: dict, schema_entry: Dict[str, Any]) -> bool:
     """Return True if ``asset`` is a plain craft weapon without special attrs."""
 
@@ -1177,7 +1193,7 @@ def _process_item(
         "quality_color": q_col,
         "image_url": image_url,
         "item_type_name": schema_entry.get("item_type_name"),
-        "item_name": schema_entry.get("name"),
+        "item_name": _schema_item_name(schema_entry),
         "craft_class": schema_entry.get("craft_class"),
         "craft_material_type": schema_entry.get("craft_material_type"),
         "item_set": schema_entry.get("item_set"),
