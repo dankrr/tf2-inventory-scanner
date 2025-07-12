@@ -286,6 +286,20 @@ def load_files(
         QUALITIES_BY_INDEX = by_key or by_val
     else:
         QUALITIES_BY_INDEX = {}
+
+    if QUALITIES_BY_INDEX:
+        rarity_map = {
+            "rarity1": "Normal",
+            "rarity2": "Genuine",
+            "rarity3": "Vintage",
+            "rarity4": "Unusual",
+        }
+        cleaned = {}
+        for idx, name in QUALITIES_BY_INDEX.items():
+            canon = rarity_map.get(str(name).lower(), name)
+            canon = " ".join(part.capitalize() for part in str(canon).split())
+            cleaned[idx] = canon
+        QUALITIES_BY_INDEX = cleaned
     if verbose:
         logging.info(
             "\N{CHECK MARK} Loaded %d qualities from %s",
