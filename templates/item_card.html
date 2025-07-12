@@ -58,17 +58,12 @@
     {% endif %}
   {% endif %}
   {# Match modal title logic exactly #}
-  {% if item.is_war_paint_tool %}
-    {% if item.composite_name %}
-      {% set base = item.composite_name %}
-    {% elif item.warpaint_name and item.target_weapon_name %}
-      {% set base = item.warpaint_name ~ ' ' ~ item.target_weapon_name %}
-    {% else %}
-      {% set base = item.warpaint_name or item.display_name or item.name %}
-    {% endif %}
+  {% if item.composite_name %}
+    {% set base = item.composite_name %}
+  {% elif item.is_war_paint_tool and item.warpaint_name and item.target_weapon_name %}
+    {% set base = item.warpaint_name ~ ' ' ~ item.target_weapon_name %}
   {% else %}
-    {% set base = item.composite_name
-                  or item.display_base
+    {% set base = item.display_base
                   or item.resolved_name
                   or item.base_name
                   or item.display_name
