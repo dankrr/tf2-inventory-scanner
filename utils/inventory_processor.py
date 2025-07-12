@@ -723,11 +723,18 @@ def _is_placeholder_name(name: str) -> bool:
 def _preferred_base_name(defindex: str, schema_entry: Dict[str, Any]) -> str:
     """Return human readable base item name."""
 
-    name = schema_entry.get("item_name") or schema_entry.get("name")
-    if name and not _is_placeholder_name(name):
-        return name
+    item_name = schema_entry.get("item_name")
+    schema_name = schema_entry.get("name")
 
-    return name or f"Item #{defindex}"
+    if item_name and item_name.lower().startswith(("paintkitweapon", "paintkittool")):
+        item_name = None
+
+    if item_name and not _is_placeholder_name(item_name):
+        return item_name
+    if schema_name and not _is_placeholder_name(schema_name):
+        return schema_name
+
+    return schema_name or item_name or f"Item #{defindex}"
 
 
 def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:

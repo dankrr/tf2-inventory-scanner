@@ -435,6 +435,42 @@ def test_paintkit_appended_to_name(monkeypatch):
     assert item["paintkit_name"] == "Warhawk"
 
 
+def test_paintkitweapon_base_name_from_schema(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {
+            "item_name": "Paintkitweapon 999",
+            "name": "Flamethrower",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["base_weapon"] == "Flamethrower"
+    assert not item["base_weapon"].startswith("Paintkitweapon")
+    assert item["resolved_name"] == "Warhawk Flamethrower"
+
+
+def test_paintkittool_base_name(monkeypatch):
+    entry = {
+        "item_name": "Paintkittool 5",
+        "name": "War Paint",
+        "item_class": "tool",
+    }
+    assert ip._preferred_base_name("5681", entry) == "War Paint"
+
+
 def test_warpaint_unknown_defaults_unknown(monkeypatch):
     data = {
         "items": [
