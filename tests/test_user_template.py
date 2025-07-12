@@ -1,6 +1,9 @@
 import importlib
 from pathlib import Path
 
+from utils import inventory_processor as ip
+from utils import local_data as ld
+
 import pytest
 from flask import render_template_string
 from bs4 import BeautifulSoup
@@ -327,3 +330,76 @@ def test_war_paint_tool_composite_name_title(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     assert title.text.strip() == "Warhawk Rocket Launcher"
+
+
+def test_paintkitweapon_title_cleaned(app, monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 834, "value": 350},
+                    {"defindex": 749, "float_value": 0.0},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {
+            "item_name": "Paintkitweapon 1",
+            "name": "Paintkitweapon 1",
+            "craft_class": "weapon",
+        }
+    }
+    ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context = {"user": {"items": [item]}}
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert not title.text.strip().startswith("Paintkitweapon")
+
+
+def test_paintkittool_title_cleaned(app, monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 5681,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 134, "value": 350},
+                    {"defindex": 725, "float_value": 0.2},
+                    {"defindex": 2014, "value": 222},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        5681: {
+            "item_name": "Paintkittool 5",
+            "name": "Paintkittool 5",
+            "item_class": "tool",
+        },
+        222: {"item_name": "Rocket Launcher"},
+    }
+    ld.SCHEMA_ATTRIBUTES = {725: {"attribute_class": "texture_wear_default"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    item = ip.enrich_inventory(data)[0]
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context = {"user": {"items": [item]}}
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert not title.text.strip().startswith("Paintkittool")

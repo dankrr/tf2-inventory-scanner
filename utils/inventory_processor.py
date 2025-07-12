@@ -1351,6 +1351,26 @@ def enrich_inventory(
         if not item:
             continue
 
+        if (
+            not item.get("composite_name")
+            and item.get("target_weapon_name")
+            and item.get("wear_name")
+            and (item.get("paintkit_name") or item.get("warpaint_name"))
+        ):
+            pk = item.get("paintkit_name") or item.get("warpaint_name")
+            item["composite_name"] = (
+                f"{pk} {item['target_weapon_name']} ({item['wear_name']})"
+            )
+
+        comp = item.get("composite_name")
+        if comp:
+            for key in ("base_name", "display_name", "resolved_name"):
+                val = item.get(key)
+                if isinstance(val, str) and val.lower().startswith(
+                    ("paintkitweapon", "paintkittool")
+                ):
+                    item[key] = comp
+
         quality_flag = item.get("quality")
         if (
             quality_flag == 11
