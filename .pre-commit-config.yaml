@@ -11,12 +11,12 @@ repos:
     hooks:
       - id: validate-attributes
         name: validate attributes
-        entry: bash -c 'PYTHONPATH=. python scripts/validate_attributes.py'
+        entry: bash -c 'pip install -q -r requirements-test.txt && PYTHONPATH=. python scripts/validate_attributes.py'
         language: system
         pass_filenames: false
       - id: pytest
         name: pytest
-        entry: bash -c 'STEAM_API_KEY=test pytest'
+        entry: bash -c 'pip install -q -r requirements-test.txt && STEAM_API_KEY=test pytest'
         language: system
         pass_filenames: false
 # Temporarily disabled due to network blocks

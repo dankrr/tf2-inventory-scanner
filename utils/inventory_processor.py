@@ -363,6 +363,7 @@ def _slug_to_paintkit_name(slug: str) -> str:
             lower = lower[len(prefix) :]
             break
 
+
     # The schema slug may include a "paintkitweapon_" prefix which should be
     # stripped. We otherwise treat the slug as the paintkit name without
     # removing additional segments so values like "nutcracker_mk_ii" remain
