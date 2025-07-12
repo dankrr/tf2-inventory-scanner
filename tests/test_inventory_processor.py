@@ -272,6 +272,7 @@ def test_get_inventories_adds_user_agent(monkeypatch):
         return DummyResp()
 
     monkeypatch.setattr(sac.requests, "get", fake_get)
+    monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
     sac.get_inventories(["1"])
     assert captured["ua"] == "Mozilla/5.0"
 
@@ -837,7 +838,6 @@ def test_warpaint_schema_prefix_paintkitweapon(monkeypatch):
     assert item["skin_name"] == "Hypergon"
     assert item["base_weapon"] == "Brass Beast"
     assert item["resolved_name"] == "Hypergon Brass Beast"
-
 
 
 def test_kill_eater_fields(monkeypatch):
