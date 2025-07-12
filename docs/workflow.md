@@ -36,3 +36,17 @@ python app.py --refresh --verbose
 ```
 
 to update these files before starting the server.
+
+## Item Title Precedence
+
+When rendering an item card or modal the scanner builds the title using the
+first available value from the following fields:
+
+```
+composite_name > display_base > resolved_name > base_name > display_name > name
+```
+
+Decorated weapons and war‑paint tools often set a `composite_name` combining
+paintkit and weapon name. This field always takes priority when present so
+skins display their full painted name. War‑paint tools follow the same rule,
+showing `Warhawk Rocket Launcher`-style names whenever possible.
