@@ -364,9 +364,15 @@ def _slug_to_paintkit_name(slug: str) -> str:
             break
 
     parts = slug.split("_")
-    if len(parts) > 1:
+    if len(parts) > 1 and not lower.endswith("_mk_ii"):
         slug = "_".join(parts[1:])
         lower = "_".join(lower.split("_")[1:])
+
+    for prefix in ("paintkitweapon_", "paintkit_weapon_"):
+        if lower.startswith(prefix):
+            slug = slug[len(prefix) :]
+            lower = lower[len(prefix) :]
+            break
 
     if lower.endswith("_mk_ii"):
         base = slug[:-6]
