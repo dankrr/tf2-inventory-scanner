@@ -303,3 +303,27 @@ def test_professional_killstreak_australium_title(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     assert title.text.strip() == "Professional Killstreak Australium Scattergun"
+
+
+def test_war_paint_tool_composite_name_title(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "War Paint",
+                    "composite_name": "Warhawk Rocket Launcher",
+                    "image_url": "",
+                    "is_war_paint_tool": True,
+                    "quality_color": "#fff",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    title = soup.find("h2", class_="item-title")
+    assert title is not None
+    assert title.text.strip() == "Warhawk Rocket Launcher"
