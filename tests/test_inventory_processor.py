@@ -471,6 +471,58 @@ def test_paintkittool_base_name(monkeypatch):
     assert ip._preferred_base_name("5681", entry) == "War Paint"
 
 
+def test_paintkitweapon_item_name_cleaned(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 350}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {
+            "item_name": "Paintkitweapon 999",
+            "name": "Flamethrower",
+            "craft_class": "weapon",
+        }
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Warhawk": 350}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["item_name"] is None
+
+
+def test_paintkittool_item_name_cleaned(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 5681,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 134, "value": 350},
+                    {"defindex": 725, "float_value": 0.2},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        5681: {
+            "item_name": "Paintkittool 5",
+            "name": "Paintkittool 5",
+            "item_class": "tool",
+            "tool": {"type": "paintkit"},
+        }
+    }
+    ld.SCHEMA_ATTRIBUTES = {725: {"attribute_class": "texture_wear_default"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["item_name"] is None
+
+
 def test_warpaint_unknown_defaults_unknown(monkeypatch):
     data = {
         "items": [
