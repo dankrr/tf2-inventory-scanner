@@ -1307,3 +1307,25 @@ def test_uncraftable_flag_absent():
     items = ip.enrich_inventory(data)
     assert items[0]["uncraftable"] is False
     assert items[0]["craftable"] is True
+
+
+def test_composite_name_fallback(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 16000,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "float_value": 400}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        16000: {"item_name": "Paintkit Weapon", "craft_class": "weapon"}
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"400": "Ghoul Blaster"}, False)
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES", {"Ghoul Blaster": 400}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["composite_name"] == "Ghoul Blaster"
+    assert item["resolved_name"] == "Ghoul Blaster"

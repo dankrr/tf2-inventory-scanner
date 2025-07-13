@@ -672,6 +672,28 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
     return " ".join(parts)
 
 
+def _compose_composite_name(
+    base_weapon: str | None,
+    paintkit_name: str | None,
+    target_weapon_name: str | None,
+    wear_name: str | None = None,
+) -> str | None:
+    """Return a human readable composite name from available parts."""
+
+    base = target_weapon_name or base_weapon
+    if base and _is_placeholder_name(base):
+        base = None
+    parts = []
+    if paintkit_name:
+        parts.append(paintkit_name)
+    if base:
+        parts.append(base)
+    name = " ".join(parts)
+    if wear_name and name:
+        name = f"{name} ({wear_name})"
+    return name or None
+
+
 def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
     """Return inventory data and status using the Steam API helper."""
 
@@ -687,7 +709,15 @@ def _is_placeholder_name(name: str) -> bool:
     """Return True if ``name`` looks like an internal placeholder."""
 
     lname = name.lower()
-    if "tf_" in lname or "tf-" in lname or "weapon" in lname and " " not in name:
+    simplified = lname.replace(" ", "")
+    if (
+        "tf_" in lname
+        or "tf-" in lname
+        or "weapon" in lname
+        and " " not in name
+        or "paintkit" in simplified
+        or "warpaint" in simplified
+    ):
         return True
     if "_" in name:
         return True
@@ -999,6 +1029,8 @@ def _process_item(
         paintkit_id, paintkit_name = _extract_paintkit(asset, schema_entry)
         if paintkit_id is not None:
             warpaintable = True
+    else:
+        paintkit_id, paintkit_name = _extract_paintkit(asset, schema_entry)
 
     is_skin = bool(not warpaint_tool and schema_entry and _has_attr(asset, 834))
 
@@ -1014,10 +1046,25 @@ def _process_item(
     if warpaint_tool and paintkit_id is not None:
         suffix = f" ({wear_name})" if wear_name else ""
         resolved_name = f"War Paint: {paintkit_name}{suffix}"
+        composite_name = _compose_composite_name(
+            base_weapon,
+            paintkit_name,
+            target_weapon_name,
+            wear_name,
+        )
     elif warpaintable and paintkit_id is not None:
         skin_name = paintkit_name
-        composite_name = f"{paintkit_name} {base_weapon}"
-        resolved_name = composite_name
+        composite_name = _compose_composite_name(base_weapon, paintkit_name, None)
+        resolved_name = composite_name or base_name
+
+    if composite_name is None:
+        composite_name = _compose_composite_name(
+            base_weapon,
+            paintkit_name,
+            target_weapon_name,
+        )
+        if composite_name and resolved_name == base_name:
+            resolved_name = composite_name
 
     is_australium = asset.get("is_australium") or _extract_australium(asset)
     display_base = base_name
