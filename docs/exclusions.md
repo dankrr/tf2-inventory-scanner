@@ -24,5 +24,3 @@ The file lives at `static/exclusions.json` and is parsed by `utils.local_data.lo
 2. Add origin IDs to a list to enable the rule.
 3. Remove IDs from a list to disable the rule.
 4. Save the file and restart the app for changes to take effect.
-
-Ensure the file remains valid JSON and run `pre-commit` after editing.
