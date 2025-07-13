@@ -549,6 +549,7 @@ def test_paintkit_placeholders_use_composite(monkeypatch):
     assert item["base_name"] == comp
     assert item["display_name"] == comp
     assert item["resolved_name"] == comp
+    assert item["display_base"] == comp
 
 
 def test_warpaint_unknown_defaults_unknown(monkeypatch):
