@@ -57,22 +57,29 @@
       {% endif %}
     {% endif %}
   {% endif %}
-  {# Match modal title logic exactly #}
-  {% if item.composite_name %}
-    {% set base = item.composite_name %}
-  {% elif item.is_war_paint_tool and item.warpaint_name and item.target_weapon_name %}
-    {% set base = item.warpaint_name ~ ' ' ~ item.target_weapon_name %}
-  {% elif item.is_war_paint_tool %}
-    {% set base = item.warpaint_name or item.display_name or item.name %}
+  {# Match modal title logic exactly.
+     Fallback chain:
+     composite_name → warpaint_name + target_weapon_name → warpaint_name →
+     display_base → resolved_name → base_name → display_name → name #}
+  {% if item.is_war_paint_tool %}
+    {% if item.composite_name %}
+      {% set base = item.composite_name %}
+    {% elif item.warpaint_name and item.target_weapon_name %}
+      {% set base = item.warpaint_name ~ ' ' ~ item.target_weapon_name %}
+    {% else %}
+      {% set base = item.warpaint_name or item.display_name or item.name or '' %}
+    {% endif %}
   {% else %}
-    {% set base = item.display_base
+    {% set base = item.composite_name
+                  or item.display_base
                   or item.resolved_name
                   or item.base_name
                   or item.display_name
-                  or item.name %}
-  {% endif %}
-  {% if item.is_australium %}
-    {% set base = 'Australium ' ~ base %}
+                  or item.name
+                  or '' %}
+    {% if item.is_australium %}
+      {% set base = 'Australium ' ~ base %}
+    {% endif %}
   {% endif %}
   {% set _ = title_parts.append(base) %}
   <h2 class="item-title">{{ title_parts | join(' ') }}</h2>
