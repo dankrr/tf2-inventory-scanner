@@ -43,7 +43,7 @@ Open `http://localhost:5000` and submit Steam IDs to inspect.
 
 ```bash
 docker build -t tf2scanner .
-docker run --env-file .env -p 5000:5000 tf2scanner
+docker run -d --name tf2scanner --env-file .env -p 5000:5000 tf2scanner
 ```
 
 ## License
