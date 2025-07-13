@@ -452,10 +452,9 @@ def _extract_paintkit(
                 if match:
                     warpaint_id = local_data.PAINTKIT_NAMES.get(match)
                     warpaint_name = match
-            if warpaint_id is not None:
-                return warpaint_id, warpaint_name
+            return paintkit_id or warpaint_id, warpaint_name
 
-    return None, None
+    return paintkit_id, None
 
 
 def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
@@ -1404,6 +1403,31 @@ def _replace_placeholder_fields(item: Dict[str, Any]) -> None:
             item[key] = comp
 
 
+def _ensure_composite_name(item: Dict[str, Any]) -> None:
+    """Ensure ``item['composite_name']`` is populated if possible."""
+
+    if item.get("composite_name"):
+        return
+
+    pk = item.get("paintkit_name") or item.get("warpaint_name")
+    if not pk:
+        return
+
+    base = (
+        item.get("target_weapon_name")
+        or item.get("base_weapon")
+        or item.get("base_name")
+    )
+
+    wear = item.get("wear_name")
+    suffix = f" ({wear})" if wear else ""
+
+    if base:
+        item["composite_name"] = f"{pk} {base}{suffix}"
+    else:
+        item["composite_name"] = f"{pk}{suffix}"
+
+
 def enrich_inventory(
     data: Dict[str, Any],
     valuation_service: ValuationService | None = None,
@@ -1444,6 +1468,7 @@ def enrich_inventory(
             )
 
         _replace_placeholder_fields(item)
+        _ensure_composite_name(item)
 
         quality_flag = item.get("quality")
         if (
