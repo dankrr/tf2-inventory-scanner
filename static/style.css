@@ -529,6 +529,19 @@ a.backpack-link:visited {
   border-bottom: 1px solid #999;
 }
 
+.site-footer a.schema-link {
+  color: #b0b0b0;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px dashed #777;
+  transition: color 0.2s ease, border 0.2s ease;
+}
+
+.site-footer a.schema-link:hover {
+  color: #ffffff;
+  border-bottom: 1px solid #999;
+}
+
 .footer-icon {
   height: 1em;
   vertical-align: middle;
