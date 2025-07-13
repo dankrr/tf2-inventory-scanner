@@ -4,7 +4,7 @@ The optional `--test` flag saves API responses to `cached_inventories/` so you c
 When you run:
 
 ```bash
-python run_hypercorn.py --test
+python run.py --test
 ```
 
 The server prompts for a SteamID64. It downloads that user's inventory,
