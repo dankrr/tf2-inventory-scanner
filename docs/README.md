@@ -6,3 +6,4 @@ This directory contains extended information about TF2 Inventory Scanner.
 - [Refreshing Data](refresh.md) – how to update schema and price caches.
 - [Test Mode](test_mode.md) – capturing API data for offline use.
 - [Docker Usage](docker.md) – running the app inside a container.
+- [Exclusions](exclusions.md) – edit rules for hidden item origins.
