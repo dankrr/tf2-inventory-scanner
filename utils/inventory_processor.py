@@ -1221,6 +1221,8 @@ def _process_item(
             resolved_name = composite_name
         if _is_placeholder(display_name, True):
             display_name = composite_name
+        if _is_placeholder(display_base):
+            display_base = composite_name
 
     item = {
         "id": asset.get("id"),
