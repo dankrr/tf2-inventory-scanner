@@ -22,7 +22,7 @@ See the [docs](docs/) directory for a full workflow description.
 3. (Optional) Refresh item schema and prices:
 
 ```bash
-python run.py --refresh --verbose
+python run.py --refresh
 ```
 
 4. (Optional) Start in test mode to reuse cached API data:
