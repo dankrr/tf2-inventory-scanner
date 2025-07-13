@@ -1,1 +1,1 @@
-web: python run_hypercorn.py
+web: python run.py

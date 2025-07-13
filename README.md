@@ -22,19 +22,19 @@ See the [docs](docs/) directory for a full workflow description.
 3. (Optional) Refresh item schema and prices:
 
 ```bash
-python app.py --refresh --verbose
+python run.py --refresh --verbose
 ```
 
 4. (Optional) Start in test mode to reuse cached API data:
 
 ```bash
-python run_hypercorn.py --test
+python run.py --test
 ```
 
 5. Run the server:
 
 ```bash
-python run_hypercorn.py
+python run.py
 ```
 
 Open `http://localhost:5000` and submit Steam IDs to inspect.

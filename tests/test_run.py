@@ -24,10 +24,10 @@ def _mock_app_import(monkeypatch):
         lambda mapping, path=Path("price_map.json"): path,
     )
     sys.modules.pop("app", None)
-    sys.modules.pop("run_hypercorn", None)
+    sys.modules.pop("run", None)
     sys.modules.pop("app", None)
     sys.modules.pop("app", None)
-    return importlib.import_module("run_hypercorn")
+    return importlib.import_module("run")
 
 
 @pytest.mark.asyncio
@@ -54,7 +54,7 @@ async def test_main_kills_and_serves(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_main_test_mode_calls_setup(monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["run_hypercorn.py", "--test"])
+    monkeypatch.setattr(sys, "argv", ["run.py", "--test"])
     called = {"setup": False}
 
     mod = _mock_app_import(monkeypatch)
@@ -75,7 +75,7 @@ async def test_main_test_mode_calls_setup(monkeypatch):
 
 
 def test_refresh_flag_triggers_update(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["run_hypercorn.py", "--refresh", "--verbose"])
+    monkeypatch.setattr(sys, "argv", ["run.py", "--refresh", "--verbose"])
     called = {"schema": None, "prices": False}
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
@@ -127,11 +127,11 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         fake_curr_async,
     )
 
-    sys.modules.pop("run_hypercorn", None)
+    sys.modules.pop("run", None)
     sys.modules.pop("app", None)
     exited = False
     try:
-        importlib.import_module("run_hypercorn")
+        importlib.import_module("run")
     except SystemExit:
         exited = True
     assert exited is True

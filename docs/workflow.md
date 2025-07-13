@@ -30,7 +30,7 @@ fetch multiple users in parallel.
 Cached schema and price files live under the `cache/` directory. Run
 
 ```bash
-python app.py --refresh --verbose
+python run.py --refresh --verbose
 ```
 
 to update these files before starting the server.
