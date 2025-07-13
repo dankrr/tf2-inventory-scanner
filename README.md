@@ -50,3 +50,7 @@ docker run --env-file .env -p 5000:5000 tf2scanner
 
 This project is released under an MIT Non-Commercial license. Commercial use
 requires prior written consent from the maintainers.
+
+## Author
+
+This project was created by [dankrr](https://steamcommunity.com/id/dankrr/).
