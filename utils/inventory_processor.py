@@ -1422,10 +1422,17 @@ def enrich_inventory(
 
         comp = item.get("composite_name")
         if comp:
-            for key in ("base_name", "display_name", "resolved_name"):
+            for key in (
+                "base_name",
+                "display_name",
+                "resolved_name",
+                "display_base",
+            ):
                 val = item.get(key)
-                if isinstance(val, str) and val.lower().startswith(
-                    ("paintkitweapon", "paintkittool")
+                if isinstance(val, str) and (
+                    val.lower().startswith(("paintkitweapon", "paintkittool"))
+                    or _is_placeholder_name(val)
+                    or val.startswith("Item #")
                 ):
                     item[key] = comp
 
