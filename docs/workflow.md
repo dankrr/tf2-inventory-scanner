@@ -34,3 +34,20 @@ python app.py --refresh --verbose
 ```
 
 to update these files before starting the server.
+
+## APIs Used
+
+- **ISteamUser/ResolveVanityURL** – convert vanity names to SteamID64
+- **ISteamUser/GetPlayerSummaries** – fetch username and avatar
+- **IPlayerService/GetOwnedGames** – obtain TF2 playtime
+- **IEconItems_440/GetPlayerItems** – retrieve inventory contents
+- **backpack.tf/IGetPrices** – map item names to prices
+- **schema.autobot.tf** – download item schema information
+
+## Data Pipeline
+
+1. Input IDs are normalised to SteamID64.
+2. Profile and playtime information is fetched using the Steam Web API.
+3. The inventory API returns raw item data.
+4. Item attributes are enriched using the cached schema and prices.
+5. The resulting items are rendered in the browser with images and values.

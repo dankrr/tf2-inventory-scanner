@@ -11,6 +11,7 @@ A lightweight Flask web app for exploring Team Fortress 2 inventories.
 - Enriches items with backpack.tf prices
 - Displays playtime and item details
 - Refreshes local schema and price caches with a command-line flag
+- Capture API data to disk with `--test` for offline development
 
 See the [docs](docs/) directory for a full workflow description.
 
@@ -24,13 +25,26 @@ See the [docs](docs/) directory for a full workflow description.
 python app.py --refresh --verbose
 ```
 
-4. Run the server:
+4. (Optional) Start in test mode to reuse cached API data:
+
+```bash
+python run_hypercorn.py --test
+```
+
+5. Run the server:
 
 ```bash
 python run_hypercorn.py
 ```
 
 Open `http://localhost:5000` and submit Steam IDs to inspect.
+
+## Docker
+
+```bash
+docker build -t tf2scanner .
+docker run --env-file .env -p 5000:5000 tf2scanner
+```
 
 ## License
 
