@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, jsonify
-from utils.id_parser import extract_steam_ids
+from utils.steam_api_client import extract_steam_ids
 import utils.inventory_processor as ip
 
 from utils import steam_api_client as sac

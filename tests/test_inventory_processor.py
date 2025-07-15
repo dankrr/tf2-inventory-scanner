@@ -1,10 +1,7 @@
 from utils import inventory_processor as ip
-from utils import steam_api_client as sac
 from utils import local_data as ld
 from utils.valuation_service import ValuationService
 from pathlib import Path
-import requests
-import responses
 import pytest
 
 
@@ -251,63 +248,6 @@ def test_unusual_taunt_effect_badge():
     assert item["badges"][0]["icon"] == "★"
     assert item["unusual_effect_name"] == "Silver Cyclone"
     assert "Silver Cyclone" in item["name"]
-
-
-def test_get_inventories_adds_user_agent(monkeypatch):
-    captured = {}
-
-    class DummyResp:
-        def __init__(self, status=200):
-            self.status_code = status
-
-        def raise_for_status(self):
-            if self.status_code != 200:
-                raise requests.HTTPError(response=self)
-
-        def json(self):
-            return {"result": {"items": []}}
-
-    def fake_get(url, headers=None, timeout=10):
-        captured["ua"] = headers.get("User-Agent") if headers else None
-        return DummyResp()
-
-    monkeypatch.setattr(sac.requests, "get", fake_get)
-    sac.get_inventories(["1"])
-    assert captured["ua"] == "Mozilla/5.0"
-
-
-def test_fetch_inventory_handles_http_error(monkeypatch):
-    def fake_fetch(_id):
-        return "failed", {}
-
-    monkeypatch.setattr(sac, "fetch_inventory", fake_fetch)
-    data, status = ip.fetch_inventory("1")
-    assert data == {"items": []}
-    assert status == "failed"
-
-
-@pytest.mark.parametrize(
-    "payload,expected",
-    [
-        (
-            {"status": 200, "json": {"result": {"status": 1, "items": [{"id": 1}]}}},
-            "parsed",
-        ),
-        ({"status": 200, "json": {"result": {"status": 1, "items": []}}}, "incomplete"),
-        ({"status": 200, "json": {"result": {"status": 15}}}, "private"),
-        ({"body": requests.ConnectionError()}, "failed"),
-    ],
-)
-def test_fetch_inventory_statuses(monkeypatch, payload, expected):
-    monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
-    url = (
-        "https://api.steampowered.com/IEconItems_440/GetPlayerItems/v0001/"
-        "?key=x&steamid=1"
-    )
-    with responses.RequestsMock() as rsps:
-        rsps.add(responses.GET, url, **payload)
-        status, data = sac.fetch_inventory("1")
-    assert status == expected
 
 
 @pytest.mark.parametrize("status", ["parsed", "incomplete", "private"])

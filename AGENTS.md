@@ -17,7 +17,7 @@ This is a Python async-enabled Flask (or Quart) web application that allows a us
 The repository currently exposes several entry points:
 
 1. **`app.py`** – the Flask web application for scanning multiple Steam users.
-2. **`utils/steam_api_client.py`** – common helpers for Steam Web API requests.
+2. **`utils/steam_api_client.py`** – ID parsing and helpers for Steam Web API requests.
 3. **`utils/inventory_processor.py`** – utilities that enrich and sort inventory
    data.
 

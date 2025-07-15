@@ -2,7 +2,7 @@
   <div class="user-header">
     <div class="user-profile">
       <a href="{{ user.profile }}" target="_blank" class="avatar-link">
-        <img src="{{ user.avatar }}" alt="Avatar" class="profile-pic" />
+        <img src="{{ user.avatar }}" alt="Avatar" class="profile-pic" loading="lazy" />
       </a>
       <div class="profile-details">
         <div class="username">{{ user.username }}</div>
@@ -10,7 +10,7 @@
         <div class="profile-link">
           <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" class="backpack-link" target="_blank" rel="noopener">
             Backpack.tf
-            <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon" />
+            <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon" loading="lazy" />
           </a>
         </div>
       </div>
