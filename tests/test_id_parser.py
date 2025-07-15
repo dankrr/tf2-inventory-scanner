@@ -1,5 +1,5 @@
 import utils.steam_api_client as sac
-from utils.id_parser import extract_steam_ids
+from utils.steam_api_client import extract_steam_ids
 
 
 def test_extract_ids_from_status_block():

@@ -6,7 +6,7 @@ from html import unescape
 import json
 from pathlib import Path
 
-from . import steam_api_client, local_data
+from . import local_data
 from .helpers import best_match_from_keys
 from .valuation_service import ValuationService, get_valuation_service
 from .wear_helpers import _wear_tier, _decode_seed_info
@@ -670,17 +670,6 @@ def _build_item_name(base: str, quality: str, asset: Dict[str, Any]) -> str:
         parts.append(f"({sheen})")
 
     return " ".join(parts)
-
-
-def fetch_inventory(steamid: str) -> Tuple[Dict[str, Any], str]:
-    """Return inventory data and status using the Steam API helper."""
-
-    status, data = steam_api_client.fetch_inventory(steamid)
-    if status not in ("parsed", "incomplete"):
-        data = {"items": []}
-    else:
-        data = data or {"items": []}
-    return data, status
 
 
 def _is_placeholder_name(name: str) -> bool:

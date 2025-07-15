@@ -22,8 +22,7 @@ async def main() -> None:
 
 ## Utility Modules
 
-- **`utils/id_parser.py`** – Extracts valid Steam ID tokens from free‑form text.
-- **`utils/steam_api_client.py`** – Wraps Steam Web API calls for player summaries, inventories and playtime. Provides sync and async helpers.
+- **`utils/steam_api_client.py`** – Parses Steam IDs and wraps Web API calls for player summaries, inventories and playtime.
 - **`utils/inventory_processor.py`** – Enriches inventory items with schema data, price lookups, wear information and more.
 - **`utils/price_loader.py`** – Downloads Backpack.tf price and currency dumps and caches them locally.
 - **`utils/price_service.py`** – Formats raw price values into readable strings.

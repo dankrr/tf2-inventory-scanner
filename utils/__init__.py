@@ -16,6 +16,7 @@ from .steam_api_client import (
     get_player_summaries_async,
     fetch_inventory_async,
     get_tf2_playtime_hours_async,
+    extract_steam_ids,
 )
 
 __all__ = [
@@ -37,4 +38,5 @@ __all__ = [
     "get_player_summaries_async",
     "fetch_inventory_async",
     "get_tf2_playtime_hours_async",
+    "extract_steam_ids",
 ]

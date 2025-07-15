@@ -2,7 +2,7 @@
 // Basic image lazy loading using IntersectionObserver
 // Applies to images with a `data-src` attribute.
 
-let observer;
+let lazyObserver;
 
 function loadImage(img) {
   img.src = img.dataset.src;
@@ -14,19 +14,19 @@ function initLazyLoad() {
   if (!images.length) return;
 
   if ('IntersectionObserver' in window) {
-    observer = new IntersectionObserver(
+    lazyObserver = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             loadImage(entry.target);
-            observer.unobserve(entry.target);
+            lazyObserver.unobserve(entry.target);
           }
         });
       },
       { rootMargin: '50px' }
     );
 
-    images.forEach(img => observer.observe(img));
+    images.forEach(img => lazyObserver.observe(img));
   } else {
     // Fallback: load all images immediately
     images.forEach(loadImage);
@@ -36,7 +36,7 @@ function initLazyLoad() {
 window.refreshLazyLoad = function () {
   document
     .querySelectorAll('img[data-src]')
-    .forEach(img => observer && observer.observe(img));
+    .forEach(img => lazyObserver && lazyObserver.observe(img));
 };
 
 if (document.readyState === 'loading') {

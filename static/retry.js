@@ -136,28 +136,6 @@ async function refreshAll() {
   hideScanToast();
 }
 
-function loadUsers(ids) {
-  if (!ids || !ids.length) return;
-  (async () => {
-    for (let i = 0; i < ids.length; i++) {
-      const id = ids[i];
-      const existing = document.getElementById('user-' + id);
-      if (existing && !existing.classList.contains('failed')) {
-        continue;
-      }
-      if (!existing) {
-        const placeholder = document.createElement('div');
-        placeholder.id = 'user-' + id;
-        placeholder.dataset.steamid = id;
-        placeholder.className = 'user-card user-box loading';
-        document.getElementById('user-container').appendChild(placeholder);
-      }
-      updateScanToast(i + 1, ids.length);
-      await retryInventory(id);
-    }
-    hideScanToast();
-  })();
-}
 
 function showResults() {
   const results = document.getElementById('results');
