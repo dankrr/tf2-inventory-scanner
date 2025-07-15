@@ -36,29 +36,53 @@ parser.add_argument("--verbose", action="store_true")
 parser.add_argument("--test", action="store_true")
 ARGS, _ = parser.parse_known_args()
 
-if ARGS.refresh:
+
+async def _do_refresh() -> None:
+    """Fetch schema, prices and currencies and write them to ``cache/``."""
+
     from utils.schema_provider import SchemaProvider
 
-    async def _do_refresh() -> None:
-        print(
-            "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh requested: refetching TF2 schema..."
-        )
-        provider = SchemaProvider(cache_dir="cache/schema")
-        await provider.refresh_all_async(verbose=True)
-        price_path = await ensure_prices_cached_async(refresh=True)
-        curr_path = await ensure_currencies_cached_async(refresh=True)
-        print(f"\N{CHECK MARK} Saved {price_path}")
-        print(f"\N{CHECK MARK} Saved {curr_path}")
-        print(
-            "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server."
-        )
+    print(
+        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refreshing TF2 schema...",
+        flush=True,
+    )
+    provider = SchemaProvider(cache_dir="cache/schema")
+    await provider.refresh_all_async(verbose=True)
+    price_path = await ensure_prices_cached_async(refresh=True)
+    curr_path = await ensure_currencies_cached_async(refresh=True)
+    print(f"\N{CHECK MARK} Saved {price_path}")
+    print(f"\N{CHECK MARK} Saved {curr_path}")
+    print(
+        "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server.",
+        flush=True,
+    )
 
+
+def _cache_missing() -> bool:
+    required = [
+        local_data.ATTRIBUTES_FILE,
+        local_data.ITEMS_FILE,
+        local_data.QUALITIES_FILE,
+        local_data.PARTICLES_FILE,
+        local_data.CURRENCIES_FILE,
+        Path("cache/prices.json"),
+    ]
+    return any(not p.exists() for p in required)
+
+
+if ARGS.refresh:
     try:
         loop = asyncio.get_running_loop()
         loop.run_until_complete(_do_refresh())
     except RuntimeError:
         asyncio.run(_do_refresh())
     raise SystemExit(0)
+
+if _cache_missing() and not os.getenv("SKIP_CACHE_INIT"):
+    try:
+        asyncio.run(_do_refresh())
+    except Exception as exc:  # pragma: no cover - network failures only logged
+        print(f"Failed to initialize cache: {exc}")
 
 TEST_MODE = ARGS.test
 TEST_STEAMID: str = ""
@@ -101,7 +125,12 @@ def kill_process_on_port(port: int) -> None:
             pid = conn.pid
             if pid and pid != os.getpid():
                 try:
-                    psutil.Process(pid).terminate()
+                    proc = psutil.Process(pid)
+                    proc.terminate()
+                    try:
+                        proc.wait(timeout=5)
+                    except psutil.TimeoutExpired:
+                        proc.kill()
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
 
