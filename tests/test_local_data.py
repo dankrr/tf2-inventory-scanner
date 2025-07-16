@@ -9,7 +9,8 @@ def test_load_files_success(tmp_path, monkeypatch, caplog):
     particles_file = tmp_path / "particles.json"
     items_file = tmp_path / "items.json"
     qual_file = tmp_path / "qualities.json"
-    lookups_file = tmp_path / "string_lookups.json"
+    lookups_file = tmp_path / "schema" / "string_lookups.json"
+    lookups_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
 
     attr_file.write_text(json.dumps([{"defindex": 1, "name": "Attr"}]))
@@ -66,7 +67,8 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
     items_file = tmp_path / "items.json"
     particles_file = tmp_path / "particles.json"
     qual_file = tmp_path / "qualities.json"
-    lookups_file = tmp_path / "string_lookups.json"
+    lookups_file = tmp_path / "schema" / "string_lookups.json"
+    lookups_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
 
     monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
@@ -168,7 +170,8 @@ def test_load_files_string_lookups(tmp_path, monkeypatch):
     particles_file = tmp_path / "particles.json"
     items_file = tmp_path / "items.json"
     qual_file = tmp_path / "qualities.json"
-    lookups_file = tmp_path / "string_lookups.json"
+    lookups_file = tmp_path / "schema" / "string_lookups.json"
+    lookups_file.parent.mkdir(parents=True, exist_ok=True)
     currencies_file = tmp_path / "currencies.json"
 
     for f in (attr_file, particles_file, items_file, qual_file):
@@ -274,3 +277,13 @@ def test_load_exclusions(tmp_path, monkeypatch):
 
     loaded = ld.load_exclusions()
     assert loaded == data
+
+
+def test_cleanup_legacy_files(tmp_path, monkeypatch, capsys):
+    legacy = tmp_path / "string_lookups.json"
+    legacy.write_text("{}")
+    monkeypatch.setattr(ld, "LEGACY_STRING_LOOKUPS_FILE", legacy)
+    ld.cleanup_legacy_files(verbose=True)
+    captured = capsys.readouterr().out
+    assert not legacy.exists()
+    assert "Removing legacy file" in captured
