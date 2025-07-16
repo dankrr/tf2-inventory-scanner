@@ -259,11 +259,14 @@ def build_price_map(
                     entry = entries[0] if isinstance(entries, list) else None
                     effect_entries = {0: entry} if isinstance(entry, dict) else {}
 
+                is_crate_case = (
+                    "crate" in base_name.lower() or "case" in base_name.lower()
+                )
                 for effect_key, entry in effect_entries.items():
                     if not isinstance(entry, dict):
                         continue
 
-                    value_raw = entry.get("value_raw")
+                    value_raw = entry.get("value_raw", entry.get("value"))
                     currency = entry.get("currency")
                     if value_raw is None or currency is None:
                         continue
@@ -273,12 +276,17 @@ def build_price_map(
                     except (TypeError, ValueError):
                         effect_id = 0
 
-                    mapping[
-                        (base_name, qid, craftable, is_australium, effect_id, ks_tier)
-                    ] = {
+                    info = {
                         "value_raw": float(value_raw),
                         "currency": str(currency),
                     }
+                    mapping[
+                        (base_name, qid, craftable, is_australium, effect_id, ks_tier)
+                    ] = info
+                    if is_crate_case and effect_id != 0:
+                        mapping[
+                            (base_name, qid, craftable, is_australium, 0, ks_tier)
+                        ] = info
     return mapping
 
 

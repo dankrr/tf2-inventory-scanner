@@ -119,3 +119,35 @@ class ValuationService:
         if currencies is None:
             currencies = local_data.CURRENCIES
         return format_price(value, currencies)
+
+    def get_price(
+        self,
+        *,
+        defindex: int | None = None,
+        name: str | None = None,
+        quality: int = 6,
+        craftable: bool = True,
+        is_australium: bool = False,
+        effect_id: int | None = None,
+        killstreak_tier: int | None = None,
+        currencies: Dict[str, Any] | None = None,
+    ) -> str:
+        """Return formatted price string for ``name`` or ``defindex``."""
+        if name is None and defindex is not None:
+            schema_entry = local_data.ITEMS_BY_DEFINDEX.get(defindex)
+            name = (
+                schema_entry.get("item_name")
+                if isinstance(schema_entry, dict)
+                else None
+            )
+        if not name:
+            return ""
+        return self.format_price(
+            name,
+            quality,
+            craftable,
+            is_australium,
+            effect_id=effect_id,
+            killstreak_tier=killstreak_tier,
+            currencies=currencies,
+        )
