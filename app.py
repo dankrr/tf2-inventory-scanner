@@ -103,28 +103,44 @@ def kill_process_on_port(port: int) -> None:
 def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Return a list of items with identical attributes collapsed.
 
-    Items are grouped by all fields except those in ``IGNORED_STACK_KEYS``.
-    Each returned dictionary includes a ``quantity`` key indicating how many
-    instances were merged.
+    Items may provide a ``stack_key``. If the value is ``None`` the item will
+    not be stacked. Otherwise items with the same ``stack_key`` are merged. If
+    no ``stack_key`` is provided, one is generated from the item fields except
+    those in :data:`IGNORED_STACK_KEYS`.
     """
 
     grouped: Dict[str, Dict[str, Any]] = {}
+    uniques: List[Dict[str, Any]] = []
+    _sentinel = object()
+
     for itm in items:
         if not isinstance(itm, dict):
             continue
-        key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
-        try:
-            key = json.dumps(key_obj, sort_keys=True)
-        except TypeError:
-            # Fallback: skip items with unserializable fields
-            key = str(key_obj)
+
+        key_val = itm.get("stack_key", _sentinel)
+        if key_val is None:
+            new_item = itm.copy()
+            new_item.setdefault("quantity", 1)
+            uniques.append(new_item)
+            continue
+
+        if key_val is _sentinel:
+            key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
+            try:
+                key = json.dumps(key_obj, sort_keys=True)
+            except TypeError:
+                key = str(key_obj)
+        else:
+            key = str(key_val)
+
         if key in grouped:
             grouped[key]["quantity"] += 1
         else:
             new_item = itm.copy()
             new_item.setdefault("quantity", 1)
             grouped[key] = new_item
-    return list(grouped.values())
+
+    return list(grouped.values()) + uniques
 
 
 async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
