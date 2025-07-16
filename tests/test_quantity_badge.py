@@ -38,8 +38,8 @@ def test_stack_items_ignores_ids(monkeypatch):
     mod = importlib.import_module("app")
     importlib.reload(mod)
     items = [
-        {"name": "Crate", "image_url": "", "quality_color": "#fff", "id": 1},
-        {"name": "Crate", "image_url": "", "quality_color": "#fff", "id": 2},
+        {"name": "Key", "image_url": "", "quality_color": "#fff", "id": 1},
+        {"name": "Key", "image_url": "", "quality_color": "#fff", "id": 2},
     ]
     result = mod.stack_items(items)
     assert len(result) == 1

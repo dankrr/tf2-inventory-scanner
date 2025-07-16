@@ -83,6 +83,23 @@ IGNORED_STACK_KEYS = {
     "inventory",
 }
 
+# Only these basic currency items should be collapsed into quantity stacks
+STACKABLE_ITEM_NAMES = {
+    "scrap metal",
+    "reclaimed metal",
+    "refined metal",
+}
+
+
+def _is_stackable_item(itm: Dict[str, Any]) -> bool:
+    """Return ``True`` if ``itm`` represents a stackable currency item."""
+
+    name = (itm.get("name") or itm.get("item_name") or "").lower()
+    if name in STACKABLE_ITEM_NAMES:
+        return True
+    # Keys may have varying names; consider any item ending with "key" stackable
+    return name.endswith("key") or name == "key"
+
 
 def kill_process_on_port(port: int) -> None:
     """Terminate any process currently listening on ``port``."""
@@ -115,6 +132,12 @@ def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
     for itm in items:
         if not isinstance(itm, dict):
+            continue
+
+        if not _is_stackable_item(itm):
+            new_item = itm.copy()
+            new_item.setdefault("quantity", 1)
+            uniques.append(new_item)
             continue
 
         key_val = itm.get("stack_key", _sentinel)
