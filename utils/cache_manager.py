@@ -15,7 +15,7 @@ CACHE_DELAY_DEFAULT = int(os.getenv("CACHE_DELAY", "2"))
 SKIP_CACHE_INIT_DEFAULT = os.getenv("SKIP_CACHE_INIT", "0") == "1"
 
 # Minimum acceptable size for cache files in bytes
-MIN_SCHEMA_FILE_SIZE = 4096  # 4 KB
+MIN_SCHEMA_FILE_SIZE = 1024  # 1 KB
 MIN_PRICES_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 MIN_CURRENCIES_FILE_SIZE = 1024  # 1 KB
 
