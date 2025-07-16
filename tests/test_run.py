@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 
-def _mock_app_import(monkeypatch):
+def _mock_app_import(monkeypatch, fetch_return=(True, False, False)):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
@@ -25,7 +25,7 @@ def _mock_app_import(monkeypatch):
     )
 
     async def fake_fetch(*a, **k):
-        return True, False, False
+        return fetch_return
 
     monkeypatch.setattr("utils.cache_manager.fetch_missing_cache_files", fake_fetch)
     sys.modules.pop("app", None)
@@ -143,3 +143,27 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
     assert "✓ Saved cache/schema/items.json (0 entries)" in out
     assert called["schema"] is True
     assert called["prices"] is True
+
+
+@pytest.mark.asyncio
+async def test_restart_when_schema_refreshed(monkeypatch):
+    run = _mock_app_import(monkeypatch, fetch_return=(True, False, True))
+    called = {"execv": False, "serve": False}
+
+    def fake_execv(*args):
+        called["execv"] = args
+        raise SystemExit
+
+    monkeypatch.setattr(run.os, "execv", fake_execv)
+    monkeypatch.setattr(run, "kill_process_on_port", lambda p: None)
+
+    async def fake_serve(app, config):
+        called["serve"] = True
+
+    monkeypatch.setattr(run, "serve", fake_serve)
+
+    with pytest.raises(SystemExit):
+        await run.main()
+
+    assert called["execv"][0] == sys.executable
+    assert called["serve"] is False
