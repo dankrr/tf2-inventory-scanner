@@ -647,17 +647,17 @@ footer {
 
 .kit-weapon-overlay {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
+  bottom: 2px;
+  right: 2px;
   width: 50%;
   max-width: 48px;
   height: auto;
   z-index: 2;
   opacity: 0.8;
   pointer-events: none;
+  transition: transform 0.2s ease-in-out;
 }
 
 .kit-composite:hover .kit-weapon-overlay {
-  transform: scale(1.05);
-  transition: transform 0.2s ease-in-out;
+  transform: scale(1.08);
 }
