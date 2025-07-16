@@ -456,8 +456,16 @@ async def index():
 if __name__ == "__main__":
 
     async def _main() -> None:
-        if not await fetch_missing_cache_files():
+        print(
+            "\N{LEFT-POINTING MAGNIFYING GLASS} Validating schema and pricing cache..."
+        )
+        ok = await fetch_missing_cache_files()
+        if not ok:
+            print("\N{CROSS MARK} Could not fetch required schema. Exiting.")
             raise SystemExit(1)
+        # Reload schema now that it's guaranteed to exist
+        local_data.load_files(auto_refetch=False)
+
         port = int(os.getenv("PORT", 5000))
         kill_process_on_port(port)
         if TEST_MODE:
