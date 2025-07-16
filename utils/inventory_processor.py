@@ -717,6 +717,13 @@ def _is_warpaintable(schema_entry: Dict[str, Any]) -> bool:
 
 WAR_PAINT_TOOL_DEFINDEXES = {5681, 5682, 5683}
 
+# Killstreak kit and fabricator defindexes
+KILLSTREAK_KIT_DEFINDEXES = {6527, 6523, 6526}
+KILLSTREAK_FABRICATOR_DEFINDEXES = {20002, 20003}
+
+# Robot part itemdef IDs used in fabricator recipes
+FABRICATOR_PART_IDS = {5701, 5702, 5703, 5704, 5705, 5706, 5707}
+
 
 def _has_attr(asset: dict, idx: int) -> bool:
     """Return True if ``asset`` contains an attribute with ``defindex`` ``idx``."""
@@ -789,6 +796,97 @@ def _extract_warpaint_tool_info(
         target_name = _preferred_base_name(str(target_def), target_entry)
 
     return paintkit_id, paintkit_name, wear_name, target_def, target_name
+
+
+def _extract_killstreak_tool_info(asset: dict) -> dict | None:
+    """Return parsed info for killstreak kits and fabricators."""
+
+    try:
+        defindex = int(asset.get("defindex"))
+    except (TypeError, ValueError):
+        return None
+
+    if defindex not in KILLSTREAK_KIT_DEFINDEXES | KILLSTREAK_FABRICATOR_DEFINDEXES:
+        return None
+
+    is_fabricator = defindex in KILLSTREAK_FABRICATOR_DEFINDEXES
+    attrs = []
+    requirements: list[dict] | None = None
+    if is_fabricator:
+        for entry in asset.get("attributes", []):
+            if entry.get("is_output"):
+                attrs = entry.get("attributes") or []
+            else:
+                itemdef_raw = entry.get("itemdef")
+                try:
+                    itemdef = int(itemdef_raw)
+                except (TypeError, ValueError):
+                    continue
+                if itemdef in FABRICATOR_PART_IDS:
+                    qty_raw = entry.get("quantity")
+                    try:
+                        qty = int(qty_raw) if qty_raw is not None else 0
+                    except (TypeError, ValueError):
+                        qty = 0
+                    part_entry = local_data.ITEMS_BY_DEFINDEX.get(itemdef, {})
+                    part_name = (
+                        part_entry.get("item_name")
+                        or part_entry.get("name")
+                        or f"#{itemdef}"
+                    )
+                    if requirements is None:
+                        requirements = []
+                    requirements.append({"part": part_name, "qty": qty})
+    else:
+        attrs = asset.get("attributes", [])
+
+    weapon_def = None
+    sheen_id = None
+    effect_id = None
+    tier_id = None
+    for attr in attrs:
+        idx = attr.get("defindex")
+        raw = attr.get("float_value") if "float_value" in attr else attr.get("value")
+        try:
+            val = int(float(raw)) if raw is not None else None
+        except (TypeError, ValueError):
+            continue
+        if idx == 2012:
+            weapon_def = val
+        elif idx == 2014:
+            sheen_id = val
+        elif idx == 2013:
+            effect_id = val
+        elif idx == 2025:
+            tier_id = val
+
+    if tier_id is None:
+        tier_map = {6527: 1, 6523: 2, 6526: 3, 20002: 2, 20003: 3}
+        tier_id = tier_map.get(defindex)
+
+    weapon_name = None
+    if weapon_def is not None:
+        entry = local_data.ITEMS_BY_DEFINDEX.get(weapon_def, {})
+        weapon_name = entry.get("item_name") or entry.get("name")
+
+    sheen_name = SHEEN_NAMES.get(sheen_id)
+    effect_name = local_data.KILLSTREAK_EFFECT_NAMES.get(
+        str(effect_id)
+    ) or KILLSTREAK_EFFECTS.get(effect_id)
+    tier_name = KILLSTREAK_TIERS.get(tier_id)
+
+    return {
+        "tool_type": "fabricator" if is_fabricator else "kit",
+        "tier_id": tier_id,
+        "tier_name": tier_name,
+        "weapon_defindex": weapon_def,
+        "weapon_name": weapon_name,
+        "sheen_id": sheen_id,
+        "sheen_name": sheen_name,
+        "killstreaker_id": effect_id,
+        "killstreaker_name": effect_name,
+        "requirements": requirements,
+    }
 
 
 def _is_warpaint_tool(schema_entry: Dict[str, Any]) -> bool:
@@ -1041,6 +1139,27 @@ def _process_item(
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
+    ks_tool_info = _extract_killstreak_tool_info(asset)
+    include_stack_key = False
+    stack_key = None
+    if ks_tool_info:
+        include_stack_key = True
+        if target_weapon_def is None:
+            target_weapon_def = ks_tool_info["weapon_defindex"]
+            target_weapon_name = ks_tool_info["weapon_name"]
+        if ks_tier_val is None:
+            ks_tier_val = ks_tool_info["tier_id"]
+        if sheen_name is None:
+            sheen_name = ks_tool_info["sheen_name"]
+            sheen_id = ks_tool_info["sheen_id"]
+            sheen_color = (
+                KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
+                if sheen_id is not None
+                else sheen_color
+            )
+        if ks_effect is None:
+            ks_effect = ks_tool_info["killstreaker_name"]
+
     badges: List[Dict[str, str]] = []
 
     # --- UNUSUAL EFFECT ----------------------------------------------------
@@ -1142,6 +1261,11 @@ def _process_item(
         "unusual_effect_name": effect_name,
         "killstreak_tier": ks_tier_val,
         "killstreak_name": KILLSTREAK_LABELS.get(ks_tier_val),
+        "tier_name": (
+            ks_tool_info.get("tier_name")
+            if ks_tool_info
+            else KILLSTREAK_TIERS.get(int(float(ks_tier_val))) if ks_tier_val else None
+        ),
         "sheen": sheen_name,
         "sheen_name": sheen_name,
         "sheen_color": sheen_color,
@@ -1172,8 +1296,20 @@ def _process_item(
         "paintkit_id": paintkit_id,
         "target_weapon_defindex": target_weapon_def,
         "target_weapon_name": target_weapon_name,
+        "target_weapon_image": (
+            local_data.ITEMS_BY_DEFINDEX.get(target_weapon_def or 0, {}).get(
+                "image_url"
+            )
+            if target_weapon_def is not None
+            else None
+        ),
         "is_war_paint_tool": warpaint_tool,
         "is_skin": is_skin,
+        "killstreak_tool_type": ks_tool_info.get("tool_type") if ks_tool_info else None,
+        "fabricator_requirements": (
+            ks_tool_info.get("requirements") if ks_tool_info else None
+        ),
+        "stack_key": stack_key if include_stack_key else None,
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,

@@ -1247,3 +1247,85 @@ def test_uncraftable_flag_absent():
     items = ip.enrich_inventory(data)
     assert items[0]["uncraftable"] is False
     assert items[0]["craftable"] is True
+
+
+def test_killstreak_kit_parsing():
+    data = {
+        "items": [
+            {
+                "defindex": 6526,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 2012, "float_value": 36},
+                    {"defindex": 2014, "float_value": 2},
+                    {"defindex": 2013, "float_value": 2003},
+                    {"defindex": 2025, "float_value": 3},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        6526: {"item_name": "Professional Killstreak Kit"},
+        36: {"item_name": "Blutsauger", "image_url": "blut.png"},
+    }
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    ld.KILLSTREAK_EFFECT_NAMES = {"2003": "Cerebral Discharge"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["target_weapon_defindex"] == 36
+    assert item["target_weapon_name"] == "Blutsauger"
+    assert item["sheen_name"] == "Deadly Daffodil"
+    assert item["killstreak_effect"] == "Cerebral Discharge"
+    assert item["killstreak_name"] == "Professional"
+    assert item["killstreak_tool_type"] == "kit"
+    assert item["fabricator_requirements"] is None
+    assert item["stack_key"] is None
+    assert item["target_weapon_image"] == "blut.png"
+
+
+def test_killstreak_fabricator_parsing():
+    data = {
+        "items": [
+            {
+                "defindex": 20003,
+                "quality": 6,
+                "attributes": [
+                    {
+                        "defindex": 2006,
+                        "is_output": True,
+                        "itemdef": 6526,
+                        "attributes": [
+                            {"defindex": 2012, "float_value": 36},
+                            {"defindex": 2014, "float_value": 5},
+                            {"defindex": 2013, "float_value": 2006},
+                            {"defindex": 2025, "float_value": 3},
+                        ],
+                    },
+                    {"defindex": 5706, "itemdef": 5706, "quantity": 3},
+                    {"defindex": 5702, "itemdef": 5702, "quantity": 1},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        20003: {"item_name": "Professional Fabricator"},
+        36: {"item_name": "Blutsauger", "image_url": "blut.png"},
+        5706: {"item_name": "Battle-Worn Robot KB-808"},
+        5702: {"item_name": "Battle-Worn Robot Money Furnace"},
+    }
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    ld.KILLSTREAK_EFFECT_NAMES = {"2006": "Singularity"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["target_weapon_defindex"] == 36
+    assert item["target_weapon_name"] == "Blutsauger"
+    assert item["sheen_name"] == "Agonizing Emerald"
+    assert item["killstreak_effect"] == "Singularity"
+    assert item["killstreak_name"] == "Professional"
+    assert item["killstreak_tool_type"] == "fabricator"
+    assert item["fabricator_requirements"] == [
+        {"part": "Battle-Worn Robot KB-808", "qty": 3},
+        {"part": "Battle-Worn Robot Money Furnace", "qty": 1},
+    ]
+    assert item["stack_key"] is None
+    assert item["target_weapon_image"] == "blut.png"

@@ -13,4 +13,22 @@
   {% if item.craftable is not none %}
     <p><strong>{% if item.craftable %}Craftable{% else %}Uncraftable{% endif %}</strong></p>
   {% endif %}
+  {% if item.killstreak_tool_type %}
+    <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
+    <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
+    {% if item.sheen_name %}
+      <p><strong>Sheen:</strong> {{ item.sheen_name }}</p>
+    {% endif %}
+    {% if item.killstreak_effect %}
+      <p><strong>Killstreaker:</strong> {{ item.killstreak_effect }}</p>
+    {% endif %}
+    {% if item.fabricator_requirements %}
+      <p><strong>Parts Required:</strong></p>
+      <ul>
+      {% for part in item.fabricator_requirements %}
+        <li>{{ part.part }} × {{ part.qty }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
 </div>

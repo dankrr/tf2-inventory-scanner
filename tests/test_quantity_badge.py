@@ -46,6 +46,16 @@ def test_stack_items_ignores_ids(monkeypatch):
     assert result[0]["quantity"] == 2
 
 
+def test_stack_items_respects_none_stack_key():
+    mod = importlib.import_module("app")
+    items = [
+        {"name": "Kit", "image_url": "", "quality_color": "#fff", "stack_key": None},
+        {"name": "Kit", "image_url": "", "quality_color": "#fff", "stack_key": None},
+    ]
+    result = mod.stack_items(items)
+    assert len(result) == 2
+
+
 def test_quantity_badge_rendered(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")

@@ -24,7 +24,12 @@
       alt="effect"
     >
   {% endif %}
-  {% if item.image_url %}
+  {% if item.target_weapon_image %}
+    <div class="kit-composite">
+      <img class="kit-bg" src="{{ item.image_url }}" loading="lazy" width="96" height="96" alt="{{ item.display_name }}">
+      <img class="kit-weapon-overlay" src="{{ item.target_weapon_image }}" loading="lazy" alt="overlay">
+    </div>
+  {% elif item.image_url %}
     <img
       class="item-img"
       loading="lazy"
