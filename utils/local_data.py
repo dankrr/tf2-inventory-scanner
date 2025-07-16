@@ -75,7 +75,20 @@ DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
 # Cached warpaint names from the paintkits endpoint
 DEFAULT_PAINTKIT_FILE = BASE_DIR / "cache" / "schema" / "warpaints.json"
 DEFAULT_CRATE_SERIES_FILE = BASE_DIR / "cache" / "crate_series_names.json"
-DEFAULT_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "string_lookups.json"
+DEFAULT_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "schema" / "string_lookups.json"
+LEGACY_STRING_LOOKUPS_FILE = BASE_DIR / "cache" / "string_lookups.json"
+
+
+def cleanup_legacy_files(verbose: bool = False) -> None:
+    """Remove old cache files replaced by new schema paths."""
+
+    old_path = LEGACY_STRING_LOOKUPS_FILE
+    if old_path.exists():
+        if verbose or os.getenv("FLASK_DEBUG"):
+            print(f"🧹 Removing legacy file: {old_path}")
+        old_path.unlink()
+
+
 EFFECT_FILE = Path(os.getenv("TF2_EFFECT_FILE", DEFAULT_EFFECT_FILE))
 DEFAULT_EFFECT_NAMES_FILE = BASE_DIR / "data" / "effect_names.json"
 EFFECT_NAMES_FILE = Path(os.getenv("TF2_EFFECT_NAMES_FILE", DEFAULT_EFFECT_NAMES_FILE))
@@ -200,6 +213,8 @@ def load_files(
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
     global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
     global FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
+
+    cleanup_legacy_files(verbose)
 
     required = {
         "attributes": ATTRIBUTES_FILE.resolve(),
