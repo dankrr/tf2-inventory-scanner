@@ -25,7 +25,7 @@ def _mock_app_import(monkeypatch):
     )
 
     async def fake_fetch(*a, **k):
-        return True
+        return True, False, False
 
     monkeypatch.setattr("utils.cache_manager.fetch_missing_cache_files", fake_fetch)
     sys.modules.pop("app", None)

@@ -5,6 +5,7 @@ import time
 import json
 import argparse
 import psutil
+import sys
 import contextlib
 from pathlib import Path
 from typing import List, Dict, Any
@@ -459,12 +460,18 @@ if __name__ == "__main__":
         print(
             "\N{LEFT-POINTING MAGNIFYING GLASS} Validating schema and pricing cache..."
         )
-        ok = await fetch_missing_cache_files()
+        ok, refreshed, schema_refreshed = await fetch_missing_cache_files()
         if not ok:
             print("\N{CROSS MARK} Could not fetch required schema. Exiting.")
             raise SystemExit(1)
         # Reload schema now that it's guaranteed to exist
         local_data.load_files(auto_refetch=False)
+        if schema_refreshed and not TEST_MODE:
+            print(
+                f"{COLOR_YELLOW}🔄 Restarting to load updated schema...{COLOR_RESET}",
+                flush=True,
+            )
+            os.execv(sys.executable, [sys.executable] + sys.argv)
 
         port = int(os.getenv("PORT", 5000))
         kill_process_on_port(port)

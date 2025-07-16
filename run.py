@@ -11,7 +11,7 @@ from utils.cache_manager import fetch_missing_cache_files
 
 async def ensure_cache_ready() -> None:
     """Ensure cache files exist before starting the server."""
-    ok = await fetch_missing_cache_files()
+    ok, _, _ = await fetch_missing_cache_files()
     if not ok:
         sys.exit(1)
 

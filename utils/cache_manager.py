@@ -41,6 +41,9 @@ REQUIRED_FILES: List[Path] = [
     Path("cache/currencies.json"),
 ]
 
+# Set of schema file names for quick category checks
+SCHEMA_FILE_NAMES = {p.name for p in REQUIRED_FILES if "schema" in p.parts}
+
 
 async def _save_json_atomic(path: Path, data: object) -> None:
     """Write ``data`` to ``path`` atomically."""
@@ -178,14 +181,21 @@ def validate_cache_files() -> bool:
     return not missing_cache_files()
 
 
-async def fetch_missing_cache_files() -> bool:
-    """Download any missing cache files with progress and retries."""
+async def fetch_missing_cache_files() -> tuple[bool, bool, bool]:
+    """Download any missing cache files with progress and retries.
+
+    Returns a tuple ``(ok, refreshed, schema_refreshed)`` where ``ok`` indicates
+    whether all cache files are present after the operation, ``refreshed``
+    reports whether any files were downloaded, and ``schema_refreshed`` is
+    ``True`` only if a schema refresh occurred.  The latter allows callers to
+    decide whether a restart is necessary.
+    """
 
     if os.getenv("SKIP_CACHE_INIT", "1" if SKIP_CACHE_INIT_DEFAULT else "0") == "1":
         print(
             f"{COLOR_YELLOW}⚠ Cache validation skipped (SKIP_CACHE_INIT=1){COLOR_RESET}"
         )
-        return True
+        return True, False, False
 
     retries = int(os.getenv("CACHE_RETRIES", str(CACHE_RETRIES_DEFAULT)))
     delay = int(os.getenv("CACHE_DELAY", str(CACHE_DELAY_DEFAULT)))
@@ -196,15 +206,25 @@ async def fetch_missing_cache_files() -> bool:
         )
 
     missing_count = 0
-    refreshed_count = 0
+    refreshed_any = False
+    schema_refreshed = False
+    price_refreshed = False
+    currency_refreshed = False
 
     for attempt in range(1, retries + 1):
         missing = missing_cache_files()
         if not missing:
-            print(
-                f"{COLOR_GREEN}✅ All schema files verified. Starting server.{COLOR_RESET}"
-            )
-            return True
+            if refreshed_any:
+                summary = (
+                    f"{COLOR_GREEN}✅ Cache ready: {missing_count} files refreshed ("
+                    f"schema: {'yes' if schema_refreshed else 'no'}, "
+                    f"pricing: {'yes' if price_refreshed else 'no'}, "
+                    f"currencies: {'yes' if currency_refreshed else 'no'}){COLOR_RESET}"
+                )
+            else:
+                summary = f"{COLOR_GREEN}✅ All cache files verified. No refresh needed.{COLOR_RESET}"
+            print(summary)
+            return True, refreshed_any, schema_refreshed
 
         initial_missing = list(missing)
         if missing_count == 0:
@@ -214,7 +234,18 @@ async def fetch_missing_cache_files() -> bool:
             print(f"{COLOR_YELLOW}🟡 [{i}/{total}] Fetching {path}...{COLOR_RESET}")
 
         try:
-            refreshed_count = await _do_refresh()
+            if any(p.name in SCHEMA_FILE_NAMES for p in missing):
+                await _refresh_schema_concurrent()
+                schema_refreshed = True
+                refreshed_any = True
+            if any(p.name == "prices.json" for p in missing):
+                await ensure_prices_cached_async(refresh=True)
+                price_refreshed = True
+                refreshed_any = True
+            if any(p.name == "currencies.json" for p in missing):
+                await ensure_currencies_cached_async(refresh=True)
+                currency_refreshed = True
+                refreshed_any = True
         except Exception as exc:  # pragma: no cover - network failures logged
             print(f"{COLOR_RED}❌ Refresh attempt {attempt} failed: {exc}{COLOR_RESET}")
 
@@ -226,11 +257,14 @@ async def fetch_missing_cache_files() -> bool:
                 )
 
         if not remaining:
-            total_updated = refreshed_count
-            print(
-                f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files downloaded. Full schema refresh updated {total_updated} files total, including prices and currencies.{COLOR_RESET}"
+            summary = (
+                f"{COLOR_GREEN}✅ Cache ready: {missing_count} files refreshed ("
+                f"schema: {'yes' if schema_refreshed else 'no'}, "
+                f"pricing: {'yes' if price_refreshed else 'no'}, "
+                f"currencies: {'yes' if currency_refreshed else 'no'}){COLOR_RESET}"
             )
-            return True
+            print(summary)
+            return True, refreshed_any, schema_refreshed
 
         if attempt < retries:
             await asyncio.sleep(delay)
@@ -239,13 +273,16 @@ async def fetch_missing_cache_files() -> bool:
     if final_missing:
         paths = ", ".join(map(str, final_missing))
         print(f"{COLOR_RED}❌ Failed after {retries} retries: {paths}{COLOR_RESET}")
-        return False
+        return False, refreshed_any, schema_refreshed
 
-    total_updated = refreshed_count
-    print(
-        f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files downloaded. Full schema refresh updated {total_updated} files total, including prices and currencies.{COLOR_RESET}"
+    summary = (
+        f"{COLOR_GREEN}✅ Cache ready: {missing_count} files refreshed ("
+        f"schema: {'yes' if schema_refreshed else 'no'}, "
+        f"pricing: {'yes' if price_refreshed else 'no'}, "
+        f"currencies: {'yes' if currency_refreshed else 'no'}){COLOR_RESET}"
     )
-    return True
+    print(summary)
+    return True, refreshed_any, schema_refreshed
 
 
 __all__ = [
