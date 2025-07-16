@@ -1005,8 +1005,8 @@ def _process_item(
         Raw inventory item from Steam.
     valuation_service:
         Optional :class:`ValuationService` used to look up item values. When
-        provided, price information is added under ``"price"`` and
-        ``"price_string"`` keys. Defaults to
+        provided, price information is added under ``"price"``/``"price_string"``
+        as well as ``"price_str"`` and ``"price_raw"`` keys. Defaults to
         :func:`~utils.valuation_service.get_valuation_service`, which returns a
         singleton service.
     """
@@ -1330,39 +1330,44 @@ def _process_item(
     }
 
     if valuation_service is not None:
-        tradable = tradable_val
+        try:
+            qid = int(quality_id)
+        except (TypeError, ValueError):
+            qid = 6
 
-        if tradable:
-            try:
-                qid = int(quality_id)
-            except (TypeError, ValueError):
-                qid = 0
-            try:
-                formatted = valuation_service.format_price(
-                    item.get("base_name", base_name),
-                    qid,
-                    craftable,
-                    bool(is_australium),
-                    effect_id=effect_id,
-                    killstreak_tier=ks_tier_val,
-                    currencies=local_data.CURRENCIES,
-                )
-            except Exception:  # pragma: no cover - defensive fallback
-                formatted = ""
-            if formatted:
-                item["price"] = valuation_service.get_price_info(
-                    item.get("base_name", base_name),
-                    qid,
-                    craftable,
-                    bool(is_australium),
-                    effect_id=effect_id,
-                    killstreak_tier=ks_tier_val,
-                )
-                item["price_string"] = formatted
-                item["formatted_price"] = formatted
-            else:
-                item["price"] = None
-                item["price_string"] = ""
+        try:
+            price_info = valuation_service.get_price_info(
+                item.get("item_name") or item.get("base_name", base_name),
+                qid,
+                craftable,
+                bool(is_australium),
+                effect_id=effect_id,
+                killstreak_tier=ks_tier_val,
+            )
+        except Exception:  # pragma: no cover - defensive fallback
+            price_info = None
+
+        if price_info:
+            formatted = valuation_service.format_price(
+                item.get("item_name") or item.get("base_name", base_name),
+                qid,
+                craftable,
+                bool(is_australium),
+                effect_id=effect_id,
+                killstreak_tier=ks_tier_val,
+                currencies=local_data.CURRENCIES,
+            )
+            item["price"] = price_info
+            item["price_string"] = formatted
+            item["formatted_price"] = formatted
+            item["price_str"] = price_info.get("price") or formatted
+            item["price_raw"] = price_info.get("value_raw")
+        else:
+            item["price"] = None
+            item["price_string"] = ""
+            item["formatted_price"] = ""
+            item["price_str"] = ""
+            item["price_raw"] = None
     return item
 
 

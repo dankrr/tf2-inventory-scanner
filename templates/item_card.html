@@ -43,6 +43,9 @@
   {% else %}
     <div class="missing-icon"></div>
   {% endif %}
+  {% if item.price_str %}
+    <div class="item-price">{{ item.price_str }}</div>
+  {% endif %}
   {% set title_parts = [] %}
   {% if item.killstreak_name %}
     {% if item.killstreak_name == 'Killstreak' %}
