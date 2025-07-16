@@ -46,7 +46,11 @@ async def _save_json_atomic(path: Path, data: object) -> None:
 
 
 async def _download_schema_section(
-    client, provider: SchemaProvider, key: str, endpoint: str
+    client,
+    provider: SchemaProvider,
+    key: str,
+    endpoint: str,
+    save_func=_save_json_atomic,
 ) -> None:
     data = await provider._fetch_async(client, endpoint)
     if isinstance(data, dict) and "value" in data:
@@ -59,25 +63,36 @@ async def _download_schema_section(
     ):
         data = {int(v): k for k, v in data.items()}
     path = provider._cache_file(key)
-    await _save_json_atomic(path, data)
+    await save_func(path, data)
     count = len(data) if hasattr(data, "__len__") else 0
     print(f"\N{CHECK MARK} Saved {path} ({count} entries)")
 
 
-async def _refresh_schema_concurrent() -> None:
+async def _refresh_schema_concurrent(save_func=_save_json_atomic) -> None:
     provider = SchemaProvider(cache_dir="cache/schema")
     async with __import__("httpx").AsyncClient() as client:
         tasks = [
-            _download_schema_section(client, provider, k, ep)
+            _download_schema_section(client, provider, k, ep, save_func)
             for k, ep in provider.ENDPOINTS.items()
         ]
         await asyncio.gather(*tasks)
 
 
-async def _do_refresh() -> None:
-    """Fetch all schema and price data in parallel."""
-    print("\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refreshing TF2 schema...", flush=True)
-    await _refresh_schema_concurrent()
+async def _do_refresh() -> int:
+    """Fetch all schema and price data in parallel and return count of schema files written."""
+    print(
+        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refreshing TF2 schema (full update)...",
+        flush=True,
+    )
+
+    count = 0
+
+    async def counting_save(path: Path, data: object) -> None:
+        nonlocal count
+        await _save_json_atomic(path, data)
+        count += 1
+
+    await _refresh_schema_concurrent(save_func=counting_save)
 
     price_task = asyncio.create_task(ensure_prices_cached_async(refresh=True))
     curr_task = asyncio.create_task(ensure_currencies_cached_async(refresh=True))
@@ -89,6 +104,8 @@ async def _do_refresh() -> None:
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server.",
         flush=True,
     )
+
+    return count
 
 
 def missing_cache_files() -> List[Path]:
@@ -106,12 +123,20 @@ async def fetch_missing_cache_files() -> bool:
 
     if os.getenv("SKIP_CACHE_INIT", "1" if SKIP_CACHE_INIT_DEFAULT else "0") == "1":
         print(
-            f"{COLOR_YELLOW}Skipping cache validation (SKIP_CACHE_INIT=1){COLOR_RESET}"
+            f"{COLOR_YELLOW}⚠ Cache validation skipped (SKIP_CACHE_INIT=1){COLOR_RESET}"
         )
         return True
 
     retries = int(os.getenv("CACHE_RETRIES", str(CACHE_RETRIES_DEFAULT)))
     delay = int(os.getenv("CACHE_DELAY", str(CACHE_DELAY_DEFAULT)))
+
+    if retries > 1:
+        print(
+            f"{COLOR_YELLOW}Retrying up to {retries} times with {delay} sec delay between attempts{COLOR_RESET}"
+        )
+
+    missing_count = 0
+    refreshed_count = 0
 
     for attempt in range(1, retries + 1):
         missing = missing_cache_files()
@@ -120,12 +145,14 @@ async def fetch_missing_cache_files() -> bool:
             return True
 
         initial_missing = list(missing)
+        if missing_count == 0:
+            missing_count = len(initial_missing)
         total = len(initial_missing)
         for i, path in enumerate(initial_missing, 1):
             print(f"{COLOR_YELLOW}🟡 [{i}/{total}] Fetching {path}...{COLOR_RESET}")
 
         try:
-            await _do_refresh()
+            refreshed_count = await _do_refresh()
         except Exception as exc:  # pragma: no cover - network failures logged
             print(f"{COLOR_RED}❌ Refresh attempt {attempt} failed: {exc}{COLOR_RESET}")
 
@@ -137,7 +164,10 @@ async def fetch_missing_cache_files() -> bool:
                 )
 
         if not remaining:
-            print(f"{COLOR_GREEN}✅ Cache verified. Starting server...{COLOR_RESET}")
+            extra_count = max(0, refreshed_count - missing_count)
+            print(
+                f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files fetched, {extra_count} extra schema files refreshed, prices and currencies updated.{COLOR_RESET}"
+            )
             return True
 
         if attempt < retries:
@@ -149,7 +179,10 @@ async def fetch_missing_cache_files() -> bool:
         print(f"{COLOR_RED}❌ Failed after {retries} retries: {paths}{COLOR_RESET}")
         return False
 
-    print(f"{COLOR_GREEN}✅ Cache verified. Starting server...{COLOR_RESET}")
+    extra_count = max(0, refreshed_count - missing_count)
+    print(
+        f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files fetched, {extra_count} extra schema files refreshed, prices and currencies updated.{COLOR_RESET}"
+    )
     return True
 
 
