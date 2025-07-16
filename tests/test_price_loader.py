@@ -1,5 +1,6 @@
 import responses
 import pytest
+import requests
 
 from utils import price_loader
 
@@ -319,3 +320,79 @@ def test_price_map_dict_entry(tmp_path, monkeypatch):
 
     mapping = price_loader.build_price_map(p)
     assert ("Lugermorph", 3, True, False, 0, 0) in mapping
+
+
+def test_timeout_creates_empty_cache(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    monkeypatch.setenv("PRICE_RETRIES", "2")
+    monkeypatch.setenv("PRICE_DELAY", "0")
+
+    calls = {"n": 0}
+
+    def fail(*a, **k):
+        calls["n"] += 1
+        raise requests.Timeout("timeout")
+
+    monkeypatch.setattr(price_loader.requests, "get", fail)
+    monkeypatch.setattr(price_loader.time, "sleep", lambda s: None)
+
+    p = price_loader.ensure_prices_cached(refresh=True)
+    out = capsys.readouterr().out
+
+    assert calls["n"] == 2
+    assert p.exists()
+    assert p.read_text() == "{}"
+    assert "Could not fetch Backpack.tf prices after 2 attempts" in out
+
+
+def test_detect_and_delete_incomplete_cache(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    path = tmp_path / "prices.json"
+    path.write_text("partial")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", path)
+    monkeypatch.setenv("PRICE_RETRIES", "1")
+    monkeypatch.setenv("PRICE_DELAY", "0")
+
+    calls = {"n": 0}
+
+    def fail(*a, **k):
+        calls["n"] += 1
+        raise requests.Timeout("timeout")
+
+    monkeypatch.setattr(price_loader.requests, "get", fail)
+    monkeypatch.setattr(price_loader.time, "sleep", lambda s: None)
+
+    p = price_loader.ensure_prices_cached()
+    out = capsys.readouterr().out
+
+    assert calls["n"] == 1
+    assert p.exists()
+    assert p.read_text() == "{}"
+    assert "Detected incomplete price cache" in out
+
+
+def test_refresh_ignores_incomplete_cache(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("BPTF_API_KEY", "TEST")
+    path = tmp_path / "prices.json"
+    path.write_text("x")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", path)
+    monkeypatch.setenv("PRICE_RETRIES", "1")
+    monkeypatch.setenv("PRICE_DELAY", "0")
+
+    calls = {"n": 0}
+
+    def fail(*a, **k):
+        calls["n"] += 1
+        raise requests.Timeout("timeout")
+
+    monkeypatch.setattr(price_loader.requests, "get", fail)
+    monkeypatch.setattr(price_loader.time, "sleep", lambda s: None)
+
+    p = price_loader.ensure_prices_cached(refresh=True)
+    out = capsys.readouterr().out
+
+    assert calls["n"] == 1
+    assert p.exists()
+    assert p.read_text() == "{}"
+    assert "Detected incomplete price cache" in out
