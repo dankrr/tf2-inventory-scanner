@@ -23,6 +23,7 @@ from .steam_api_client import (
     get_tf2_playtime_hours_async,
     extract_steam_ids,
 )
+from .killstreak_parser import parse_killstreak_item
 
 __all__ = [
     "PAINT_COLORS",
@@ -47,4 +48,5 @@ __all__ = [
     "missing_cache_files",
     "validate_cache_files",
     "fetch_missing_cache_files",
+    "parse_killstreak_item",
 ]
