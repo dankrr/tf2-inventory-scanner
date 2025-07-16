@@ -83,6 +83,9 @@ IGNORED_STACK_KEYS = {
     "inventory",
 }
 
+# Items eligible for quantity stacking (by defindex)
+STACKABLE_DEFINDEXES = {5000, 5001, 5002, 5021}
+
 
 def kill_process_on_port(port: int) -> None:
     """Terminate any process currently listening on ``port``."""
@@ -115,6 +118,18 @@ def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
     for itm in items:
         if not isinstance(itm, dict):
+            continue
+
+        defindex_raw = itm.get("defindex")
+        try:
+            defindex = int(defindex_raw)
+        except (TypeError, ValueError):
+            defindex = None
+
+        if defindex not in STACKABLE_DEFINDEXES:
+            new_item = itm.copy()
+            new_item.setdefault("quantity", 1)
+            uniques.append(new_item)
             continue
 
         key_val = itm.get("stack_key", _sentinel)
