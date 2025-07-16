@@ -10,6 +10,10 @@ This document provides a high-level summary of the TF2 Inventory Scanner codebas
 ```python
 # run.py
 async def main() -> None:
+    schema_refreshed = await ensure_cache_ready()
+    if schema_refreshed and not ARGS.test:
+        print(f"{COLOR_YELLOW}🔄 Restarting to load updated schema...{COLOR_RESET}")
+        os.execv(sys.executable, [sys.executable] + sys.argv)
     port = int(os.getenv("PORT", 5000))
     kill_process_on_port(port)
     if ARGS.test:
