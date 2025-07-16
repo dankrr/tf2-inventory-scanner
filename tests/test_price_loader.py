@@ -1,3 +1,4 @@
+import json
 import responses
 import pytest
 import requests
@@ -320,6 +321,81 @@ def test_price_map_dict_entry(tmp_path, monkeypatch):
 
     mapping = price_loader.build_price_map(p)
     assert ("Lugermorph", 3, True, False, 0, 0) in mapping
+
+
+def test_crate_case_cross_craftable(tmp_path, monkeypatch):
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Mann Co. Supply Crate": {
+                    "defindex": [5022],
+                    "prices": {
+                        "6": {
+                            "Tradable": {
+                                "Craftable": [
+                                    {
+                                        "value": 0.33,
+                                        "value_raw": 0.33,
+                                        "currency": "metal",
+                                        "last_update": 0,
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+    p = tmp_path / "prices.json"
+    p.write_text(json.dumps(payload))
+
+    mapping = price_loader.build_price_map(p)
+    craft = ("Mann Co. Supply Crate", 6, True, False, 0, 0)
+    non = ("Mann Co. Supply Crate", 6, False, False, 0, 0)
+    assert craft in mapping
+    assert non in mapping
+    assert mapping[craft] == mapping[non]
+
+
+def test_crate_case_cross_craftable_with_effect(tmp_path, monkeypatch):
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    payload = {
+        "response": {
+            "success": 1,
+            "items": {
+                "Summer 2024 Cosmetic Case": {
+                    "defindex": [5959],
+                    "prices": {
+                        "6": {
+                            "Tradable": {
+                                "Craftable": {
+                                    "701": {
+                                        "value": 0.22,
+                                        "value_raw": 0.22,
+                                        "currency": "metal",
+                                        "last_update": 0,
+                                    }
+                                }
+                            }
+                        }
+                    },
+                }
+            },
+        }
+    }
+    p = tmp_path / "prices.json"
+    p.write_text(json.dumps(payload))
+
+    mapping = price_loader.build_price_map(p)
+    key = ("Summer 2024 Cosmetic Case", 6, True, False, 701, 0)
+    key_zero = ("Summer 2024 Cosmetic Case", 6, True, False, 0, 0)
+    alt = ("Summer 2024 Cosmetic Case", 6, False, False, 701, 0)
+    alt_zero = ("Summer 2024 Cosmetic Case", 6, False, False, 0, 0)
+    for k in (key, key_zero, alt, alt_zero):
+        assert k in mapping
 
 
 def test_timeout_creates_empty_cache(tmp_path, monkeypatch, capsys):

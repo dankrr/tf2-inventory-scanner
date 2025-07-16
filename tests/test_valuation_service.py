@@ -70,6 +70,22 @@ def test_crate_case_prices(monkeypatch):
             0,
             0,
         ): {"value_raw": 0.33, "currency": "metal"},
+        (
+            "Summer 2024 Cosmetic Case",
+            6,
+            False,
+            False,
+            0,
+            0,
+        ): {"value_raw": 0.22, "currency": "metal"},
+        (
+            "Mann Co. Supply Crate",
+            6,
+            False,
+            False,
+            0,
+            0,
+        ): {"value_raw": 0.33, "currency": "metal"},
     }
     local_data.ITEMS_BY_DEFINDEX = {
         5959: {"item_name": "Summer 2024 Cosmetic Case"},
@@ -80,3 +96,9 @@ def test_crate_case_prices(monkeypatch):
 
     assert service.get_price(defindex=5959) == "0.22 ref"
     assert service.get_price(name="Summer 2024 Cosmetic Case") == "0.22 ref"
+    assert service.get_price(defindex=5959, craftable=False) == "0.22 ref"
+    assert (
+        service.get_price(name="Summer 2024 Cosmetic Case", craftable=False)
+        == "0.22 ref"
+    )
+    assert service.get_price(defindex=5022, craftable=False) == "0.33 ref"

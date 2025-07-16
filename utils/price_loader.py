@@ -280,13 +280,58 @@ def build_price_map(
                         "value_raw": float(value_raw),
                         "currency": str(currency),
                     }
-                    mapping[
-                        (base_name, qid, craftable, is_australium, effect_id, ks_tier)
-                    ] = info
+                    key = (
+                        base_name,
+                        qid,
+                        craftable,
+                        is_australium,
+                        effect_id,
+                        ks_tier,
+                    )
+                    if key not in mapping:
+                        mapping[key] = info
+                        logger.debug("Added price entry %s", key)
                     if is_crate_case and effect_id != 0:
-                        mapping[
-                            (base_name, qid, craftable, is_australium, 0, ks_tier)
-                        ] = info
+                        zero_key = (
+                            base_name,
+                            qid,
+                            craftable,
+                            is_australium,
+                            0,
+                            ks_tier,
+                        )
+                        if zero_key not in mapping:
+                            mapping[zero_key] = info
+                            logger.debug("Added crate effect fallback %s", zero_key)
+                    if is_crate_case:
+                        alt_key = (
+                            base_name,
+                            qid,
+                            not craftable,
+                            is_australium,
+                            effect_id,
+                            ks_tier,
+                        )
+                        if alt_key not in mapping:
+                            mapping[alt_key] = info
+                            logger.debug(
+                                "Added crate craftability fallback %s", alt_key
+                            )
+                        if effect_id != 0:
+                            alt_zero_key = (
+                                base_name,
+                                qid,
+                                not craftable,
+                                is_australium,
+                                0,
+                                ks_tier,
+                            )
+                            if alt_zero_key not in mapping:
+                                mapping[alt_zero_key] = info
+                                logger.debug(
+                                    "Added crate craftability/effect fallback %s",
+                                    alt_zero_key,
+                                )
     return mapping
 
 
