@@ -2,11 +2,11 @@ import os
 import re
 import asyncio
 import time
-from pathlib import Path
 import json
 import argparse
 import psutil
 import contextlib
+from pathlib import Path
 from typing import List, Dict, Any
 from types import SimpleNamespace
 
@@ -18,12 +18,8 @@ import utils.inventory_processor as ip
 from utils import steam_api_client as sac
 from utils import local_data
 from utils import constants as consts
-from utils.price_loader import (
-    ensure_prices_cached,
-    ensure_currencies_cached,
-    ensure_prices_cached_async,
-    ensure_currencies_cached_async,
-)
+from utils.price_loader import ensure_prices_cached, ensure_currencies_cached
+from utils.cache_manager import _do_refresh, fetch_missing_cache_files
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -38,42 +34,6 @@ parser.add_argument("--test", action="store_true")
 ARGS, _ = parser.parse_known_args()
 
 
-async def _do_refresh() -> None:
-    """Fetch schema, prices and currencies and write them to ``cache/``."""
-
-    from utils.schema_provider import SchemaProvider
-
-    print(
-        "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refreshing TF2 schema...",
-        flush=True,
-    )
-    provider = SchemaProvider(cache_dir="cache/schema")
-    await provider.refresh_all_async(verbose=True)
-
-    price_task = asyncio.create_task(ensure_prices_cached_async(refresh=True))
-    curr_task = asyncio.create_task(ensure_currencies_cached_async(refresh=True))
-    price_path, curr_path = await asyncio.gather(price_task, curr_task)
-
-    print(f"\N{CHECK MARK} Saved {price_path}")
-    print(f"\N{CHECK MARK} Saved {curr_path}")
-    print(
-        "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server.",
-        flush=True,
-    )
-
-
-def _cache_missing() -> bool:
-    required = [
-        local_data.ATTRIBUTES_FILE,
-        local_data.ITEMS_FILE,
-        local_data.QUALITIES_FILE,
-        local_data.PARTICLES_FILE,
-        local_data.CURRENCIES_FILE,
-        Path("cache/prices.json"),
-    ]
-    return any(not p.exists() for p in required)
-
-
 if ARGS.refresh:
     try:
         loop = asyncio.get_running_loop()
@@ -82,11 +42,6 @@ if ARGS.refresh:
         asyncio.run(_do_refresh())
     raise SystemExit(0)
 
-if _cache_missing() and not os.getenv("SKIP_CACHE_INIT"):
-    try:
-        asyncio.run(_do_refresh())
-    except Exception as exc:  # pragma: no cover - network failures only logged
-        print(f"Failed to initialize cache: {exc}")
 
 TEST_MODE = ARGS.test
 TEST_STEAMID: str = ""
@@ -492,8 +447,14 @@ async def index():
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 5000))
-    kill_process_on_port(port)
-    if TEST_MODE:
-        asyncio.run(_setup_test_mode())
-    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)
+
+    async def _main() -> None:
+        if not await fetch_missing_cache_files():
+            raise SystemExit(1)
+        port = int(os.getenv("PORT", 5000))
+        kill_process_on_port(port)
+        if TEST_MODE:
+            await _setup_test_mode()
+        app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)
+
+    asyncio.run(_main())
