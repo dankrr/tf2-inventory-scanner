@@ -83,6 +83,14 @@ IGNORED_STACK_KEYS = {
     "inventory",
 }
 
+# Only these items should be collapsed into stacks
+STACKABLE_NAMES = {
+    "Refined Metal",
+    "Reclaimed Metal",
+    "Scrap Metal",
+    "Mann Co. Supply Crate Key",
+}
+
 
 def kill_process_on_port(port: int) -> None:
     """Terminate any process currently listening on ``port``."""
@@ -101,37 +109,32 @@ def kill_process_on_port(port: int) -> None:
 
 
 def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Return a list of items with identical attributes collapsed.
+    """Return a list of items with select entries collapsed.
 
-    Items may provide a ``stack_key``. If the value is ``None`` the item will
-    not be stacked. Otherwise items with the same ``stack_key`` are merged. If
-    no ``stack_key`` is provided, one is generated from the item fields except
-    those in :data:`IGNORED_STACK_KEYS`.
+    Only items in :data:`STACKABLE_NAMES` are stacked; all others are returned
+    individually with ``quantity`` set to ``1``.
     """
 
     grouped: Dict[str, Dict[str, Any]] = {}
     uniques: List[Dict[str, Any]] = []
-    _sentinel = object()
 
     for itm in items:
         if not isinstance(itm, dict):
             continue
 
-        key_val = itm.get("stack_key", _sentinel)
-        if key_val is None:
+        name = itm.get("name") or itm.get("display_name") or itm.get("base_name")
+
+        if name not in STACKABLE_NAMES:
             new_item = itm.copy()
             new_item.setdefault("quantity", 1)
             uniques.append(new_item)
             continue
 
-        if key_val is _sentinel:
-            key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
-            try:
-                key = json.dumps(key_obj, sort_keys=True)
-            except TypeError:
-                key = str(key_obj)
-        else:
-            key = str(key_val)
+        key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
+        try:
+            key = json.dumps(key_obj, sort_keys=True)
+        except TypeError:
+            key = str(key_obj)
 
         if key in grouped:
             grouped[key]["quantity"] += 1

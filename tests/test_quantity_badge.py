@@ -9,8 +9,13 @@ HTML = '{% include "_user.html" %}'
 def test_stack_items_collapses_duplicates():
     mod = importlib.import_module("app")
     items = [
-        {"name": "Key", "image_url": "", "quality_color": "#fff"},
-        {"name": "Key", "image_url": "", "quality_color": "#fff", "level": 10},
+        {"name": "Mann Co. Supply Crate Key", "image_url": "", "quality_color": "#fff"},
+        {
+            "name": "Mann Co. Supply Crate Key",
+            "image_url": "",
+            "quality_color": "#fff",
+            "level": 10,
+        },
     ]
     result = mod.stack_items(items)
     assert len(result) == 1
@@ -38,8 +43,18 @@ def test_stack_items_ignores_ids(monkeypatch):
     mod = importlib.import_module("app")
     importlib.reload(mod)
     items = [
-        {"name": "Crate", "image_url": "", "quality_color": "#fff", "id": 1},
-        {"name": "Crate", "image_url": "", "quality_color": "#fff", "id": 2},
+        {
+            "name": "Mann Co. Supply Crate Key",
+            "image_url": "",
+            "quality_color": "#fff",
+            "id": 1,
+        },
+        {
+            "name": "Mann Co. Supply Crate Key",
+            "image_url": "",
+            "quality_color": "#fff",
+            "id": 2,
+        },
     ]
     result = mod.stack_items(items)
     assert len(result) == 1
@@ -76,7 +91,12 @@ def test_quantity_badge_rendered(monkeypatch):
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     mod = importlib.import_module("app")
     importlib.reload(mod)
-    item = {"name": "Key", "image_url": "", "quality_color": "#fff", "quantity": 3}
+    item = {
+        "name": "Mann Co. Supply Crate Key",
+        "image_url": "",
+        "quality_color": "#fff",
+        "quantity": 3,
+    }
     user = {
         "steamid": "1",
         "profile": "",
