@@ -100,6 +100,22 @@ def test_incomplete_file_marked_missing(tmp_path, monkeypatch):
     assert missing == [file]
 
 
+def test_small_qualities_not_flagged(tmp_path, monkeypatch):
+    qual = tmp_path / "qualities.json"
+    qual.write_bytes(b"x" * 200)
+    monkeypatch.setattr(cm, "REQUIRED_FILES", [qual])
+    missing = cm.missing_cache_files()
+    assert missing == []
+
+
+def test_small_items_flagged(tmp_path, monkeypatch):
+    item = tmp_path / "items.json"
+    item.write_bytes(b"x" * 200)
+    monkeypatch.setattr(cm, "REQUIRED_FILES", [item])
+    missing = cm.missing_cache_files()
+    assert missing == [item]
+
+
 @pytest.mark.asyncio
 async def test_incomplete_file_refetched(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(cm, "MIN_SCHEMA_FILE_SIZE", 10)
