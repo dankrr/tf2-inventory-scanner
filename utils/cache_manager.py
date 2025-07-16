@@ -159,6 +159,8 @@ def _size_threshold(path: Path) -> int:
         return MIN_PRICES_FILE_SIZE
     if path.name == "currencies.json":
         return MIN_CURRENCIES_FILE_SIZE
+    if path.name == "qualities.json":
+        return 100
     return MIN_SCHEMA_FILE_SIZE
 
 
