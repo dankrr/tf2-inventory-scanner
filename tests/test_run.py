@@ -23,6 +23,11 @@ def _mock_app_import(monkeypatch):
         "utils.price_loader.dump_price_map",
         lambda mapping, path=Path("price_map.json"): path,
     )
+
+    async def fake_fetch(*a, **k):
+        return True
+
+    monkeypatch.setattr("utils.cache_manager.fetch_missing_cache_files", fake_fetch)
     sys.modules.pop("app", None)
     sys.modules.pop("run", None)
     sys.modules.pop("app", None)
@@ -91,15 +96,12 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
             print("Fetching items...")
             print("\N{CHECK MARK} Saved cache/schema/items.json (0 entries)")
 
-    async def fake_refresh_async(self, verbose: bool = False):
-        fake_refresh(self, verbose)
+    async def fake_refresh_async():
+        fake_refresh(None, True)
+        await fake_prices_async()
+        await fake_curr_async()
 
-    monkeypatch.setattr(
-        "utils.schema_provider.SchemaProvider.refresh_all", fake_refresh
-    )
-    monkeypatch.setattr(
-        "utils.schema_provider.SchemaProvider.refresh_all_async", fake_refresh_async
-    )
+    monkeypatch.setattr("utils.cache_manager._do_refresh", fake_refresh_async)
 
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
@@ -126,6 +128,7 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         "utils.price_loader.ensure_currencies_cached_async",
         fake_curr_async,
     )
+    monkeypatch.setattr("utils.cache_manager._save_json_atomic", lambda *a, **k: None)
 
     sys.modules.pop("run", None)
     sys.modules.pop("app", None)

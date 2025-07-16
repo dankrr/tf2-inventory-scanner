@@ -12,6 +12,11 @@ from .local_data import FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .valuation_service import ValuationService, get_valuation_service
 from .helpers import best_match_from_keys
+from .cache_manager import (
+    missing_cache_files,
+    validate_cache_files,
+    fetch_missing_cache_files,
+)
 from .steam_api_client import (
     get_player_summaries_async,
     fetch_inventory_async,
@@ -39,4 +44,7 @@ __all__ = [
     "fetch_inventory_async",
     "get_tf2_playtime_hours_async",
     "extract_steam_ids",
+    "missing_cache_files",
+    "validate_cache_files",
+    "fetch_missing_cache_files",
 ]

@@ -21,15 +21,12 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
             print("Fetching items...")
             print("\N{CHECK MARK} Saved cache/schema/items.json (0 entries)")
 
-    async def fake_refresh_async(self, verbose: bool = False):
-        fake_refresh(self, verbose)
+    async def fake_refresh_async():
+        fake_refresh(None, True)
+        await fake_prices_async()
+        await fake_curr_async()
 
-    monkeypatch.setattr(
-        "utils.schema_provider.SchemaProvider.refresh_all", fake_refresh
-    )
-    monkeypatch.setattr(
-        "utils.schema_provider.SchemaProvider.refresh_all_async", fake_refresh_async
-    )
+    monkeypatch.setattr("utils.cache_manager._do_refresh", fake_refresh_async)
 
     async def fake_prices_async(refresh=True):
         called["prices"] = True
@@ -55,6 +52,7 @@ def test_refresh_flag_triggers_update(monkeypatch, capsys):
         "utils.price_loader.ensure_currencies_cached_async",
         fake_curr_async,
     )
+    monkeypatch.setattr("utils.cache_manager._save_json_atomic", lambda *a, **k: None)
     monkeypatch.setattr(sys, "argv", ["app.py", "--refresh", "--verbose"])
     sys.modules.pop("app", None)
     with pytest.raises(SystemExit):
