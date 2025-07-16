@@ -14,8 +14,10 @@ CACHE_RETRIES_DEFAULT = int(os.getenv("CACHE_RETRIES", "2"))
 CACHE_DELAY_DEFAULT = int(os.getenv("CACHE_DELAY", "2"))
 SKIP_CACHE_INIT_DEFAULT = os.getenv("SKIP_CACHE_INIT", "0") == "1"
 
-# Minimum acceptable size for schema files in bytes
+# Minimum acceptable size for cache files in bytes
 MIN_SCHEMA_FILE_SIZE = 4096  # 4 KB
+MIN_PRICES_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+MIN_CURRENCIES_FILE_SIZE = 1024  # 1 KB
 
 # ANSI color codes
 COLOR_YELLOW = "\033[33m"
@@ -104,6 +106,30 @@ async def _do_refresh() -> int:
                 except FileNotFoundError:
                     pass
 
+    price_path = Path("cache/prices.json")
+    if price_path.exists():
+        size = price_path.stat().st_size
+        if size < MIN_PRICES_FILE_SIZE:
+            print(
+                f"{COLOR_YELLOW}⚠ Detected incomplete price cache ({size} bytes). Re-fetching...{COLOR_RESET}"
+            )
+            try:
+                price_path.unlink()
+            except FileNotFoundError:
+                pass
+
+    curr_path = Path("cache/currencies.json")
+    if curr_path.exists():
+        size = curr_path.stat().st_size
+        if size < MIN_CURRENCIES_FILE_SIZE:
+            print(
+                f"{COLOR_YELLOW}⚠ Detected incomplete currency cache ({size} bytes). Re-fetching...{COLOR_RESET}"
+            )
+            try:
+                curr_path.unlink()
+            except FileNotFoundError:
+                pass
+
     async def counting_save(path: Path, data: object) -> None:
         nonlocal count
         await _save_json_atomic(path, data)
@@ -128,12 +154,20 @@ async def _do_refresh() -> int:
     return count
 
 
+def _size_threshold(path: Path) -> int:
+    if path.name == "prices.json":
+        return MIN_PRICES_FILE_SIZE
+    if path.name == "currencies.json":
+        return MIN_CURRENCIES_FILE_SIZE
+    return MIN_SCHEMA_FILE_SIZE
+
+
 def missing_cache_files() -> List[Path]:
     """Return list of required cache files that are missing or incomplete."""
     return [
         p
         for p in REQUIRED_FILES
-        if not p.exists() or p.stat().st_size < MIN_SCHEMA_FILE_SIZE
+        if not p.exists() or p.stat().st_size < _size_threshold(p)
     ]
 
 

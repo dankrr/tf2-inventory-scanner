@@ -129,3 +129,39 @@ async def test_incomplete_file_refetched(monkeypatch, tmp_path, capsys):
     assert "Detected incomplete schema cache" in out
     assert "downloaded successfully" in out
     assert ok is True
+
+
+def test_incomplete_pricing_marked_missing(tmp_path, monkeypatch):
+    price = tmp_path / "prices.json"
+    price.write_bytes(b"x" * 2048)
+    curr = tmp_path / "currencies.json"
+    curr.write_bytes(b"x" * 512)
+    monkeypatch.setattr(cm, "REQUIRED_FILES", [price, curr])
+    missing = cm.missing_cache_files()
+    assert missing == [price, curr]
+
+
+@pytest.mark.asyncio
+async def test_incomplete_pricing_refetched(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(cm, "MIN_PRICES_FILE_SIZE", 10)
+    monkeypatch.setattr(cm, "MIN_CURRENCIES_FILE_SIZE", 10)
+
+    async def fake_do_refresh():
+        print("\u26a0 Detected incomplete price cache (5 bytes). Re-fetching...")
+        print("\u26a0 Detected incomplete currency cache (5 bytes). Re-fetching...")
+        (tmp_path / "prices.json").write_text("x" * 20)
+        (tmp_path / "currencies.json").write_text("x" * 20)
+        return 0
+
+    price = tmp_path / "prices.json"
+    price.write_text("{}")
+    curr = tmp_path / "currencies.json"
+    curr.write_text("{}")
+    monkeypatch.setattr(cm, "REQUIRED_FILES", [price, curr])
+    monkeypatch.setattr(cm, "_do_refresh", fake_do_refresh)
+
+    ok = await cm.fetch_missing_cache_files()
+    out = capsys.readouterr().out
+    assert "Detected incomplete price cache" in out
+    assert "currency cache" in out
+    assert ok is True
