@@ -4,6 +4,8 @@ import json
 import logging
 import os
 from pathlib import Path
+import time
+import asyncio
 
 from .constants import KILLSTREAK_TIERS
 
@@ -18,6 +20,13 @@ logger = logging.getLogger(__name__)
 PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
 PRICE_MAP_FILE = Path("cache/price_map.json")
+
+# ANSI color codes
+COLOR_YELLOW = "\033[33m"
+COLOR_RESET = "\033[0m"
+
+# bytes
+EMPTY_THRESHOLD = 512 * 1024
 
 
 QUALITY_PREFIXES = (
@@ -70,22 +79,46 @@ def ensure_prices_cached(refresh: bool = False) -> Path:
     """Download price dump from backpack.tf if needed and return cache path."""
 
     path = PRICES_FILE
+    if path.exists():
+        size = path.stat().st_size
+        if size < EMPTY_THRESHOLD:
+            print(
+                f"{COLOR_YELLOW}⚠ Detected incomplete price cache ({size} bytes). Deleting and retrying...{COLOR_RESET}"
+            )
+            try:
+                path.unlink()
+            finally:
+                refresh = True
     if path.exists() and not refresh:
         return path
 
     url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
-    try:
-        resp = requests.get(url, timeout=5, headers={"accept": "application/json"})
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:  # requests or JSON
-        logger.warning("Failed to fetch prices: %s", exc)
-        if path.exists():
-            return path
-        raise RuntimeError("Cannot fetch Backpack.tf prices") from exc
+    retries = int(os.getenv("PRICE_RETRIES", "3"))
+    delay = int(os.getenv("PRICE_DELAY", "5"))
+    last_err: Exception | None = None
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2))
+    for attempt in range(1, retries + 1):
+        try:
+            resp = requests.get(url, timeout=5, headers={"accept": "application/json"})
+            resp.raise_for_status()
+            data = resp.json()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(data, indent=2))
+            return path
+        except Exception as exc:  # requests or JSON
+            last_err = exc
+            logger.warning("Failed to fetch prices: %s", exc)
+            if attempt < retries:
+                time.sleep(delay)
+
+    warn = (
+        f"{COLOR_YELLOW}⚠ Could not fetch Backpack.tf prices after {retries} attempts (last error: {last_err}).\n"
+        f"Pricing features disabled. Run with --refresh when online to restore.{COLOR_RESET}"
+    )
+    print(warn)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}")
     return path
 
 
@@ -93,25 +126,49 @@ async def ensure_prices_cached_async(refresh: bool = False) -> Path:
     """Async version of :func:`ensure_prices_cached`."""
 
     path = PRICES_FILE
+    if path.exists():
+        size = path.stat().st_size
+        if size < EMPTY_THRESHOLD:
+            print(
+                f"{COLOR_YELLOW}⚠ Detected incomplete price cache ({size} bytes). Deleting and retrying...{COLOR_RESET}"
+            )
+            try:
+                path.unlink()
+            finally:
+                refresh = True
     if path.exists() and not refresh:
         return path
 
     url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
-    async with httpx.AsyncClient() as client:
-        try:
-            resp = await client.get(
-                url, timeout=5, headers={"accept": "application/json"}
-            )
-            resp.raise_for_status()
-            data = resp.json()
-        except Exception as exc:  # httpx or JSON
-            logger.warning("Failed to fetch prices: %s", exc)
-            if path.exists():
-                return path
-            raise RuntimeError("Cannot fetch Backpack.tf prices") from exc
+    retries = int(os.getenv("PRICE_RETRIES", "3"))
+    delay = int(os.getenv("PRICE_DELAY", "5"))
+    last_err: Exception | None = None
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2))
+    async with httpx.AsyncClient() as client:
+        for attempt in range(1, retries + 1):
+            try:
+                resp = await client.get(
+                    url, timeout=5, headers={"accept": "application/json"}
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(data, indent=2))
+                return path
+            except Exception as exc:  # httpx or JSON
+                last_err = exc
+                logger.warning("Failed to fetch prices: %s", exc)
+                if attempt < retries:
+                    await asyncio.sleep(delay)
+
+    warn = (
+        f"{COLOR_YELLOW}⚠ Could not fetch Backpack.tf prices after {retries} attempts (last error: {last_err}).\n"
+        f"Pricing features disabled. Run with --refresh when online to restore.{COLOR_RESET}"
+    )
+    print(warn)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}")
     return path
 
 

@@ -98,7 +98,10 @@ async def _do_refresh() -> int:
     curr_task = asyncio.create_task(ensure_currencies_cached_async(refresh=True))
     price_path, curr_path = await asyncio.gather(price_task, curr_task)
 
-    print(f"\N{CHECK MARK} Saved {price_path}")
+    if price_path.exists() and price_path.stat().st_size <= 2:
+        print(f"{COLOR_YELLOW}⚠ Pricing unavailable (using empty cache).{COLOR_RESET}")
+    else:
+        print(f"\N{CHECK MARK} Saved {price_path}")
     print(f"\N{CHECK MARK} Saved {curr_path}")
     print(
         "\N{CHECK MARK} Refresh complete. Restart app normally without --refresh to start server.",

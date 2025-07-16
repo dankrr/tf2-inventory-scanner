@@ -21,6 +21,9 @@ from utils import constants as consts
 from utils.price_loader import ensure_prices_cached, ensure_currencies_cached
 from utils.cache_manager import _do_refresh, fetch_missing_cache_files
 
+COLOR_YELLOW = "\033[33m"
+COLOR_RESET = "\033[0m"
+
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
     raise ValueError(
@@ -56,6 +59,10 @@ app = Flask(__name__)
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 _prices_path = ensure_prices_cached(refresh=ARGS.refresh)
+if _prices_path.exists() and _prices_path.stat().st_size <= 2:
+    print(
+        f'{COLOR_YELLOW}⚠ Pricing unavailable (using empty cache). Inventories will show "Price: N/A".{COLOR_RESET}'
+    )
 _currencies_path = ensure_currencies_cached(refresh=ARGS.refresh)
 try:
     with open(_currencies_path) as f:
