@@ -164,9 +164,9 @@ async def fetch_missing_cache_files() -> bool:
                 )
 
         if not remaining:
-            extra_count = max(0, refreshed_count - missing_count)
+            total_updated = refreshed_count
             print(
-                f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files fetched, {extra_count} extra schema files refreshed, prices and currencies updated.{COLOR_RESET}"
+                f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files downloaded. Full schema refresh updated {total_updated} files total, including prices and currencies.{COLOR_RESET}"
             )
             return True
 
@@ -179,9 +179,9 @@ async def fetch_missing_cache_files() -> bool:
         print(f"{COLOR_RED}❌ Failed after {retries} retries: {paths}{COLOR_RESET}")
         return False
 
-    extra_count = max(0, refreshed_count - missing_count)
+    total_updated = refreshed_count
     print(
-        f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files fetched, {extra_count} extra schema files refreshed, prices and currencies updated.{COLOR_RESET}"
+        f"{COLOR_GREEN}✅ Cache verified. {missing_count} missing files downloaded. Full schema refresh updated {total_updated} files total, including prices and currencies.{COLOR_RESET}"
     )
     return True
 

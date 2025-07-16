@@ -38,8 +38,8 @@ async def test_fetch_missing_success(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "\x1b[33m🟡 [1/1] Fetching x...\x1b[0m" in out
     assert "\x1b[32m✅ [1/1] x downloaded successfully\x1b[0m" in out
-    assert "1 missing files fetched" in out
-    assert "4 extra schema" in out
+    assert "Full schema refresh updated" in out
+    assert "1 missing files downloaded" in out
     assert ok is True
     assert calls["refresh"] == 1
 
