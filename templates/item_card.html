@@ -3,6 +3,9 @@
      data-item='{{ item|tojson|safe }}'
      data-craftable="{{ 'true' if item.craftable else 'false' }}">
   <div class="item-badges">
+    {% if item.is_australium %}
+      <img src="/static/images/logos/australium.png" class="australium-icon" alt="Australium">
+    {% endif %}
     {% if item.paint_hex %}
       <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
     {% endif %}
