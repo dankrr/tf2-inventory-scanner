@@ -203,9 +203,14 @@
     (badges || []).forEach(b => {
       const span = document.createElement('span');
       span.className = 'badge';
-      span.dataset.icon = b.icon;
-      span.textContent = b.icon;
       span.title = b.title || '';
+      if (b.icon.startsWith('IMG:')) {
+        const path = b.icon.slice(4);
+        span.innerHTML = `<img src="/static/images/logos/${path}" class="spell-icon" alt="${b.title || 'Spell Icon'}">`;
+      } else {
+        span.dataset.icon = b.icon;
+        span.textContent = b.icon;
+      }
       span.addEventListener('click', () => {
         const sec = document.getElementById('modal-spells');
         if (sec) sec.scrollIntoView({ behavior: 'smooth' });

@@ -298,7 +298,7 @@ button {
   right:2px;
   bottom:2px;
   display:flex;
-  gap:2px;
+  gap:4px;
   pointer-events:none;
   font-size:14px;
   z-index:3;
@@ -317,6 +317,18 @@ button {
 }
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
+}
+
+.spell-icon {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 0 2px #A156D6);
+  vertical-align: middle;
+  transition: transform 0.1s ease-in-out;
+}
+
+.badge img.spell-icon:hover {
+  transform: scale(1.1);
 }
 .badge[data-icon="⚔"]{
   color:#ff7e30;

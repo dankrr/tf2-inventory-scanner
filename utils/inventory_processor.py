@@ -550,7 +550,7 @@ def _spell_icon(name: str) -> str:
     ):
         return "🎤"
     if "pumpkin" in lname or "gourd" in lname or "squash" in lname:
-        return "🎃"
+        return "IMG:pb.png"
     if "exorcism" in lname or "ghost" in lname:
         return "👻"
     if "fire" in lname:
