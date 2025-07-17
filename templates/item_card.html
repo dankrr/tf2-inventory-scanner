@@ -10,7 +10,13 @@
         {% if badge.icon != '🎨' %}
           {% if badge.type == 'killstreak' %}
             <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
-              <span class="chevron-icon"{% if item.sheen_gradient_css %} style="{{ item.sheen_gradient_css }}; color: transparent;"{% elif item.sheen_color %} style="color: {{ item.sheen_color }};"{% endif %}>{{ badge.icon }}</span>
+              <span class="chevron-icon"
+                {% if item.sheen_gradient_css %}
+                  style="{{ item.sheen_gradient_css }}; -webkit-background-clip: text; background-clip: text; color: transparent;"
+                {% elif item.sheen_color %}
+                  style="color: {{ item.sheen_color }};"
+                {% endif %}
+              >{{ badge.icon }}</span>
             </span>
           {% else %}
             <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>

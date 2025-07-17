@@ -337,8 +337,10 @@ button {
 }
 
 .chevron-icon {
+  font-weight: bold;
   -webkit-background-clip: text;
   background-clip: text;
+  color: transparent;
 }
 .badge[data-icon="🖌"],
 .badge[data-icon="👣"],
