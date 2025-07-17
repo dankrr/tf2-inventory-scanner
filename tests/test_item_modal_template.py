@@ -35,6 +35,8 @@ def test_killstreak_info_block(app):
         "killstreak_name": "Professional Killstreak",
         "sheen_name": "Hot Rod",
         "sheen_color": "#8847ff",
+        "sheen_colors": ["#8847ff"],
+        "sheen_gradient_css": None,
         "killstreak_effect": "Fire Horns",
     }
     with app.app_context():
@@ -47,7 +49,8 @@ def test_killstreak_info_block(app):
     assert "Fire Horns" in info.text
     dot = info.find("span", class_="sheen-dot")
     assert dot is not None
-    assert "#8847ff" in dot.get("style", "")
+    style = dot.get("style", "")
+    assert "#8847ff" in style and "linear-gradient" not in style
 
 
 def test_craftable_text_shown(app):
@@ -64,3 +67,21 @@ def test_uncraftable_text_shown(app):
         html = render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     assert "Uncraftable" in soup.text
+
+
+def test_team_shine_gradient(app):
+    item = {
+        "killstreak_name": "Professional Killstreak",
+        "sheen_name": "Team Shine",
+        "sheen_color": "#cc3434",
+        "sheen_colors": ["#cc3434", "#5885a2"],
+        "sheen_gradient_css": "background: linear-gradient(90deg, #cc3434 50%, #5885a2 50%)",
+    }
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    dot = soup.find("span", class_="sheen-dot")
+    assert dot is not None
+    style = dot.get("style", "")
+    assert "linear-gradient" in style
+    assert "#cc3434" in style and "#5885a2" in style

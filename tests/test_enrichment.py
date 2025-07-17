@@ -68,6 +68,7 @@ def test_enrichment_full_attributes(monkeypatch):
     assert item["sheen"] == "Manndarin"
     assert item["sheen_name"] == "Manndarin"
     assert item["sheen_color"] == KILLSTREAK_SHEEN_COLORS[3][1]
+    assert item["sheen_gradient_css"] is None
     assert item["killstreak_effect"] == "Cerebral Discharge"
     assert item["wear_name"] == "Field-Tested"
     assert item["strange_count"] == 10
@@ -104,3 +105,28 @@ def test_unknown_values_warn(monkeypatch, caplog):
     assert "Unknown sheen id" in text
     assert "Unknown killstreak effect id" in text
     assert "Wear value out of range" in text
+
+
+def test_team_shine_colors():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 6,
+                "attributes": [
+                    {"defindex": 2014, "float_value": 1},
+                    {"defindex": 2025, "float_value": 2},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+
+    items = ip.enrich_inventory(data)
+    item = items[0]
+
+    assert item["sheen_name"] == "Team Shine"
+    assert item["sheen_color"] == "#cc3434"
+    assert item["sheen_colors"] == ["#cc3434", "#5885a2"]
+    assert "linear-gradient" in item["sheen_gradient_css"]

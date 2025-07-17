@@ -501,6 +501,17 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     return None
 
 
+def _compute_sheen_colors(sheen_id: int | None) -> list[str]:
+    """Return list of colors for given sheen_id. Handles Team Shine as two-color gradient."""
+
+    if sheen_id is None:
+        return []
+    if sheen_id == 1:  # Team Shine
+        return ["#cc3434", "#5885a2"]  # Red and Blue
+    color = KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
+    return [color] if color else []
+
+
 def _spell_icon(name: str) -> str:
     """Return an emoji icon for the given spell name."""
 
@@ -1126,11 +1137,9 @@ def _process_item(
 
     ks_tier_val = _extract_killstreak_tier(asset)
     ks_tier, sheen_name, sheen_id = _extract_killstreak(asset)
-    sheen_color = (
-        KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
-        if sheen_id is not None
-        else None
-    )
+
+    sheen_colors = _compute_sheen_colors(sheen_id)
+    sheen_color = sheen_colors[0] if sheen_colors else None
     ks_effect = _extract_killstreak_effect(asset)
     paint_name, paint_hex = _extract_paint(asset)
     pattern_seed = _extract_pattern_seed(asset)
@@ -1152,13 +1161,18 @@ def _process_item(
         if sheen_name is None:
             sheen_name = ks_tool_info["sheen_name"]
             sheen_id = ks_tool_info["sheen_id"]
-            sheen_color = (
-                KILLSTREAK_SHEEN_COLORS.get(sheen_id, (None, None))[1]
-                if sheen_id is not None
-                else sheen_color
-            )
+            colors = _compute_sheen_colors(sheen_id)
+            if colors:
+                sheen_colors = colors
+                sheen_color = sheen_colors[0]
         if ks_effect is None:
             ks_effect = ks_tool_info["killstreaker_name"]
+
+    sheen_gradient_css = (
+        f"background: linear-gradient(90deg, {sheen_colors[0]} 50%, {sheen_colors[1]} 50%)"
+        if len(sheen_colors) > 1
+        else None
+    )
 
     badges: List[Dict[str, str]] = []
 
@@ -1269,6 +1283,8 @@ def _process_item(
         "sheen": sheen_name,
         "sheen_name": sheen_name,
         "sheen_color": sheen_color,
+        "sheen_colors": sheen_colors,
+        "sheen_gradient_css": sheen_gradient_css,
         "paint_name": paint_name,
         "paint_hex": paint_hex,
         "wear_name": wear_name,

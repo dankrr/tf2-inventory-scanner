@@ -15,7 +15,7 @@
       {% endif %}
       {% if item.sheen_name %}
         <span class="sheen">
-          <span class="sheen-dot" style="background-color: {{ item.sheen_color or '#ccc' }}"></span>
+          <span class="sheen-dot" style="{{ item.sheen_gradient_css or 'background-color:' ~ item.sheen_color }}"></span>
           {{ item.sheen_name }}
         </span>
       {% endif %}

@@ -8,7 +8,11 @@
     {% endif %}
       {% for badge in item.badges %}
         {% if badge.icon != '🎨' %}
-          <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
+          {% if badge.type == 'killstreak' %}
+            <span class="badge" data-icon="{{ badge.icon }}" style="{{ item.sheen_gradient_css or ('background-color:' ~ item.sheen_color) }}" title="{{ badge.title }}">{{ badge.icon }}</span>
+          {% else %}
+            <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
+          {% endif %}
         {% endif %}
       {% endfor %}
   </div>
