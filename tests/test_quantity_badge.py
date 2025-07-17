@@ -46,11 +46,19 @@ def test_stack_items_ignores_ids(monkeypatch):
     assert result[0]["quantity"] == 2
 
 
-def test_stack_items_respects_none_stack_key():
+def test_stack_items_excludes_unstackable_names():
     mod = importlib.import_module("app")
     items = [
-        {"name": "Kit", "image_url": "", "quality_color": "#fff", "stack_key": None},
-        {"name": "Kit", "image_url": "", "quality_color": "#fff", "stack_key": None},
+        {
+            "name": "Professional Killstreak Kit",
+            "image_url": "",
+            "quality_color": "#fff",
+        },
+        {
+            "name": "Professional Killstreak Kit",
+            "image_url": "",
+            "quality_color": "#fff",
+        },
     ]
     result = mod.stack_items(items)
     assert len(result) == 2
