@@ -703,3 +703,11 @@ footer {
   transform: scale(1.05);
   transition: transform 0.2s ease-in-out;
 }
+
+.australium-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) saturate(100%) invert(84%) sepia(43%) saturate(750%) hue-rotate(10deg) brightness(110%);
+  margin-left: 4px;
+  vertical-align: middle;
+}

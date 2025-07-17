@@ -1,5 +1,10 @@
 <div class="modal-content">
-  <h3>{{ item.display_name }}</h3>
+  <h3>
+    {{ item.display_name }}
+    {% if item.is_australium %}
+      <img src="/static/images/logos/australium.png" class="australium-icon" alt="Australium">
+    {% endif %}
+  </h3>
   {% if item.unusual_effect_name %}
     <p><strong>Unusual Effect:</strong>
       <span class="unusual-effect">{{ item.unusual_effect_name }}</span>
