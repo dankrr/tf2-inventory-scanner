@@ -13,10 +13,6 @@
   {% if item.craftable is not none %}
     <p><strong>{% if item.craftable %}Craftable{% else %}Uncraftable{% endif %}</strong></p>
   {% endif %}
-  {% if item.killstreak_tool_type %}
-    <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
-    <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
-  {% endif %}
   {% if item.killstreak_name or item.tier_name or item.sheen_name or item.killstreak_effect %}
     <!-- Killstreak styling updated -->
     <div class="killstreak-info">
@@ -33,7 +29,11 @@
         <span class="killstreaker">| {{ item.killstreak_effect }}</span>
       {% endif %}
     </div>
-    {% if item.killstreak_tool_type and item.fabricator_requirements %}
+  {% endif %}
+  {% if item.killstreak_tool_type %}
+    <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
+    <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
+    {% if item.fabricator_requirements %}
       <p><strong>Parts Required:</strong></p>
       <ul>
       {% for part in item.fabricator_requirements %}
