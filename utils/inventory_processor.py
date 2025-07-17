@@ -533,6 +533,8 @@ def _spell_icon(name: str) -> str:
         )
     ):
         return "🖌"
+    if "voices from below" in lname:
+        return "🗣️"
     if any(
         word in lname
         for word in (
