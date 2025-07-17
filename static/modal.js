@@ -69,15 +69,6 @@
     const tierName = data.killstreak_tier ? tierMap[data.killstreak_tier] || data.killstreak_tier : null;
     const hasKsInfo = tierName || data.sheen || data.killstreak_effect;
     if (hasKsInfo) {
-      const color = data.sheen_color || '#f97316';
-      if (tierName) {
-        const badge =
-          '<span class="badge killstreak-badge" style="background-color:' +
-          esc(color) + ';">' +
-          esc(tierName) +
-          '</span>';
-        attrs.push('<div>' + badge + '</div>');
-      }
       let info = '<div class="killstreak-info">';
       if (tierName) {
         info += '<span class="killstreak-tier">' + esc(tierName) + '</span>';
