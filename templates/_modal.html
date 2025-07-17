@@ -20,7 +20,7 @@
   {% if item.killstreak_tier %}
     <!-- Killstreak styling updated -->
     <div class="killstreak-info">
-      <span class="killstreak-tier">{{ item.killstreak_name or item.tier_name }}</span>
+      <span class="killstreak-tier">{{ item.tier_name }}</span>
       {% if item.sheen_name %}
         <span class="sheen">
           <span class="sheen-dot" style="background-color: {{ item.sheen_color or '#f97316' }}"></span>
