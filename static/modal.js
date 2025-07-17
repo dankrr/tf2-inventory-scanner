@@ -74,11 +74,9 @@
         info += '<span class="killstreak-tier">' + esc(tierName) + '</span>';
       }
       if (data.sheen) {
-        info +=
-          '<span class="sheen"><span class="sheen-dot" style="background-color:' +
-          esc(data.sheen_color || '#ccc') + '"></span>' +
-          esc(data.sheen) +
-          '</span>';
+        info += '<span class="sheen">';
+        const bgStyle = data.sheen_gradient_css || `background-color:${esc(data.sheen_color || '#ccc')}`;
+        info += `<span class="sheen-dot" style="${bgStyle}"></span>` + esc(data.sheen) + '</span>';
       }
       if (data.killstreak_effect) {
         info += '<span class="killstreaker">| ' + esc(data.killstreak_effect) + '</span>';

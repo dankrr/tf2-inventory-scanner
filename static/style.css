@@ -335,6 +335,13 @@ button {
   color:#ff7e30;
   filter:drop-shadow(0 0 3px #ff7e30);
 }
+
+.chevron-icon {
+  font-weight: bold;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 .badge[data-icon="🖌"],
 .badge[data-icon="👣"],
 .badge[data-icon="🎤"],
@@ -429,9 +436,10 @@ button {
 }
 
 .sheen-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
+  background-size: cover;
   display: inline-block;
 }
 
