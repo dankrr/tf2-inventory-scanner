@@ -172,14 +172,20 @@
     const title = document.getElementById('modal-title');
     const custom = document.getElementById('modal-custom-name');
     const effectBox = document.getElementById('modal-effect');
+
     if (title) {
       let text = '';
       if (data.killstreak_name) {
-        text += data.killstreak_name + ' ';
+        if (["Specialized", "Professional"].includes(data.killstreak_name)) {
+          text += data.killstreak_name + ' Killstreak ';
+        } else {
+          text += data.killstreak_name + ' ';
+        }
       }
       text += data.display_name || data.composite_name || data.name || '';
       title.textContent = text.trim();
     }
+
     if (custom) custom.textContent = data.custom_name || '';
     let effectText = '';
     if (data.unusual_effect) {
