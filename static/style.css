@@ -335,6 +335,11 @@ button {
   color:#ff7e30;
   filter:drop-shadow(0 0 3px #ff7e30);
 }
+
+.chevron-icon {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
 .badge[data-icon="🖌"],
 .badge[data-icon="👣"],
 .badge[data-icon="🎤"],
