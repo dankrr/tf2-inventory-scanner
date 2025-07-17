@@ -19,3 +19,10 @@ def test_unknown_spell_value():
     badges, names = _extract_spells(asset)
     assert badges == []
     assert names == []
+
+
+def test_pumpkin_bomb_icon():
+    asset = {"attributes": [{"defindex": 1007, "value": 1}]}
+    badges, names = _extract_spells(asset)
+    assert "Pumpkin Bombs" in names
+    assert any(b["icon"] == "IMG:pb.png" for b in badges)
