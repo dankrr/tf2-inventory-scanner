@@ -183,7 +183,8 @@
         }
       }
       text += data.display_name || data.composite_name || data.name || '';
-      title.textContent = text.trim();
+      text = text.replace(/IMG:[^\s]+/g, '').trim();
+      title.textContent = text;
     }
 
     if (custom) custom.textContent = data.custom_name || '';
@@ -202,8 +203,20 @@
     box.innerHTML = '';
     (badges || []).forEach(b => {
       const span = document.createElement('span');
-      span.textContent = b.icon;
+      span.className = 'badge';
       span.title = b.title || '';
+      if (typeof b.icon === 'string' && b.icon.startsWith('IMG:')) {
+        const path = b.icon.slice(4);
+        span.dataset.type = 'image';
+        span.innerHTML =
+          '<img src="/static/images/logos/' +
+          path +
+          '" class="spell-icon" alt="' +
+          (b.title || 'Spell Icon') +
+          '">';
+      } else {
+        span.textContent = b.icon;
+      }
       span.addEventListener('click', () => {
         const sec = document.getElementById('modal-spells');
         if (sec) sec.scrollIntoView({ behavior: 'smooth' });

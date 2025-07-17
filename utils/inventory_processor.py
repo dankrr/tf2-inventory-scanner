@@ -513,7 +513,13 @@ def _compute_sheen_colors(sheen_id: int | None) -> list[str]:
 
 
 def _spell_icon(name: str) -> str:
-    """Return an emoji icon for the given spell name."""
+    """Return an icon identifier for the given spell name.
+
+    The returned string may be a literal emoji or a token of the form
+    ``"IMG:<filename>"`` which indicates a 24×24 PNG located under
+    ``static/images/logos``. New PNG assets should also be 24×24 and
+    optimized for size. Additional mappings can be appended here as needed.
+    """
 
     lname = name.lower()
     if "foot" in lname:
@@ -548,7 +554,7 @@ def _spell_icon(name: str) -> str:
     ):
         return "🎤"
     if "pumpkin" in lname or "gourd" in lname or "squash" in lname:
-        return "🎃"
+        return "IMG:pb.png"
     if "exorcism" in lname or "ghost" in lname:
         return "👻"
     if "fire" in lname:

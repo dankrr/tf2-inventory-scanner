@@ -298,10 +298,17 @@ button {
   right:2px;
   bottom:2px;
   display:flex;
-  gap:2px;
+  align-items:center;
+  gap:4px;
   pointer-events:none;
   font-size:14px;
   z-index:3;
+}
+
+#modal-badges{
+  display:flex;
+  align-items:center;
+  gap:4px;
 }
 .item-qty{
   position:absolute;
@@ -315,6 +322,12 @@ button {
   pointer-events:none;
   z-index:3;
 }
+.badge {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
 }
@@ -710,4 +723,28 @@ footer {
   filter: brightness(0) saturate(100%) invert(84%) sepia(43%) saturate(750%) hue-rotate(10deg) brightness(110%);
   margin-left: 4px;
   vertical-align: middle;
+}
+
+.spell-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  vertical-align: middle;
+  object-fit: contain;
+  filter: drop-shadow(0 0 2px #A156D6);
+  transition: transform 0.1s ease-in-out;
+}
+
+.badge img.spell-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  object-fit: contain;
+  transform-origin: center;
+  filter: drop-shadow(0 0 2px #A156D6);
+  transition: transform 0.1s ease-in-out;
+}
+
+.badge img.spell-icon:hover {
+  transform: scale(1.1);
 }
