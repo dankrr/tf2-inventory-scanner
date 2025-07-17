@@ -13,7 +13,9 @@
         {% if badge.icon != '🎨' %}
           {% if badge.icon.startswith('IMG:') %}
             {% set path = badge.icon[4:] %}
-            <img src="/static/images/logos/{{ path }}" class="spell-icon" alt="{{ badge.title }} Spell">
+            <span class="badge" title="{{ badge.title }}">
+              <img src="/static/images/logos/{{ path }}" class="spell-icon" alt="{{ badge.title }}">
+            </span>
           {% elif badge.type == 'killstreak' %}
             <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
               <span class="chevron-icon"

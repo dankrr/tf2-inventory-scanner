@@ -719,3 +719,10 @@ footer {
   vertical-align: middle;
   filter: drop-shadow(0 0 2px #A156D6);
 }
+
+.badge img.spell-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 2px #A156D6);
+}
