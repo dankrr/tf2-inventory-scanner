@@ -16,13 +16,22 @@
   {% if item.killstreak_tool_type %}
     <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
     <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
-    {% if item.sheen_name %}
-      <p><strong>Sheen:</strong> {{ item.sheen_name }}</p>
-    {% endif %}
-    {% if item.killstreak_effect %}
-      <p><strong>Killstreaker:</strong> {{ item.killstreak_effect }}</p>
-    {% endif %}
-    {% if item.fabricator_requirements %}
+  {% endif %}
+  {% if item.killstreak_tier %}
+    <!-- Killstreak styling updated -->
+    <div class="killstreak-info">
+      <span class="killstreak-tier">{{ item.killstreak_name or item.killstreak_tier }}</span>
+      {% if item.sheen_name %}
+        <span class="sheen">
+          <span class="sheen-dot" style="background-color: {{ item.sheen_hex }}"></span>
+          {{ item.sheen_name }}
+        </span>
+      {% endif %}
+      {% if item.killstreak_effect %}
+        <span class="killstreaker">| {{ item.killstreak_effect }}</span>
+      {% endif %}
+    </div>
+    {% if item.killstreak_tool_type and item.fabricator_requirements %}
       <p><strong>Parts Required:</strong></p>
       <ul>
       {% for part in item.fabricator_requirements %}
