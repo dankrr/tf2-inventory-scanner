@@ -409,6 +409,7 @@ button {
 .killstreak-info {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 6px;
   font-size: 0.95rem;
