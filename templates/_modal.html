@@ -17,13 +17,15 @@
     <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
     <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
   {% endif %}
-  {% if item.killstreak_tier %}
+  {% if item.killstreak_name or item.tier_name or item.sheen_name or item.killstreak_effect %}
     <!-- Killstreak styling updated -->
     <div class="killstreak-info">
-      <span class="killstreak-tier">{{ item.tier_name }}</span>
+      {% if item.tier_name or item.killstreak_name %}
+        <span class="killstreak-tier">{{ item.tier_name or item.killstreak_name }}</span>
+      {% endif %}
       {% if item.sheen_name %}
         <span class="sheen">
-          <span class="sheen-dot" style="background-color: {{ item.sheen_color or '#f97316' }}"></span>
+          <span class="sheen-dot" style="background-color: {{ item.sheen_color or '#ccc' }}"></span>
           {{ item.sheen_name }}
         </span>
       {% endif %}
