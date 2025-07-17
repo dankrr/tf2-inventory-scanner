@@ -30,15 +30,24 @@ def app(monkeypatch):
     return mod.app
 
 
-def test_killstreak_badge_color(app):
-    item = {"killstreak_name": "Professional Killstreak", "sheen_color": "#8847ff"}
+def test_killstreak_info_block(app):
+    item = {
+        "killstreak_name": "Professional Killstreak",
+        "sheen_name": "Hot Rod",
+        "sheen_color": "#8847ff",
+        "killstreak_effect": "Fire Horns",
+    }
     with app.app_context():
         html = render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
-    badge = soup.find("span", class_="killstreak-badge")
-    assert badge is not None
-    assert badge.text.strip() == "Professional Killstreak"
-    assert "#8847ff" in badge.get("style", "")
+    info = soup.find("div", class_="killstreak-info")
+    assert info is not None
+    assert "Professional Killstreak" in info.text
+    assert "Hot Rod" in info.text
+    assert "Fire Horns" in info.text
+    dot = info.find("span", class_="sheen-dot")
+    assert dot is not None
+    assert "#8847ff" in dot.get("style", "")
 
 
 def test_craftable_text_shown(app):

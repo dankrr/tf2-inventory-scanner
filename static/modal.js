@@ -65,23 +65,26 @@
     const esc = escapeHtml;
     const attrs = [];
 
-    if (data.killstreak_tier) {
-      const tierMap = { 1: 'Killstreak', 2: 'Specialized', 3: 'Professional' };
-      const tierName = tierMap[data.killstreak_tier] || data.killstreak_tier;
-      const color = data.sheen_color || '#f97316';
-      let ksHtml =
-        '<div><span class="badge ks-tier" style="background:' +
-        esc(color) + ';">' +
-        esc(tierName) +
-        '</span>';
+    const tierMap = { 1: 'Killstreak', 2: 'Specialized', 3: 'Professional' };
+    const tierName = data.killstreak_tier ? tierMap[data.killstreak_tier] || data.killstreak_tier : null;
+    const hasKsInfo = tierName || data.sheen || data.killstreak_effect;
+    if (hasKsInfo) {
+      let info = '<div class="killstreak-info">';
+      if (tierName) {
+        info += '<span class="killstreak-tier">' + esc(tierName) + '</span>';
+      }
       if (data.sheen) {
-        ksHtml += ' ' + esc(data.sheen);
+        info +=
+          '<span class="sheen"><span class="sheen-dot" style="background-color:' +
+          esc(data.sheen_color || '#ccc') + '"></span>' +
+          esc(data.sheen) +
+          '</span>';
       }
       if (data.killstreak_effect) {
-        ksHtml += ', <span class="ks-effect">' + esc(data.killstreak_effect) + '</span>';
+        info += '<span class="killstreaker">| ' + esc(data.killstreak_effect) + '</span>';
       }
-      ksHtml += '</div>';
-      attrs.push(ksHtml);
+      info += '</div>';
+      attrs.push(info);
     }
 
     if (data.unusual_effect) {

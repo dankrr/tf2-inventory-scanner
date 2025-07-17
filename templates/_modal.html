@@ -1,10 +1,4 @@
 <div class="modal-content">
-  {% if item.killstreak_name %}
-    <span class="badge killstreak-badge"
-          style="background-color: {{ item.sheen_color or '#f97316' }};">
-      {{ item.killstreak_name }}
-    </span>
-  {% endif %}
   {% if item.unusual_effect_name %}
     <p><strong>Unusual Effect:</strong>
       <span class="unusual-effect">{{ item.unusual_effect_name }}</span>
@@ -13,15 +7,26 @@
   {% if item.craftable is not none %}
     <p><strong>{% if item.craftable %}Craftable{% else %}Uncraftable{% endif %}</strong></p>
   {% endif %}
+  {% if item.killstreak_name or item.tier_name or item.sheen_name or item.killstreak_effect %}
+    <!-- Killstreak styling updated -->
+    <div class="killstreak-info">
+      {% if item.tier_name or item.killstreak_name %}
+        <span class="killstreak-tier">{{ item.tier_name or item.killstreak_name }}</span>
+      {% endif %}
+      {% if item.sheen_name %}
+        <span class="sheen">
+          <span class="sheen-dot" style="background-color: {{ item.sheen_color or '#ccc' }}"></span>
+          {{ item.sheen_name }}
+        </span>
+      {% endif %}
+      {% if item.killstreak_effect %}
+        <span class="killstreaker">| {{ item.killstreak_effect }}</span>
+      {% endif %}
+    </div>
+  {% endif %}
   {% if item.killstreak_tool_type %}
     <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
     <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
-    {% if item.sheen_name %}
-      <p><strong>Sheen:</strong> {{ item.sheen_name }}</p>
-    {% endif %}
-    {% if item.killstreak_effect %}
-      <p><strong>Killstreaker:</strong> {{ item.killstreak_effect }}</p>
-    {% endif %}
     {% if item.fabricator_requirements %}
       <p><strong>Parts Required:</strong></p>
       <ul>

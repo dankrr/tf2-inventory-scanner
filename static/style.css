@@ -406,6 +406,40 @@ button {
   vertical-align: middle;
 }
 
+.killstreak-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.killstreak-tier {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.sheen {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+}
+
+.sheen-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.killstreaker {
+  font-style: italic;
+  color: #f28c38;
+}
+
 .tf2-hours {
   margin: 0.25rem 0 0;
   font-size: 0.9em;
