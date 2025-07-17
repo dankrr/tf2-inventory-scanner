@@ -83,6 +83,14 @@ IGNORED_STACK_KEYS = {
     "inventory",
 }
 
+# Item names that should never be merged into quantity stacks
+UNSTACKABLE_NAMES = {
+    "Killstreak Kit",
+    "Specialized Killstreak Kit",
+    "Professional Killstreak Kit",
+    "Killstreak Kit Fabricator",
+}
+
 
 def kill_process_on_port(port: int) -> None:
     """Terminate any process currently listening on ``port``."""
@@ -101,37 +109,33 @@ def kill_process_on_port(port: int) -> None:
 
 
 def stack_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Return a list of items with identical attributes collapsed.
+    """Return ``items`` grouped into quantity stacks.
 
-    Items may provide a ``stack_key``. If the value is ``None`` the item will
-    not be stacked. Otherwise items with the same ``stack_key`` are merged. If
-    no ``stack_key`` is provided, one is generated from the item fields except
-    those in :data:`IGNORED_STACK_KEYS`.
+    Items whose ``name`` or ``item_type_name`` appears in
+    :data:`UNSTACKABLE_NAMES` are kept separate.  All other items are merged by
+    comparing every field except those in :data:`IGNORED_STACK_KEYS`.
     """
 
     grouped: Dict[str, Dict[str, Any]] = {}
     uniques: List[Dict[str, Any]] = []
-    _sentinel = object()
 
     for itm in items:
         if not isinstance(itm, dict):
             continue
 
-        key_val = itm.get("stack_key", _sentinel)
-        if key_val is None:
+        item_name = itm.get("name")
+        item_type = itm.get("item_type_name")
+        if item_name in UNSTACKABLE_NAMES or item_type in UNSTACKABLE_NAMES:
             new_item = itm.copy()
             new_item.setdefault("quantity", 1)
             uniques.append(new_item)
             continue
 
-        if key_val is _sentinel:
-            key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
-            try:
-                key = json.dumps(key_obj, sort_keys=True)
-            except TypeError:
-                key = str(key_obj)
-        else:
-            key = str(key_val)
+        key_obj = {k: v for k, v in itm.items() if k not in IGNORED_STACK_KEYS}
+        try:
+            key = json.dumps(key_obj, sort_keys=True)
+        except TypeError:
+            key = str(key_obj)
 
         if key in grouped:
             grouped[key]["quantity"] += 1
