@@ -4,7 +4,6 @@ import importlib
 
 import pytest
 import pytest_asyncio
-from asgiref.wsgi import WsgiToAsgi
 import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -12,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 @pytest.fixture
 def app(monkeypatch):
-    """Return Flask app with env and schema mocks."""
+    """Return Quart app with env and schema mocks."""
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
@@ -38,8 +37,8 @@ def app(monkeypatch):
 
 @pytest_asyncio.fixture
 async def async_client(app):
-    asgi_app = WsgiToAsgi(app)
-    transport = httpx.ASGITransport(app=asgi_app)
+    mod = importlib.import_module("app")
+    transport = httpx.ASGITransport(app=mod.socketio)
     async with httpx.AsyncClient(
         transport=transport, base_url="http://testserver"
     ) as client:

@@ -12,8 +12,10 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, jsonify
-from flask_socketio import SocketIO, emit
+from quart import Quart, render_template, request, flash, jsonify
+import socketio
+from hypercorn.asyncio import serve
+from hypercorn.config import Config
 from utils.steam_api_client import extract_steam_ids
 import utils.inventory_processor as ip
 
@@ -56,13 +58,14 @@ TEST_API_RESULTS_DIR: Path | None = None
 
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
-app = Flask(__name__)
+app = Quart(__name__, static_folder=None)
+app.config.setdefault("PROVIDE_AUTOMATIC_OPTIONS", True)
+app.static_folder = "static"
+app.add_url_rule("/static/<path:filename>", "static", app.send_static_file)
 
-# SocketIO auto-detects the best async mode.  Using ``async_mode="asgi"`` would
-# break under pytest's WSGI test runner.  We instead rely on automatic
-# detection and expose ``socketio.server`` for Hypercorn, which is wrapped by
-# ``socketio.ASGIApp`` in :mod:`run`.
-socketio = SocketIO(app, cors_allowed_origins="*")
+# Socket.IO runs in ASGI mode with Quart.
+sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
+socketio = socketio.ASGIApp(sio, other_asgi_app=app)
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -278,7 +281,7 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
 async def fetch_and_process_single_user(steamid64: int) -> str:
     user = await build_user_data_async(str(steamid64))
     user = normalize_user_payload(user)
-    return render_template("_user.html", user=user)
+    return await render_template("_user.html", user=user)
 
 
 async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
@@ -307,7 +310,7 @@ async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
         seen.add(user_ns.steamid)
         if user_ns.status == "failed":
             failed_ids.append(user_ns.steamid)
-        html_snippets.append(render_template("_user.html", user=user_ns))
+        html_snippets.append(await render_template("_user.html", user=user_ns))
 
     return html_snippets, failed_ids
 
@@ -396,27 +399,44 @@ async def _setup_test_mode() -> None:
     app.config["TEST_STEAMID"] = steamid
 
 
-@socketio.on("start_fetch", namespace="/inventory")
-async def handle_start_fetch(data: Dict[str, Any]) -> None:
+@sio.on("start_fetch", namespace="/inventory")
+async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
     """Stream inventory items for a single Steam user."""
 
     steamid = data.get("steamid") if isinstance(data, dict) else None
     if not isinstance(steamid, str):
-        emit("done", {"steamid": steamid, "status": "invalid"})
+        await sio.emit(
+            "done",
+            {"steamid": steamid, "status": "invalid"},
+            to=sid,
+            namespace="/inventory",
+        )
         return
     try:
         steamid64 = sac.convert_to_steam64(steamid)
     except ValueError:
-        emit("done", {"steamid": steamid, "status": "invalid"})
+        await sio.emit(
+            "done",
+            {"steamid": steamid, "status": "invalid"},
+            to=sid,
+            namespace="/inventory",
+        )
         return
 
     status, raw = await sac.fetch_inventory_async(steamid64)
     if status != "parsed":
-        emit("done", {"steamid": steamid64, "status": status})
+        await sio.emit(
+            "done",
+            {"steamid": steamid64, "status": status},
+            to=sid,
+            namespace="/inventory",
+        )
         return
 
     total = len(raw.get("items") or [])
-    emit("info", {"steamid": steamid64, "total": total})
+    await sio.emit(
+        "info", {"steamid": steamid64, "total": total}, to=sid, namespace="/inventory"
+    )
 
     if not local_data.ITEMS_BY_DEFINDEX:
         await fetch_missing_cache_files()
@@ -424,9 +444,11 @@ async def handle_start_fetch(data: Dict[str, Any]) -> None:
 
     async for item in ip.process_inventory_streaming(raw):
         item["steamid"] = steamid64
-        emit("item", item)
+        await sio.emit("item", item, to=sid, namespace="/inventory")
 
-    emit("done", {"steamid": steamid64, "status": status})
+    await sio.emit(
+        "done", {"steamid": steamid64, "status": status}, to=sid, namespace="/inventory"
+    )
 
 
 @app.post("/retry/<int:steamid64>")
@@ -439,7 +461,7 @@ async def retry_single(steamid64: int):
 async def api_users():
     """Return rendered user cards for multiple Steam IDs."""
 
-    payload = request.get_json(silent=True) or {}
+    payload = await request.get_json(silent=True) or {}
     ids_raw = payload.get("ids", [])
     if not isinstance(ids_raw, list):
         return jsonify({"error": "ids must be a list"}), 400
@@ -483,7 +505,8 @@ async def index():
         steamids_input = app.config.get("TEST_STEAMID", "")
         failed_ids = [u.steamid for u in users if getattr(u, "status", "") == "failed"]
     if request.method == "POST":
-        steamids_input = request.form.get("steamids", "")
+        form = await request.form
+        steamids_input = form.get("steamids", "")
         tokens = re.split(r"\s+", steamids_input.strip())
         raw_ids = extract_steam_ids(steamids_input)
         invalid = [t for t in tokens if t and t not in raw_ids]
@@ -491,20 +514,20 @@ async def index():
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if ids:
             if invalid:
-                flash(f"Ignored {len(invalid)} invalid input(s).")
+                await flash(f"Ignored {len(invalid)} invalid input(s).")
             users, failed_ids = await fetch_and_process_many(ids)
         else:
-            flash(
+            await flash(
                 "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
             )
-            return render_template(
+            return await render_template(
                 "index.html",
                 users=users,
                 steamids=steamids_input,
                 ids=[],
                 failed_ids=[],
             )
-    return render_template(
+    return await render_template(
         "index.html",
         users=users,
         steamids=steamids_input,
@@ -537,12 +560,9 @@ if __name__ == "__main__":
         kill_process_on_port(port)
         if TEST_MODE:
             await _setup_test_mode()
-        socketio.run(
-            app,
-            host="0.0.0.0",
-            port=port,
-            debug=True,
-            use_reloader=not TEST_MODE,
-        )
+        config = Config()
+        config.bind = [f"0.0.0.0:{port}"]
+        config.use_reloader = not TEST_MODE
+        await serve(socketio, config)
 
     asyncio.run(_main())

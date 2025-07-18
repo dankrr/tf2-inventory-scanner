@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 import pytest
-from flask import render_template_string
+from quart import render_template_string
 from bs4 import BeautifulSoup
 
 HTML = '{% include "_user.html" %}'
@@ -31,7 +31,8 @@ def app(monkeypatch):
     return mod.app
 
 
-def test_item_badges_rendered(app):
+@pytest.mark.asyncio
+async def test_item_badges_rendered(app):
     item = {
         "name": "Rocket Launcher",
         "image_url": "http://example.com/rl.png",
@@ -51,10 +52,10 @@ def test_item_badges_rendered(app):
         "status": "parsed",
         "items": [item],
     }
-    with app.app_context():
+    async with app.app_context():
         app_module = importlib.import_module("app")
         user_ns = app_module.normalize_user_payload(user)
-        html = render_template_string(HTML, user=user_ns)
+        html = await render_template_string(HTML, user=user_ns)
     soup = BeautifulSoup(html, "html.parser")
     card = soup.find("div", class_="item-card")
     data = json.loads(card["data-item"])

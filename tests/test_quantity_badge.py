@@ -1,6 +1,7 @@
 import importlib
 from pathlib import Path
-from flask import render_template_string
+from quart import render_template_string
+import pytest
 from bs4 import BeautifulSoup
 
 HTML = '{% include "_user.html" %}'
@@ -64,7 +65,8 @@ def test_stack_items_excludes_unstackable_names():
     assert len(result) == 2
 
 
-def test_quantity_badge_rendered(monkeypatch):
+@pytest.mark.asyncio
+async def test_quantity_badge_rendered(monkeypatch):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
     monkeypatch.setattr(
@@ -94,9 +96,9 @@ def test_quantity_badge_rendered(monkeypatch):
         "status": "parsed",
         "items": [item],
     }
-    with mod.app.app_context():
+    async with mod.app.app_context():
         user_ns = mod.normalize_user_payload(user)
-        html = render_template_string(HTML, user=user_ns)
+        html = await render_template_string(HTML, user=user_ns)
     soup = BeautifulSoup(html, "html.parser")
     badge = soup.find("span", class_="item-qty")
     assert badge.text.strip() == "x3"

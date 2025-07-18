@@ -5,9 +5,7 @@ import sys
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
 
-from socketio import ASGIApp
-
-from app import socketio, kill_process_on_port, _setup_test_mode, ARGS, app
+from app import socketio, kill_process_on_port, _setup_test_mode, ARGS
 from utils.cache_manager import (
     fetch_missing_cache_files,
     COLOR_YELLOW,
@@ -41,8 +39,7 @@ async def main() -> None:
     config = Config()
     config.bind = [f"0.0.0.0:{port}"]
     config.use_reloader = not ARGS.test
-    asgi_app = ASGIApp(socketio.server, other_asgi_app=app)
-    await serve(asgi_app, config)
+    await serve(socketio, config)
 
 
 if __name__ == "__main__":
