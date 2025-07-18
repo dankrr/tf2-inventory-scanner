@@ -1289,6 +1289,29 @@ def test_skin_attribute_order(monkeypatch):
     assert item["wear_float"] == 0.04
 
 
+def test_skin_with_statclock(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 555,
+                "quality": 15,
+                "attributes": [{"defindex": 214, "value": 42}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        555: {"item_name": "Cool Skin", "image_url": ""},
+        5813: {"image_url": "https://example.com/statclock.png"},
+    }
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert "(Strange)" in item["display_name"]
+    assert any(b["type"] == "statclock" for b in item["badges"])
+    assert item["has_strange_tracking"] is True
+    assert item["statclock_badge"] == "https://example.com/statclock.png"
+
+
 def test_extract_wear_attr_749(monkeypatch):
     ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
     asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}

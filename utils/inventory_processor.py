@@ -1156,7 +1156,11 @@ def _process_item(
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
-    if kill_eater_counts.get(1) is not None and q_name not in DEFAULT_QUALITIES:
+    has_strange_tracking = kill_eater_counts.get(1) is not None
+
+    if quality_id == 15:
+        border_color = q_col
+    elif has_strange_tracking and q_name not in DEFAULT_QUALITIES:
         border_color = QUALITY_MAP[STRANGE_QUALITY_ID][1]
     else:
         border_color = q_col
@@ -1257,6 +1261,24 @@ def _process_item(
     if warpaint_tool or (warpaintable and paintkit_id is not None):
         display_name = resolved_name
 
+    has_statclock = has_strange_tracking and quality_id == 15
+    stat_clock_img = None
+    if has_statclock:
+        if warpaint_tool:
+            display_name = f"{display_name} (StatTrak\u2122)"
+        else:
+            display_name = f"{display_name} (Strange)"
+        stat_clock_img = local_data.ITEMS_BY_DEFINDEX.get(5813, {}).get("image_url")
+        if stat_clock_img:
+            badges.insert(
+                0,
+                {
+                    "icon_url": stat_clock_img,
+                    "type": "statclock",
+                    "title": "StatTrak\u2122",
+                },
+            )
+
     item = {
         "id": asset.get("id"),
         "defindex": defindex,
@@ -1344,6 +1366,8 @@ def _process_item(
         "killstreak_effect": ks_effect,
         "spells": spells,
         "badges": badges,  # always present, may be empty
+        "has_strange_tracking": has_strange_tracking,
+        "statclock_badge": stat_clock_img,
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),
         "score_type": (
