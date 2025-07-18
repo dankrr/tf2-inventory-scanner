@@ -776,6 +776,71 @@ def test_kill_eater_fields(monkeypatch):
     assert item["score_type"] == "Kills"
 
 
+def test_border_color_for_elevated_strange(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 1,
+                "attributes": [
+                    {"defindex": 214, "value": 5},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {1: "Genuine", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["quality"] == "Genuine"
+    assert item["strange_count"] == 5
+    assert item["border_color"] == ip.QUALITY_MAP[ip.STRANGE_QUALITY_ID][1]
+
+
+def test_border_color_for_strange_unusual(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 222,
+                "quality": 5,
+                "attributes": [
+                    {"defindex": 214, "value": 3},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {222: {"item_name": "Oddity", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {5: "Unusual", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["quality"] == "Unusual"
+    assert item["strange_count"] == 3
+    assert item["border_color"] == ip.QUALITY_MAP[ip.STRANGE_QUALITY_ID][1]
+    assert item["quality_color"] == ip.QUALITY_MAP[5][1]
+
+
+def test_border_color_for_strange_collectors(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 333,
+                "quality": 14,
+                "attributes": [
+                    {"defindex": 214, "value": 7},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {333: {"item_name": "Rarity", "image_url": ""}}
+    ld.QUALITIES_BY_INDEX = {14: "Collector's", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["quality"] == "Collector's"
+    assert item["strange_count"] == 7
+    assert item["border_color"] == ip.QUALITY_MAP[ip.STRANGE_QUALITY_ID][1]
+    assert item["quality_color"] == ip.QUALITY_MAP[14][1]
+
+
 def test_plain_craft_weapon_filtered():
     data = {"items": [{"defindex": 10, "quality": 6}]}
     ld.ITEMS_BY_DEFINDEX = {10: {"item_name": "A", "craft_class": "weapon"}}

@@ -138,8 +138,7 @@ def test_unusual_effect_rendered(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     text = title.text.strip()
-    assert text.startswith("Strange Burning Flames Cap")
-    assert "Unusual" not in text
+    assert text == "Burning Flames Cap"
 
 
 def test_war_paint_tool_target_displayed(app):
@@ -252,6 +251,31 @@ def test_uncraftable_class_rendered(app):
     assert "uncraftable" in classes
 
 
+def test_elevated_strange_class_rendered(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Gadget",
+                    "image_url": "",
+                    "quality_color": "#00ff00",
+                    "border_color": "#7a4121",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    classes = card.get("class", [])
+    assert "elevated-strange" in classes
+    assert card.get("title") == "Has Strange tracking"
+
+
 def test_australium_name_omits_strange_prefix(app):
     context = {
         "user": {
@@ -276,7 +300,6 @@ def test_australium_name_omits_strange_prefix(app):
     title = soup.find("h2", class_="item-title")
     assert title is not None
     assert title.text.strip() == "Australium Scattergun"
-
 
 
 def test_professional_killstreak_australium_title(app):

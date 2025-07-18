@@ -712,3 +712,20 @@ footer {
   margin-left: 4px;
   vertical-align: middle;
 }
+
+.item-card.elevated-strange {
+  position: relative;
+  box-shadow: 0 0 6px rgba(122, 65, 33, 0.7);
+  border-width: 3px;
+  animation: strangePulse 2s infinite ease-in-out;
+}
+
+@keyframes strangePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(122, 65, 33, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(122, 65, 33, 0.9);
+  }
+}
