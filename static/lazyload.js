@@ -34,9 +34,13 @@ function initLazyLoad() {
 }
 
 window.refreshLazyLoad = function () {
-  document
-    .querySelectorAll('img[data-src]')
-    .forEach(img => lazyObserver && lazyObserver.observe(img));
+  document.querySelectorAll('img[data-src]').forEach(img => {
+    if (lazyObserver) {
+      lazyObserver.observe(img);
+    } else {
+      loadImage(img);
+    }
+  });
 };
 
 if (document.readyState === 'loading') {

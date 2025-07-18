@@ -58,11 +58,10 @@ STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
 
-# SocketIO auto-detects ASGI when served by Hypercorn. Explicitly setting
-# ``async_mode="asgi"`` causes ``ValueError: Invalid async_mode specified`` when
-# Flask-SocketIO initializes under pytest's WSGI environment.  By letting it
-# choose the mode automatically and exporting ``socketio.server`` to Hypercorn,
-# we maintain compatibility with both dev and production setups.
+# SocketIO auto-detects the best async mode.  Using ``async_mode="asgi"`` would
+# break under pytest's WSGI test runner.  We instead rely on automatic
+# detection and expose ``socketio.server`` for Hypercorn, which is wrapped by
+# ``socketio.ASGIApp`` in :mod:`run`.
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 MAX_MERGE_MS = 0

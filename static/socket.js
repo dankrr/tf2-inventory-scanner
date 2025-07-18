@@ -46,8 +46,9 @@
     }
     if (badge.icon_url) {
       const img = document.createElement('img');
-      img.src = badge.icon_url;
       img.className = 'badge-icon';
+      img.loading = 'lazy';
+      img.dataset.src = badge.icon_url;
       img.alt = '';
       if (badge.title) img.title = badge.title;
       return img;
@@ -82,8 +83,9 @@
     badges.className = 'item-badges';
     if (data.is_australium) {
       const img = document.createElement('img');
-      img.src = '/static/images/logos/australium.png';
       img.className = 'australium-icon';
+      img.loading = 'lazy';
+      img.dataset.src = '/static/images/logos/australium.png';
       img.alt = 'Australium';
       badges.appendChild(img);
     }
@@ -111,8 +113,9 @@
 
     if (data.statclock_badge) {
       const img = document.createElement('img');
-      img.src = data.statclock_badge;
       img.className = 'statclock-badge';
+      img.loading = 'lazy';
+      img.dataset.src = data.statclock_badge;
       img.alt = 'StatTrak\u2122';
       img.title = 'StatTrak\u2122 Active';
       card.appendChild(img);
@@ -122,7 +125,6 @@
       const effect = document.createElement('img');
       effect.className = 'particle-bg';
       effect.loading = 'lazy';
-      effect.src = `/static/images/effects/${data.unusual_effect_id}.png`;
       effect.dataset.src = `/static/images/effects/${data.unusual_effect_id}.png`;
       effect.alt = 'effect';
       card.appendChild(effect);
@@ -133,16 +135,16 @@
       kit.className = 'kit-composite';
       const bg = document.createElement('img');
       bg.className = 'kit-bg';
-      bg.src = data.image_url;
       bg.loading = 'lazy';
+      bg.dataset.src = data.image_url;
       bg.width = 96;
       bg.height = 96;
       bg.alt = data.display_name || data.name || 'Item';
       kit.appendChild(bg);
       const overlay = document.createElement('img');
       overlay.className = 'kit-weapon-overlay';
-      overlay.src = data.target_weapon_image;
       overlay.loading = 'lazy';
+      overlay.dataset.src = data.target_weapon_image;
       overlay.alt = 'overlay';
       kit.appendChild(overlay);
       card.appendChild(kit);
@@ -150,7 +152,6 @@
       const img = document.createElement('img');
       img.className = 'item-img';
       img.loading = 'lazy';
-      img.src = data.image_url;
       img.dataset.src = data.image_url;
       img.alt = data.display_name || data.name || 'Item';
       img.width = 64;
