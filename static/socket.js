@@ -21,7 +21,13 @@
     barWrap.appendChild(inner);
     barWrap.appendChild(label);
     card.appendChild(barWrap);
-    progressMap.set(String(steamid), { el: barWrap, bar: inner, label, total: 0, count: 0 });
+    progressMap.set(String(steamid), {
+      el: barWrap,
+      bar: inner,
+      label,
+      total: 0,
+      count: 0
+    });
   }
 
   function createBadge(badge, data) {
@@ -190,7 +196,7 @@
     }
     if (p) {
       p.total = data.total || 0;
-      p.bar.style.width = '0%';
+      p.bar.style.setProperty('--progress-width', '0%');
       p.label.textContent = `0% (0/${p.total})`;
     }
   });
@@ -205,7 +211,7 @@
       p.count += 1;
       const total = p.total || p.count;
       const pct = Math.round((p.count / total) * 100);
-      p.bar.style.width = pct + '%';
+      p.bar.style.setProperty('--progress-width', pct + '%');
       p.label.textContent = `${pct}% (${p.count}/${total})`;
     }
     if (window.attachItemModal) {
@@ -293,13 +299,13 @@
 
     const p = progressMap.get(String(data.steamid));
     if (p) {
-      p.bar.style.width = '100%';
-      const total = p.total || p.count;
-      p.label.textContent = `100% (${total}/${total})`;
+      p.bar.style.setProperty('--progress-width', '100%');
+      p.label.textContent = 'Done';
+      p.el.classList.add('complete');
       setTimeout(() => {
         p.el.style.opacity = '0';
         setTimeout(() => p.el.remove(), 500);
-      }, 500);
+      }, 800);
       progressMap.delete(String(data.steamid));
     }
   });

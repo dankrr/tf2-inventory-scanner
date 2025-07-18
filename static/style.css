@@ -760,29 +760,43 @@ footer {
 }
 
 .user-progress {
-  position: relative;
-  height: 6px;
-  background: #333;
-  border-radius: 4px;
-  margin-top: 8px;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  height: 14px;
 }
 
 .user-progress .progress-inner {
+  flex: 1;
+  background: #444;
+  height: 6px;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-progress .progress-inner::after {
+  content: '';
+  display: block;
   height: 100%;
-  width: 0%;
-  background: #4caf50;
-  transition: width 0.3s;
+  background: linear-gradient(90deg, #5cb85c, #4cae4c);
+  width: var(--progress-width, 0%);
+  transition: width 0.3s ease;
 }
 
 .user-progress .progress-label {
-  position: absolute;
-  top: -18px;
-  width: 100%;
-  text-align: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #ccc;
-  margin-left: 8px;
+  white-space: nowrap;
+}
+
+.user-progress.complete .progress-label {
+  color: #5cb85c;
+}
+
+.user-progress.complete .progress-inner::after {
+  width: 100%;
 }
 
 .sort-value-btn {
