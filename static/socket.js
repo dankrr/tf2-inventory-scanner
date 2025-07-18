@@ -5,7 +5,7 @@
   const progressMap = new Map();
 
   socket.on('connect', () => {
-    console.log('Socket.IO connected');
+    console.log('✅ Socket.IO connected');
   });
 
   function insertProgressBar(steamid) {
@@ -188,6 +188,8 @@
     const p = progressMap.get(String(data.steamid));
     if (p) {
       p.total = data.total || 0;
+      p.bar.style.width = '0%';
+      p.label.textContent = `0% (0/${p.total})`;
     }
   });
 
