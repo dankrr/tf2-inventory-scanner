@@ -379,11 +379,8 @@ button {
 
 .item-name {
   color: #fff;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;
+  -webkit-text-stroke: 1px #000; /* Clean outline */
+  paint-order: stroke fill;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
