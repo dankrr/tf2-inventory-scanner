@@ -173,19 +173,21 @@
 
     wrapper.appendChild(card);
 
-    if (data.formatted_price) {
-      const price = document.createElement('div');
-      price.className = 'item-price';
-      price.textContent = data.formatted_price;
-      wrapper.appendChild(price);
-    }
+    const price = document.createElement('div');
+    price.className = 'item-price';
+    price.textContent = 'Price: ' + (data.formatted_price || 'N/A');
+    wrapper.appendChild(price);
 
     setTimeout(() => wrapper.classList.add('show'), 10);
     return wrapper;
   }
 
   socket.on('info', data => {
-    const p = progressMap.get(String(data.steamid));
+    let p = progressMap.get(String(data.steamid));
+    if (!p) {
+      insertProgressBar(data.steamid);
+      p = progressMap.get(String(data.steamid));
+    }
     if (p) {
       p.total = data.total || 0;
       p.bar.style.width = '0%';
