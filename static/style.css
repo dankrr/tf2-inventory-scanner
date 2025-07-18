@@ -378,25 +378,23 @@ button {
 }
 
 .item-name {
-  color: #fff;
-  text-shadow:
-    -1px -1px 0 #000,
-     1px -1px 0 #000,
-    -1px  1px 0 #000,
-     1px  1px 0 #000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end; /* Default: push text to bottom */
 
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-
-  text-align: center;
-  height: 42px;
+  height: 42px; /* Reserve space for 3 lines */
   overflow: hidden;
 
+  text-align: center;
   font-size: 11px;
   line-height: 1.2;
+  color: #fff;
   word-break: break-word;
   white-space: normal;
+
+  /* Outline for readability */
+  -webkit-text-stroke: 1px #000;
+  paint-order: stroke fill;
 
   position: relative;
   z-index: 3;

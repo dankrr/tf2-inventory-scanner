@@ -165,7 +165,7 @@
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
     <script src="{{ url_for('static', filename='submit.js') }}"></script>
-    <script src="/static/utils.js"></script>
+    <script src="{{ url_for('static', filename='utils.js') }}"></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
