@@ -135,7 +135,7 @@ def test_unusual_effect_rendered(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("h2", class_="item-title")
+    title = soup.find("div", class_="item-name")
     assert title is not None
     text = title.text.strip()
     assert text == "Burning Flames Cap"
@@ -185,7 +185,7 @@ def test_decorated_quality_not_shown(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("h2", class_="item-title")
+    title = soup.find("div", class_="item-name")
     assert title is not None
     assert title.text.strip() == "Warhawk Flamethrower"
 
@@ -298,7 +298,7 @@ def test_australium_name_omits_strange_prefix(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("h2", class_="item-title")
+    title = soup.find("div", class_="item-name")
     assert title is not None
     assert title.text.strip() == "Australium Scattergun"
 
@@ -325,6 +325,6 @@ def test_professional_killstreak_australium_title(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("h2", class_="item-title")
+    title = soup.find("div", class_="item-name")
     assert title is not None
     assert title.text.strip() == "Professional Killstreak Australium Scattergun"

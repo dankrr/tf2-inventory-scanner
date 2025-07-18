@@ -231,7 +231,7 @@ button {
   align-items: center;
   justify-content: flex-start;
   width: 96px;
-  height: 112px;
+  height: 124px;
   padding: 4px;
   margin: 0;
   border: 3px solid var(--quality-color);
@@ -377,17 +377,23 @@ button {
   justify-content: center;
 }
 
-.item-title {
-  font-size: 11px;
-  text-align: center;
-  word-break: break-word;
+.item-name {
   color: #fff;
-  line-height: 1.2em;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  max-height: 3.6em;
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+  font-size: 11px;
+  max-height: 28px;
   position: relative;
   z-index: 3;
 }
@@ -728,6 +734,16 @@ footer {
     height: 12px;
     top: 3px;
     left: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .item-card {
+    width: 88px;
+    height: 118px;
+  }
+  .item-name {
+    font-size: 10px;
   }
 }
 
