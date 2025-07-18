@@ -11,6 +11,17 @@ function createPlaceholder(id) {
   spinner.className = 'loading-spinner';
   spinner.setAttribute('aria-label', 'Loading');
   ph.appendChild(spinner);
+  const bar = document.createElement('div');
+  bar.className = 'user-progress';
+  const inner = document.createElement('div');
+  inner.className = 'progress-inner';
+  inner.id = 'progress-' + id;
+  bar.appendChild(inner);
+  const eta = document.createElement('span');
+  eta.className = 'eta-label';
+  eta.id = 'eta-' + id;
+  bar.appendChild(eta);
+  ph.appendChild(bar);
   return ph;
 }
 
@@ -70,10 +81,9 @@ function extractSteamIds(text) {
 }
 
 function handleSubmit(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
   const container = document.getElementById('user-container');
   if (!container) return;
-  container.innerHTML = '';
   const text = document.getElementById('steamids').value || '';
   const ids = extractSteamIds(text);
   ids.forEach(id => {
@@ -92,8 +102,8 @@ function handleSubmit(e) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form.input-form');
-  if (form) {
-    form.addEventListener('submit', handleSubmit);
+  const btn = document.getElementById('check-inventory-btn');
+  if (btn) {
+    btn.addEventListener('click', handleSubmit);
   }
 });

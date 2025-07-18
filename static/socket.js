@@ -2,7 +2,8 @@
 (function () {
   if (!window.io) return;
   const socket = io('/inventory');
-  const progressMap = new Map();
+  window.inventorySocket = socket;
+  const progressMap = new Map(); // steamid -> {el, bar, eta, total, startTime}
 
   socket.on('connect', () => {
     console.log('✅ Socket.IO connected');
@@ -15,19 +16,14 @@
     barWrap.className = 'user-progress';
     const inner = document.createElement('div');
     inner.className = 'progress-inner';
-    const label = document.createElement('span');
-    label.className = 'progress-label';
-    label.textContent = '0%';
+    inner.id = 'progress-' + steamid;
+    const eta = document.createElement('span');
+    eta.className = 'eta-label';
+    eta.id = 'eta-' + steamid;
     barWrap.appendChild(inner);
-    barWrap.appendChild(label);
+    barWrap.appendChild(eta);
     card.appendChild(barWrap);
-    progressMap.set(String(steamid), {
-      el: barWrap,
-      bar: inner,
-      label,
-      total: 0,
-      count: 0
-    });
+    progressMap.set(String(steamid), { el: barWrap, bar: inner, eta });
   }
 
   function insertUserPlaceholder(id) {
@@ -43,6 +39,17 @@
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     div.appendChild(spinner);
+    const barWrap = document.createElement('div');
+    barWrap.className = 'user-progress';
+    const inner = document.createElement('div');
+    inner.className = 'progress-inner';
+    inner.id = 'progress-' + id;
+    const eta = document.createElement('span');
+    eta.className = 'eta-label';
+    eta.id = 'eta-' + id;
+    barWrap.appendChild(inner);
+    barWrap.appendChild(eta);
+    div.appendChild(barWrap);
     container.appendChild(div);
   }
 
@@ -86,7 +93,7 @@
 
   function createItemElement(data) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'item-wrapper fade-in';
+    wrapper.className = 'item-wrapper fade-in-item';
 
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -212,8 +219,36 @@
     }
     if (p) {
       p.total = data.total || 0;
+      p.startTime = Date.now();
       p.bar.style.width = '0%';
-      p.label.textContent = `0% (0/${p.total})`;
+      p.bar.textContent = `0 / ${p.total}`;
+      if (p.eta) p.eta.textContent = '';
+    }
+  });
+
+  function formatEta(ms) {
+    if (!ms || ms <= 0) return '';
+    const sec = Math.ceil(ms / 1000);
+    const m = Math.floor(sec / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = Math.floor(sec % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  socket.on('progress', data => {
+    const p = progressMap.get(String(data.steamid));
+    if (!p) return;
+    const pct = (data.processed / data.total) * 100;
+    p.bar.style.width = pct + '%';
+    p.bar.textContent = `${data.processed} / ${data.total}`;
+    if (p.eta && data.processed > 0) {
+      const elapsed = Date.now() - (p.startTime || Date.now());
+      const avg = elapsed / data.processed;
+      const remain = (data.total - data.processed) * avg;
+      p.eta.textContent = formatEta(remain);
     }
   });
 
@@ -222,14 +257,6 @@
     if (!container) return;
     const el = createItemElement(data);
     container.appendChild(el);
-    const p = progressMap.get(String(data.steamid));
-    if (p) {
-      p.count += 1;
-      const total = p.total || p.count;
-      const pct = Math.round((p.count / total) * 100);
-      p.bar.style.width = pct + '%';
-      p.label.textContent = `${pct}% (${p.count}/${total})`;
-    }
     if (window.attachItemModal) {
       window.attachItemModal();
     } else if (window.attachHandlers) {
@@ -316,11 +343,12 @@
     const p = progressMap.get(String(data.steamid));
     if (p) {
       p.bar.style.width = '100%';
-      p.label.textContent = `Done (${p.count}/${p.total})`;
+      p.bar.textContent = data.status === 'parsed' ? 'Done' : 'Failed';
+      if (p.eta) p.eta.textContent = '';
       setTimeout(() => {
         p.el.classList.add('fade-out');
         setTimeout(() => p.el.remove(), 600);
-      }, 1500);
+      }, 4000);
       progressMap.delete(String(data.steamid));
     }
   });
