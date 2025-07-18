@@ -218,6 +218,8 @@
     const card = document.getElementById('user-' + data.steamid);
     if (card) {
       card.classList.remove('loading');
+      const spin = card.querySelector('.loading-spinner');
+      if (spin) spin.remove();
       const container = card.querySelector('.inventory-container');
       if (container && !card.querySelector('.sort-value-btn')) {
         const body = card.querySelector('.card-body');

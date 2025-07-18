@@ -3,6 +3,10 @@ function createPlaceholder(id) {
   ph.id = 'user-' + id;
   ph.dataset.steamid = id;
   ph.className = 'user-card user-box loading';
+  const spinner = document.createElement('div');
+  spinner.className = 'loading-spinner';
+  spinner.setAttribute('aria-label', 'Loading');
+  ph.appendChild(spinner);
   return ph;
 }
 
@@ -71,7 +75,7 @@ function handleSubmit(e) {
   ids.forEach(id => {
     const ph = createPlaceholder(id);
     container.appendChild(ph);
-    if (window.startInventoryFetch) {
+    if (window.io && window.startInventoryFetch) {
       window.startInventoryFetch(id);
     } else {
       fetchUserCard(id);
