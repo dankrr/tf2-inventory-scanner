@@ -196,7 +196,7 @@
     }
     if (p) {
       p.total = data.total || 0;
-      p.bar.style.setProperty('--progress-width', '0%');
+      p.bar.style.width = '0%';
       p.label.textContent = `0% (0/${p.total})`;
     }
   });
@@ -211,7 +211,7 @@
       p.count += 1;
       const total = p.total || p.count;
       const pct = Math.round((p.count / total) * 100);
-      p.bar.style.setProperty('--progress-width', pct + '%');
+      p.bar.style.width = pct + '%';
       p.label.textContent = `${pct}% (${p.count}/${total})`;
     }
     if (window.attachItemModal) {
@@ -299,13 +299,12 @@
 
     const p = progressMap.get(String(data.steamid));
     if (p) {
-      p.bar.style.setProperty('--progress-width', '100%');
-      p.label.textContent = 'Done';
-      p.el.classList.add('complete');
+      p.bar.style.width = '100%';
+      p.label.textContent = `Done (${p.count}/${p.total})`;
       setTimeout(() => {
-        p.el.style.opacity = '0';
-        setTimeout(() => p.el.remove(), 500);
-      }, 800);
+        p.el.classList.add('fade-out');
+        setTimeout(() => p.el.remove(), 600);
+      }, 1500);
       progressMap.delete(String(data.steamid));
     }
   });
