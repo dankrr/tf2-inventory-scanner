@@ -1,5 +1,6 @@
-<div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}"
-     style="--quality-color: {{ item.quality_color }}; border-color: {{ item.quality_color }};"
+<div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.border_color and item.border_color != item.quality_color %} elevated-strange{% endif %}"
+     style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
+     {% if item.border_color and item.border_color != item.quality_color %}title="Has Strange tracking"{% endif %}
      data-item='{{ item|tojson|safe }}'
      data-craftable="{{ 'true' if item.craftable else 'false' }}">
   <div class="item-badges">
@@ -69,7 +70,7 @@
   {% endif %}
   {% set quality = item.quality %}
   {% if not item.is_australium %}
-    {% if item.strange or quality == 'Strange' %}
+    {% if quality == 'Strange' %}
       {% set _ = title_parts.append('Strange') %}
     {% elif quality and quality not in ('Unique', 'Normal', 'Decorated Weapon') %}
       {% if not (quality == 'Unusual' and item.unusual_effect_id) %}

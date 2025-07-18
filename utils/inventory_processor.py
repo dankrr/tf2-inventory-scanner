@@ -118,6 +118,12 @@ QUALITY_MAP = {
     15: ("Decorated Weapon", "#949494"),
 }
 
+# Quality ID used for Strange items
+STRANGE_QUALITY_ID = 11
+
+# Qualities that shouldn't get a Strange border
+DEFAULT_QUALITIES = {"Strange", "Unique", "Normal"}
+
 # effect_id -> name mapping loaded from ``local_data``
 EFFECTS_MAP: Dict[int, str] = {
     int(k): v for k, v in getattr(local_data, "EFFECT_NAMES", {}).items()
@@ -1150,6 +1156,11 @@ def _process_item(
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
+    if kill_eater_counts.get(1) is not None and q_name not in DEFAULT_QUALITIES:
+        border_color = QUALITY_MAP[STRANGE_QUALITY_ID][1]
+    else:
+        border_color = q_col
+
     ks_tool_info = _extract_killstreak_tool_info(asset)
     include_stack_key = False
     stack_key = None
@@ -1256,6 +1267,7 @@ def _process_item(
         "is_australium": bool(is_australium),
         "quality": q_name,
         "quality_color": q_col,
+        "border_color": border_color,
         "image_url": image_url,
         "item_type_name": schema_entry.get("item_type_name"),
         "item_name": schema_entry.get("name"),
