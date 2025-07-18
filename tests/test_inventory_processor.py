@@ -1302,7 +1302,6 @@ def test_skin_with_statclock(monkeypatch):
     }
     ld.ITEMS_BY_DEFINDEX = {
         555: {"item_name": "Cool Skin", "image_url": ""},
-        5813: {"image_url": "https://example.com/statclock.png"},
     }
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 11: "Strange"}
     items = ip.enrich_inventory(data)
@@ -1310,7 +1309,10 @@ def test_skin_with_statclock(monkeypatch):
     assert "(Strange)" in item["display_name"]
     assert any(b["type"] == "statclock" for b in item["badges"])
     assert item["has_strange_tracking"] is True
-    assert item["statclock_badge"] == "https://example.com/statclock.png"
+    assert item["statclock_badge"] == (
+        "http://media.steampowered.com/apps/440/icons/"
+        "stattrack.fea7f754b9ab447df18af382036d7d93ed97aca9.png"
+    )
 
 
 def test_decorated_border_color_with_statclock(monkeypatch):
@@ -1325,7 +1327,6 @@ def test_decorated_border_color_with_statclock(monkeypatch):
     }
     ld.ITEMS_BY_DEFINDEX = {
         888: {"item_name": "Fancy Decorated", "image_url": ""},
-        5813: {"image_url": "https://example.com/statclock.png"},
     }
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 11: "Strange"}
     items = ip.enrich_inventory(data)

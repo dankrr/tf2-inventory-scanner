@@ -1267,7 +1267,10 @@ def _process_item(
             display_name = f"{display_name} (StatTrak\u2122)"
         else:
             display_name = f"{display_name} (Strange)"
-        stat_clock_img = local_data.ITEMS_BY_DEFINDEX.get(5813, {}).get("image_url")
+        stat_clock_img = (
+            "http://media.steampowered.com/apps/440/icons/"
+            "stattrack.fea7f754b9ab447df18af382036d7d93ed97aca9.png"
+        )
         if stat_clock_img:
             badges.insert(
                 0,
