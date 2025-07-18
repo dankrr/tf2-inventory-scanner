@@ -39,7 +39,7 @@ async def main() -> None:
     config = Config()
     config.bind = [f"0.0.0.0:{port}"]
     config.use_reloader = not ARGS.test
-    await serve(socketio.asgi_app, config)
+    await serve(socketio.server, config)
 
 
 if __name__ == "__main__":

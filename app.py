@@ -57,14 +57,8 @@ TEST_API_RESULTS_DIR: Path | None = None
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
-try:
-    socketio = SocketIO(async_mode="asgi")
-    socketio.init_app(app)
-except ValueError:  # fall back when asgi driver unavailable
-    socketio = SocketIO(async_mode="threading")
-    socketio.init_app(app)
-    if not hasattr(socketio, "asgi_app"):
-        socketio.asgi_app = socketio.sockio_mw.engineio_app
+socketio = SocketIO(async_mode="asgi")
+socketio.init_app(app)
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
