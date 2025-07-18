@@ -761,18 +761,18 @@ footer {
 
 .user-progress {
   position: relative;
-  height: 8px;
+  height: 6px;
   background: #333;
   border-radius: 4px;
-  margin-top: 6px;
+  margin-top: 8px;
   overflow: hidden;
 }
 
 .user-progress .progress-inner {
   height: 100%;
-  width: 0;
+  width: 0%;
   background: #4caf50;
-  transition: width 0.2s;
+  transition: width 0.3s;
 }
 
 .user-progress .progress-label {
@@ -781,6 +781,8 @@ footer {
   width: 100%;
   text-align: center;
   font-size: 0.75rem;
+  color: #ccc;
+  margin-left: 8px;
 }
 
 .sort-value-btn {
