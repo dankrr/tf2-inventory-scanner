@@ -108,14 +108,14 @@ def _get_attr_class(idx: Any) -> str | None:
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
     0: ("Normal", "#7f7f7f"),
-    1: ("Genuine", "#273429"),
-    3: ("Vintage", "#28344a"),
-    5: ("Unusual", "#4f3363"),
-    6: ("Unique", "#957e04"),
-    11: ("Strange", "#7a4121"),
+    1: ("Genuine", "#4D7455"),
+    3: ("Vintage", "#476291"),
+    5: ("Unusual", "#8650AC"),
+    6: ("Unique", "#FFD700"),
+    11: ("Strange", "#CF6A32"),
     13: ("Haunted", "#0c8657"),
-    14: ("Collector's", "#1c0101"),
-    15: ("Decorated Weapon", "#949494"),
+    14: ("Collector's", "#AA0000"),
+    15: ("Decorated Weapon", "#FAFAFA"),
 }
 
 # Quality ID used for Strange items
@@ -1158,8 +1158,10 @@ def _process_item(
 
     has_strange_tracking = kill_eater_counts.get(1) is not None
 
-    # Border color should always match the item's quality
-    border_color = q_col
+    if has_strange_tracking:
+        border_color = QUALITY_MAP[STRANGE_QUALITY_ID][1]
+    else:
+        border_color = q_col
 
     ks_tool_info = _extract_killstreak_tool_info(asset)
     include_stack_key = False

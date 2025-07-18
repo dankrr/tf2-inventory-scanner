@@ -33,7 +33,7 @@ def test_enrich_inventory():
     items = ip.enrich_inventory(data)
     assert items[0]["name"] == "Strange Rocket Launcher"
     assert items[0]["quality"] == "Strange"
-    assert items[0]["quality_color"] == "#7a4121"
+    assert items[0]["quality_color"] == "#CF6A32"
     assert items[0]["image_url"].startswith(
         "https://steamcommunity-a.akamaihd.net/economy/image/"
     )
@@ -795,7 +795,7 @@ def test_border_color_for_elevated_strange(monkeypatch):
     item = items[0]
     assert item["quality"] == "Genuine"
     assert item["strange_count"] == 5
-    assert item["border_color"] == ip.QUALITY_MAP[1][1]
+    assert item["border_color"] == ip.QUALITY_MAP[11][1]
 
 
 def test_border_color_for_strange_unusual(monkeypatch):
@@ -816,7 +816,7 @@ def test_border_color_for_strange_unusual(monkeypatch):
     item = items[0]
     assert item["quality"] == "Unusual"
     assert item["strange_count"] == 3
-    assert item["border_color"] == ip.QUALITY_MAP[5][1]
+    assert item["border_color"] == ip.QUALITY_MAP[11][1]
     assert item["quality_color"] == ip.QUALITY_MAP[5][1]
 
 
@@ -838,7 +838,7 @@ def test_border_color_for_strange_collectors(monkeypatch):
     item = items[0]
     assert item["quality"] == "Collector's"
     assert item["strange_count"] == 7
-    assert item["border_color"] == ip.QUALITY_MAP[14][1]
+    assert item["border_color"] == ip.QUALITY_MAP[11][1]
     assert item["quality_color"] == ip.QUALITY_MAP[14][1]
 
 
@@ -1331,7 +1331,7 @@ def test_decorated_border_color_with_statclock(monkeypatch):
     items = ip.enrich_inventory(data)
     item = items[0]
     assert item["has_strange_tracking"] is True
-    assert item["border_color"] == ip.QUALITY_MAP[15][1]
+    assert item["border_color"] == ip.QUALITY_MAP[11][1]
 
 
 def test_extract_wear_attr_749(monkeypatch):
