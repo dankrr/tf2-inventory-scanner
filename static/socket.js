@@ -222,35 +222,73 @@
       card.classList.remove('loading');
       const spin = card.querySelector('.loading-spinner');
       if (spin) spin.remove();
-      const container = card.querySelector('.inventory-container');
-      if (container && !card.querySelector('.sort-value-btn')) {
+
+      const header = card.querySelector('.card-header');
+      if (header) {
+        let pill = header.querySelector('.status-pill');
+        if (!pill) {
+          pill = document.createElement('span');
+          pill.className = 'status-pill';
+          header.appendChild(pill);
+        }
+        if (data.status === 'parsed') {
+          pill.className = 'status-pill parsed';
+          pill.innerHTML = '<i class="fa-solid fa-check"></i>';
+        } else {
+          pill.className = 'status-pill failed';
+          pill.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        }
+      }
+
+      if (data.status !== 'parsed') {
         const body = card.querySelector('.card-body');
-        if (body) {
-          const btn = document.createElement('button');
-          btn.className = 'sort-value-btn';
-          btn.type = 'button';
-          btn.textContent = 'Sort by Value';
-          btn.addEventListener('click', () => {
-            const wrappers = Array.from(container.querySelectorAll('.item-wrapper'));
-            wrappers.sort((a, b) => {
-              const da = a.querySelector('.item-card')?.dataset.item;
-              const db = b.querySelector('.item-card')?.dataset.item;
-              let va = 0;
-              let vb = 0;
-              if (da) {
-                try { va = JSON.parse(da).price?.value_raw || 0; } catch (e) {}
-              }
-              if (db) {
-                try { vb = JSON.parse(db).price?.value_raw || 0; } catch (e) {}
-              }
-              return vb - va;
+        if (body && !card.querySelector('.error-banner')) {
+          const msg = document.createElement('div');
+          msg.className = 'error-banner';
+          msg.textContent =
+            data.status === 'private'
+              ? 'Inventory private'
+              : 'Inventory unavailable';
+          body.insertBefore(msg, body.firstChild);
+        }
+      } else {
+        const container = card.querySelector('.inventory-container');
+        if (container && !card.querySelector('.sort-value-btn')) {
+          const body = card.querySelector('.card-body');
+          if (body) {
+            const btn = document.createElement('button');
+            btn.className = 'sort-value-btn';
+            btn.type = 'button';
+            btn.textContent = 'Sort by Value';
+            btn.addEventListener('click', () => {
+              const wrappers = Array.from(
+                container.querySelectorAll('.item-wrapper')
+              );
+              wrappers.sort((a, b) => {
+                const da = a.querySelector('.item-card')?.dataset.item;
+                const db = b.querySelector('.item-card')?.dataset.item;
+                let va = 0;
+                let vb = 0;
+                if (da) {
+                  try {
+                    va = JSON.parse(da).price?.value_raw || 0;
+                  } catch (e) {}
+                }
+                if (db) {
+                  try {
+                    vb = JSON.parse(db).price?.value_raw || 0;
+                  } catch (e) {}
+                }
+                return vb - va;
+              });
+              wrappers.forEach(w => container.appendChild(w));
             });
-            wrappers.forEach(w => container.appendChild(w));
-          });
-          body.insertBefore(btn, body.firstChild);
+            body.insertBefore(btn, body.firstChild);
+          }
         }
       }
     }
+
     const p = progressMap.get(String(data.steamid));
     if (p) {
       p.bar.style.width = '100%';

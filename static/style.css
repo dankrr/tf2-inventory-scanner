@@ -796,3 +796,9 @@ footer {
   font-size: 0.8rem;
 }
 
+.error-banner {
+  color: #ffaaaa;
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
