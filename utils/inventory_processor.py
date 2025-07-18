@@ -108,14 +108,14 @@ def _get_attr_class(idx: Any) -> str | None:
 # Map of quality ID to (name, background color)
 QUALITY_MAP = {
     0: ("Normal", "#7f7f7f"),
-    1: ("Genuine", "#273429"),
-    3: ("Vintage", "#28344a"),
-    5: ("Unusual", "#4f3363"),
-    6: ("Unique", "#957e04"),
-    11: ("Strange", "#7a4121"),
+    1: ("Genuine", "#4D7455"),
+    3: ("Vintage", "#476291"),
+    5: ("Unusual", "#8650AC"),
+    6: ("Unique", "#FFD700"),
+    11: ("Strange", "#CF6A32"),
     13: ("Haunted", "#0c8657"),
-    14: ("Collector's", "#1c0101"),
-    15: ("Decorated Weapon", "#949494"),
+    14: ("Collector's", "#AA0000"),
+    15: ("Decorated Weapon", "#FAFAFA"),
 }
 
 # Quality ID used for Strange items
@@ -1156,7 +1156,9 @@ def _process_item(
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
-    if kill_eater_counts.get(1) is not None and q_name not in DEFAULT_QUALITIES:
+    has_strange_tracking = kill_eater_counts.get(1) is not None
+
+    if has_strange_tracking:
         border_color = QUALITY_MAP[STRANGE_QUALITY_ID][1]
     else:
         border_color = q_col
@@ -1245,9 +1247,10 @@ def _process_item(
             }
         )
     if warpaintable and paintkit_id is not None:
+        warpaint_icon = local_data.ITEMS_BY_DEFINDEX.get(5813, {}).get("image_url")
         badges.append(
             {
-                "icon": "\U0001f58c",
+                "icon_url": warpaint_icon,
                 "title": f"Warpaint: {paintkit_name}",
                 "label": paintkit_name,
                 "type": "warpaint",
@@ -1256,6 +1259,24 @@ def _process_item(
 
     if warpaint_tool or (warpaintable and paintkit_id is not None):
         display_name = resolved_name
+
+    has_statclock = has_strange_tracking and quality_id == 15
+    stat_clock_img = None
+    if has_statclock:
+        if warpaint_tool:
+            display_name = f"{display_name} (StatTrak\u2122)"
+        else:
+            display_name = f"{display_name} (Strange)"
+        stat_clock_img = local_data.ITEMS_BY_DEFINDEX.get(5813, {}).get("image_url")
+        if stat_clock_img:
+            badges.insert(
+                0,
+                {
+                    "icon_url": stat_clock_img,
+                    "type": "statclock",
+                    "title": "StatTrak\u2122",
+                },
+            )
 
     item = {
         "id": asset.get("id"),
@@ -1344,6 +1365,8 @@ def _process_item(
         "killstreak_effect": ks_effect,
         "spells": spells,
         "badges": badges,  # always present, may be empty
+        "has_strange_tracking": has_strange_tracking,
+        "statclock_badge": stat_clock_img,
         "strange_parts": strange_parts,
         "strange_count": kill_eater_counts.get(1),
         "score_type": (

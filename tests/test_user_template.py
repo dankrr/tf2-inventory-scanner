@@ -259,7 +259,8 @@ def test_elevated_strange_class_rendered(app):
                     "name": "Gadget",
                     "image_url": "",
                     "quality_color": "#00ff00",
-                    "border_color": "#7a4121",
+                    "border_color": "#CF6A32",
+                    "has_strange_tracking": True,
                 }
             ]
         }
