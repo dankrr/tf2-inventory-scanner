@@ -165,6 +165,8 @@
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
     <script src="{{ url_for('static', filename='submit.js') }}"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {

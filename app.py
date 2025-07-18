@@ -13,6 +13,7 @@ from types import SimpleNamespace
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, jsonify
+from flask_socketio import SocketIO, emit
 from utils.steam_api_client import extract_steam_ids
 import utils.inventory_processor as ip
 
@@ -56,6 +57,14 @@ TEST_API_RESULTS_DIR: Path | None = None
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
+try:
+    socketio = SocketIO(async_mode="asgi")
+    socketio.init_app(app)
+except ValueError:  # fall back when asgi driver unavailable
+    socketio = SocketIO(async_mode="threading")
+    socketio.init_app(app)
+    if not hasattr(socketio, "asgi_app"):
+        socketio.asgi_app = socketio.sockio_mw.engineio_app
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -389,6 +398,39 @@ async def _setup_test_mode() -> None:
     app.config["TEST_STEAMID"] = steamid
 
 
+@socketio.on("start_fetch", namespace="/inventory")
+async def handle_start_fetch(data: Dict[str, Any]) -> None:
+    """Stream inventory items for a single Steam user."""
+
+    steamid = data.get("steamid") if isinstance(data, dict) else None
+    if not isinstance(steamid, str):
+        emit("done", {"steamid": steamid, "status": "invalid"})
+        return
+    try:
+        steamid64 = sac.convert_to_steam64(steamid)
+    except ValueError:
+        emit("done", {"steamid": steamid, "status": "invalid"})
+        return
+
+    status, raw = await sac.fetch_inventory_async(steamid64)
+    if status != "parsed":
+        emit("done", {"steamid": steamid64, "status": status})
+        return
+
+    total = len(raw.get("items") or [])
+    emit("info", {"steamid": steamid64, "total": total})
+
+    if not local_data.ITEMS_BY_DEFINDEX:
+        await fetch_missing_cache_files()
+        local_data.load_files(auto_refetch=False)
+
+    async for item in ip.process_inventory_streaming(raw):
+        item["steamid"] = steamid64
+        emit("item", item)
+
+    emit("done", {"steamid": steamid64, "status": status})
+
+
 @app.post("/retry/<int:steamid64>")
 async def retry_single(steamid64: int):
     """Reprocess a single user and return a rendered snippet."""
@@ -497,6 +539,12 @@ if __name__ == "__main__":
         kill_process_on_port(port)
         if TEST_MODE:
             await _setup_test_mode()
-        app.run(host="0.0.0.0", port=port, debug=True, use_reloader=not TEST_MODE)
+        socketio.run(
+            app,
+            host="0.0.0.0",
+            port=port,
+            debug=True,
+            use_reloader=not TEST_MODE,
+        )
 
     asyncio.run(_main())

@@ -71,7 +71,11 @@ function handleSubmit(e) {
   ids.forEach(id => {
     const ph = createPlaceholder(id);
     container.appendChild(ph);
-    fetchUserCard(id);
+    if (window.startInventoryFetch) {
+      window.startInventoryFetch(id);
+    } else {
+      fetchUserCard(id);
+    }
   });
   const results = document.getElementById('results');
   if (results) {
