@@ -29,6 +29,8 @@ COLOR_YELLOW = "\033[33m"
 COLOR_RESET = "\033[0m"
 
 load_dotenv()
+# ENABLE_SECRET=true  # enable sessions (default)
+# SECRET_KEY=mysecret # optional, defaults to "dev-secret-key"
 if not os.getenv("STEAM_API_KEY"):
     raise ValueError(
         "Required env var missing: STEAM_API_KEY. Make sure you have a .env file or export it."
@@ -62,6 +64,12 @@ app = Quart(__name__, static_folder=None)
 app.config.setdefault("PROVIDE_AUTOMATIC_OPTIONS", True)
 app.static_folder = "static"
 app.add_url_rule("/static/<path:filename>", "static", app.send_static_file)
+
+enable_secret = os.getenv("ENABLE_SECRET", "true").lower() == "true"
+if enable_secret:
+    app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
+else:
+    print("\u26a0 Sessions are disabled because ENABLE_SECRET=false", flush=True)
 
 # Socket.IO runs in ASGI mode with Quart.
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
@@ -513,13 +521,14 @@ async def index():
         ids = [sac.convert_to_steam64(t) for t in raw_ids]
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if ids:
-            if invalid:
+            if invalid and app.secret_key:
                 await flash(f"Ignored {len(invalid)} invalid input(s).")
             users, failed_ids = await fetch_and_process_many(ids)
         else:
-            await flash(
-                "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
-            )
+            if app.secret_key:
+                await flash(
+                    "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
+                )
             return await render_template(
                 "index.html",
                 users=users,

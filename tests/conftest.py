@@ -15,6 +15,8 @@ def app(monkeypatch):
 
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
+    monkeypatch.setenv("ENABLE_SECRET", "true")
+    monkeypatch.setenv("SECRET_KEY", "test-key")
     monkeypatch.setattr("utils.local_data.load_files", lambda *a, **k: ({}, {}))
     monkeypatch.setattr(
         "utils.price_loader.ensure_prices_cached",
@@ -31,7 +33,6 @@ def app(monkeypatch):
 
     mod = importlib.import_module("app")
     importlib.reload(mod)
-    mod.app.secret_key = "test"
     return mod.app
 
 
