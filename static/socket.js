@@ -30,6 +30,22 @@
     });
   }
 
+  function insertUserPlaceholder(id) {
+    const container = document.getElementById('user-container');
+    if (!container || document.getElementById('user-' + id)) return;
+    const div = document.createElement('div');
+    div.id = 'user-' + id;
+    div.className = 'user-card loading';
+    div.innerHTML =
+      '<div class="card-header">' +
+      id +
+      '</div><div class="card-body"><div class="inventory-container"></div></div>';
+    const spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    div.appendChild(spinner);
+    container.appendChild(div);
+  }
+
   function createBadge(badge, data) {
     if (badge.type === 'statclock' || badge.icon === '\u{1f3a8}') {
       return null;
@@ -310,6 +326,7 @@
   });
 
   window.startInventoryFetch = function (steamid) {
+    insertUserPlaceholder(steamid);
     insertProgressBar(steamid);
     socket.emit('start_fetch', { steamid });
   };
