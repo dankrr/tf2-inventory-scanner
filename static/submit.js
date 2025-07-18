@@ -3,6 +3,10 @@ function createPlaceholder(id) {
   ph.id = 'user-' + id;
   ph.dataset.steamid = id;
   ph.className = 'user-card user-box loading';
+  ph.innerHTML =
+    '<div class="card-header">' +
+    id +
+    '</div><div class="card-body"><div class="inventory-container"></div></div>';
   const spinner = document.createElement('div');
   spinner.className = 'loading-spinner';
   spinner.setAttribute('aria-label', 'Loading');
