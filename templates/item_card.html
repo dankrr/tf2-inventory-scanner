@@ -1,6 +1,6 @@
-<div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.border_color and item.border_color != item.quality_color %} elevated-strange{% endif %}"
+<div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
      style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
-     {% if item.border_color and item.border_color != item.quality_color %}title="Has Strange tracking"{% endif %}
+     {% if item.has_strange_tracking %}title="Has Strange tracking"{% endif %}
      data-item='{{ item|tojson|safe }}'
      data-craftable="{{ 'true' if item.craftable else 'false' }}">
   <div class="item-badges">
@@ -11,7 +11,7 @@
       <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
     {% endif %}
       {% for badge in item.badges %}
-        {% if badge.icon != '🎨' %}
+        {% if badge.type != 'statclock' and badge.icon != '🎨' %}
           {% if badge.type == 'killstreak' %}
             <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
               <span class="chevron-icon"
@@ -22,6 +22,8 @@
                 {% endif %}
               >{{ badge.icon }}</span>
             </span>
+          {% elif badge.icon_url %}
+            <img src="{{ badge.icon_url }}" class="badge-icon" alt="" title="{{ badge.title }}">
           {% else %}
             <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
           {% endif %}
@@ -30,6 +32,9 @@
   </div>
   {% if item.quantity and item.quantity > 1 %}
     <span class="item-qty">x{{ item.quantity }}</span>
+  {% endif %}
+  {% if item.statclock_badge %}
+    <img src="{{ item.statclock_badge }}" class="statclock-badge" alt="StatTrak™" title="StatTrak™ Active">
   {% endif %}
   {% if item.unusual_effect_id %}
     <img

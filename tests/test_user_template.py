@@ -260,6 +260,7 @@ def test_elevated_strange_class_rendered(app):
                     "image_url": "",
                     "quality_color": "#00ff00",
                     "border_color": "#7a4121",
+                    "has_strange_tracking": True,
                 }
             ]
         }

@@ -318,6 +318,19 @@ button {
 .item-badges .badge{
   filter:drop-shadow(0 0 2px #0008);
 }
+.badge-icon {
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 0 2px #0008);
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .badge-icon {
+    width: 12px;
+    height: 12px;
+  }
+}
 .badge[data-icon="⚔"]{
   color:#ff7e30;
   filter:drop-shadow(0 0 3px #ff7e30);
@@ -342,7 +355,6 @@ button {
   background-clip: text;
   color: transparent;
 }
-.badge[data-icon="🖌"],
 .badge[data-icon="👣"],
 .badge[data-icon="🎤"],
 .badge[data-icon="🗣️"],
@@ -713,9 +725,29 @@ footer {
   vertical-align: middle;
 }
 
+.statclock-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  z-index: 3;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .statclock-badge {
+    width: 12px;
+    height: 12px;
+    top: 3px;
+    left: 3px;
+  }
+}
+
 .item-card.elevated-strange {
   position: relative;
-  box-shadow: 0 0 6px rgba(122, 65, 33, 0.7);
+  box-shadow: 0 0 6px rgba(122, 65, 33, 0.6);
   border-width: 3px;
   animation: strangePulse 2s infinite ease-in-out;
 }
@@ -723,9 +755,9 @@ footer {
 @keyframes strangePulse {
   0%,
   100% {
-    box-shadow: 0 0 6px rgba(122, 65, 33, 0.7);
+    box-shadow: 0 0 6px rgba(122, 65, 33, 0.6);
   }
   50% {
-    box-shadow: 0 0 12px rgba(122, 65, 33, 0.9);
+    box-shadow: 0 0 12px rgba(122, 65, 33, 1);
   }
 }

@@ -307,7 +307,8 @@ def test_paint_and_paintkit_badges(monkeypatch):
         ]
     }
     ld.ITEMS_BY_DEFINDEX = {
-        9000: {"item_name": "Painted", "image_url": "", "craft_class": "weapon"}
+        9000: {"item_name": "Painted", "image_url": "", "craft_class": "weapon"},
+        5813: {"image_url": "https://example.com/statclock.png"},
     }
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     monkeypatch.setattr(ld, "PAINT_NAMES", {"3100495": "Test Paint"}, False)
@@ -324,7 +325,7 @@ def test_paint_and_paintkit_badges(monkeypatch):
         "type": "paint",
     } in badges
     assert {
-        "icon": "\U0001f58c",
+        "icon_url": "https://example.com/statclock.png",
         "title": "Warpaint: Test Kit",
         "label": "Test Kit",
         "type": "warpaint",
@@ -794,7 +795,7 @@ def test_border_color_for_elevated_strange(monkeypatch):
     item = items[0]
     assert item["quality"] == "Genuine"
     assert item["strange_count"] == 5
-    assert item["border_color"] == ip.QUALITY_MAP[ip.STRANGE_QUALITY_ID][1]
+    assert item["border_color"] == ip.QUALITY_MAP[1][1]
 
 
 def test_border_color_for_strange_unusual(monkeypatch):
@@ -815,7 +816,7 @@ def test_border_color_for_strange_unusual(monkeypatch):
     item = items[0]
     assert item["quality"] == "Unusual"
     assert item["strange_count"] == 3
-    assert item["border_color"] == ip.QUALITY_MAP[ip.STRANGE_QUALITY_ID][1]
+    assert item["border_color"] == ip.QUALITY_MAP[5][1]
     assert item["quality_color"] == ip.QUALITY_MAP[5][1]
 
 
@@ -837,7 +838,7 @@ def test_border_color_for_strange_collectors(monkeypatch):
     item = items[0]
     assert item["quality"] == "Collector's"
     assert item["strange_count"] == 7
-    assert item["border_color"] == ip.QUALITY_MAP[ip.STRANGE_QUALITY_ID][1]
+    assert item["border_color"] == ip.QUALITY_MAP[14][1]
     assert item["quality_color"] == ip.QUALITY_MAP[14][1]
 
 
@@ -1287,6 +1288,50 @@ def test_skin_attribute_order(monkeypatch):
     assert item["wear_name"] == "Factory New"
     assert item["display_name"] == "Warhawk Flamethrower"
     assert item["wear_float"] == 0.04
+
+
+def test_skin_with_statclock(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 555,
+                "quality": 15,
+                "attributes": [{"defindex": 214, "value": 42}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        555: {"item_name": "Cool Skin", "image_url": ""},
+        5813: {"image_url": "https://example.com/statclock.png"},
+    }
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert "(Strange)" in item["display_name"]
+    assert any(b["type"] == "statclock" for b in item["badges"])
+    assert item["has_strange_tracking"] is True
+    assert item["statclock_badge"] == "https://example.com/statclock.png"
+
+
+def test_decorated_border_color_with_statclock(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 888,
+                "quality": 15,
+                "attributes": [{"defindex": 214, "value": 99}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        888: {"item_name": "Fancy Decorated", "image_url": ""},
+        5813: {"image_url": "https://example.com/statclock.png"},
+    }
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["has_strange_tracking"] is True
+    assert item["border_color"] == ip.QUALITY_MAP[15][1]
 
 
 def test_extract_wear_attr_749(monkeypatch):
