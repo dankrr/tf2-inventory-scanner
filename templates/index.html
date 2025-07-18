@@ -167,28 +167,6 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/static/socket.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('scan-form');
-        if (!form) return;
-        form.addEventListener('submit', e => {
-          e.preventDefault();
-          const ids = (form.steamids.value || '')
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
-          const container = document.getElementById('user-container');
-          if (container) container.innerHTML = '';
-          ids.forEach(id => {
-            if (window.startInventoryFetch) {
-              window.startInventoryFetch(id);
-            }
-          });
-          const results = document.getElementById('results');
-          if (results) results.classList.add('show');
-        });
-      });
-    </script>
-    <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
           const container = wrapper.querySelector('.inventory-container');

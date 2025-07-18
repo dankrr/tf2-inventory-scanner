@@ -77,11 +77,11 @@ function handleSubmit(e) {
   const text = document.getElementById('steamids').value || '';
   const ids = extractSteamIds(text);
   ids.forEach(id => {
-    const ph = createPlaceholder(id);
-    container.appendChild(ph);
-    if (window.io && window.startInventoryFetch) {
+    if (window.startInventoryFetch) {
       window.startInventoryFetch(id);
     } else {
+      const ph = createPlaceholder(id);
+      container.appendChild(ph);
       fetchUserCard(id);
     }
   });
