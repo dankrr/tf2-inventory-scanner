@@ -21,7 +21,7 @@ async def test_fetch_many_concurrent(monkeypatch, app):
 
     monkeypatch.setattr(mod, "build_user_data_async", fake_build)
 
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         start = time.perf_counter()
         results, failed = await mod.fetch_and_process_many(["1", "2", "3"])
         duration = time.perf_counter() - start
@@ -66,7 +66,7 @@ async def test_fetch_many_deduplicates(monkeypatch, app):
 
     monkeypatch.setattr(mod, "build_user_data_async", fake_build)
 
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         results, failed = await mod.fetch_and_process_many(["1", "1", "2", "2"])
 
     assert len(results) == 2

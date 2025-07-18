@@ -250,8 +250,9 @@ def test_unusual_taunt_effect_badge():
     assert "Silver Cyclone" in item["name"]
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("status", ["parsed", "incomplete", "private"])
-def test_user_template_safe(monkeypatch, status):
+async def test_user_template_safe(monkeypatch, status):
     monkeypatch.setenv("STEAM_API_KEY", "x")
     monkeypatch.setenv("BPTF_API_KEY", "x")
     monkeypatch.setattr(
@@ -289,8 +290,8 @@ def test_user_template_safe(monkeypatch, status):
         status=status,
     )
 
-    with app.app.app_context():
-        app.render_template("_user.html", user=user)
+    async with app.app.app_context():
+        await app.render_template("_user.html", user=user)
 
 
 def test_paint_and_paintkit_badges(monkeypatch):

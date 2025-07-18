@@ -2,7 +2,7 @@ import importlib
 from pathlib import Path
 
 import pytest
-from flask import render_template_string
+from quart import render_template_string
 from bs4 import BeautifulSoup
 
 HTML = '{% include "_user.html" %}'
@@ -49,14 +49,16 @@ def app(monkeypatch):
         {"user": {}},
     ],
 )
-def test_user_template_does_not_error(app, context):
-    with app.test_request_context():
+@pytest.mark.asyncio
+async def test_user_template_does_not_error(app, context):
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context.get("user", {}))
-        render_template_string(HTML, **context)
+        await render_template_string(HTML, **context)
 
 
-def test_user_template_renders_badge_icon(app):
+@pytest.mark.asyncio
+async def test_user_template_renders_badge_icon(app):
     context = {
         "user": {
             "items": [
@@ -68,14 +70,15 @@ def test_user_template_renders_badge_icon(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     assert "★" in html
 
 
-def test_user_template_renders_paint_spell_badge(app):
+@pytest.mark.asyncio
+async def test_user_template_renders_paint_spell_badge(app):
     context = {
         "user": {
             "items": [
@@ -87,14 +90,15 @@ def test_user_template_renders_paint_spell_badge(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     assert "🖌" in html
 
 
-def test_user_template_filters_hidden_items(app):
+@pytest.mark.asyncio
+async def test_user_template_filters_hidden_items(app):
     context = {
         "user": {
             "items": [
@@ -103,15 +107,16 @@ def test_user_template_filters_hidden_items(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     assert "Vis" in html
     assert "Hidden" not in html
 
 
-def test_unusual_effect_rendered(app):
+@pytest.mark.asyncio
+async def test_unusual_effect_rendered(app):
     context = {
         "user": {
             "items": [
@@ -130,10 +135,10 @@ def test_unusual_effect_rendered(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     title = soup.find("div", class_="item-name")
     assert title is not None
@@ -141,7 +146,8 @@ def test_unusual_effect_rendered(app):
     assert text == "Burning Flames Cap"
 
 
-def test_war_paint_tool_target_displayed(app):
+@pytest.mark.asyncio
+async def test_war_paint_tool_target_displayed(app):
     context = {
         "user": {
             "items": [
@@ -158,14 +164,15 @@ def test_war_paint_tool_target_displayed(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     assert "Rocket Launcher" in html
 
 
-def test_decorated_quality_not_shown(app):
+@pytest.mark.asyncio
+async def test_decorated_quality_not_shown(app):
     context = {
         "user": {
             "items": [
@@ -180,22 +187,23 @@ def test_decorated_quality_not_shown(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     title = soup.find("div", class_="item-name")
     assert title is not None
     assert title.text.strip() == "Warhawk Flamethrower"
 
 
-def test_failed_user_has_retry_class(app):
+@pytest.mark.asyncio
+async def test_failed_user_has_retry_class(app):
     context = {"user": {"steamid": "123", "status": "failed", "items": []}}
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     card = soup.find("div", {"data-steamid": "123"})
     assert card is not None
@@ -203,7 +211,8 @@ def test_failed_user_has_retry_class(app):
     assert "retry-card" in classes
 
 
-def test_trade_hold_class_rendered(app):
+@pytest.mark.asyncio
+async def test_trade_hold_class_rendered(app):
     context = {
         "user": {
             "items": [
@@ -216,10 +225,10 @@ def test_trade_hold_class_rendered(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     card = soup.find("div", class_="item-card")
     assert card is not None
@@ -227,7 +236,8 @@ def test_trade_hold_class_rendered(app):
     assert "trade-hold" in classes
 
 
-def test_uncraftable_class_rendered(app):
+@pytest.mark.asyncio
+async def test_uncraftable_class_rendered(app):
     context = {
         "user": {
             "items": [
@@ -240,10 +250,10 @@ def test_uncraftable_class_rendered(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     card = soup.find("div", class_="item-card")
     assert card is not None
@@ -251,7 +261,8 @@ def test_uncraftable_class_rendered(app):
     assert "uncraftable" in classes
 
 
-def test_elevated_strange_class_rendered(app):
+@pytest.mark.asyncio
+async def test_elevated_strange_class_rendered(app):
     context = {
         "user": {
             "items": [
@@ -265,10 +276,10 @@ def test_elevated_strange_class_rendered(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     card = soup.find("div", class_="item-card")
     assert card is not None
@@ -277,7 +288,8 @@ def test_elevated_strange_class_rendered(app):
     assert card.get("title") == "Has Strange tracking"
 
 
-def test_australium_name_omits_strange_prefix(app):
+@pytest.mark.asyncio
+async def test_australium_name_omits_strange_prefix(app):
     context = {
         "user": {
             "items": [
@@ -293,17 +305,18 @@ def test_australium_name_omits_strange_prefix(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     title = soup.find("div", class_="item-name")
     assert title is not None
     assert title.text.strip() == "Australium Scattergun"
 
 
-def test_professional_killstreak_australium_title(app):
+@pytest.mark.asyncio
+async def test_professional_killstreak_australium_title(app):
     context = {
         "user": {
             "items": [
@@ -320,10 +333,10 @@ def test_professional_killstreak_australium_title(app):
             ]
         }
     }
-    with app.test_request_context():
+    async with app.test_request_context("/"):
         app_module = importlib.import_module("app")
         context["user"] = app_module.normalize_user_payload(context["user"])
-        html = render_template_string(HTML, **context)
+        html = await render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
     title = soup.find("div", class_="item-name")
     assert title is not None

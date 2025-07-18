@@ -2,7 +2,7 @@ import importlib
 from pathlib import Path
 
 import pytest
-from flask import render_template
+from quart import render_template
 from bs4 import BeautifulSoup
 
 
@@ -30,7 +30,8 @@ def app(monkeypatch):
     return mod.app
 
 
-def test_killstreak_info_block(app):
+@pytest.mark.asyncio
+async def test_killstreak_info_block(app):
     item = {
         "killstreak_name": "Professional Killstreak",
         "sheen_name": "Hot Rod",
@@ -39,8 +40,8 @@ def test_killstreak_info_block(app):
         "sheen_gradient_css": None,
         "killstreak_effect": "Fire Horns",
     }
-    with app.app_context():
-        html = render_template("_modal.html", item=item)
+    async with app.app_context():
+        html = await render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     info = soup.find("div", class_="killstreak-info")
     assert info is not None
@@ -53,23 +54,26 @@ def test_killstreak_info_block(app):
     assert "#8847ff" in style and "linear-gradient" not in style
 
 
-def test_craftable_text_shown(app):
+@pytest.mark.asyncio
+async def test_craftable_text_shown(app):
     item = {"craftable": True}
-    with app.app_context():
-        html = render_template("_modal.html", item=item)
+    async with app.app_context():
+        html = await render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     assert "Craftable" in soup.text
 
 
-def test_uncraftable_text_shown(app):
+@pytest.mark.asyncio
+async def test_uncraftable_text_shown(app):
     item = {"craftable": False}
-    with app.app_context():
-        html = render_template("_modal.html", item=item)
+    async with app.app_context():
+        html = await render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     assert "Uncraftable" in soup.text
 
 
-def test_team_shine_gradient(app):
+@pytest.mark.asyncio
+async def test_team_shine_gradient(app):
     item = {
         "killstreak_name": "Professional Killstreak",
         "sheen_name": "Team Shine",
@@ -77,8 +81,8 @@ def test_team_shine_gradient(app):
         "sheen_colors": ["#cc3434", "#5885a2"],
         "sheen_gradient_css": "background: linear-gradient(90deg, #cc3434 50%, #5885a2 50%)",
     }
-    with app.app_context():
-        html = render_template("_modal.html", item=item)
+    async with app.app_context():
+        html = await render_template("_modal.html", item=item)
     soup = BeautifulSoup(html, "html.parser")
     dot = soup.find("span", class_="sheen-dot")
     assert dot is not None

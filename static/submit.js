@@ -3,6 +3,14 @@ function createPlaceholder(id) {
   ph.id = 'user-' + id;
   ph.dataset.steamid = id;
   ph.className = 'user-card user-box loading';
+  ph.innerHTML =
+    '<div class="card-header">' +
+    id +
+    '</div><div class="card-body"><div class="inventory-container"></div></div>';
+  const spinner = document.createElement('div');
+  spinner.className = 'loading-spinner';
+  spinner.setAttribute('aria-label', 'Loading');
+  ph.appendChild(spinner);
   return ph;
 }
 
@@ -69,9 +77,13 @@ function handleSubmit(e) {
   const text = document.getElementById('steamids').value || '';
   const ids = extractSteamIds(text);
   ids.forEach(id => {
-    const ph = createPlaceholder(id);
-    container.appendChild(ph);
-    fetchUserCard(id);
+    if (window.startInventoryFetch) {
+      window.startInventoryFetch(id);
+    } else {
+      const ph = createPlaceholder(id);
+      container.appendChild(ph);
+      fetchUserCard(id);
+    }
   });
   const results = document.getElementById('results');
   if (results) {
