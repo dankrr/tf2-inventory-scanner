@@ -11,18 +11,25 @@
 
   function insertProgressBar(steamid) {
     const card = document.getElementById('user-' + steamid);
-    if (!card || card.querySelector('.user-progress')) return;
-    const barWrap = document.createElement('div');
-    barWrap.className = 'user-progress';
-    const inner = document.createElement('div');
-    inner.className = 'progress-inner';
-    inner.id = 'progress-' + steamid;
-    const eta = document.createElement('span');
-    eta.className = 'eta-label';
-    eta.id = 'eta-' + steamid;
-    barWrap.appendChild(inner);
-    barWrap.appendChild(eta);
-    card.appendChild(barWrap);
+    if (!card) return;
+    let barWrap = card.querySelector('.user-progress');
+    let inner, eta;
+    if (!barWrap) {
+      barWrap = document.createElement('div');
+      barWrap.className = 'user-progress';
+      inner = document.createElement('div');
+      inner.className = 'progress-inner';
+      inner.id = 'progress-' + steamid;
+      eta = document.createElement('span');
+      eta.className = 'eta-label';
+      eta.id = 'eta-' + steamid;
+      barWrap.appendChild(inner);
+      barWrap.appendChild(eta);
+      card.appendChild(barWrap);
+    } else {
+      inner = barWrap.querySelector('.progress-inner');
+      eta = barWrap.querySelector('.eta-label');
+    }
     progressMap.set(String(steamid), { el: barWrap, bar: inner, eta });
   }
 
@@ -354,7 +361,6 @@
   });
 
   window.startInventoryFetch = function (steamid) {
-    insertUserPlaceholder(steamid);
     insertProgressBar(steamid);
     socket.emit('start_fetch', { steamid });
   };
