@@ -115,19 +115,33 @@ async function refreshAll() {
   btn.textContent = 'Refreshing…';
   const ids = getFailedUsers();
   const total = ids.length;
-  const BATCH_SIZE = 3;
-  let current = 0;
-  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-    const batch = ids.slice(i, i + BATCH_SIZE);
-    const tasks = batch.map(id => {
-      const card = document.getElementById('user-' + id);
-      if (card) card.classList.add('loading');
-      updateScanToast(++current, total);
-      return retryInventory(id);
-    });
-    await Promise.all(tasks);
-    await new Promise(res => setTimeout(res, 300));
-  }
+  ids.forEach((id, idx) => {
+    const card = document.getElementById('user-' + id);
+    if (card) {
+      card.classList.remove('failed', 'success');
+      card.classList.add('loading');
+      let spin = card.querySelector('.loading-spinner');
+      if (!spin) {
+        spin = document.createElement('div');
+        spin.className = 'loading-spinner';
+        spin.setAttribute('aria-label', 'Loading');
+        card.appendChild(spin);
+      }
+    } else if (typeof window.createPlaceholder === 'function') {
+      const container = document.getElementById('user-container');
+      if (container) {
+        const ph = createPlaceholder(id);
+        container.appendChild(ph);
+      }
+    }
+
+    if (typeof window.startInventoryFetch === 'function') {
+      window.startInventoryFetch(id);
+    } else {
+      retryInventory(id);
+    }
+    updateScanToast(idx + 1, total);
+  });
   btn.disabled = false;
   btn.textContent = original;
   attachHandlers();
