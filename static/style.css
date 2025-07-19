@@ -394,7 +394,8 @@ button {
 }
 
 .item-name {
-  color: #fff;
+  color: #000;
+  background: none;
   -webkit-text-stroke: 1px #000; /* Clean outline */
   paint-order: stroke fill;
   display: -webkit-box;

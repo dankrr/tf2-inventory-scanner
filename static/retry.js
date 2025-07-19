@@ -113,15 +113,28 @@ async function refreshAll() {
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
-  const container = document.getElementById('user-container');
-  if (container) container.innerHTML = '';
   const ids = getFailedUsers();
   const total = ids.length;
   ids.forEach((id, idx) => {
-    if (container && typeof window.createPlaceholder === 'function') {
-      const ph = createPlaceholder(id);
-      container.appendChild(ph);
+    const card = document.getElementById('user-' + id);
+    if (card) {
+      card.classList.remove('failed', 'success');
+      card.classList.add('loading');
+      let spin = card.querySelector('.loading-spinner');
+      if (!spin) {
+        spin = document.createElement('div');
+        spin.className = 'loading-spinner';
+        spin.setAttribute('aria-label', 'Loading');
+        card.appendChild(spin);
+      }
+    } else if (typeof window.createPlaceholder === 'function') {
+      const container = document.getElementById('user-container');
+      if (container) {
+        const ph = createPlaceholder(id);
+        container.appendChild(ph);
+      }
     }
+
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
     } else {
