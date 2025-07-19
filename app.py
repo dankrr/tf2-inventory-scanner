@@ -74,6 +74,8 @@ else:
 # Socket.IO runs in ASGI mode with Quart.
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 socketio = socketio.ASGIApp(sio, other_asgi_app=app)
+# Exported ASGI application used by run.py
+asgi_app = socketio
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -454,16 +456,15 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
     async for item in ip.process_inventory_streaming(raw):
         item["steamid"] = steamid64
         await sio.emit("item", item, to=sid, namespace="/inventory")
+        await sio.sleep(0)  # flush item before progress update
         processed += 1
-        # Emit progress every item
         await sio.emit(
             "progress",
             {"steamid": steamid64, "processed": processed, "total": total},
             to=sid,
             namespace="/inventory",
         )
-        # Yield to event loop for real-time effect
-        await sio.sleep(0)
+        await sio.sleep(0)  # yield control for real-time effect
 
     await sio.emit(
         "done", {"steamid": steamid64, "status": status}, to=sid, namespace="/inventory"
@@ -583,6 +584,6 @@ if __name__ == "__main__":
         config = Config()
         config.bind = [f"0.0.0.0:{port}"]
         config.use_reloader = not TEST_MODE
-        await serve(socketio, config)
+        await serve(asgi_app, config)
 
     asyncio.run(_main())
