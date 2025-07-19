@@ -74,9 +74,6 @@ else:
 # Socket.IO runs in ASGI mode with Quart.
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 socketio = socketio.ASGIApp(sio, other_asgi_app=app)
-# expose helper methods for backward compatibility
-socketio.emit = sio.emit
-socketio.sleep = sio.sleep
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -416,7 +413,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
 
     steamid = data.get("steamid") if isinstance(data, dict) else None
     if not isinstance(steamid, str):
-        socketio.emit(
+        await sio.emit(
             "done",
             {"steamid": steamid, "status": "invalid"},
             to=sid,
@@ -426,7 +423,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
     try:
         steamid64 = sac.convert_to_steam64(steamid)
     except ValueError:
-        socketio.emit(
+        await sio.emit(
             "done",
             {"steamid": steamid, "status": "invalid"},
             to=sid,
@@ -436,7 +433,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
 
     status, raw = await sac.fetch_inventory_async(steamid64)
     if status != "parsed":
-        socketio.emit(
+        await sio.emit(
             "done",
             {"steamid": steamid64, "status": status},
             to=sid,
@@ -445,7 +442,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
         return
 
     total = len(raw.get("items") or [])
-    socketio.emit(
+    await sio.emit(
         "info", {"steamid": steamid64, "total": total}, to=sid, namespace="/inventory"
     )
 
@@ -456,19 +453,19 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
     processed = 0
     async for item in ip.process_inventory_streaming(raw):
         item["steamid"] = steamid64
-        socketio.emit("item", item, to=sid, namespace="/inventory")
+        await sio.emit("item", item, to=sid, namespace="/inventory")
         processed += 1
         # Emit progress every item
-        socketio.emit(
+        await sio.emit(
             "progress",
             {"steamid": steamid64, "processed": processed, "total": total},
             to=sid,
             namespace="/inventory",
         )
         # Yield to event loop for real-time effect
-        socketio.sleep(0)
+        await sio.sleep(0)
 
-    socketio.emit(
+    await sio.emit(
         "done", {"steamid": steamid64, "status": status}, to=sid, namespace="/inventory"
     )
 
