@@ -113,9 +113,14 @@ function handleSubmit(e) {
   }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('check-inventory-btn');
   if (btn) {
-    btn.addEventListener('click', handleSubmit);
+    btn.addEventListener('click', e => {
+      if (!window.inventorySocket || window.inventorySocket.disconnected) {
+        console.warn('⚠ Socket not ready, will use fallback.');
+      }
+      handleSubmit(e);
+    });
   }
 });

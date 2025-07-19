@@ -1,13 +1,24 @@
 
 (function () {
-  if (!window.io) return;
-  const socket = io('/inventory');
-  window.inventorySocket = socket;
   const progressMap = new Map(); // steamid -> {el, bar, eta, total, startTime}
+  let socket;
 
-  socket.on('connect', () => {
-    console.log('✅ Socket.IO connected');
-  });
+  function initSocket(retry = 0) {
+    if (!window.io) {
+      if (retry < 5) setTimeout(() => initSocket(retry + 1), 500);
+      return;
+    }
+    socket = io('/inventory', { transports: ['websocket'] });
+    window.inventorySocket = socket;
+
+    socket.on('connect', () => console.log('✅ Socket.IO connected'));
+    socket.on('connect_error', err => console.error('❌ Socket.IO error:', err));
+
+    registerSocketEvents(socket);
+  }
+
+  initSocket();
+
 
   function insertProgressBar(steamid) {
     const card = document.getElementById('user-' + steamid);
@@ -216,9 +227,10 @@
 
     setTimeout(() => wrapper.classList.add('show'), 10);
     return wrapper;
-  }
+  
+  function registerSocketEvents(s) {
 
-  socket.on('info', data => {
+    s.on('info', data => {
     let p = progressMap.get(String(data.steamid));
     if (!p) {
       insertProgressBar(data.steamid);
@@ -245,7 +257,7 @@
     return `${m}:${s}`;
   }
 
-  socket.on('progress', data => {
+    s.on('progress', data => {
     const p = progressMap.get(String(data.steamid));
     if (!p) return;
     const pct = (data.processed / data.total) * 100;
@@ -259,7 +271,7 @@
     }
   });
 
-  socket.on('item', data => {
+    s.on('item', data => {
     const container = document.querySelector(`#user-${data.steamid} .inventory-container`);
     if (!container) return;
     const el = createItemElement(data);
@@ -274,7 +286,7 @@
     }
   });
 
-  socket.on('done', data => {
+    s.on('done', data => {
     const card = document.getElementById('user-' + data.steamid);
     if (card) {
       card.classList.remove('loading');
@@ -360,7 +372,14 @@
     }
   });
 
+  }
+
   window.startInventoryFetch = function (steamid) {
+    if (!socket || socket.disconnected) {
+      console.warn('⚠ Socket not ready, using fallback API.');
+      fetchUserCard(steamid);
+      return;
+    }
     insertProgressBar(steamid);
     socket.emit('start_fetch', { steamid });
   };

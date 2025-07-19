@@ -165,9 +165,9 @@
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
     <!-- ✅ Load Socket.IO v4 -->
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
 
-    <!-- ✅ Load custom scripts AFTER socket.io -->
+    <!-- ✅ Load custom scripts AFTER DOM & socket.io -->
     <script src="/static/socket.js" defer></script>
     <script src="/static/submit.js" defer></script>
     <script>
