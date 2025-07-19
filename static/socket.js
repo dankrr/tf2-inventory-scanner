@@ -1,6 +1,6 @@
 
 (function () {
-  const progressMap = new Map(); // steamid -> {el, bar, eta, total, startTime}
+  const progressMap = new Map(); // steamid -> { el, bar }
   let socket;
 
   function initSocket(retry = 0) {
@@ -24,24 +24,19 @@
     const card = document.getElementById('user-' + steamid);
     if (!card) return;
     let barWrap = card.querySelector('.user-progress');
-    let inner, eta;
+    let inner;
     if (!barWrap) {
       barWrap = document.createElement('div');
       barWrap.className = 'user-progress';
       inner = document.createElement('div');
       inner.className = 'progress-inner';
       inner.id = 'progress-' + steamid;
-      eta = document.createElement('span');
-      eta.className = 'eta-label';
-      eta.id = 'eta-' + steamid;
       barWrap.appendChild(inner);
-      barWrap.appendChild(eta);
       card.appendChild(barWrap);
     } else {
       inner = barWrap.querySelector('.progress-inner');
-      eta = barWrap.querySelector('.eta-label');
     }
-    progressMap.set(String(steamid), { el: barWrap, bar: inner, eta });
+    progressMap.set(String(steamid), { el: barWrap, bar: inner });
   }
 
   function insertUserPlaceholder(id) {
@@ -62,11 +57,7 @@
     const inner = document.createElement('div');
     inner.className = 'progress-inner';
     inner.id = 'progress-' + id;
-    const eta = document.createElement('span');
-    eta.className = 'eta-label';
-    eta.id = 'eta-' + id;
     barWrap.appendChild(inner);
-    barWrap.appendChild(eta);
     div.appendChild(barWrap);
     container.appendChild(div);
   }
@@ -237,38 +228,18 @@
       p = progressMap.get(String(data.steamid));
     }
     if (p) {
-      p.total = data.total || 0;
-      p.startTime = Date.now();
       p.bar.style.width = '0%';
-      p.bar.textContent = `0 / ${p.total}`;
-      if (p.eta) p.eta.textContent = '';
+      p.bar.textContent = `0/${data.total || 0}`;
     }
   });
 
-  function formatEta(ms) {
-    if (!ms || ms <= 0) return '';
-    const sec = Math.ceil(ms / 1000);
-    const m = Math.floor(sec / 60)
-      .toString()
-      .padStart(2, '0');
-    const s = Math.floor(sec % 60)
-      .toString()
-      .padStart(2, '0');
-    return `${m}:${s}`;
-  }
 
     s.on('progress', data => {
     const p = progressMap.get(String(data.steamid));
     if (!p) return;
-    const pct = (data.processed / data.total) * 100;
+    const pct = Math.min((data.processed / data.total) * 100, 100);
     p.bar.style.width = pct + '%';
-    p.bar.textContent = `${data.processed} / ${data.total}`;
-    if (p.eta && data.processed > 0) {
-      const elapsed = Date.now() - (p.startTime || Date.now());
-      const avg = elapsed / data.processed;
-      const remain = (data.total - data.processed) * avg;
-      p.eta.textContent = formatEta(remain);
-    }
+    p.bar.textContent = `${data.processed}/${data.total}`;
   });
 
     s.on('item', data => {
@@ -363,7 +334,6 @@
     if (p) {
       p.bar.style.width = '100%';
       p.bar.textContent = data.status === 'parsed' ? 'Done' : 'Failed';
-      if (p.eta) p.eta.textContent = '';
       setTimeout(() => {
         p.el.classList.add('fade-out');
         setTimeout(() => p.el.remove(), 600);

@@ -773,8 +773,8 @@ footer {
 
 .user-progress {
   margin-top: 6px;
-  width: 90%;
-  height: 12px;
+  width: 95%;
+  height: 14px;
   background: #333;
   border-radius: 5px;
   position: relative;
@@ -787,13 +787,14 @@ footer {
 
 .progress-inner {
   position: relative;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
   height: 100%;
   width: 0%;
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: bold;
   text-align: center;
-  line-height: 10px;
+  line-height: 14px;
   transition: width 0.3s ease;
 }
 

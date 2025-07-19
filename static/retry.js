@@ -113,6 +113,8 @@ async function refreshAll() {
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = 'Refreshing…';
+  const container = document.getElementById('user-container');
+  if (container) container.innerHTML = '';
   const ids = getFailedUsers();
   const total = ids.length;
   const BATCH_SIZE = 3;
