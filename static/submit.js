@@ -84,16 +84,19 @@ function handleSubmit(e) {
   if (e && e.preventDefault) e.preventDefault();
   const container = document.getElementById('user-container');
   if (!container) return;
-  const text = document.getElementById('steamids').value || '';
+  const input = document.getElementById('steamids');
+  const btn = document.getElementById('check-inventory-btn');
+  const text = input.value || '';
   const ids = extractSteamIds(text);
   ids.forEach(id => {
     if (!document.getElementById('user-' + id)) {
       const ph = createPlaceholder(id);
       container.appendChild(ph);
     }
-    if (window.startInventoryFetch) {
+    if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
     } else {
+      console.warn('Socket not connected yet');
       fetchUserCard(id);
     }
   });
@@ -101,9 +104,16 @@ function handleSubmit(e) {
   if (results) {
     results.classList.add('show');
   }
+  if (input) input.value = '';
+  if (btn) {
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.disabled = false;
+    }, 600);
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('check-inventory-btn');
   if (btn) {
     btn.addEventListener('click', handleSubmit);
