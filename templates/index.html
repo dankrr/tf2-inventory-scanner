@@ -96,17 +96,17 @@
             </ul>
         {% endif %}
     {% endwith %}
-    <form method="post" class="input-form" id="scan-form">
+    <div class="input-form">
         <label for="steamids" class="visually-hidden">Steam IDs</label>
         <div class="input-wrapper">
             <i class="fa-brands fa-steam input-steam-icon"></i>
-            <textarea id="steamids" name="steamids" placeholder="Enter SteamID64, SteamID2, or SteamID3…">{{ steamids|default('') }}</textarea>
+            <textarea id="steamids" placeholder="Enter Steam IDs..." rows="4"></textarea>
         </div>
         <div class="form-actions">
-            <button type="submit" class="primary-btn action-button"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
+            <button id="check-inventory-btn" type="button" class="primary-btn action-button"><i class="fa-solid fa-magnifying-glass"></i> Check Inventory</button>
             <button id="refresh-failed-btn" type="button" disabled class="refresh-btn action-button"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
         </div>
-    </form>
+    </div>
 
     <div id="results" class="fade-in">
         <div id="user-container">
@@ -164,8 +164,12 @@
     <script src="{{ url_for('static', filename='lazyload.js') }}"></script>
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/static/socket.js"></script>
+    <!-- ✅ Load Socket.IO v4 -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
+
+    <!-- ✅ Load custom scripts AFTER DOM & socket.io -->
+    <script src="/static/socket.js" defer></script>
+    <script src="/static/submit.js" defer></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {

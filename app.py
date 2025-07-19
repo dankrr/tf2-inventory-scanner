@@ -450,9 +450,18 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
         await fetch_missing_cache_files()
         local_data.load_files(auto_refetch=False)
 
+    processed = 0
     async for item in ip.process_inventory_streaming(raw):
         item["steamid"] = steamid64
         await sio.emit("item", item, to=sid, namespace="/inventory")
+        processed += 1
+        await sio.emit(
+            "progress",
+            {"steamid": steamid64, "processed": processed, "total": total},
+            to=sid,
+            namespace="/inventory",
+        )
+        await sio.sleep(0)
 
     await sio.emit(
         "done", {"steamid": steamid64, "status": status}, to=sid, namespace="/inventory"
