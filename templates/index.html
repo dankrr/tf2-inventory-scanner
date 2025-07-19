@@ -168,8 +168,8 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
     <!-- ✅ Load custom scripts AFTER socket.io -->
-    <script src="/static/socket.js"></script>
-    <script src="/static/submit.js"></script>
+    <script src="/static/socket.js" defer></script>
+    <script src="/static/submit.js" defer></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
