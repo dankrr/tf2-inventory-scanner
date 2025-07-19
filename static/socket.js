@@ -244,14 +244,19 @@
       }
       const pct = Math.min((data.processed / data.total) * 100, 100);
       p.bar.style.width = pct + '%';
+      // force reflow so transition animates
+      // eslint-disable-next-line no-unused-expressions
+      p.bar.offsetWidth;
       p.bar.textContent = `${data.processed}/${data.total}`;
     });
 
     s.on('item', data => {
     const container = document.querySelector(`#user-${data.steamid} .inventory-container`);
     if (!container) return;
+    const frag = document.createDocumentFragment();
     const el = createItemElement(data);
-    container.appendChild(el);
+    frag.appendChild(el);
+    container.appendChild(frag);
     if (window.attachItemModal) {
       window.attachItemModal();
     } else if (window.attachHandlers) {
