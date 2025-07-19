@@ -164,8 +164,12 @@
     <script src="{{ url_for('static', filename='lazyload.js') }}"></script>
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- ✅ Load Socket.IO v4 -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <!-- ✅ Load custom scripts AFTER socket.io -->
     <script src="/static/socket.js"></script>
+    <script src="/static/submit.js"></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {

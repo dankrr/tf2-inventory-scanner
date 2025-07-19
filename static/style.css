@@ -798,11 +798,11 @@ footer {
 }
 
 .eta-label {
-  font-size: 10px;
-  color: #ccc;
-  display: block;
-  margin-top: 2px;
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 3px;
   text-align: center;
+  display: block;
 }
 
 .sort-value-btn {
