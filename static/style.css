@@ -394,9 +394,10 @@ button {
 }
 
 .item-name {
-  color: #fff;
-  -webkit-text-stroke: 1px #000; /* Clean outline */
-  paint-order: stroke fill;
+  color: #000 !important; /* Force black font */
+  background: none !important; /* Remove background */
+  -webkit-text-stroke: 0 !important; /* Remove text stroke */
+  paint-order: fill;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -773,12 +774,13 @@ footer {
 
 .user-progress {
   margin-top: 6px;
-  width: 90%;
-  height: 12px;
+  width: 95%;
+  height: 14px;
   background: #333;
   border-radius: 5px;
   position: relative;
   overflow: hidden;
+  transition: opacity 0.6s ease;
 }
 
 .user-progress.fade-out {
@@ -787,13 +789,14 @@ footer {
 
 .progress-inner {
   position: relative;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
   height: 100%;
   width: 0%;
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: bold;
   text-align: center;
-  line-height: 10px;
+  line-height: 14px;
   transition: width 0.3s ease;
 }
 

@@ -455,12 +455,14 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
         item["steamid"] = steamid64
         await sio.emit("item", item, to=sid, namespace="/inventory")
         processed += 1
+        # Emit progress every item
         await sio.emit(
             "progress",
             {"steamid": steamid64, "processed": processed, "total": total},
             to=sid,
             namespace="/inventory",
         )
+        # Yield to event loop for real-time effect
         await sio.sleep(0)
 
     await sio.emit(

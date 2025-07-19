@@ -84,6 +84,8 @@ function handleSubmit(e) {
   if (e && e.preventDefault) e.preventDefault();
   const container = document.getElementById('user-container');
   if (!container) return;
+  // Clear old users to avoid stacking
+  container.innerHTML = '';
   const input = document.getElementById('steamids');
   const btn = document.getElementById('check-inventory-btn');
   const text = input.value || '';
