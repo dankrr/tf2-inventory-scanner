@@ -1,9 +1,10 @@
 body {
     background-color: #121212;
-    color: #e0e0e0;
-    font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+    color: #f5f5f5;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
     margin: 2em;
-    line-height: 1.5;
+    line-height: 1.6;
+    font-size: 16px;
 }
 
 input,
@@ -642,6 +643,17 @@ html, body {
   transform: scale(1);
 }
 
+.fade-in-item {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.4s ease, transform 0.3s ease;
+}
+
+.fade-in-item.show {
+  opacity: 1;
+  transform: scale(1);
+}
+
 footer {
   padding: 1rem;
   text-align: center;
@@ -762,17 +774,11 @@ footer {
 .user-progress {
   margin-top: 6px;
   width: 90%;
-  height: 10px;
+  height: 12px;
   background: #333;
   border-radius: 5px;
   position: relative;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  color: #ccc;
-  transition: opacity 0.6s ease;
 }
 
 .user-progress.fade-out {
@@ -780,20 +786,23 @@ footer {
 }
 
 .progress-inner {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
-  transition: width 0.25s ease;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+  line-height: 10px;
+  transition: width 0.3s ease;
 }
 
-.progress-label {
-  position: relative;
-  z-index: 2;
-  font-size: 10px;
-  color: white;
+.eta-label {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 3px;
+  text-align: center;
+  display: block;
 }
 
 .sort-value-btn {

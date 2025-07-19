@@ -1,33 +1,47 @@
 
 (function () {
-  if (!window.io) return;
-  const socket = io('/inventory');
-  const progressMap = new Map();
+  const progressMap = new Map(); // steamid -> {el, bar, eta, total, startTime}
+  let socket;
 
-  socket.on('connect', () => {
-    console.log('✅ Socket.IO connected');
-  });
+  function initSocket(retry = 0) {
+    if (!window.io) {
+      if (retry < 5) setTimeout(() => initSocket(retry + 1), 500);
+      return;
+    }
+    socket = io('/inventory', { transports: ['websocket'] });
+    window.inventorySocket = socket;
+
+    socket.on('connect', () => console.log('✅ Socket.IO connected'));
+    socket.on('connect_error', err => console.error('❌ Socket.IO error:', err));
+
+    registerSocketEvents(socket);
+  }
+
+  initSocket();
+
 
   function insertProgressBar(steamid) {
     const card = document.getElementById('user-' + steamid);
-    if (!card || card.querySelector('.user-progress')) return;
-    const barWrap = document.createElement('div');
-    barWrap.className = 'user-progress';
-    const inner = document.createElement('div');
-    inner.className = 'progress-inner';
-    const label = document.createElement('span');
-    label.className = 'progress-label';
-    label.textContent = '0%';
-    barWrap.appendChild(inner);
-    barWrap.appendChild(label);
-    card.appendChild(barWrap);
-    progressMap.set(String(steamid), {
-      el: barWrap,
-      bar: inner,
-      label,
-      total: 0,
-      count: 0
-    });
+    if (!card) return;
+    let barWrap = card.querySelector('.user-progress');
+    let inner, eta;
+    if (!barWrap) {
+      barWrap = document.createElement('div');
+      barWrap.className = 'user-progress';
+      inner = document.createElement('div');
+      inner.className = 'progress-inner';
+      inner.id = 'progress-' + steamid;
+      eta = document.createElement('span');
+      eta.className = 'eta-label';
+      eta.id = 'eta-' + steamid;
+      barWrap.appendChild(inner);
+      barWrap.appendChild(eta);
+      card.appendChild(barWrap);
+    } else {
+      inner = barWrap.querySelector('.progress-inner');
+      eta = barWrap.querySelector('.eta-label');
+    }
+    progressMap.set(String(steamid), { el: barWrap, bar: inner, eta });
   }
 
   function insertUserPlaceholder(id) {
@@ -43,6 +57,17 @@
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     div.appendChild(spinner);
+    const barWrap = document.createElement('div');
+    barWrap.className = 'user-progress';
+    const inner = document.createElement('div');
+    inner.className = 'progress-inner';
+    inner.id = 'progress-' + id;
+    const eta = document.createElement('span');
+    eta.className = 'eta-label';
+    eta.id = 'eta-' + id;
+    barWrap.appendChild(inner);
+    barWrap.appendChild(eta);
+    div.appendChild(barWrap);
     container.appendChild(div);
   }
 
@@ -86,7 +111,7 @@
 
   function createItemElement(data) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'item-wrapper fade-in';
+    wrapper.className = 'item-wrapper fade-in-item';
 
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -202,9 +227,10 @@
 
     setTimeout(() => wrapper.classList.add('show'), 10);
     return wrapper;
-  }
+  
+  function registerSocketEvents(s) {
 
-  socket.on('info', data => {
+    s.on('info', data => {
     let p = progressMap.get(String(data.steamid));
     if (!p) {
       insertProgressBar(data.steamid);
@@ -212,24 +238,44 @@
     }
     if (p) {
       p.total = data.total || 0;
+      p.startTime = Date.now();
       p.bar.style.width = '0%';
-      p.label.textContent = `0% (0/${p.total})`;
+      p.bar.textContent = `0 / ${p.total}`;
+      if (p.eta) p.eta.textContent = '';
     }
   });
 
-  socket.on('item', data => {
+  function formatEta(ms) {
+    if (!ms || ms <= 0) return '';
+    const sec = Math.ceil(ms / 1000);
+    const m = Math.floor(sec / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = Math.floor(sec % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+    s.on('progress', data => {
+    const p = progressMap.get(String(data.steamid));
+    if (!p) return;
+    const pct = (data.processed / data.total) * 100;
+    p.bar.style.width = pct + '%';
+    p.bar.textContent = `${data.processed} / ${data.total}`;
+    if (p.eta && data.processed > 0) {
+      const elapsed = Date.now() - (p.startTime || Date.now());
+      const avg = elapsed / data.processed;
+      const remain = (data.total - data.processed) * avg;
+      p.eta.textContent = formatEta(remain);
+    }
+  });
+
+    s.on('item', data => {
     const container = document.querySelector(`#user-${data.steamid} .inventory-container`);
     if (!container) return;
     const el = createItemElement(data);
     container.appendChild(el);
-    const p = progressMap.get(String(data.steamid));
-    if (p) {
-      p.count += 1;
-      const total = p.total || p.count;
-      const pct = Math.round((p.count / total) * 100);
-      p.bar.style.width = pct + '%';
-      p.label.textContent = `${pct}% (${p.count}/${total})`;
-    }
     if (window.attachItemModal) {
       window.attachItemModal();
     } else if (window.attachHandlers) {
@@ -240,7 +286,7 @@
     }
   });
 
-  socket.on('done', data => {
+    s.on('done', data => {
     const card = document.getElementById('user-' + data.steamid);
     if (card) {
       card.classList.remove('loading');
@@ -316,17 +362,24 @@
     const p = progressMap.get(String(data.steamid));
     if (p) {
       p.bar.style.width = '100%';
-      p.label.textContent = `Done (${p.count}/${p.total})`;
+      p.bar.textContent = data.status === 'parsed' ? 'Done' : 'Failed';
+      if (p.eta) p.eta.textContent = '';
       setTimeout(() => {
         p.el.classList.add('fade-out');
         setTimeout(() => p.el.remove(), 600);
-      }, 1500);
+      }, 4000);
       progressMap.delete(String(data.steamid));
     }
   });
 
+  }
+
   window.startInventoryFetch = function (steamid) {
-    insertUserPlaceholder(steamid);
+    if (!socket || socket.disconnected) {
+      console.warn('⚠ Socket not ready, using fallback API.');
+      fetchUserCard(steamid);
+      return;
+    }
     insertProgressBar(steamid);
     socket.emit('start_fetch', { steamid });
   };

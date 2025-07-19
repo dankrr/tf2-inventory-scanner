@@ -11,6 +11,17 @@ function createPlaceholder(id) {
   spinner.className = 'loading-spinner';
   spinner.setAttribute('aria-label', 'Loading');
   ph.appendChild(spinner);
+  const bar = document.createElement('div');
+  bar.className = 'user-progress';
+  const inner = document.createElement('div');
+  inner.className = 'progress-inner';
+  inner.id = 'progress-' + id;
+  bar.appendChild(inner);
+  const eta = document.createElement('span');
+  eta.className = 'eta-label';
+  eta.id = 'eta-' + id;
+  bar.appendChild(eta);
+  ph.appendChild(bar);
   return ph;
 }
 
@@ -70,18 +81,22 @@ function extractSteamIds(text) {
 }
 
 function handleSubmit(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
   const container = document.getElementById('user-container');
   if (!container) return;
-  container.innerHTML = '';
-  const text = document.getElementById('steamids').value || '';
+  const input = document.getElementById('steamids');
+  const btn = document.getElementById('check-inventory-btn');
+  const text = input.value || '';
   const ids = extractSteamIds(text);
   ids.forEach(id => {
-    if (window.startInventoryFetch) {
-      window.startInventoryFetch(id);
-    } else {
+    if (!document.getElementById('user-' + id)) {
       const ph = createPlaceholder(id);
       container.appendChild(ph);
+    }
+    if (typeof window.startInventoryFetch === 'function') {
+      window.startInventoryFetch(id);
+    } else {
+      console.warn('Socket not connected yet');
       fetchUserCard(id);
     }
   });
@@ -89,11 +104,23 @@ function handleSubmit(e) {
   if (results) {
     results.classList.add('show');
   }
+  if (input) input.value = '';
+  if (btn) {
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.disabled = false;
+    }, 600);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form.input-form');
-  if (form) {
-    form.addEventListener('submit', handleSubmit);
+  const btn = document.getElementById('check-inventory-btn');
+  if (btn) {
+    btn.addEventListener('click', e => {
+      if (!window.inventorySocket || window.inventorySocket.disconnected) {
+        console.warn('⚠ Socket not ready, will use fallback.');
+      }
+      handleSubmit(e);
+    });
   }
 });

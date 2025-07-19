@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Tuple
 from collections.abc import AsyncGenerator
+import asyncio
 import logging
 import re
 from html import unescape
@@ -1522,7 +1523,7 @@ async def process_inventory_streaming(
         return
 
     for asset in items_raw:
-        item = _process_item(asset, valuation_service)
+        item = await asyncio.to_thread(_process_item, asset, valuation_service)
         if not item:
             continue
 
