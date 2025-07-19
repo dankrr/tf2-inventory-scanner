@@ -394,10 +394,10 @@ button {
 }
 
 .item-name {
-  color: #000;
-  background: none;
-  -webkit-text-stroke: 1px #000; /* Clean outline */
-  paint-order: stroke fill;
+  color: #000; /* Make font black */
+  background: none; /* Remove background */
+  -webkit-text-stroke: 0; /* Remove text stroke */
+  paint-order: fill;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
