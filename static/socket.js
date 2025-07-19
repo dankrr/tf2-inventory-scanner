@@ -235,12 +235,17 @@
 
 
     s.on('progress', data => {
-    const p = progressMap.get(String(data.steamid));
-    if (!p) return;
-    const pct = Math.min((data.processed / data.total) * 100, 100);
-    p.bar.style.width = pct + '%';
-    p.bar.textContent = `${data.processed}/${data.total}`;
-  });
+      const p = progressMap.get(String(data.steamid));
+      if (!p) return;
+      const card = document.getElementById('user-' + data.steamid);
+      if (card) {
+        const spin = card.querySelector('.loading-spinner');
+        if (spin) spin.remove();
+      }
+      const pct = Math.min((data.processed / data.total) * 100, 100);
+      p.bar.style.width = pct + '%';
+      p.bar.textContent = `${data.processed}/${data.total}`;
+    });
 
     s.on('item', data => {
     const container = document.querySelector(`#user-${data.steamid} .inventory-container`);

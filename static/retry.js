@@ -117,19 +117,18 @@ async function refreshAll() {
   if (container) container.innerHTML = '';
   const ids = getFailedUsers();
   const total = ids.length;
-  const BATCH_SIZE = 3;
-  let current = 0;
-  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-    const batch = ids.slice(i, i + BATCH_SIZE);
-    const tasks = batch.map(id => {
-      const card = document.getElementById('user-' + id);
-      if (card) card.classList.add('loading');
-      updateScanToast(++current, total);
-      return retryInventory(id);
-    });
-    await Promise.all(tasks);
-    await new Promise(res => setTimeout(res, 300));
-  }
+  ids.forEach((id, idx) => {
+    if (container && typeof window.createPlaceholder === 'function') {
+      const ph = createPlaceholder(id);
+      container.appendChild(ph);
+    }
+    if (typeof window.startInventoryFetch === 'function') {
+      window.startInventoryFetch(id);
+    } else {
+      retryInventory(id);
+    }
+    updateScanToast(idx + 1, total);
+  });
   btn.disabled = false;
   btn.textContent = original;
   attachHandlers();
