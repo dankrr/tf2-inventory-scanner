@@ -78,6 +78,9 @@ socketio = socketio.ASGIApp(sio, other_asgi_app=app)
 asgi_app = socketio
 
 MAX_MERGE_MS = 0
+
+# Keep track of active inventory streaming tasks.
+ACTIVE_FETCHES: dict[tuple[str, int], asyncio.Task] = {}
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
 _prices_path = ensure_prices_cached(refresh=ARGS.refresh)
 if _prices_path.exists() and _prices_path.stat().st_size <= 2:
@@ -433,7 +436,38 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
         )
         return
 
-    status, raw = await sac.fetch_inventory_async(steamid64)
+    key = (sid, steamid64)
+    old = ACTIVE_FETCHES.pop(key, None)
+    if old and not old.done():
+        old.cancel()
+
+    task = asyncio.create_task(stream_inventory(sid, steamid64))
+    ACTIVE_FETCHES[key] = task
+
+
+async def stream_inventory(sid: str, steamid64: int) -> None:
+    """Stream inventory items to the client with adaptive batching."""
+
+    try:
+        status, raw = await asyncio.wait_for(sac.fetch_inventory_async(steamid64), 20)
+    except asyncio.TimeoutError:
+        await sio.emit(
+            "done",
+            {"steamid": steamid64, "status": "timeout"},
+            to=sid,
+            namespace="/inventory",
+        )
+        await sio.sleep(0)
+        return
+    except asyncio.CancelledError:
+        await sio.emit(
+            "done",
+            {"steamid": steamid64, "status": "cancelled"},
+            to=sid,
+            namespace="/inventory",
+        )
+        return
+
     if status != "parsed":
         await sio.emit(
             "done",
@@ -453,22 +487,138 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
         local_data.load_files(auto_refetch=False)
 
     processed = 0
-    async for item in ip.process_inventory_streaming(raw):
-        item["steamid"] = steamid64
-        await sio.emit("item", item, to=sid, namespace="/inventory")
-        await sio.sleep(0)
-        processed += 1
+    batch: list[dict[str, Any]] = []
+    batch_size = 10
+    start_time = time.monotonic()
+    key = (sid, steamid64)
+
+    try:
+        async for item in ip.process_inventory_streaming(raw):
+            item["steamid"] = steamid64
+            batch.append(item)
+            processed += 1
+
+            if len(batch) >= batch_size:
+                emit_start = time.monotonic()
+                await sio.emit(
+                    "items_batch",
+                    {"steamid": steamid64, "items": batch},
+                    to=sid,
+                    namespace="/inventory",
+                )
+                batch.clear()
+
+                eta = int(
+                    max(
+                        (time.monotonic() - start_time)
+                        / processed
+                        * max(total - processed, 0),
+                        0,
+                    )
+                )
+
+                await sio.emit(
+                    "progress",
+                    {
+                        "steamid": steamid64,
+                        "processed": processed,
+                        "total": total,
+                        "eta": eta,
+                    },
+                    to=sid,
+                    namespace="/inventory",
+                )
+                await sio.sleep(0)
+
+                flush_time = time.monotonic() - emit_start
+                if flush_time < 0.02 and batch_size < 100:
+                    batch_size += 10
+                    app.logger.debug("Increasing batch size to %d", batch_size)
+                elif flush_time > 0.1 and batch_size > 10:
+                    batch_size = max(10, batch_size - 10)
+                    app.logger.debug(
+                        "Decreasing batch size to %d due to latency %.2fs",
+                        batch_size,
+                        flush_time,
+                    )
+
+            if time.monotonic() - start_time > 30:
+                await sio.emit(
+                    "done",
+                    {"steamid": steamid64, "status": "timeout"},
+                    to=sid,
+                    namespace="/inventory",
+                )
+                await sio.sleep(0)
+                return
+
+        if batch:
+            await sio.emit(
+                "items_batch",
+                {"steamid": steamid64, "items": batch},
+                to=sid,
+                namespace="/inventory",
+            )
+            eta = 0
+            await sio.emit(
+                "progress",
+                {
+                    "steamid": steamid64,
+                    "processed": processed,
+                    "total": total,
+                    "eta": eta,
+                },
+                to=sid,
+                namespace="/inventory",
+            )
+            await sio.sleep(0)
+
         await sio.emit(
-            "progress",
-            {"steamid": steamid64, "processed": processed, "total": total},
+            "done",
+            {"steamid": steamid64, "status": status},
             to=sid,
             namespace="/inventory",
         )
         await sio.sleep(0)
+    except asyncio.CancelledError:
+        await sio.emit(
+            "done",
+            {"steamid": steamid64, "status": "cancelled"},
+            to=sid,
+            namespace="/inventory",
+        )
+        await sio.sleep(0)
+        raise
+    finally:
+        ACTIVE_FETCHES.pop(key, None)
 
-    await sio.emit(
-        "done", {"steamid": steamid64, "status": status}, to=sid, namespace="/inventory"
-    )
+
+@sio.on("cancel_fetch", namespace="/inventory")
+async def handle_cancel_fetch(sid: str, data: Dict[str, Any]) -> None:
+    """Cancel an in-progress inventory fetch."""
+
+    steamid = data.get("steamid") if isinstance(data, dict) else None
+    if steamid is None:
+        return
+    try:
+        steamid64 = sac.convert_to_steam64(str(steamid))
+    except ValueError:
+        return
+
+    task = ACTIVE_FETCHES.pop((sid, steamid64), None)
+    if task and not task.done():
+        task.cancel()
+
+
+@sio.on("disconnect", namespace="/inventory")
+async def handle_disconnect(sid: str) -> None:
+    """Cancel any active tasks when the client disconnects."""
+
+    keys = [k for k in ACTIVE_FETCHES if k[0] == sid]
+    for key in keys:
+        task = ACTIVE_FETCHES.pop(key)
+        if task and not task.done():
+            task.cancel()
 
 
 @app.post("/retry/<int:steamid64>")

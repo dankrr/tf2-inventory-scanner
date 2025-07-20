@@ -1,7 +1,81 @@
 
+
 (function () {
   const progressMap = new Map(); // steamid -> { el, bar }
+  const itemQueue = [];
+  let queueHandle = null;
+  let domBatchSize = window.innerWidth > 1024 ? 30 : 10;
+  let lastFrame = performance.now();
   let socket;
+
+  function processQueue() {
+    queueHandle = null;
+    if (!itemQueue.length) return;
+    const start = performance.now();
+    const batch = itemQueue.splice(0, domBatchSize);
+    const fragMap = new Map();
+    batch.forEach(({ container, el }) => {
+      let frag = fragMap.get(container);
+      if (!frag) {
+        frag = document.createDocumentFragment();
+        fragMap.set(container, frag);
+      }
+      frag.appendChild(el);
+    });
+    fragMap.forEach((frag, container) => {
+      container.appendChild(frag);
+      if (frag.firstChild) void frag.firstChild.offsetHeight;
+    });
+    if (window.attachItemModal) {
+      window.attachItemModal();
+    } else if (window.attachHandlers) {
+      window.attachHandlers();
+    }
+    if (window.refreshLazyLoad) window.refreshLazyLoad();
+    const frameTime = performance.now() - start;
+    if (frameTime < 10 && domBatchSize < 100) {
+      domBatchSize += 5;
+      console.debug('⚡ DOM batch ->', domBatchSize);
+    } else if (frameTime > 20 && domBatchSize > 10) {
+      domBatchSize = Math.max(10, domBatchSize - 5);
+      console.debug('🐢 DOM batch ->', domBatchSize);
+    }
+    if (itemQueue.length) {
+      lastFrame = performance.now();
+      queueHandle = requestAnimationFrame(processQueue);
+    }
+  }
+
+  function enqueueItem(container, el, steamid) {
+    itemQueue.push({ container, el, steamid: String(steamid) });
+    if (!queueHandle) {
+      const cb = window.requestIdleCallback || requestAnimationFrame;
+      queueHandle = cb(processQueue);
+    }
+  }
+
+  function removeQueued(id) {
+    const sid = String(id);
+    for (let i = itemQueue.length - 1; i >= 0; i--) {
+      if (itemQueue[i].steamid === sid) {
+        itemQueue.splice(i, 1);
+      }
+    }
+    if (!itemQueue.length && queueHandle) {
+      cancelAnimationFrame(queueHandle);
+      queueHandle = null;
+    }
+  }
+
+  function drainQueue() {
+    while (itemQueue.length) {
+      processQueue();
+    }
+    if (queueHandle) {
+      cancelAnimationFrame(queueHandle);
+      queueHandle = null;
+    }
+  }
 
   function initSocket(retry = 0) {
     if (!window.io) {
@@ -27,18 +101,40 @@
     if (!card) return;
     let barWrap = card.querySelector('.user-progress');
     let inner;
+    let eta;
     if (!barWrap) {
       barWrap = document.createElement('div');
       barWrap.className = 'user-progress';
       inner = document.createElement('div');
       inner.className = 'progress-inner';
       inner.id = 'progress-' + steamid;
+      eta = document.createElement('span');
+      eta.className = 'eta-label';
+      eta.id = 'eta-' + steamid;
       barWrap.appendChild(inner);
+      barWrap.appendChild(eta);
       card.appendChild(barWrap);
     } else {
       inner = barWrap.querySelector('.progress-inner');
+      eta = barWrap.querySelector('.eta-label');
+      barWrap.classList.remove('fade-out');
     }
-    progressMap.set(String(steamid), { el: barWrap, bar: inner });
+    inner.style.width = '0%';
+    // reset transition start point
+    void inner.offsetWidth;
+    progressMap.set(String(steamid), { el: barWrap, bar: inner, eta });
+  }
+
+  function clearExisting(steamid) {
+    const card = document.getElementById('user-' + steamid);
+    if (!card) return;
+    const container = card.querySelector('.inventory-container');
+    if (container) container.innerHTML = '';
+    const bar = card.querySelector('.user-progress');
+    if (bar) bar.remove();
+    progressMap.delete(String(steamid));
+    removeQueued(steamid);
+    if (socket) socket.emit('cancel_fetch', { steamid });
   }
 
   function insertUserPlaceholder(id) {
@@ -231,6 +327,8 @@
     }
     if (p) {
       p.bar.style.width = '0%';
+      // force reflow to restart transition
+      void p.bar.offsetWidth;
       p.bar.textContent = `0/${data.total || 0}`;
     }
   });
@@ -245,31 +343,30 @@
         if (spin) spin.remove();
       }
       const pct = Math.min((data.processed / data.total) * 100, 100);
-      p.bar.style.width = pct + '%';
-      // force reflow so transition animates
       void p.bar.offsetWidth;
+      p.bar.style.width = pct + '%';
       p.bar.textContent = `${data.processed}/${data.total}`;
+      if (p.eta) {
+        if (data.eta && data.eta > 0) {
+          p.eta.textContent = `~${data.eta}s remaining`;
+        } else {
+          p.eta.textContent = '';
+        }
+      }
     });
 
-    s.on('item', data => {
-    console.debug('📦 item', data.market_hash_name || data.name || data.defindex);
-    const container = document.querySelector(`#user-${data.steamid} .inventory-container`);
-    if (!container) return;
-    const frag = document.createDocumentFragment();
-    const el = createItemElement(data);
-    frag.appendChild(el);
-    container.appendChild(frag);
-    // force repaint so newly added item appears immediately
-    void el.offsetHeight;
-    if (window.attachItemModal) {
-      window.attachItemModal();
-    } else if (window.attachHandlers) {
-      window.attachHandlers();
-    }
-    if (window.refreshLazyLoad) {
-      window.refreshLazyLoad();
-    }
-  });
+    s.on('items_batch', data => {
+      const container = document.querySelector(
+        `#user-${data.steamid} .inventory-container`
+      );
+      if (!container) return;
+      const batch = data.items || [];
+      batch.forEach(item => {
+        const el = createItemElement(item);
+        enqueueItem(container, el, data.steamid);
+      });
+      console.debug('📦 batch', batch.length, 'remaining:', itemQueue.length);
+    });
 
     s.on('done', data => {
     const card = document.getElementById('user-' + data.steamid);
@@ -303,6 +400,8 @@
           msg.textContent =
             data.status === 'private'
               ? 'Inventory private'
+              : data.status === 'timeout'
+              ? 'Timed out'
               : 'Inventory unavailable';
           body.insertBefore(msg, body.firstChild);
         }
@@ -347,12 +446,17 @@
     const p = progressMap.get(String(data.steamid));
     if (p) {
       p.bar.style.width = '100%';
+      // ensure final width transition flushes
+      void p.bar.offsetWidth;
       p.bar.textContent = data.status === 'parsed' ? 'Done' : 'Failed';
+      if (p.eta) p.eta.textContent = '';
       setTimeout(() => {
         p.el.classList.add('fade-out');
         setTimeout(() => p.el.remove(), 600);
       }, 4000);
       progressMap.delete(String(data.steamid));
+      removeQueued(data.steamid);
+      drainQueue();
     }
   });
 
@@ -364,7 +468,13 @@
       fetchUserCard(steamid);
       return;
     }
+    clearExisting(steamid);
     insertProgressBar(steamid);
     socket.emit('start_fetch', { steamid });
+  };
+
+  window.cancelInventoryFetch = function (steamid) {
+    if (socket) socket.emit('cancel_fetch', { steamid });
+    clearExisting(steamid);
   };
 })();

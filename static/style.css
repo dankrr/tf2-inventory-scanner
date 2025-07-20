@@ -797,7 +797,8 @@ footer {
   font-weight: bold;
   text-align: center;
   line-height: 14px;
-  transition: width 0.3s ease;
+  transition: width 0.35s ease;
+  will-change: width;
 }
 
 .eta-label {
