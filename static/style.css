@@ -71,6 +71,12 @@ button,
   padding: 0 1rem;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .user-profile {
   display: flex;
   align-items: center;
@@ -818,6 +824,18 @@ footer {
   padding: 4px 8px;
   cursor: pointer;
   font-size: 0.8rem;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.cancel-btn:hover {
+  color: #fff;
 }
 
 .error-banner {

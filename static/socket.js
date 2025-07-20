@@ -146,7 +146,9 @@
     div.innerHTML =
       '<div class="card-header">' +
       id +
-      '</div><div class="card-body"><div class="inventory-container"></div></div>';
+      '<button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
+      id +
+      ')">&#x2716;</button></div><div class="card-body"><div class="inventory-container"></div></div>';
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     div.appendChild(spinner);
