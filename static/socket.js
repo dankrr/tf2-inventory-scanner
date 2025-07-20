@@ -438,6 +438,7 @@
       console.debug(
         `📦 Received batch of ${batch.length}, remaining approx: ${itemQueue.length}`
       );
+      if (window.DEBUG_FORCE_RENDER) drainQueue();
     });
 
     s.on('done', data => {
@@ -566,4 +567,8 @@
       queueHandle = null;
     }
   };
+
+  window._debugQueue = itemQueue;
+  window._debugProcessQueue = processQueue;
+  window.DEBUG_FORCE_RENDER = false;
 })();
