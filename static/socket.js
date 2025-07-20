@@ -382,18 +382,61 @@
   function registerSocketEvents(s) {
 
     s.on('info', data => {
-    let p = progressMap.get(String(data.steamid));
-    if (!p) {
-      insertProgressBar(data.steamid);
-      p = progressMap.get(String(data.steamid));
-    }
-    if (p) {
-      p.bar.style.width = '0%';
-      // force reflow to restart transition
-      void p.bar.offsetWidth;
-      p.bar.textContent = `0/${data.total || 0}`;
-    }
-  });
+      const card = document.getElementById('user-' + data.steamid);
+      if (card) {
+        const header = card.querySelector('.card-header');
+        if (header) {
+          header.innerHTML = `
+            <div class="user-header">
+              <div class="user-profile">
+                <a href="${data.profile}" target="_blank" class="avatar-link">
+                  <img src="${data.avatar}" alt="Avatar" class="profile-pic" loading="lazy"/>
+                </a>
+                <div class="profile-details">
+                  <div class="username">${data.username}</div>
+                  <div class="tf2-hours">TF2 Playtime: ${data.playtime} hrs</div>
+                  <div class="profile-link">
+                    <a href="${data.backpack}" class="backpack-link" target="_blank" rel="noopener">
+                      Backpack.tf
+                      <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon"/>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="header-right">
+                <button class="cancel-btn" type="button" onclick="cancelInventoryFetch(${data.steamid})">&#x2716;</button>
+              </div>
+            </div>`;
+        }
+        const invContainer = card.querySelector('.inventory-container');
+        if (invContainer && !card.querySelector('.inventory-scroll')) {
+          const scrollWrapper = document.createElement('div');
+          scrollWrapper.className = 'inventory-scroll';
+          const leftBtn = document.createElement('button');
+          leftBtn.className = 'scroll-arrow left';
+          leftBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+          const rightBtn = document.createElement('button');
+          rightBtn.className = 'scroll-arrow right';
+          rightBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+          scrollWrapper.appendChild(leftBtn);
+          scrollWrapper.appendChild(invContainer);
+          scrollWrapper.appendChild(rightBtn);
+          const body = card.querySelector('.card-body');
+          if (body) body.appendChild(scrollWrapper);
+        }
+      }
+      let p = progressMap.get(String(data.steamid));
+      if (!p) {
+        insertProgressBar(data.steamid);
+        p = progressMap.get(String(data.steamid));
+      }
+      if (p) {
+        p.bar.style.width = '0%';
+        // force reflow to restart transition
+        void p.bar.offsetWidth;
+        p.bar.textContent = `0/${data.total || 0}`;
+      }
+    });
 
 
     s.on('progress', data => {
@@ -571,4 +614,17 @@
   window._debugQueue = itemQueue;
   window._debugProcessQueue = processQueue;
   window.DEBUG_FORCE_RENDER = false;
+
+  document.addEventListener('click', e => {
+    const left = e.target.closest('.scroll-arrow.left');
+    if (left) {
+      const container = left.closest('.inventory-scroll')?.querySelector('.inventory-container');
+      if (container) container.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+    const right = e.target.closest('.scroll-arrow.right');
+    if (right) {
+      const container = right.closest('.inventory-scroll')?.querySelector('.inventory-container');
+      if (container) container.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  });
 })();

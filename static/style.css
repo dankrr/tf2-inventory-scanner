@@ -843,6 +843,31 @@ footer {
   color: #fff;
 }
 
+.inventory-scroll {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inventory-scroll .inventory-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 6px;
+}
+
+.scroll-arrow.left {
+  left: 0;
+}
+
+.scroll-arrow.right {
+  right: 0;
+}
+
+.inventory-scroll:hover .scroll-arrow {
+  display: block;
+}
+
 .error-banner {
   color: #ffaaaa;
   font-size: 0.9rem;

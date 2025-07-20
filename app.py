@@ -448,6 +448,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
 async def stream_inventory(sid: str, steamid64: int) -> None:
     """Stream inventory items to the client with adaptive batching."""
 
+    summary_task = asyncio.create_task(get_player_summary(str(steamid64)))
     try:
         status, raw = await asyncio.wait_for(sac.fetch_inventory_async(steamid64), 20)
     except asyncio.TimeoutError:
@@ -478,8 +479,24 @@ async def stream_inventory(sid: str, steamid64: int) -> None:
         return
 
     total = len(raw.get("items") or [])
+    summary = await summary_task
     await sio.emit(
-        "info", {"steamid": steamid64, "total": total}, to=sid, namespace="/inventory"
+        "info",
+        {
+            "steamid": steamid64,
+            "username": summary.get("username") if summary else str(steamid64),
+            "avatar": summary.get("avatar") if summary else "",
+            "profile": (
+                summary.get("profile")
+                if summary
+                else f"https://steamcommunity.com/profiles/{steamid64}"
+            ),
+            "backpack": f"https://next.backpack.tf/profiles/{steamid64}",
+            "playtime": summary.get("playtime") if summary else 0,
+            "total": total,
+        },
+        to=sid,
+        namespace="/inventory",
     )
 
     if not local_data.ITEMS_BY_DEFINDEX:
