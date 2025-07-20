@@ -7,7 +7,8 @@ from hypercorn.config import Config
 
 # Import the Socket.IO ASGI app from app.py. Rename locally to avoid
 # confusion with the `socketio` package which is also used.
-from app import socketio as asgi_app, kill_process_on_port, _setup_test_mode, ARGS
+# Import the exported ASGI application directly from app.py
+from app import asgi_app, kill_process_on_port, _setup_test_mode, ARGS
 from utils.cache_manager import (
     fetch_missing_cache_files,
     COLOR_YELLOW,
