@@ -196,6 +196,33 @@
     removeQueued(steamid);
   }
 
+  function resetCardForRetry(steamid) {
+    const card = document.getElementById('user-' + steamid);
+    if (!card) return;
+
+    const errorBanner = card.querySelector('.error-banner');
+    if (errorBanner) errorBanner.remove();
+
+    const invContainer = card.querySelector('.inventory-container');
+    if (invContainer) invContainer.innerHTML = '';
+
+    let spinner = card.querySelector('.loading-spinner');
+    if (!spinner) {
+      spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+      spinner.setAttribute('aria-label', 'Loading');
+      card.appendChild(spinner);
+    }
+
+    const bar = card.querySelector('.progress-inner');
+    if (bar) {
+      bar.style.width = '0%';
+      bar.textContent = '0';
+    }
+
+    card.classList.add('loading');
+  }
+
   function insertUserPlaceholder(id) {
     const container = document.getElementById('user-container');
     if (!container || document.getElementById('user-' + id)) return;
@@ -638,30 +665,7 @@
 
     console.log(`\u{1F501} Retrying inventory fetch for ${steamid}`);
 
-    const card = document.getElementById('user-' + steamid);
-    if (card) {
-      const errorBanner = card.querySelector('.error-banner');
-      if (errorBanner) errorBanner.remove();
-
-      const invContainer = card.querySelector('.inventory-container');
-      if (invContainer) invContainer.innerHTML = '';
-
-      let spinner = card.querySelector('.loading-spinner');
-      if (!spinner) {
-        spinner = document.createElement('div');
-        spinner.className = 'loading-spinner';
-        spinner.setAttribute('aria-label', 'Loading');
-        card.appendChild(spinner);
-      }
-
-      const bar = card.querySelector('.progress-inner');
-      if (bar) {
-        bar.style.width = '0%';
-        bar.textContent = '0';
-      }
-
-      card.classList.add('loading');
-    }
+    resetCardForRetry(steamid);
 
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(steamid);
@@ -669,4 +673,24 @@
       console.error('startInventoryFetch is not defined');
     }
   });
+
+  const refreshBtn = document.getElementById('refresh-failed-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      console.log('\u{1F504} Refreshing all failed inventories...');
+      const cards = document.querySelectorAll('.retry-button[data-steamid], .user-card.failed');
+      const seen = new Set();
+      cards.forEach((el, idx) => {
+        const id = el.dataset.steamid || el.closest('.user-card')?.dataset.steamid;
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        setTimeout(() => {
+          resetCardForRetry(id);
+          if (typeof window.startInventoryFetch === 'function') {
+            window.startInventoryFetch(id);
+          }
+        }, idx * 200);
+      });
+    });
+  }
 })();
