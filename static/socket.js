@@ -1,20 +1,154 @@
 
-(function () {
-  const progressMap = new Map(); // steamid -> { el, bar }
-  let socket;
 
-  function initSocket(retry = 0) {
+(function () {
+  const progressMap = new Map(); // steamid -> { el, bar, eta }
+  const itemQueue = [];
+  let queueHandle = null;
+  const scheduler = window.requestIdleCallback
+    ? { run: cb => requestIdleCallback(cb), cancel: handle => cancelIdleCallback(handle) }
+    : { run: cb => requestAnimationFrame(cb), cancel: handle => cancelAnimationFrame(handle) };
+  let domBatchSize = window.innerWidth > 1024 ? 30 : 10;
+  let socket;
+  let reconnectDelay = 500;
+  let pendingSubmission = null;
+
+  function processQueue() {
+    queueHandle = null;
+    if (!itemQueue.length) return;
+    const start = performance.now();
+    const batch = itemQueue.splice(0, domBatchSize);
+    const fragMap = new Map();
+    batch.forEach(({ container, el }) => {
+      let frag = fragMap.get(container);
+      if (!frag) {
+        frag = document.createDocumentFragment();
+        fragMap.set(container, frag);
+      }
+      frag.appendChild(el);
+    });
+    fragMap.forEach((frag, container) => {
+      container.appendChild(frag);
+      if (frag.firstChild) void frag.firstChild.offsetHeight;
+    });
+    if (window.attachItemModal) {
+      window.attachItemModal();
+    } else if (window.attachHandlers) {
+      window.attachHandlers();
+    }
+    if (window.refreshLazyLoad) window.refreshLazyLoad();
+    const frameTime = performance.now() - start;
+    console.log(`Processed batch of ${batch.length}, remaining: ${itemQueue.length}`);
+    if (frameTime < 10 && domBatchSize < 100) {
+      domBatchSize += 5;
+      console.debug('⚡ DOM batch ->', domBatchSize);
+    } else if (frameTime > 20 && domBatchSize > 10) {
+      domBatchSize = Math.max(10, domBatchSize - 5);
+      console.debug('🐢 DOM batch ->', domBatchSize);
+    }
+    console.debug('Queue length:', itemQueue.length, 'Batch size:', domBatchSize);
+    if (itemQueue.length) {
+      queueHandle = scheduler.run(processQueue);
+    }
+  }
+
+  function enqueueItem(container, el, steamid) {
+    itemQueue.push({ container, el, steamid: String(steamid) });
+    console.log('Queue length after enqueue:', itemQueue.length);
+    if (!queueHandle) {
+      queueHandle = scheduler.run(processQueue);
+    }
+  }
+
+  function removeQueued(id) {
+    const sid = String(id);
+    for (let i = itemQueue.length - 1; i >= 0; i--) {
+      if (itemQueue[i].steamid === sid) {
+        itemQueue.splice(i, 1);
+      }
+    }
+    if (!itemQueue.length && queueHandle) {
+      scheduler.cancel(queueHandle);
+      queueHandle = null;
+    }
+  }
+
+  function flushQueued(id) {
+    const sid = String(id);
+    const fragMap = new Map();
+    for (let i = itemQueue.length - 1; i >= 0; i--) {
+      if (itemQueue[i].steamid === sid) {
+        const { container, el } = itemQueue.splice(i, 1)[0];
+        let frag = fragMap.get(container);
+        if (!frag) {
+          frag = document.createDocumentFragment();
+          fragMap.set(container, frag);
+        }
+        frag.appendChild(el);
+      }
+    }
+    fragMap.forEach((frag, container) => {
+      container.appendChild(frag);
+      if (frag.firstChild) void frag.firstChild.offsetHeight;
+    });
+    if (!itemQueue.length && queueHandle) {
+      scheduler.cancel(queueHandle);
+      queueHandle = null;
+    }
+  }
+
+  function drainQueue() {
+    while (itemQueue.length) {
+      processQueue();
+    }
+    if (queueHandle) {
+      scheduler.cancel(queueHandle);
+      queueHandle = null;
+    }
+  }
+
+
+  function retryConnect() {
+    setTimeout(initSocket, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, 10000);
+  }
+
+  function initSocket() {
     if (!window.io) {
-      if (retry < 5) setTimeout(() => initSocket(retry + 1), 500);
+      setTimeout(initSocket, 500);
       return;
     }
+
     socket = io('/inventory', { transports: ['websocket'] });
     window.inventorySocket = socket;
+    const btn = document.getElementById('check-inventory-btn');
+    if (btn) btn.disabled = true;
 
     socket.on('connect', () => {
       console.log('✅ Socket.IO connected via', socket.io.engine.transport.name);
+      reconnectDelay = 500;
+      if (window.enableSubmitButton) window.enableSubmitButton();
+      if (Array.isArray(pendingSubmission)) {
+        const ids = pendingSubmission;
+        pendingSubmission = null;
+        ids.forEach(id => window.startInventoryFetch(id));
+      }
     });
-    socket.on('connect_error', err => console.error('❌ Socket.IO error:', err));
+
+    socket.on('disconnect', () => {
+      console.warn('Socket.IO disconnected');
+      const btn = document.getElementById('check-inventory-btn');
+      if (btn) btn.disabled = true;
+      if (queueHandle) {
+        scheduler.cancel(queueHandle);
+        queueHandle = null;
+      }
+      itemQueue.length = 0;
+      retryConnect();
+    });
+
+    socket.on('connect_error', err => {
+      console.error('❌ Socket.IO error:', err);
+    });
 
     registerSocketEvents(socket);
   }
@@ -27,18 +161,39 @@
     if (!card) return;
     let barWrap = card.querySelector('.user-progress');
     let inner;
+    let eta;
     if (!barWrap) {
       barWrap = document.createElement('div');
       barWrap.className = 'user-progress';
       inner = document.createElement('div');
       inner.className = 'progress-inner';
       inner.id = 'progress-' + steamid;
+      eta = document.createElement('span');
+      eta.className = 'eta-label';
+      eta.id = 'eta-' + steamid;
       barWrap.appendChild(inner);
+      barWrap.appendChild(eta);
       card.appendChild(barWrap);
     } else {
       inner = barWrap.querySelector('.progress-inner');
+      eta = barWrap.querySelector('.eta-label');
+      barWrap.classList.remove('fade-out');
     }
-    progressMap.set(String(steamid), { el: barWrap, bar: inner });
+    inner.style.width = '0%';
+    // reset transition start point
+    void inner.offsetWidth;
+    progressMap.set(String(steamid), { el: barWrap, bar: inner, eta });
+  }
+
+  function clearExisting(steamid) {
+    const card = document.getElementById('user-' + steamid);
+    if (!card) return;
+    const container = card.querySelector('.inventory-container');
+    if (container) container.innerHTML = '';
+    const bar = card.querySelector('.user-progress');
+    if (bar) bar.remove();
+    progressMap.delete(String(steamid));
+    removeQueued(steamid);
   }
 
   function insertUserPlaceholder(id) {
@@ -50,7 +205,9 @@
     div.innerHTML =
       '<div class="card-header">' +
       id +
-      '</div><div class="card-body"><div class="inventory-container"></div></div>';
+      '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
+      id +
+      ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     div.appendChild(spinner);
@@ -220,20 +377,66 @@
 
     setTimeout(() => wrapper.classList.add('show'), 10);
     return wrapper;
+  }
   
   function registerSocketEvents(s) {
 
     s.on('info', data => {
-    let p = progressMap.get(String(data.steamid));
-    if (!p) {
-      insertProgressBar(data.steamid);
-      p = progressMap.get(String(data.steamid));
-    }
-    if (p) {
-      p.bar.style.width = '0%';
-      p.bar.textContent = `0/${data.total || 0}`;
-    }
-  });
+      const card = document.getElementById('user-' + data.steamid);
+      if (card) {
+        const header = card.querySelector('.card-header');
+        if (header) {
+          header.innerHTML = `
+            <div class="user-header">
+              <div class="user-profile">
+                <a href="${data.profile}" target="_blank" class="avatar-link">
+                  <img src="${data.avatar}" alt="Avatar" class="profile-pic" loading="lazy"/>
+                </a>
+                <div class="profile-details">
+                  <div class="username">${data.username}</div>
+                  <div class="tf2-hours">TF2 Playtime: ${data.playtime} hrs</div>
+                  <div class="profile-link">
+                    <a href="${data.backpack}" class="backpack-link" target="_blank" rel="noopener">
+                      Backpack.tf
+                      <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon"/>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="header-right">
+                <button class="cancel-btn" type="button" onclick="cancelInventoryFetch(${data.steamid})">&#x2716;</button>
+              </div>
+            </div>`;
+        }
+        const invContainer = card.querySelector('.inventory-container');
+        if (invContainer && !card.querySelector('.inventory-scroll')) {
+          const scrollWrapper = document.createElement('div');
+          scrollWrapper.className = 'inventory-scroll';
+          const leftBtn = document.createElement('button');
+          leftBtn.className = 'scroll-arrow left';
+          leftBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+          const rightBtn = document.createElement('button');
+          rightBtn.className = 'scroll-arrow right';
+          rightBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+          scrollWrapper.appendChild(leftBtn);
+          scrollWrapper.appendChild(invContainer);
+          scrollWrapper.appendChild(rightBtn);
+          const body = card.querySelector('.card-body');
+          if (body) body.appendChild(scrollWrapper);
+        }
+      }
+      let p = progressMap.get(String(data.steamid));
+      if (!p) {
+        insertProgressBar(data.steamid);
+        p = progressMap.get(String(data.steamid));
+      }
+      if (p) {
+        p.bar.style.width = '0%';
+        // force reflow to restart transition
+        void p.bar.offsetWidth;
+        p.bar.textContent = `0/${data.total || 0}`;
+      }
+    });
 
 
     s.on('progress', data => {
@@ -245,31 +448,41 @@
         if (spin) spin.remove();
       }
       const pct = Math.min((data.processed / data.total) * 100, 100);
-      p.bar.style.width = pct + '%';
-      // force reflow so transition animates
       void p.bar.offsetWidth;
+      p.bar.style.width = pct + '%';
       p.bar.textContent = `${data.processed}/${data.total}`;
+      if (p.eta) {
+        if (data.eta && data.eta > 0) {
+          p.eta.textContent = `~${data.eta}s remaining`;
+        } else {
+          p.eta.textContent = '';
+        }
+      }
+      console.debug(
+        `Progress: ${data.processed}/${data.total}, ETA: ${data.eta}s`
+      );
     });
 
-    s.on('item', data => {
-    console.debug('📦 item', data.market_hash_name || data.name || data.defindex);
-    const container = document.querySelector(`#user-${data.steamid} .inventory-container`);
-    if (!container) return;
-    const frag = document.createDocumentFragment();
-    const el = createItemElement(data);
-    frag.appendChild(el);
-    container.appendChild(frag);
-    // force repaint so newly added item appears immediately
-    void el.offsetHeight;
-    if (window.attachItemModal) {
-      window.attachItemModal();
-    } else if (window.attachHandlers) {
-      window.attachHandlers();
-    }
-    if (window.refreshLazyLoad) {
-      window.refreshLazyLoad();
-    }
-  });
+    s.on('items_batch', data => {
+      const container = document.querySelector(
+        `#user-${data.steamid} .inventory-container`
+      );
+      if (!container) {
+        console.error('Container not found for', data.steamid);
+        return;
+      }
+      const batch = data.items || [];
+      console.log(`📦 Received ${batch.length} items for ${data.steamid}`);
+      if (batch.length) console.log('Sample item:', batch[0]);
+      batch.forEach(item => {
+        const el = createItemElement(item);
+        enqueueItem(container, el, data.steamid);
+      });
+      console.debug(
+        `📦 Received batch of ${batch.length}, remaining approx: ${itemQueue.length}`
+      );
+      if (window.DEBUG_FORCE_RENDER) drainQueue();
+    });
 
     s.on('done', data => {
     const card = document.getElementById('user-' + data.steamid);
@@ -303,6 +516,8 @@
           msg.textContent =
             data.status === 'private'
               ? 'Inventory private'
+              : data.status === 'timeout'
+              ? 'Timed out'
               : 'Inventory unavailable';
           body.insertBefore(msg, body.firstChild);
         }
@@ -347,12 +562,19 @@
     const p = progressMap.get(String(data.steamid));
     if (p) {
       p.bar.style.width = '100%';
+      // ensure final width transition flushes
+      void p.bar.offsetWidth;
       p.bar.textContent = data.status === 'parsed' ? 'Done' : 'Failed';
+      if (p.eta) p.eta.textContent = '';
       setTimeout(() => {
         p.el.classList.add('fade-out');
         setTimeout(() => p.el.remove(), 600);
       }, 4000);
       progressMap.delete(String(data.steamid));
+      flushQueued(data.steamid);
+      drainQueue();
+      const cancelBtn = card.querySelector('.cancel-btn');
+      if (cancelBtn) cancelBtn.disabled = true;
     }
   });
 
@@ -360,11 +582,49 @@
 
   window.startInventoryFetch = function (steamid) {
     if (!socket || socket.disconnected) {
-      console.warn('⚠ Socket not ready, using fallback API.');
-      fetchUserCard(steamid);
+      console.warn('⚠ Socket not ready, queuing fetch');
+      if (!pendingSubmission) pendingSubmission = [];
+      if (!pendingSubmission.includes(String(steamid))) {
+        pendingSubmission.push(String(steamid));
+      }
       return;
     }
+    clearExisting(steamid);
     insertProgressBar(steamid);
     socket.emit('start_fetch', { steamid });
   };
+
+  window.cancelInventoryFetch = function (steamid) {
+    if (socket) socket.emit('cancel_fetch', { steamid });
+    removeQueued(steamid);
+    const card = document.getElementById('user-' + steamid);
+    if (card) {
+      card.classList.add('fade-out');
+      setTimeout(() => card.remove(), 600);
+    }
+    const p = progressMap.get(String(steamid));
+    if (p && p.el) p.el.remove();
+    progressMap.delete(String(steamid));
+    if (!itemQueue.length && queueHandle) {
+      scheduler.cancel(queueHandle);
+      queueHandle = null;
+    }
+  };
+
+  window._debugQueue = itemQueue;
+  window._debugProcessQueue = processQueue;
+  window.DEBUG_FORCE_RENDER = false;
+
+  document.addEventListener('click', e => {
+    const left = e.target.closest('.scroll-arrow.left');
+    if (left) {
+      const container = left.closest('.inventory-scroll')?.querySelector('.inventory-container');
+      if (container) container.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+    const right = e.target.closest('.scroll-arrow.right');
+    if (right) {
+      const container = right.closest('.inventory-scroll')?.querySelector('.inventory-container');
+      if (container) container.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  });
 })();

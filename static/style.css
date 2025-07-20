@@ -71,6 +71,12 @@ button,
   padding: 0 1rem;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .user-profile {
   display: flex;
   align-items: center;
@@ -655,6 +661,11 @@ html, body {
   transform: scale(1);
 }
 
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
 footer {
   padding: 1rem;
   text-align: center;
@@ -797,7 +808,8 @@ footer {
   font-weight: bold;
   text-align: center;
   line-height: 14px;
-  transition: width 0.3s ease;
+  transition: width 0.35s ease;
+  will-change: width;
 }
 
 .eta-label {
@@ -817,6 +829,43 @@ footer {
   padding: 4px 8px;
   cursor: pointer;
   font-size: 0.8rem;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.cancel-btn:hover {
+  color: #fff;
+}
+
+.inventory-scroll {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inventory-scroll .inventory-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 6px;
+}
+
+.scroll-arrow.left {
+  left: 0;
+}
+
+.scroll-arrow.right {
+  right: 0;
+}
+
+.inventory-scroll:hover .scroll-arrow {
+  display: block;
 }
 
 .error-banner {

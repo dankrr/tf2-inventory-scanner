@@ -1,3 +1,4 @@
+(function () {
 function createPlaceholder(id) {
   const ph = document.createElement('div');
   ph.id = 'user-' + id;
@@ -6,7 +7,9 @@ function createPlaceholder(id) {
   ph.innerHTML =
     '<div class="card-header">' +
     id +
-    '</div><div class="card-body"><div class="inventory-container"></div></div>';
+    '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
+    id +
+    ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
   const spinner = document.createElement('div');
   spinner.className = 'loading-spinner';
   spinner.setAttribute('aria-label', 'Loading');
@@ -117,12 +120,15 @@ function handleSubmit(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('check-inventory-btn');
-  if (btn) {
-    btn.addEventListener('click', e => {
-      if (!window.inventorySocket || window.inventorySocket.disconnected) {
-        console.warn('⚠ Socket not ready, will use fallback.');
-      }
-      handleSubmit(e);
-    });
-  }
+  if (!btn) return;
+  btn.disabled = true;
+  btn.addEventListener('click', e => {
+    handleSubmit(e);
+  });
 });
+
+window.enableSubmitButton = function () {
+  const btn = document.getElementById('check-inventory-btn');
+  if (btn) btn.disabled = false;
+};
+})();
