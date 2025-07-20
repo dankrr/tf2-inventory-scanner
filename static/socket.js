@@ -11,7 +11,9 @@
     socket = io('/inventory', { transports: ['websocket'] });
     window.inventorySocket = socket;
 
-    socket.on('connect', () => console.log('✅ Socket.IO connected'));
+    socket.on('connect', () => {
+      console.log('✅ Socket.IO connected via', socket.io.engine.transport.name);
+    });
     socket.on('connect_error', err => console.error('❌ Socket.IO error:', err));
 
     registerSocketEvents(socket);
@@ -245,12 +247,12 @@
       const pct = Math.min((data.processed / data.total) * 100, 100);
       p.bar.style.width = pct + '%';
       // force reflow so transition animates
-      // eslint-disable-next-line no-unused-expressions
-      p.bar.offsetWidth;
+      void p.bar.offsetWidth;
       p.bar.textContent = `${data.processed}/${data.total}`;
     });
 
     s.on('item', data => {
+    console.debug('📦 item', data.market_hash_name || data.name || data.defindex);
     const container = document.querySelector(`#user-${data.steamid} .inventory-container`);
     if (!container) return;
     const frag = document.createDocumentFragment();

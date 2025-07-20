@@ -393,7 +393,7 @@ button {
   justify-content: center;
 }
 
-.item-name {
+.user-card .item-name {
   color: #000 !important; /* Force black font */
   background: none !important; /* Remove background */
   -webkit-text-stroke: 0 !important; /* Remove text stroke */
@@ -767,7 +767,7 @@ footer {
     width: 88px;
     height: 118px;
   }
-  .item-name {
+  .user-card .item-name {
     font-size: 10px;
   }
 }
@@ -846,7 +846,7 @@ footer {
     padding: 6px;
   }
 
-  .item-name {
+  .user-card .item-name {
     font-size: 13px;
     line-height: 1.3;
     font-weight: 500;
