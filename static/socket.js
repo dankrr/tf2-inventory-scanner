@@ -510,6 +510,27 @@
         } else {
           pill.className = 'status-pill failed';
           pill.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+          // ✅ Add Retry Button if not already present
+          let retryBtn = header.querySelector('.retry-button');
+          if (!retryBtn) {
+            retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-button';
+            retryBtn.title = 'Retry scan';
+            retryBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Retry';
+            header.appendChild(retryBtn);
+
+            retryBtn.addEventListener('click', () => {
+              const steamid = String(data.steamid);
+              const card = document.getElementById('user-' + steamid);
+              if (card) {
+                card.remove();
+              }
+              if (typeof window.startInventoryFetch === 'function') {
+                window.startInventoryFetch(steamid);
+              }
+            });
+          }
         }
       }
 
