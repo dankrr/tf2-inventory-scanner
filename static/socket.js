@@ -653,4 +653,44 @@
       if (container) container.scrollBy({ left: 200, behavior: 'smooth' });
     }
   });
+
+  document.addEventListener('click', e => {
+    const retryBtn = e.target.closest('.retry-button');
+    if (!retryBtn) return;
+    const steamid = retryBtn.dataset.steamid;
+    if (!steamid) return;
+
+    console.log(`\u{1F501} Retrying inventory fetch for ${steamid}`);
+
+    const card = document.getElementById('user-' + steamid);
+    if (card) {
+      const errorBanner = card.querySelector('.error-banner');
+      if (errorBanner) errorBanner.remove();
+
+      const invContainer = card.querySelector('.inventory-container');
+      if (invContainer) invContainer.innerHTML = '';
+
+      let spinner = card.querySelector('.loading-spinner');
+      if (!spinner) {
+        spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+        spinner.setAttribute('aria-label', 'Loading');
+        card.appendChild(spinner);
+      }
+
+      const bar = card.querySelector('.progress-inner');
+      if (bar) {
+        bar.style.width = '0%';
+        bar.textContent = '0';
+      }
+
+      card.classList.add('loading');
+    }
+
+    if (typeof window.startInventoryFetch === 'function') {
+      window.startInventoryFetch(steamid);
+    } else {
+      console.error('startInventoryFetch is not defined');
+    }
+  });
 })();
