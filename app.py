@@ -506,6 +506,7 @@ async def stream_inventory(sid: str, steamid64: int) -> None:
                     to=sid,
                     namespace="/inventory",
                 )
+                await sio.sleep(0)
                 batch.clear()
 
                 eta = int(
@@ -527,6 +528,9 @@ async def stream_inventory(sid: str, steamid64: int) -> None:
                     },
                     to=sid,
                     namespace="/inventory",
+                )
+                print(
+                    f"\U0001f4e4 Emitted batch: processed={processed}/{total}, ETA={eta}s"
                 )
                 await sio.sleep(0)
 

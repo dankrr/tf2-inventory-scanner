@@ -413,7 +413,9 @@
           p.eta.textContent = '';
         }
       }
-      console.debug('ETA', data.eta);
+      console.debug(
+        `Progress: ${data.processed}/${data.total}, ETA: ${data.eta}s`
+      );
     });
 
     s.on('items_batch', data => {
@@ -426,7 +428,9 @@
         const el = createItemElement(item);
         enqueueItem(container, el, data.steamid);
       });
-      console.debug('📦 batch', batch.length, 'remaining:', itemQueue.length);
+      console.debug(
+        `📦 Received batch of ${batch.length}, remaining approx: ${itemQueue.length}`
+      );
     });
 
     s.on('done', data => {
