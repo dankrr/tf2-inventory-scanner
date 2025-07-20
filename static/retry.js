@@ -157,7 +157,7 @@ async function refreshAll() {
   const total = ids.length;
   let current = 0;
 
-  for (const id of ids) {
+  for (const [index, id] of ids.entries()) {
     current += 1;
     btn.textContent = `Refreshing… (${current} / ${total})`;
     updateScanToast(current, total);
@@ -171,7 +171,9 @@ async function refreshAll() {
     } else {
       await retryInventory(id, false);
     }
-    await new Promise(r => setTimeout(r, 200));
+    if (index < ids.length - 1) {
+      await new Promise(r => setTimeout(r, 200));
+    }
   }
 
   hideScanToast();
