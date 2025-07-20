@@ -384,33 +384,33 @@
     s.on('info', data => {
       const card = document.getElementById('user-' + data.steamid);
       if (card) {
-        const header = card.querySelector('.card-header');
+        const header = card.querySelector('.card-header, .user-header');
         if (header) {
           const avatar = data.avatar || '/static/images/logos/tf2autobot.png';
           const username = data.username || data.steamid;
           const profile = data.profile || `https://steamcommunity.com/profiles/${data.steamid}`;
           const backpack = data.backpack || `https://next.backpack.tf/profiles/${data.steamid}`;
           const playtime = data.playtime ?? 0;
+          header.classList.add('user-header');
           header.innerHTML = `
-            <div class="user-header">
-              <div class="user-profile">
-                <a href="${profile}" target="_blank" class="avatar-link">
-                  <img src="${avatar}" alt="Avatar" class="profile-pic" loading="lazy"/>
-                </a>
-                <div class="profile-details">
-                  <div class="username">${username}</div>
-                  <div class="tf2-hours">TF2 Playtime: ${playtime} hrs</div>
-                  <div class="profile-link">
-                    <a href="${backpack}" class="backpack-link" target="_blank" rel="noopener">
-                      Backpack.tf
-                      <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon"/>
-                    </a>
-                  </div>
+            <div class="user-profile">
+              <a href="${profile}" target="_blank" class="avatar-link">
+                <img src="${avatar}" alt="Avatar" class="profile-pic" loading="lazy"/>
+              </a>
+              <div class="profile-details">
+                <div class="username">${username}</div>
+                <div class="tf2-hours">TF2 Playtime: ${playtime} hrs</div>
+                <div class="profile-link">
+                  <a href="${backpack}" class="backpack-link" target="_blank" rel="noopener">
+                    Backpack.tf
+                    <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon"/>
+                  </a>
                 </div>
               </div>
-              <div class="header-right">
-                <button class="cancel-btn" type="button" onclick="cancelInventoryFetch(${data.steamid})">&#x2716;</button>
-              </div>
+            </div>
+            <div class="header-right">
+              <button class="cancel-btn" type="button" onclick="cancelInventoryFetch(${data.steamid})">&#x2716;</button>
+              <div class="privacy-status"></div>
             </div>`;
         }
         const invContainer = card.querySelector('.inventory-container');
@@ -496,23 +496,27 @@
       const spin = card.querySelector('.loading-spinner');
       if (spin) spin.remove();
 
-      const header = card.querySelector('.card-header');
+      const header = card.querySelector('.card-header, .user-header');
       if (header) {
         let pill = header.querySelector('.status-pill');
         if (!pill) {
           pill = document.createElement('span');
-          pill.className = 'status-pill';
-          header.appendChild(pill);
+          pill.className = 'pill status-pill';
+          const container =
+            header.querySelector('.privacy-status') || header.querySelector('.header-right') || header;
+          container.appendChild(pill);
         }
         if (data.status === 'parsed') {
-          pill.className = 'status-pill parsed';
+          pill.className = 'pill status-pill parsed';
           pill.innerHTML = '<i class="fa-solid fa-check"></i>';
         } else {
-          pill.className = 'status-pill failed';
+          pill.className = 'pill status-pill failed';
           pill.innerHTML = '<i class="fa-solid fa-xmark"></i>';
 
           // ✅ Add Retry Button if not already present
-          let retryBtn = header.querySelector('.retry-button');
+          const container =
+            header.querySelector('.privacy-status') || header.querySelector('.header-right') || header;
+          let retryBtn = container.querySelector('.retry-button');
           if (!retryBtn) {
             retryBtn = document.createElement('button');
             retryBtn.className = 'pill status-pill failed retry-button';
@@ -520,7 +524,7 @@
             retryBtn.setAttribute('aria-label', 'Retry scan for this user');
             retryBtn.innerHTML =
               '<i class="fa-solid fa-arrows-rotate"></i> Retry';
-            header.appendChild(retryBtn);
+            container.appendChild(retryBtn);
           }
           // ensure steamid dataset is set correctly
           retryBtn.dataset.steamid = String(data.steamid);
