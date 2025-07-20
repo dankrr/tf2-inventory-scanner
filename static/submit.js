@@ -1,14 +1,43 @@
 (function () {
-function createPlaceholder(id) {
+function normalizeSteamID(id) {
+  const reSteam64 = /^\d{17}$/;
+  const reSteam3 = /^\[U:[0-5]:(\d+)\]$/;
+  const reSteam2 = /^STEAM_[0-5]:([01]):(\d+)$/;
+  const base = 76561197960265728n;
+
+  if (reSteam64.test(id)) return id;
+
+  let m = id.match(reSteam3);
+  if (m) {
+    const z = BigInt(m[1]);
+    return (base + z).toString();
+  }
+
+  m = id.match(reSteam2);
+  if (m) {
+    const y = BigInt(m[1]);
+    const z = BigInt(m[2]);
+    const accountId = z * 2n + y;
+    return (base + accountId).toString();
+  }
+
+  if (/^[a-zA-Z0-9_-]+$/.test(id)) {
+    return id.trim();
+  }
+
+  return null;
+}
+
+function createPlaceholder(steamid) {
   const ph = document.createElement('div');
-  ph.id = 'user-' + id;
-  ph.dataset.steamid = id;
+  ph.id = 'user-' + steamid;
+  ph.dataset.steamid = steamid;
   ph.className = 'user-card user-box loading';
   ph.innerHTML =
     '<div class="card-header">' +
-    id +
+    steamid +
     '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
-    id +
+    steamid +
     ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
   const spinner = document.createElement('div');
   spinner.className = 'loading-spinner';
@@ -18,11 +47,11 @@ function createPlaceholder(id) {
   bar.className = 'user-progress';
   const inner = document.createElement('div');
   inner.className = 'progress-inner';
-  inner.id = 'progress-' + id;
+  inner.id = 'progress-' + steamid;
   bar.appendChild(inner);
   const eta = document.createElement('span');
   eta.className = 'eta-label';
-  eta.id = 'eta-' + id;
+  eta.id = 'eta-' + steamid;
   bar.appendChild(eta);
   ph.appendChild(bar);
   return ph;
@@ -94,15 +123,20 @@ function handleSubmit(e) {
   const text = input.value || '';
   const ids = extractSteamIds(text);
   ids.forEach(id => {
-    if (!document.getElementById('user-' + id)) {
-      const ph = createPlaceholder(id);
+    const steam64 = normalizeSteamID(id);
+    if (!steam64) {
+      console.error('Invalid SteamID:', id);
+      return;
+    }
+    if (!document.getElementById('user-' + steam64)) {
+      const ph = createPlaceholder(steam64);
       container.appendChild(ph);
     }
     if (typeof window.startInventoryFetch === 'function') {
-      window.startInventoryFetch(id);
+      window.startInventoryFetch(steam64);
     } else {
       console.warn('Socket not connected yet');
-      fetchUserCard(id);
+      fetchUserCard(steam64);
     }
   });
   const results = document.getElementById('results');
