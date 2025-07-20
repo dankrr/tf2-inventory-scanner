@@ -1565,6 +1565,8 @@ async def process_inventory_streaming(
         item["spells"] = spells_list
 
         yield item
+        # allow other tasks to run before processing the next item
+        await asyncio.sleep(0)
 
 
 def run_enrichment_test(path: str | None = None) -> None:
