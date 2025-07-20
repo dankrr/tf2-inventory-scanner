@@ -13,12 +13,36 @@ function hideScanToast() {
   setTimeout(() => toast.classList.add('hidden'), 300);
 }
 
+function resetCardForRetry(steamid) {
+  const card = document.getElementById('user-' + steamid);
+  if (!card) return;
+  card.classList.remove('failed', 'success');
+  card.classList.add('loading');
+
+  const errorBanner = card.querySelector('.error-banner');
+  if (errorBanner) errorBanner.remove();
+
+  const invContainer = card.querySelector('.inventory-container');
+  if (invContainer) invContainer.innerHTML = '';
+
+  let spinner = card.querySelector('.loading-spinner');
+  if (!spinner) {
+    spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    spinner.setAttribute('aria-label', 'Loading');
+    card.appendChild(spinner);
+  }
+
+  const bar = card.querySelector('.progress-inner');
+  if (bar) {
+    bar.style.width = '0%';
+    bar.textContent = '0';
+  }
+}
+
 function retryInventory(id) {
   let card = document.getElementById('user-' + id);
-  if (card) {
-    card.classList.remove('failed', 'success');
-    card.classList.add('loading');
-  } else {
+  if (!card) {
     card = document.createElement('div');
     card.id = 'user-' + id;
     card.dataset.steamid = id;
@@ -26,9 +50,16 @@ function retryInventory(id) {
     document.getElementById('user-container').appendChild(card);
   }
 
+  resetCardForRetry(id);
+
   const pill = card.querySelector('.status-pill');
   if (pill) {
     pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
+  }
+
+  if (typeof window.startInventoryFetch === 'function') {
+    window.startInventoryFetch(id);
+    return Promise.resolve();
   }
 
   return fetch('/retry/' + id, { method: 'POST' })
@@ -115,39 +146,30 @@ async function refreshAll() {
   btn.textContent = 'Refreshing…';
   const ids = getFailedUsers();
   const total = ids.length;
-  ids.forEach((id, idx) => {
-    const card = document.getElementById('user-' + id);
-    if (card) {
-      card.classList.remove('failed', 'success');
-      card.classList.add('loading');
-      let spin = card.querySelector('.loading-spinner');
-      if (!spin) {
-        spin = document.createElement('div');
-        spin.className = 'loading-spinner';
-        spin.setAttribute('aria-label', 'Loading');
-        card.appendChild(spin);
-      }
-    } else if (typeof window.createPlaceholder === 'function') {
-      const container = document.getElementById('user-container');
-      if (container) {
-        const ph = createPlaceholder(id);
-        container.appendChild(ph);
-      }
-    }
+  let completed = 0;
 
-    if (typeof window.startInventoryFetch === 'function') {
-      window.startInventoryFetch(id);
-    } else {
-      retryInventory(id);
-    }
-    updateScanToast(idx + 1, total);
+  const tasks = ids.map((id, idx) => {
+    resetCardForRetry(id);
+    return new Promise(resolve => {
+      setTimeout(() => {
+        updateScanToast(++completed, total);
+        if (typeof window.startInventoryFetch === 'function') {
+          window.startInventoryFetch(id);
+          resolve();
+        } else {
+          retryInventory(id).finally(resolve);
+        }
+      }, idx * 200);
+    });
   });
+
+  await Promise.all(tasks);
+  hideScanToast();
   btn.disabled = false;
   btn.textContent = original;
   attachHandlers();
   updateRefreshButton();
   updateFailedCount();
-  hideScanToast();
 }
 
 
