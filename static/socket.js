@@ -44,6 +44,7 @@
       domBatchSize = Math.max(10, domBatchSize - 5);
       console.debug('🐢 DOM batch ->', domBatchSize);
     }
+    console.debug('Queue length:', itemQueue.length, 'Batch size:', domBatchSize);
     if (itemQueue.length) {
       queueHandle = scheduler.run(processQueue);
     }
@@ -63,6 +64,30 @@
         itemQueue.splice(i, 1);
       }
     }
+    if (!itemQueue.length && queueHandle) {
+      scheduler.cancel(queueHandle);
+      queueHandle = null;
+    }
+  }
+
+  function flushQueued(id) {
+    const sid = String(id);
+    const fragMap = new Map();
+    for (let i = itemQueue.length - 1; i >= 0; i--) {
+      if (itemQueue[i].steamid === sid) {
+        const { container, el } = itemQueue.splice(i, 1)[0];
+        let frag = fragMap.get(container);
+        if (!frag) {
+          frag = document.createDocumentFragment();
+          fragMap.set(container, frag);
+        }
+        frag.appendChild(el);
+      }
+    }
+    fragMap.forEach((frag, container) => {
+      container.appendChild(frag);
+      if (frag.firstChild) void frag.firstChild.offsetHeight;
+    });
     if (!itemQueue.length && queueHandle) {
       scheduler.cancel(queueHandle);
       queueHandle = null;
@@ -111,6 +136,11 @@
       console.warn('Socket.IO disconnected');
       const btn = document.getElementById('check-inventory-btn');
       if (btn) btn.disabled = true;
+      if (queueHandle) {
+        scheduler.cancel(queueHandle);
+        queueHandle = null;
+      }
+      itemQueue.length = 0;
       retryConnect();
     });
 
@@ -383,6 +413,7 @@
           p.eta.textContent = '';
         }
       }
+      console.debug('ETA', data.eta);
     });
 
     s.on('items_batch', data => {
@@ -485,8 +516,10 @@
         setTimeout(() => p.el.remove(), 600);
       }, 4000);
       progressMap.delete(String(data.steamid));
-      removeQueued(data.steamid);
+      flushQueued(data.steamid);
       drainQueue();
+      const cancelBtn = card.querySelector('.cancel-btn');
+      if (cancelBtn) cancelBtn.disabled = true;
     }
   });
 
@@ -508,6 +541,18 @@
 
   window.cancelInventoryFetch = function (steamid) {
     if (socket) socket.emit('cancel_fetch', { steamid });
-    clearExisting(steamid);
+    removeQueued(steamid);
+    const card = document.getElementById('user-' + steamid);
+    if (card) {
+      card.classList.add('fade-out');
+      setTimeout(() => card.remove(), 600);
+    }
+    const p = progressMap.get(String(steamid));
+    if (p && p.el) p.el.remove();
+    progressMap.delete(String(steamid));
+    if (!itemQueue.length && queueHandle) {
+      scheduler.cancel(queueHandle);
+      queueHandle = null;
+    }
   };
 })();
