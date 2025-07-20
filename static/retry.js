@@ -13,12 +13,36 @@ function hideScanToast() {
   setTimeout(() => toast.classList.add('hidden'), 300);
 }
 
-function retryInventory(id) {
+function resetCardForRetry(steamid) {
+  const card = document.getElementById('user-' + steamid);
+  if (!card) return;
+  card.classList.remove('failed', 'success', 'retry-card');
+  card.classList.add('loading');
+
+  const errorBanner = card.querySelector('.error-banner');
+  if (errorBanner) errorBanner.remove();
+
+  const invContainer = card.querySelector('.inventory-container');
+  if (invContainer) invContainer.innerHTML = '';
+
+  let spinner = card.querySelector('.loading-spinner');
+  if (!spinner) {
+    spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    spinner.setAttribute('aria-label', 'Loading');
+    card.appendChild(spinner);
+  }
+
+  const bar = card.querySelector('.progress-inner');
+  if (bar) {
+    bar.style.width = '0%';
+    bar.textContent = '0';
+  }
+}
+
+function retryInventory(id, updateButton = true) {
   let card = document.getElementById('user-' + id);
-  if (card) {
-    card.classList.remove('failed', 'success');
-    card.classList.add('loading');
-  } else {
+  if (!card) {
     card = document.createElement('div');
     card.id = 'user-' + id;
     card.dataset.steamid = id;
@@ -26,9 +50,26 @@ function retryInventory(id) {
     document.getElementById('user-container').appendChild(card);
   }
 
+  resetCardForRetry(id);
+
   const pill = card.querySelector('.status-pill');
   if (pill) {
     pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
+  }
+
+  if (typeof window.startInventoryFetch === 'function') {
+    window.startInventoryFetch(id);
+    if (window.refreshLazyLoad) {
+      window.refreshLazyLoad();
+    }
+    showResults();
+    if (updateButton) {
+      attachHandlers(false);
+      updateRefreshButton();
+    } else {
+      attachHandlers(false);
+    }
+    return Promise.resolve();
   }
 
   return fetch('/retry/' + id, { method: 'POST' })
@@ -40,11 +81,9 @@ function retryInventory(id) {
       if (newCard) {
         card.replaceWith(newCard);
       }
-      attachHandlers();
       if (window.refreshLazyLoad) {
         window.refreshLazyLoad();
       }
-      updateRefreshButton();
       showResults();
     })
     .catch(() => {
@@ -53,7 +92,12 @@ function retryInventory(id) {
         existing.classList.remove('loading');
         existing.classList.add('failed');
       }
-      updateRefreshButton();
+    })
+    .finally(() => {
+      attachHandlers(false);
+      if (updateButton) {
+        updateRefreshButton();
+      }
     });
 }
 
@@ -86,10 +130,6 @@ function updateRefreshButton() {
   updateFailedCount();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  updateRefreshButton();
-  updateFailedCount();
-});
 
 function handleRetryClick(event) {
   const btn = event.currentTarget;
@@ -97,12 +137,14 @@ function handleRetryClick(event) {
   retryInventory(btn.dataset.steamid);
 }
 
-function attachHandlers() {
+function attachHandlers(updateButton = true) {
   document.querySelectorAll('.retry-button').forEach(btn => {
     btn.removeEventListener('click', handleRetryClick);
     btn.addEventListener('click', handleRetryClick);
   });
-  updateRefreshButton();
+  if (updateButton) {
+    updateRefreshButton();
+  }
 
   attachItemModal();
 }
@@ -111,43 +153,33 @@ async function refreshAll() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
   btn.disabled = true;
-  const original = btn.textContent;
-  btn.textContent = 'Refreshing…';
   const ids = getFailedUsers();
   const total = ids.length;
-  ids.forEach((id, idx) => {
-    const card = document.getElementById('user-' + id);
-    if (card) {
-      card.classList.remove('failed', 'success');
-      card.classList.add('loading');
-      let spin = card.querySelector('.loading-spinner');
-      if (!spin) {
-        spin = document.createElement('div');
-        spin.className = 'loading-spinner';
-        spin.setAttribute('aria-label', 'Loading');
-        card.appendChild(spin);
-      }
-    } else if (typeof window.createPlaceholder === 'function') {
-      const container = document.getElementById('user-container');
-      if (container) {
-        const ph = createPlaceholder(id);
-        container.appendChild(ph);
-      }
-    }
+  let current = 0;
 
+  for (const [index, id] of ids.entries()) {
+    current += 1;
+    btn.textContent = `Refreshing… (${current} / ${total})`;
+    updateScanToast(current, total);
+    resetCardForRetry(id);
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
+      if (window.refreshLazyLoad) {
+        window.refreshLazyLoad();
+      }
+      showResults();
     } else {
-      retryInventory(id);
+      await retryInventory(id, false);
     }
-    updateScanToast(idx + 1, total);
-  });
-  btn.disabled = false;
-  btn.textContent = original;
-  attachHandlers();
-  updateRefreshButton();
-  updateFailedCount();
+    if (index < ids.length - 1) {
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+
   hideScanToast();
+  btn.disabled = false;
+  attachHandlers(false);
+  updateRefreshButton();
 }
 
 
@@ -202,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) {
     btn.addEventListener('click', refreshAll);
   }
+  updateRefreshButton();
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
   }
