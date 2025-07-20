@@ -16,7 +16,7 @@ function hideScanToast() {
 function resetCardForRetry(steamid) {
   const card = document.getElementById('user-' + steamid);
   if (!card) return;
-  card.classList.remove('failed', 'success');
+  card.classList.remove('failed', 'success', 'retry-card');
   card.classList.add('loading');
 
   const errorBanner = card.querySelector('.error-banner');
