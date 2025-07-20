@@ -119,10 +119,6 @@ function updateRefreshButton() {
   updateFailedCount();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  updateRefreshButton();
-  updateFailedCount();
-});
 
 function handleRetryClick(event) {
   const btn = event.currentTarget;
@@ -224,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) {
     btn.addEventListener('click', refreshAll);
   }
+  updateRefreshButton();
+  updateFailedCount();
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
   }
