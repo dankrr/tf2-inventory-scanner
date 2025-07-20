@@ -59,8 +59,10 @@ function retryInventory(id, updateButton = true) {
 
   if (typeof window.startInventoryFetch === 'function') {
     window.startInventoryFetch(id);
-    attachHandlers(updateButton);
-    if (updateButton) updateRefreshButton();
+    if (updateButton) {
+      attachHandlers();
+      updateRefreshButton();
+    }
     return Promise.resolve();
   }
 
@@ -73,11 +75,13 @@ function retryInventory(id, updateButton = true) {
       if (newCard) {
         card.replaceWith(newCard);
       }
-      attachHandlers(updateButton);
       if (window.refreshLazyLoad) {
         window.refreshLazyLoad();
       }
-      if (updateButton) updateRefreshButton();
+      if (updateButton) {
+        attachHandlers();
+        updateRefreshButton();
+      }
       showResults();
     })
     .catch(() => {
@@ -154,7 +158,6 @@ async function refreshAll() {
     resetCardForRetry(id);
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
-      attachHandlers(false);
     } else {
       await retryInventory(id, false);
     }
@@ -221,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', refreshAll);
   }
   updateRefreshButton();
-  updateFailedCount();
   if (window.modal && typeof window.modal.initModal === 'function') {
     window.modal.initModal();
   }
