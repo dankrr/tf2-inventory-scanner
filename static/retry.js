@@ -60,7 +60,7 @@ function retryInventory(id, updateButton = true) {
   if (typeof window.startInventoryFetch === 'function') {
     window.startInventoryFetch(id);
     if (updateButton) {
-      attachHandlers();
+      attachHandlers(false);
       updateRefreshButton();
     }
     return Promise.resolve();
@@ -78,10 +78,6 @@ function retryInventory(id, updateButton = true) {
       if (window.refreshLazyLoad) {
         window.refreshLazyLoad();
       }
-      if (updateButton) {
-        attachHandlers();
-        updateRefreshButton();
-      }
       showResults();
     })
     .catch(() => {
@@ -90,7 +86,12 @@ function retryInventory(id, updateButton = true) {
         existing.classList.remove('loading');
         existing.classList.add('failed');
       }
-      if (updateButton) updateRefreshButton();
+    })
+    .finally(() => {
+      if (updateButton) {
+        attachHandlers(false);
+        updateRefreshButton();
+      }
     });
 }
 
@@ -146,14 +147,13 @@ async function refreshAll() {
   const btn = document.getElementById('refresh-failed-btn');
   if (!btn) return;
   btn.disabled = true;
-  const original = btn.textContent;
-  btn.textContent = 'Refreshing…';
   const ids = getFailedUsers();
   const total = ids.length;
   let current = 0;
 
   for (const id of ids) {
     current += 1;
+    btn.textContent = `Refreshing… (${current} / ${total})`;
     updateScanToast(current, total);
     resetCardForRetry(id);
     if (typeof window.startInventoryFetch === 'function') {
@@ -166,7 +166,6 @@ async function refreshAll() {
 
   hideScanToast();
   btn.disabled = false;
-  btn.textContent = original;
   attachHandlers(false);
   updateRefreshButton();
 }
