@@ -59,6 +59,8 @@ function retryInventory(id) {
 
   if (typeof window.startInventoryFetch === 'function') {
     window.startInventoryFetch(id);
+    attachHandlers();
+    updateRefreshButton();
     return Promise.resolve();
   }
 
@@ -146,24 +148,22 @@ async function refreshAll() {
   btn.textContent = 'Refreshing…';
   const ids = getFailedUsers();
   const total = ids.length;
-  let completed = 0;
+  let current = 0;
 
-  const tasks = ids.map((id, idx) => {
+  for (const id of ids) {
+    current += 1;
+    updateScanToast(current, total);
     resetCardForRetry(id);
-    return new Promise(resolve => {
-      setTimeout(() => {
-        updateScanToast(++completed, total);
-        if (typeof window.startInventoryFetch === 'function') {
-          window.startInventoryFetch(id);
-          resolve();
-        } else {
-          retryInventory(id).finally(resolve);
-        }
-      }, idx * 200);
-    });
-  });
+    if (typeof window.startInventoryFetch === 'function') {
+      window.startInventoryFetch(id);
+      attachHandlers();
+      updateRefreshButton();
+    } else {
+      await retryInventory(id);
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
 
-  await Promise.all(tasks);
   hideScanToast();
   btn.disabled = false;
   btn.textContent = original;
