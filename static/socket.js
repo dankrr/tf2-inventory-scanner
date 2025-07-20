@@ -515,22 +515,15 @@
           let retryBtn = header.querySelector('.retry-button');
           if (!retryBtn) {
             retryBtn = document.createElement('button');
-            retryBtn.className = 'retry-button';
-            retryBtn.title = 'Retry scan';
-            retryBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Retry';
+            retryBtn.className = 'pill status-pill failed retry-button';
+            retryBtn.type = 'button';
+            retryBtn.setAttribute('aria-label', 'Retry scan for this user');
+            retryBtn.innerHTML =
+              '<i class="fa-solid fa-arrows-rotate"></i> Retry';
             header.appendChild(retryBtn);
-
-            retryBtn.addEventListener('click', () => {
-              const steamid = String(data.steamid);
-              const card = document.getElementById('user-' + steamid);
-              if (card) {
-                card.remove();
-              }
-              if (typeof window.startInventoryFetch === 'function') {
-                window.startInventoryFetch(steamid);
-              }
-            });
           }
+          // ensure steamid dataset is set correctly
+          retryBtn.dataset.steamid = String(data.steamid);
         }
       }
 
