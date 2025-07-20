@@ -259,6 +259,8 @@
     const el = createItemElement(data);
     frag.appendChild(el);
     container.appendChild(frag);
+    // force repaint so newly added item appears immediately
+    void el.offsetHeight;
     if (window.attachItemModal) {
       window.attachItemModal();
     } else if (window.attachHandlers) {

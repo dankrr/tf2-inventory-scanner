@@ -456,7 +456,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
     async for item in ip.process_inventory_streaming(raw):
         item["steamid"] = steamid64
         await sio.emit("item", item, to=sid, namespace="/inventory")
-        await asyncio.sleep(0)
+        await sio.sleep(0)
         processed += 1
         await sio.emit(
             "progress",
@@ -464,7 +464,7 @@ async def handle_start_fetch(sid: str, data: Dict[str, Any]) -> None:
             to=sid,
             namespace="/inventory",
         )
-        await asyncio.sleep(0)
+        await sio.sleep(0)
 
     await sio.emit(
         "done", {"steamid": steamid64, "status": status}, to=sid, namespace="/inventory"
