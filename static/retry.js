@@ -59,7 +59,7 @@ function retryInventory(id, updateButton = true) {
 
   if (typeof window.startInventoryFetch === 'function') {
     window.startInventoryFetch(id);
-    attachHandlers();
+    attachHandlers(updateButton);
     if (updateButton) updateRefreshButton();
     return Promise.resolve();
   }
@@ -73,7 +73,7 @@ function retryInventory(id, updateButton = true) {
       if (newCard) {
         card.replaceWith(newCard);
       }
-      attachHandlers();
+      attachHandlers(updateButton);
       if (window.refreshLazyLoad) {
         window.refreshLazyLoad();
       }
@@ -126,12 +126,14 @@ function handleRetryClick(event) {
   retryInventory(btn.dataset.steamid);
 }
 
-function attachHandlers() {
+function attachHandlers(updateButton = true) {
   document.querySelectorAll('.retry-button').forEach(btn => {
     btn.removeEventListener('click', handleRetryClick);
     btn.addEventListener('click', handleRetryClick);
   });
-  updateRefreshButton();
+  if (updateButton) {
+    updateRefreshButton();
+  }
 
   attachItemModal();
 }
@@ -152,7 +154,7 @@ async function refreshAll() {
     resetCardForRetry(id);
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
-      attachHandlers();
+      attachHandlers(false);
     } else {
       await retryInventory(id, false);
     }
@@ -162,9 +164,8 @@ async function refreshAll() {
   hideScanToast();
   btn.disabled = false;
   btn.textContent = original;
-  attachHandlers();
+  attachHandlers(false);
   updateRefreshButton();
-  updateFailedCount();
 }
 
 
