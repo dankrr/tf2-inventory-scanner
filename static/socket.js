@@ -1,12 +1,13 @@
 
 
 (function () {
-  const progressMap = new Map(); // steamid -> { el, bar }
+  const progressMap = new Map(); // steamid -> { el, bar, eta }
   const itemQueue = [];
   let queueHandle = null;
   let domBatchSize = window.innerWidth > 1024 ? 30 : 10;
-  let lastFrame = performance.now();
   let socket;
+  let reconnectDelay = 500;
+  let pendingSubmission = null;
 
   function processQueue() {
     queueHandle = null;
@@ -41,7 +42,6 @@
       console.debug('🐢 DOM batch ->', domBatchSize);
     }
     if (itemQueue.length) {
-      lastFrame = performance.now();
       queueHandle = requestAnimationFrame(processQueue);
     }
   }
@@ -77,18 +77,44 @@
     }
   }
 
-  function initSocket(retry = 0) {
+
+  function retryConnect() {
+    setTimeout(initSocket, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, 10000);
+  }
+
+  function initSocket() {
     if (!window.io) {
-      if (retry < 5) setTimeout(() => initSocket(retry + 1), 500);
+      setTimeout(initSocket, 500);
       return;
     }
+
     socket = io('/inventory', { transports: ['websocket'] });
     window.inventorySocket = socket;
+    const btn = document.getElementById('check-inventory-btn');
+    if (btn) btn.disabled = true;
 
     socket.on('connect', () => {
       console.log('✅ Socket.IO connected via', socket.io.engine.transport.name);
+      reconnectDelay = 500;
+      if (window.enableSubmitButton) window.enableSubmitButton();
+      if (Array.isArray(pendingSubmission)) {
+        const ids = pendingSubmission;
+        pendingSubmission = null;
+        ids.forEach(id => window.startInventoryFetch(id));
+      }
     });
-    socket.on('connect_error', err => console.error('❌ Socket.IO error:', err));
+
+    socket.on('disconnect', () => {
+      console.warn('Socket.IO disconnected');
+      const btn = document.getElementById('check-inventory-btn');
+      if (btn) btn.disabled = true;
+      retryConnect();
+    });
+
+    socket.on('connect_error', err => {
+      console.error('❌ Socket.IO error:', err);
+    });
 
     registerSocketEvents(socket);
   }
@@ -465,8 +491,11 @@
 
   window.startInventoryFetch = function (steamid) {
     if (!socket || socket.disconnected) {
-      console.warn('⚠ Socket not ready, using fallback API.');
-      fetchUserCard(steamid);
+      console.warn('⚠ Socket not ready, queuing fetch');
+      if (!pendingSubmission) pendingSubmission = [];
+      if (!pendingSubmission.includes(String(steamid))) {
+        pendingSubmission.push(String(steamid));
+      }
       return;
     }
     clearExisting(steamid);

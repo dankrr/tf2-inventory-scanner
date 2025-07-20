@@ -1,3 +1,4 @@
+(function () {
 function createPlaceholder(id) {
   const ph = document.createElement('div');
   ph.id = 'user-' + id;
@@ -119,12 +120,15 @@ function handleSubmit(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('check-inventory-btn');
-  if (btn) {
-    btn.addEventListener('click', e => {
-      if (!window.inventorySocket || window.inventorySocket.disconnected) {
-        console.warn('⚠ Socket not ready, will use fallback.');
-      }
-      handleSubmit(e);
-    });
-  }
+  if (!btn) return;
+  btn.disabled = true;
+  btn.addEventListener('click', e => {
+    handleSubmit(e);
+  });
 });
+
+window.enableSubmitButton = function () {
+  const btn = document.getElementById('check-inventory-btn');
+  if (btn) btn.disabled = false;
+};
+})();
