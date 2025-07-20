@@ -40,7 +40,7 @@ function resetCardForRetry(steamid) {
   }
 }
 
-function retryInventory(id) {
+function retryInventory(id, updateButton = true) {
   let card = document.getElementById('user-' + id);
   if (!card) {
     card = document.createElement('div');
@@ -60,7 +60,7 @@ function retryInventory(id) {
   if (typeof window.startInventoryFetch === 'function') {
     window.startInventoryFetch(id);
     attachHandlers();
-    updateRefreshButton();
+    if (updateButton) updateRefreshButton();
     return Promise.resolve();
   }
 
@@ -77,7 +77,7 @@ function retryInventory(id) {
       if (window.refreshLazyLoad) {
         window.refreshLazyLoad();
       }
-      updateRefreshButton();
+      if (updateButton) updateRefreshButton();
       showResults();
     })
     .catch(() => {
@@ -86,7 +86,7 @@ function retryInventory(id) {
         existing.classList.remove('loading');
         existing.classList.add('failed');
       }
-      updateRefreshButton();
+      if (updateButton) updateRefreshButton();
     });
 }
 
@@ -153,9 +153,8 @@ async function refreshAll() {
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
       attachHandlers();
-      updateRefreshButton();
     } else {
-      await retryInventory(id);
+      await retryInventory(id, false);
     }
     await new Promise(r => setTimeout(r, 200));
   }
