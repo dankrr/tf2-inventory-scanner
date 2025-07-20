@@ -7,9 +7,9 @@ function createPlaceholder(id) {
   ph.innerHTML =
     '<div class="card-header">' +
     id +
-    '<button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
+    '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
     id +
-    ')">&#x2716;</button></div><div class="card-body"><div class="inventory-container"></div></div>';
+    ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
   const spinner = document.createElement('div');
   spinner.className = 'loading-spinner';
   spinner.setAttribute('aria-label', 'Loading');

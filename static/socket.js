@@ -4,6 +4,9 @@
   const progressMap = new Map(); // steamid -> { el, bar, eta }
   const itemQueue = [];
   let queueHandle = null;
+  const scheduler = window.requestIdleCallback
+    ? { run: cb => requestIdleCallback(cb), cancel: handle => cancelIdleCallback(handle) }
+    : { run: cb => requestAnimationFrame(cb), cancel: handle => cancelAnimationFrame(handle) };
   let domBatchSize = window.innerWidth > 1024 ? 30 : 10;
   let socket;
   let reconnectDelay = 500;
@@ -42,15 +45,14 @@
       console.debug('🐢 DOM batch ->', domBatchSize);
     }
     if (itemQueue.length) {
-      queueHandle = requestAnimationFrame(processQueue);
+      queueHandle = scheduler.run(processQueue);
     }
   }
 
   function enqueueItem(container, el, steamid) {
     itemQueue.push({ container, el, steamid: String(steamid) });
     if (!queueHandle) {
-      const cb = window.requestIdleCallback || requestAnimationFrame;
-      queueHandle = cb(processQueue);
+      queueHandle = scheduler.run(processQueue);
     }
   }
 
@@ -62,7 +64,7 @@
       }
     }
     if (!itemQueue.length && queueHandle) {
-      cancelAnimationFrame(queueHandle);
+      scheduler.cancel(queueHandle);
       queueHandle = null;
     }
   }
@@ -72,7 +74,7 @@
       processQueue();
     }
     if (queueHandle) {
-      cancelAnimationFrame(queueHandle);
+      scheduler.cancel(queueHandle);
       queueHandle = null;
     }
   }
@@ -171,9 +173,9 @@
     div.innerHTML =
       '<div class="card-header">' +
       id +
-      '<button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
+      '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
       id +
-      ')">&#x2716;</button></div><div class="card-body"><div class="inventory-container"></div></div>';
+      ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     div.appendChild(spinner);
