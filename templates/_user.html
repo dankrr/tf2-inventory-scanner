@@ -15,7 +15,9 @@
         </div>
       </div>
     </div>
-    <div class="privacy-status">
+    <div class="header-right">
+      <button class="cancel-btn" type="button" onclick="cancelInventoryFetch({{ user.steamid }})">&#x2716;</button>
+      <div class="privacy-status">
       {% if user.status == 'failed' %}
         <button
           class="pill status-pill failed retry-button"
@@ -36,6 +38,7 @@
           {% endif %}
         </span>
       {% endif %}
+      </div>
     </div>
   </div>
   <div class="card-body">
