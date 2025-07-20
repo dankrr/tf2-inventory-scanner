@@ -500,6 +500,7 @@ async def stream_inventory(sid: str, steamid64: int) -> None:
 
             if len(batch) >= batch_size:
                 emit_start = time.monotonic()
+                print(f"Emitting batch: {len(batch)} items for {steamid64}")
                 await sio.emit(
                     "items_batch",
                     {"steamid": steamid64, "items": batch},
@@ -557,6 +558,7 @@ async def stream_inventory(sid: str, steamid64: int) -> None:
                 return
 
         if batch:
+            print(f"Emitting batch: {len(batch)} items for {steamid64}")
             await sio.emit(
                 "items_batch",
                 {"steamid": steamid64, "items": batch},

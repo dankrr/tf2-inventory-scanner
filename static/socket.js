@@ -37,6 +37,7 @@
     }
     if (window.refreshLazyLoad) window.refreshLazyLoad();
     const frameTime = performance.now() - start;
+    console.log(`Processed batch of ${batch.length}, remaining: ${itemQueue.length}`);
     if (frameTime < 10 && domBatchSize < 100) {
       domBatchSize += 5;
       console.debug('⚡ DOM batch ->', domBatchSize);
@@ -52,6 +53,7 @@
 
   function enqueueItem(container, el, steamid) {
     itemQueue.push({ container, el, steamid: String(steamid) });
+    console.log('Queue length after enqueue:', itemQueue.length);
     if (!queueHandle) {
       queueHandle = scheduler.run(processQueue);
     }
@@ -422,8 +424,13 @@
       const container = document.querySelector(
         `#user-${data.steamid} .inventory-container`
       );
-      if (!container) return;
+      if (!container) {
+        console.error('Container not found for', data.steamid);
+        return;
+      }
       const batch = data.items || [];
+      console.log(`📦 Received ${batch.length} items for ${data.steamid}`);
+      if (batch.length) console.log('Sample item:', batch[0]);
       batch.forEach(item => {
         const el = createItemElement(item);
         enqueueItem(container, el, data.steamid);
