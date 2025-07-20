@@ -386,17 +386,22 @@
       if (card) {
         const header = card.querySelector('.card-header');
         if (header) {
+          const avatar = data.avatar || '/static/images/logos/tf2autobot.png';
+          const username = data.username || data.steamid;
+          const profile = data.profile || `https://steamcommunity.com/profiles/${data.steamid}`;
+          const backpack = data.backpack || `https://next.backpack.tf/profiles/${data.steamid}`;
+          const playtime = data.playtime ?? 0;
           header.innerHTML = `
             <div class="user-header">
               <div class="user-profile">
-                <a href="${data.profile}" target="_blank" class="avatar-link">
-                  <img src="${data.avatar}" alt="Avatar" class="profile-pic" loading="lazy"/>
+                <a href="${profile}" target="_blank" class="avatar-link">
+                  <img src="${avatar}" alt="Avatar" class="profile-pic" loading="lazy"/>
                 </a>
                 <div class="profile-details">
-                  <div class="username">${data.username}</div>
-                  <div class="tf2-hours">TF2 Playtime: ${data.playtime} hrs</div>
+                  <div class="username">${username}</div>
+                  <div class="tf2-hours">TF2 Playtime: ${playtime} hrs</div>
                   <div class="profile-link">
-                    <a href="${data.backpack}" class="backpack-link" target="_blank" rel="noopener">
+                    <a href="${backpack}" class="backpack-link" target="_blank" rel="noopener">
                       Backpack.tf
                       <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon"/>
                     </a>
