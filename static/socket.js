@@ -205,9 +205,7 @@
     div.innerHTML =
       '<div class="card-header">' +
       id +
-      '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
-      id +
-      ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
+      '<div class="header-right"></div></div><div class="card-body"><div class="inventory-container"></div></div>';
     const spinner = document.createElement('div');
     spinner.className = 'loading-spinner';
     div.appendChild(spinner);
@@ -409,7 +407,6 @@
               </div>
             </div>
             <div class="header-right">
-              <button class="cancel-btn" type="button" onclick="cancelInventoryFetch(${data.steamid})">&#x2716;</button>
               <div class="privacy-status"></div>
             </div>`;
         }
@@ -596,8 +593,6 @@
       progressMap.delete(String(data.steamid));
       flushQueued(data.steamid);
       drainQueue();
-      const cancelBtn = card.querySelector('.cancel-btn');
-      if (cancelBtn) cancelBtn.disabled = true;
     }
   });
 
@@ -617,22 +612,6 @@
     socket.emit('start_fetch', { steamid });
   };
 
-  window.cancelInventoryFetch = function (steamid) {
-    if (socket) socket.emit('cancel_fetch', { steamid });
-    removeQueued(steamid);
-    const card = document.getElementById('user-' + steamid);
-    if (card) {
-      card.classList.add('fade-out');
-      setTimeout(() => card.remove(), 600);
-    }
-    const p = progressMap.get(String(steamid));
-    if (p && p.el) p.el.remove();
-    progressMap.delete(String(steamid));
-    if (!itemQueue.length && queueHandle) {
-      scheduler.cancel(queueHandle);
-      queueHandle = null;
-    }
-  };
 
   window._debugQueue = itemQueue;
   window._debugProcessQueue = processQueue;

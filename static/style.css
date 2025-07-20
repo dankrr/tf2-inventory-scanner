@@ -831,17 +831,6 @@ footer {
   font-size: 0.8rem;
 }
 
-.cancel-btn {
-  background: transparent;
-  border: none;
-  color: #ccc;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.cancel-btn:hover {
-  color: #fff;
-}
 
 .inventory-scroll {
   position: relative;

@@ -36,9 +36,7 @@ function createPlaceholder(steamid) {
   ph.innerHTML =
     '<div class="card-header">' +
     steamid +
-    '<div class="header-right"><button class="cancel-btn" type="button" onclick="cancelInventoryFetch(' +
-    steamid +
-    ')">&#x2716;</button></div></div><div class="card-body"><div class="inventory-container"></div></div>';
+    '<div class="header-right"></div></div><div class="card-body"><div class="inventory-container"></div></div>';
   const spinner = document.createElement('div');
   spinner.className = 'loading-spinner';
   spinner.setAttribute('aria-label', 'Loading');
