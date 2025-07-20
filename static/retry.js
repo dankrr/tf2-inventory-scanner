@@ -59,9 +59,15 @@ function retryInventory(id, updateButton = true) {
 
   if (typeof window.startInventoryFetch === 'function') {
     window.startInventoryFetch(id);
+    if (window.refreshLazyLoad) {
+      window.refreshLazyLoad();
+    }
+    showResults();
     if (updateButton) {
       attachHandlers(false);
       updateRefreshButton();
+    } else {
+      attachHandlers(false);
     }
     return Promise.resolve();
   }
@@ -88,8 +94,8 @@ function retryInventory(id, updateButton = true) {
       }
     })
     .finally(() => {
+      attachHandlers(false);
       if (updateButton) {
-        attachHandlers(false);
         updateRefreshButton();
       }
     });
@@ -158,6 +164,10 @@ async function refreshAll() {
     resetCardForRetry(id);
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
+      if (window.refreshLazyLoad) {
+        window.refreshLazyLoad();
+      }
+      showResults();
     } else {
       await retryInventory(id, false);
     }
