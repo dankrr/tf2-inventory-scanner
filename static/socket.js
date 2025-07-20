@@ -343,6 +343,7 @@
 
     setTimeout(() => wrapper.classList.add('show'), 10);
     return wrapper;
+  }
   
   function registerSocketEvents(s) {
 
