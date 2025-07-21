@@ -12,7 +12,7 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-from quart import Quart, render_template, request, flash, jsonify
+from quart import Quart, render_template, request, flash, jsonify, Response
 import socketio
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
@@ -70,6 +70,16 @@ if enable_secret:
     app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 else:
     print("\u26a0 Sessions are disabled because ENABLE_SECRET=false", flush=True)
+
+
+@app.after_request
+async def disable_cache(response: Response) -> Response:
+    """Disable caching for all responses during development."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 
 # Socket.IO runs in ASGI mode with Quart.
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
@@ -720,6 +730,7 @@ async def index():
                 steamids=steamids_input,
                 ids=[],
                 failed_ids=[],
+                cache_bust=time.time(),
             )
     return await render_template(
         "index.html",
@@ -728,6 +739,7 @@ async def index():
         ids=ids,
         failed_ids=failed_ids,
         debug_ms=MAX_MERGE_MS if os.getenv("FLASK_DEBUG") else None,
+        cache_bust=time.time(),
     )
 
 
