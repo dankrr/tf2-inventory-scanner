@@ -1,211 +1,190 @@
-function updateScanToast(current, total) {
-  const toast = document.getElementById('scan-toast');
-  if (!toast) return;
-  toast.textContent = `\u{1F504} Scanning ${current} of ${total} inventories...`;
-  toast.classList.remove('hidden');
-  toast.classList.add('show');
-}
+(function () {
+  function updateScanToast(current, total) {
+    const toast = document.getElementById('scan-toast');
+    if (!toast) return;
+    toast.textContent = `\u{1F504} Scanning ${current} of ${total} inventories...`;
+    toast.classList.remove('hidden');
+    toast.classList.add('show');
+  }
 
-function hideScanToast() {
-  const toast = document.getElementById('scan-toast');
-  if (!toast) return;
-  toast.classList.remove('show');
-  setTimeout(() => toast.classList.add('hidden'), 300);
-}
+  function hideScanToast() {
+    const toast = document.getElementById('scan-toast');
+    if (!toast) return;
+    toast.classList.remove('show');
+    setTimeout(() => toast.classList.add('hidden'), 300);
+  }
 
-function retryInventory(id) {
-  let card = document.getElementById('user-' + id);
-  if (card) {
+  function getFailedUsers() {
+    return [...document.querySelectorAll('.user-card.failed')]
+      .filter(div => !div.classList.contains('private'))
+      .map(div => div.dataset.steamid);
+  }
+
+  function updateFailedCount() {
+    const el = document.getElementById('failed-count');
+    if (el) el.textContent = getFailedUsers().length;
+  }
+
+  function updateRefreshButton() {
+    const btn = document.getElementById('refresh-failed-btn');
+    if (!btn) return;
+    const count = getFailedUsers().length;
+    if (count === 0) {
+      btn.disabled = true;
+      btn.textContent = 'Nothing to Refresh';
+      btn.classList.add('btn-disabled');
+    } else {
+      btn.disabled = false;
+      btn.textContent = `Refresh Failed (${count})`;
+      btn.classList.remove('btn-disabled');
+    }
+    updateFailedCount();
+  }
+
+  function resetCardForRetry(steamid) {
+    const card = document.getElementById('user-' + steamid);
+    if (!card) return;
+
+    const banner = card.querySelector('.error-banner');
+    if (banner) banner.remove();
+
+    const container = card.querySelector('.inventory-container');
+    if (container) container.innerHTML = '';
+
+    let spinner = card.querySelector('.loading-spinner');
+    if (!spinner) {
+      spinner = document.createElement('div');
+      spinner.className = 'loading-spinner';
+      spinner.setAttribute('aria-label', 'Loading');
+      card.appendChild(spinner);
+    }
+
+    const bar = card.querySelector('.progress-inner');
+    if (bar) {
+      bar.style.width = '0%';
+      bar.textContent = '0';
+    }
+
     card.classList.remove('failed', 'success');
     card.classList.add('loading');
-  } else {
-    card = document.createElement('div');
-    card.id = 'user-' + id;
-    card.dataset.steamid = id;
-    card.className = 'user-card user-box loading';
-    document.getElementById('user-container').appendChild(card);
   }
 
-  const pill = card.querySelector('.status-pill');
-  if (pill) {
-    pill.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
-  }
-
-  return fetch('/retry/' + id, { method: 'POST' })
-    .then(r => r.text())
-    .then(html => {
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = html;
-      const newCard = wrapper.firstElementChild;
-      if (newCard) {
-        card.replaceWith(newCard);
-      }
-      attachHandlers();
-      if (window.refreshLazyLoad) {
-        window.refreshLazyLoad();
-      }
-      updateRefreshButton();
-      showResults();
-    })
-    .catch(() => {
-      const existing = document.getElementById('user-' + id);
-      if (existing) {
-        existing.classList.remove('loading');
-        existing.classList.add('failed');
-      }
-      updateRefreshButton();
-    });
-}
-
-function getFailedUsers() {
-  return [...document.querySelectorAll('.user-card.failed')]
-    .filter(div => !div.classList.contains('private'))
-    .map(div => div.dataset.steamid);
-}
-
-function updateFailedCount() {
-  const countEl = document.getElementById('failed-count');
-  if (countEl) {
-    countEl.textContent = getFailedUsers().length;
-  }
-}
-
-function updateRefreshButton() {
-  const btn = document.getElementById('refresh-failed-btn');
-  if (!btn) return;
-  const failures = getFailedUsers().length;
-  if (failures === 0) {
-    btn.disabled = true;
-    btn.textContent = 'Nothing to Refresh';
-    btn.classList.add('btn-disabled');
-  } else {
-    btn.disabled = false;
-    btn.textContent = `Refresh Failed (${failures})`;
-    btn.classList.remove('btn-disabled');
-  }
-  updateFailedCount();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateRefreshButton();
-  updateFailedCount();
-});
-
-function handleRetryClick(event) {
-  const btn = event.currentTarget;
-  if (!btn) return;
-  retryInventory(btn.dataset.steamid);
-}
-
-function attachHandlers() {
-  document.querySelectorAll('.retry-button').forEach(btn => {
-    btn.removeEventListener('click', handleRetryClick);
-    btn.addEventListener('click', handleRetryClick);
-  });
-  updateRefreshButton();
-
-  attachItemModal();
-}
-
-async function refreshAll() {
-  const btn = document.getElementById('refresh-failed-btn');
-  if (!btn) return;
-  btn.disabled = true;
-  const original = btn.textContent;
-  btn.textContent = 'Refreshing…';
-  const ids = getFailedUsers();
-  const total = ids.length;
-  ids.forEach((id, idx) => {
-    const card = document.getElementById('user-' + id);
-    if (card) {
-      card.classList.remove('failed', 'success');
-      card.classList.add('loading');
-      let spin = card.querySelector('.loading-spinner');
-      if (!spin) {
-        spin = document.createElement('div');
-        spin.className = 'loading-spinner';
-        spin.setAttribute('aria-label', 'Loading');
-        card.appendChild(spin);
-      }
-    } else if (typeof window.createPlaceholder === 'function') {
-      const container = document.getElementById('user-container');
-      if (container) {
-        const ph = createPlaceholder(id);
-        container.appendChild(ph);
-      }
-    }
+  async function retryInventory(id, opts = {}) {
+    const { updateButton = true, silent = false } = opts;
+    resetCardForRetry(id);
 
     if (typeof window.startInventoryFetch === 'function') {
       window.startInventoryFetch(id);
-    } else {
-      retryInventory(id);
+    } else if (typeof window.fetchUserCard === 'function') {
+      await window.fetchUserCard(id);
+      if (!silent) showResults();
     }
-    updateScanToast(idx + 1, total);
-  });
-  btn.disabled = false;
-  btn.textContent = original;
-  attachHandlers();
-  updateRefreshButton();
-  updateFailedCount();
-  hideScanToast();
-}
 
+    if (updateButton) updateRefreshButton();
+  }
 
-function showResults() {
-  const results = document.getElementById('results');
-  if (!results) return;
-  results.classList.add('fade-in');
-  setTimeout(() => {
-    results.classList.add('show');
-  }, 10);
-}
+  async function refreshAll() {
+    const btn = document.getElementById('refresh-failed-btn');
+    if (!btn) return;
 
-function handleItemClick(event) {
-  const card = event.currentTarget || event;
-  let data = card.dataset.item;
-  if (!data) return;
-  try {
-    data = JSON.parse(data);
-  } catch (e) {
-    return;
+    const ids = getFailedUsers();
+    const total = ids.length;
+    if (total === 0) return;
+
+    btn.disabled = true;
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      btn.textContent = `Refreshing\u2026 (${i + 1} / ${total})`;
+      updateScanToast(i + 1, total);
+      await retryInventory(id, { updateButton: false, silent: true });
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    hideScanToast();
+    btn.disabled = false;
+    attachHandlers();
+    updateRefreshButton();
+    updateFailedCount();
   }
-  if (window.modal && typeof window.modal.updateHeader === 'function') {
-    window.modal.updateHeader(data);
+
+  function handleRetryClick(e) {
+    const btn = e.currentTarget;
+    if (!btn) return;
+    retryInventory(btn.dataset.steamid);
   }
-  if (window.modal && typeof window.modal.setParticleBackground === 'function') {
-    window.modal.setParticleBackground(data.unusual_effect_id);
+
+  function showResults() {
+    const results = document.getElementById('results');
+    if (!results) return;
+    results.classList.add('fade-in');
+    setTimeout(() => {
+      results.classList.add('show');
+    }, 10);
   }
-  if (window.modal && typeof window.modal.generateModalHTML === 'function') {
-    const html = window.modal.generateModalHTML(data);
-    if (window.modal.showItemModal) {
-      window.modal.showItemModal(html);
+
+  function handleItemClick(event) {
+    const card = event.currentTarget || event;
+    let data = card.dataset.item;
+    if (!data) return;
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      return;
+    }
+    if (window.modal && typeof window.modal.updateHeader === 'function') {
+      window.modal.updateHeader(data);
+    }
+    if (window.modal && typeof window.modal.setParticleBackground === 'function') {
+      window.modal.setParticleBackground(data.unusual_effect_id);
+    }
+    if (window.modal && typeof window.modal.generateModalHTML === 'function') {
+      const html = window.modal.generateModalHTML(data);
+      if (window.modal.showItemModal) {
+        window.modal.showItemModal(html);
+      }
+    }
+    if (window.modal && typeof window.modal.renderBadges === 'function') {
+      window.modal.renderBadges(data.badges);
     }
   }
-  if (window.modal && typeof window.modal.renderBadges === 'function') {
-    window.modal.renderBadges(data.badges);
-  }
-}
 
-function attachItemModal() {
-  const container = document.getElementById('user-container');
-  if (!container) return;
-  container.querySelectorAll('.item-card').forEach(card => {
-    if (card.dataset.handler) return;
-    card.dataset.handler = 'true';
-    card.addEventListener('click', handleItemClick);
+  function attachItemModal() {
+    const container = document.getElementById('user-container');
+    if (!container) return;
+    container.querySelectorAll('.item-card').forEach(card => {
+      if (card.dataset.handler) return;
+      card.dataset.handler = 'true';
+      card.addEventListener('click', handleItemClick);
+    });
+  }
+
+  function attachHandlers() {
+    document.querySelectorAll('.retry-button').forEach(btn => {
+      btn.removeEventListener('click', handleRetryClick);
+      btn.addEventListener('click', handleRetryClick);
+    });
+    const refreshBtn = document.getElementById('refresh-failed-btn');
+    if (refreshBtn) {
+      refreshBtn.removeEventListener('click', refreshAll);
+      refreshBtn.addEventListener('click', refreshAll);
+    }
+    attachItemModal();
+    updateRefreshButton();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    attachHandlers();
+    updateFailedCount();
+    if (document.getElementById('user-container').children.length) {
+      showResults();
+    }
   });
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  attachHandlers();
-  const btn = document.getElementById('refresh-failed-btn');
-  if (btn) {
-    btn.addEventListener('click', refreshAll);
-  }
-  if (window.modal && typeof window.modal.initModal === 'function') {
-    window.modal.initModal();
-  }
-  if (document.getElementById('user-container').children.length) {
-    showResults();
-  }
-});
+  window.retryInventory = retryInventory;
+  window.refreshAll = refreshAll;
+  window.attachHandlers = attachHandlers;
+  window.updateScanToast = updateScanToast;
+  window.hideScanToast = hideScanToast;
+  window.updateRefreshButton = updateRefreshButton;
+  window.updateFailedCount = updateFailedCount;
+})();
