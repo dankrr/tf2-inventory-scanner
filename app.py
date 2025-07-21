@@ -62,8 +62,19 @@ STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Quart(__name__, static_folder=None)
 app.config.setdefault("PROVIDE_AUTOMATIC_OPTIONS", True)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.static_folder = "static"
-app.add_url_rule("/static/<path:filename>", "static", app.send_static_file)
+
+
+@app.route("/static/<path:filename>", endpoint="static")
+async def custom_static(filename: str) -> Response:
+    """Serve static files with no caching during development."""
+    response = await app.send_static_file(filename)
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 
 enable_secret = os.getenv("ENABLE_SECRET", "true").lower() == "true"
 if enable_secret:
