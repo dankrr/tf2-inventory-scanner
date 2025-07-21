@@ -618,6 +618,9 @@
                 return vb - va;
               });
               wrappers.forEach(w => container.appendChild(w));
+              if (window.refreshLazyLoad) {
+                window.refreshLazyLoad();
+              }
             });
             body.insertBefore(btn, body.firstChild);
           }
