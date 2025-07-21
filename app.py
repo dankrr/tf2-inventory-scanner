@@ -63,6 +63,9 @@ STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 app = Quart(__name__, static_folder=None)
 app.config.setdefault("PROVIDE_AUTOMATIC_OPTIONS", True)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = (
+    0  # Disable Flask static caching during development
+)
 app.static_folder = "static"
 
 
