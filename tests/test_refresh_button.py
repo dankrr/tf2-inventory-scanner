@@ -8,7 +8,7 @@ import pytest
 async def test_refresh_button_has_button_type(app):
     async with app.test_request_context("/"):
         html = await render_template(
-            "index.html", steamids="", users=[], ids=[], failed_ids=[]
+            "index.html", steamids="", users=[], ids=[], failed_ids=[], cache_bust=0
         )
     soup = BeautifulSoup(html, "html.parser")
     refresh_btn = soup.find("button", id="refresh-failed-btn")

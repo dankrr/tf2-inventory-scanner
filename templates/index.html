@@ -163,7 +163,7 @@
     </script>
     <script src="{{ url_for('static', filename='lazyload.js') }}"></script>
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='retry.js') }}"></script>
+    <script src="{{ url_for('static', filename='retry.js') }}?v={{ cache_bust }}"></script>
     <!-- ✅ Load Socket.IO v4 -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
 

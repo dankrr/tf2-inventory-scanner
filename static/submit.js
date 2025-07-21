@@ -57,7 +57,7 @@ function createPlaceholder(steamid) {
 
 async function fetchUserCard(id) {
   try {
-    const resp = await fetch('/api/users', {
+    const resp = await fetch(`/api/users?_=${Date.now()}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids: [id] })
