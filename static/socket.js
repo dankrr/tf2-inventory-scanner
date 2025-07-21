@@ -520,6 +520,18 @@
       const spin = card.querySelector('.loading-spinner');
       if (spin) spin.remove();
 
+      if (data.status === 'parsed') {
+        card.classList.add('success');
+        card.classList.remove('failed');
+      } else {
+        card.classList.add('failed');
+        card.classList.remove('success');
+      }
+
+      if (typeof window.updateRefreshButton === 'function') {
+        window.updateRefreshButton();
+      }
+
       const header = card.querySelector('.card-header, .user-header');
       if (header) {
         let pill = header.querySelector('.status-pill');
