@@ -66,6 +66,8 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = (
     0  # Disable Flask static caching during development
 )
+app.config["ENV"] = "development"
+app.config["DEBUG"] = True
 app.static_folder = "static"
 
 
