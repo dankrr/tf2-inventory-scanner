@@ -523,6 +523,13 @@
       if (data.status === 'parsed') {
         card.classList.add('success');
         card.classList.remove('failed');
+        /* ---------- SUCCESS CLEAN-UP ---------- */
+        // Remove any stale “Inventory unavailable” banners left from a previous failure
+        card.querySelectorAll('.error-banner').forEach(el => el.remove());
+        // Some templates render a one-liner outside card-body; remove that too
+        const failLine = card.querySelector('.failed-label, .inventory-failed-msg');
+        if (failLine) failLine.remove();
+        /* -------------------------------------- */
       } else {
         card.classList.add('failed');
         card.classList.remove('success');
