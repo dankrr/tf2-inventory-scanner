@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>TF2 Inventory Checker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v={{ cache_bust }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         img { vertical-align: middle; }
@@ -161,15 +161,15 @@
     <script>
       window.initialIds = {{ failed_ids|tojson|safe }};
     </script>
-    <script src="{{ url_for('static', filename='lazyload.js') }}"></script>
-    <script src="{{ url_for('static', filename='modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='lazyload.js') }}?v={{ cache_bust }}"></script>
+    <script src="{{ url_for('static', filename='modal.js') }}?v={{ cache_bust }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}?v={{ cache_bust }}"></script>
     <!-- ✅ Load Socket.IO v4 -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" defer></script>
 
     <!-- ✅ Load custom scripts AFTER DOM & socket.io -->
-    <script src="/static/socket.js" defer></script>
-    <script src="/static/submit.js" defer></script>
+    <script src="{{ url_for('static', filename='socket.js') }}?v={{ cache_bust }}" defer></script>
+    <script src="{{ url_for('static', filename='submit.js') }}?v={{ cache_bust }}" defer></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
