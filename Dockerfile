@@ -12,7 +12,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the entire project into the container
-COPY . /app
+COPY . .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
