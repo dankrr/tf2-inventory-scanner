@@ -11,7 +11,8 @@ RUN apt-get update && \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+# Copy the entire project into the container
+COPY . /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
