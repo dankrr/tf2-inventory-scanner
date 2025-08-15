@@ -1,161 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>TF2 Inventory Checker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        img { vertical-align: middle; }
-        .retry-button:hover {
-            background: rgba(255, 0, 0, 0.1);
-        }
-        .inventory-scroll {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            position: relative;
-            padding: 0 20px;
-        }
-        .inventory-scroll .inventory-container {
-            display: grid;
-            grid-template-rows: repeat(4, auto);
-            grid-auto-flow: column;
-            gap: 6px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-behavior: smooth;
-            scrollbar-width: thin; /* Firefox */
-            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-        }
-        .inventory-scroll .inventory-container::-webkit-scrollbar {
-            height: 6px;
-        }
-        .inventory-scroll .inventory-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .inventory-scroll .inventory-container::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-        .scroll-arrow {
-            background: transparent;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            font-size: 1.4rem;
-            padding: 0 6px;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            display: none;
-        }
-        .scroll-arrow.left { left: 0; }
-        .scroll-arrow.right { right: 0; }
-        .form-actions {
-            margin-top: 0.75rem;
-        }
-        #item-modal {
-            background: #1e1e1e;
-            color: #fff;
-            border: 1px solid #555;
-            border-radius: 8px;
-            padding: 1rem;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        #item-modal[open] { opacity: 1; }
-        #item-modal::backdrop {
-            background: rgba(0,0,0,0.6);
-        }
-        #item-modal .modal-header {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            position: relative;
-        }
-        #item-modal .modal-body { position: relative; }
-        #item-modal .particle-overlay img { max-width: 64px; max-height: 64px; }
-        .modal-effect {
-            font-weight: bold;
-            color: #8650AC;
-        }
-        #modal-details div { margin-top: 2px; }
-        .item-badges { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; }
-        .item-badges span { font-size: 0.75rem; }
+      img {
+        vertical-align: middle;
+      }
+      .retry-button:hover {
+        background: rgba(255, 0, 0, 0.1);
+      }
+      .inventory-scroll {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        position: relative;
+        padding: 0 20px;
+      }
+      .inventory-scroll .inventory-container {
+        display: grid;
+        grid-template-rows: repeat(4, auto);
+        grid-auto-flow: column;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      }
+      .inventory-scroll .inventory-container::-webkit-scrollbar {
+        height: 6px;
+      }
+      .inventory-scroll .inventory-container::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .inventory-scroll .inventory-container::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+      }
+      .scroll-arrow {
+        background: transparent;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 1.4rem;
+        padding: 0 6px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        display: none;
+      }
+      .scroll-arrow.left {
+        left: 0;
+      }
+      .scroll-arrow.right {
+        right: 0;
+      }
+      .form-actions {
+        margin-top: 0.75rem;
+      }
+      #item-modal {
+        background: #1e1e1e;
+        color: #fff;
+        border: 1px solid #555;
+        border-radius: 8px;
+        padding: 1rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      #item-modal[open] {
+        opacity: 1;
+      }
+      #item-modal::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+      }
+      #item-modal .modal-header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+      }
+      #item-modal .modal-body {
+        position: relative;
+      }
+      #item-modal .particle-overlay img {
+        max-width: 64px;
+        max-height: 64px;
+      }
+      .modal-effect {
+        font-weight: bold;
+        color: #8650ac;
+      }
+      #modal-details div {
+        margin-top: 2px;
+      }
+      .item-badges {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        display: flex;
+        gap: 2px;
+      }
+      .item-badges span {
+        font-size: 0.75rem;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="page-container">
-    <main class="content-wrap">
-    <h1>TF2 Inventory Checker</h1>
-    {% with msgs = get_flashed_messages() %}
-        {% if msgs %}
-            <ul class="flash">
-            {% for m in msgs %}<li>{{ m }}</li>{% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-    <form method="post" class="input-form" id="scan-form">
-        <label for="steamids" class="visually-hidden">Steam IDs</label>
-        <div class="input-wrapper">
+      <main class="content-wrap">
+        <h1>TF2 Inventory Checker</h1>
+        {% with msgs = get_flashed_messages() %} {% if msgs %}
+        <ul class="flash">
+          {% for m in msgs %}
+          <li>{{ m }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %} {% endwith %}
+        <form method="post" class="input-form" id="scan-form">
+          <label for="steamids" class="visually-hidden">Steam IDs</label>
+          <div class="input-wrapper">
             <i class="fa-brands fa-steam input-steam-icon"></i>
-            <textarea id="steamids" name="steamids" placeholder="Enter SteamID64, SteamID2, or SteamID3…">{{ steamids|default('') }}</textarea>
+            <textarea
+              id="steamids"
+              name="steamids"
+              placeholder="Enter SteamID64, SteamID2, or SteamID3…"
+            >
+{{ steamids|default('') }}</textarea
+            >
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn action-button">
+              <i class="fa-solid fa-magnifying-glass"></i> Check Inventories
+            </button>
+            <button
+              id="refresh-failed-btn"
+              type="button"
+              disabled
+              class="refresh-btn action-button"
+            >
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh Failed
+            </button>
+          </div>
+        </form>
+
+        <div id="results" class="fade-in">
+          <div id="completed-bucket" class="bucket">
+            <h2 class="bucket-title">Completed</h2>
+            <div id="completed-container">
+              {% for user in completed_users %} {% if user is string %} {{
+              user|safe }} {% else %} {% include "_user.html" %} {% endif %} {%
+              endfor %}
+            </div>
+          </div>
+          <div id="failed-bucket" class="bucket">
+            <h2 class="bucket-title">Failed</h2>
+            <div id="failed-container">
+              {% for user in failed_users %} {% if user is string %} {{
+              user|safe }} {% else %} {% include "_user.html" %} {% endif %} {%
+              endfor %}
+            </div>
+          </div>
+          <button id="jump-btn" class="jump-btn hidden">
+            New results — Jump ↓ (0)
+          </button>
         </div>
-        <div class="form-actions">
-            <button type="submit" class="primary-btn action-button"><i class="fa-solid fa-magnifying-glass"></i> Check Inventories</button>
-            <button id="refresh-failed-btn" type="button" disabled class="refresh-btn action-button"><i class="fa-solid fa-arrows-rotate"></i> Refresh Failed</button>
-        </div>
-    </form>
 
-    <div id="results" class="fade-in">
-        <div id="user-container">
-            {% for user in users %}
-                {% if user is string %}
-                    {{ user|safe }}
-                {% else %}
-                    {% include "_user.html" %}
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
+        <div id="scan-toast" class="toast hidden"></div>
 
-    <div id="scan-toast" class="toast hidden"></div>
+        <dialog id="item-modal">
+          <div class="modal-header">
+            <div id="modal-effect" class="modal-effect"></div>
+            <h3 id="modal-title"></h3>
+            <div id="modal-custom-name"></div>
+            <div id="modal-badges" class="item-badges"></div>
+          </div>
+          <div class="modal-body">
+            <div id="modal-effect-bg" class="particle-overlay"></div>
+            <img
+              id="modal-img"
+              src=""
+              width="64"
+              height="64"
+              alt=""
+              loading="lazy"
+            />
+            <div id="modal-details"></div>
+          </div>
+        </dialog>
+      </main>
+      <footer class="site-footer">
+        <p class="attribution">
+          Pricing and particles provided by
+          <a
+            href="https://backpack.tf"
+            target="_blank"
+            rel="noopener"
+            class="bptf-link"
+          >
+            Backpack.tf
+            <img
+              src="/static/images/logos/bptf_small.PNG"
+              alt="Backpack.tf logo"
+              class="footer-icon"
+              loading="lazy"
+            />
+          </a>
+          <br />
+          Simplified Schemas provided by
+          <a
+            href="https://autobot.tf/"
+            target="_blank"
+            rel="noopener"
+            class="schema-link"
+            >Autobot.tf
+            <img
+              src="/static/images/logos/tf2autobot.png"
+              alt="Autobot.tf logo"
+              class="footer-icon"
+              loading="lazy"
+          /></a>
+        </p>
 
-    <dialog id="item-modal">
-      <div class="modal-header">
-        <div id="modal-effect" class="modal-effect"></div>
-        <h3 id="modal-title"></h3>
-        <div id="modal-custom-name"></div>
-        <div id="modal-badges" class="item-badges"></div>
-      </div>
-      <div class="modal-body">
-        <div id="modal-effect-bg" class="particle-overlay"></div>
-        <img id="modal-img" src="" width="64" height="64" alt="" loading="lazy">
-        <div id="modal-details"></div>
-      </div>
-    </dialog>
-
-    </main>
-    <footer class="site-footer">
-      <p class="attribution">
-        Pricing and particles provided by
-        <a href="https://backpack.tf" target="_blank" rel="noopener" class="bptf-link">
-          Backpack.tf <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf logo" class="footer-icon" loading="lazy">
-        </a>
-        <br />
-        Simplified Schemas provided by
-        <a href="https://autobot.tf/" target="_blank" rel="noopener" class="schema-link">Autobot.tf <img src="/static/images/logos/tf2autobot.png" alt="Autobot.tf logo" class="footer-icon" loading="lazy"></a>
-      </p>
-
-      <p class="disclaimer">
-        <i class="fab fa-steam steam-icon"></i>
-        Team Fortress 2 and all related assets are © Valve Corporation.<br>
-        Steam and the Steam logo are trademarks of Valve Corporation.<br>
-        <em>This project is not affiliated with or endorsed by Valve.</em>
-      </p>
-    </footer>
-
+        <p class="disclaimer">
+          <i class="fab fa-steam steam-icon"></i>
+          Team Fortress 2 and all related assets are © Valve Corporation.<br />
+          Steam and the Steam logo are trademarks of Valve Corporation.<br />
+          <em>This project is not affiliated with or endorsed by Valve.</em>
+        </p>
+      </footer>
     </div>
 
     <script>
@@ -167,37 +248,39 @@
     <script src="{{ url_for('static', filename='submit.js') }}"></script>
     <script>
       function attachScrollButtons() {
-        document.querySelectorAll('.inventory-scroll').forEach(wrapper => {
-          const container = wrapper.querySelector('.inventory-container');
+        document.querySelectorAll(".inventory-scroll").forEach((wrapper) => {
+          const container = wrapper.querySelector(".inventory-container");
           if (!container) return;
           function pageSize() {
             return container.offsetWidth || container.clientWidth;
           }
-          const left = wrapper.querySelector('.scroll-arrow.left');
-          const right = wrapper.querySelector('.scroll-arrow.right');
+          const left = wrapper.querySelector(".scroll-arrow.left");
+          const right = wrapper.querySelector(".scroll-arrow.right");
           function updateVisibility() {
-            const show = container.scrollWidth > container.clientWidth && container.childElementCount > 0;
-            if (left) left.style.display = show ? 'block' : 'none';
-            if (right) right.style.display = show ? 'block' : 'none';
+            const show =
+              container.scrollWidth > container.clientWidth &&
+              container.childElementCount > 0;
+            if (left) left.style.display = show ? "block" : "none";
+            if (right) right.style.display = show ? "block" : "none";
           }
           updateVisibility();
-          container.addEventListener('scroll', updateVisibility);
-          window.addEventListener('resize', updateVisibility);
+          container.addEventListener("scroll", updateVisibility);
+          window.addEventListener("resize", updateVisibility);
 
           if (left) {
-            left.addEventListener('click', () => {
-              container.scrollBy({ left: -pageSize(), behavior: 'smooth' });
+            left.addEventListener("click", () => {
+              container.scrollBy({ left: -pageSize(), behavior: "smooth" });
             });
           }
           if (right) {
-            right.addEventListener('click', () => {
-              container.scrollBy({ left: pageSize(), behavior: 'smooth' });
+            right.addEventListener("click", () => {
+              container.scrollBy({ left: pageSize(), behavior: "smooth" });
             });
           }
 
           container.addEventListener(
-            'wheel',
-            e => {
+            "wheel",
+            (e) => {
               if (
                 container.scrollWidth > container.clientWidth &&
                 (e.deltaX !== 0 || e.shiftKey)
@@ -207,11 +290,11 @@
                 const direction = delta > 0 ? 1 : -1;
                 container.scrollBy({
                   left: direction * pageSize(),
-                  behavior: 'smooth'
+                  behavior: "smooth",
                 });
               }
             },
-            { passive: false }
+            { passive: false },
           );
         });
       }
@@ -222,7 +305,7 @@
           attachScrollButtons();
         };
       }
-      document.addEventListener('DOMContentLoaded', attachScrollButtons);
+      document.addEventListener("DOMContentLoaded", attachScrollButtons);
     </script>
-</body>
+  </body>
 </html>

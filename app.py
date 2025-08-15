@@ -274,8 +274,19 @@ async def fetch_and_process_single_user(steamid64: int) -> str:
     return render_template("_user.html", user=user)
 
 
-async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
-    """Return rendered user cards and a list of IDs that failed."""
+async def fetch_and_process_many(
+    ids: List[str],
+) -> tuple[List[str], List[str], List[str]]:
+    """Return rendered user cards grouped by status and failed IDs.
+
+    Args:
+        ids: SteamID64 strings to process.
+
+    Returns:
+        A tuple ``(completed, failed, failed_ids)`` where ``completed`` and
+        ``failed`` are lists of rendered HTML snippets and ``failed_ids`` are the
+        SteamIDs that resulted in a failure status.
+    """
 
     unique_ids = list(dict.fromkeys(str(s) for s in ids))
 
@@ -284,11 +295,12 @@ async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
     }
 
     results = await asyncio.gather(*tasks.values())
-    html_snippets: List[str] = []
+    completed: List[str] = []
+    failed: List[str] = []
     failed_ids: List[str] = []
     seen: set[str] = set()
 
-    for _, user in zip(unique_ids, results):
+    for user in results:
         if not user or not isinstance(user, dict):
             continue
         if not user.get("username") and not user.get("personaname"):
@@ -298,11 +310,14 @@ async def fetch_and_process_many(ids: List[str]) -> tuple[List[str], List[str]]:
             print("DUPLICATE PANEL:", user_ns.steamid)
             continue
         seen.add(user_ns.steamid)
+        rendered = render_template("_user.html", user=user_ns)
         if user_ns.status == "failed":
+            failed.append(rendered)
             failed_ids.append(user_ns.steamid)
-        html_snippets.append(render_template("_user.html", user=user_ns))
+        else:
+            completed.append(rendered)
 
-    return html_snippets, failed_ids
+    return completed, failed, failed_ids
 
 
 async def _setup_test_mode() -> None:
@@ -409,8 +424,8 @@ async def api_users():
     except ValueError:
         return jsonify({"error": "Invalid Steam ID"}), 400
 
-    snippets, _ = await fetch_and_process_many(ids)
-    return jsonify({"html": snippets})
+    completed, failed, _ = await fetch_and_process_many(ids)
+    return jsonify({"completed": completed, "failed": failed})
 
 
 @app.get("/api/constants")
@@ -433,7 +448,8 @@ def api_constants():
 
 @app.route("/", methods=["GET", "POST"])
 async def index():
-    users: List[Dict[str, Any]] = []
+    completed_users: List[Dict[str, Any] | str] = []
+    failed_users: List[Dict[str, Any] | str] = []
     steamids_input = ""
     ids: List[str] = []
     invalid: List[str] = []
@@ -441,7 +457,9 @@ async def index():
     if request.method == "GET" and app.config.get("PRELOADED_USERS"):
         users = app.config.get("PRELOADED_USERS", [])
         steamids_input = app.config.get("TEST_STEAMID", "")
-        failed_ids = [u.steamid for u in users if getattr(u, "status", "") == "failed"]
+        completed_users = [u for u in users if getattr(u, "status", "") != "failed"]
+        failed_users = [u for u in users if getattr(u, "status", "") == "failed"]
+        failed_ids = [u.steamid for u in failed_users]
     if request.method == "POST":
         steamids_input = request.form.get("steamids", "")
         tokens = re.split(r"\s+", steamids_input.strip())
@@ -452,21 +470,25 @@ async def index():
         if ids:
             if invalid:
                 flash(f"Ignored {len(invalid)} invalid input(s).")
-            users, failed_ids = await fetch_and_process_many(ids)
+            completed_users, failed_users, failed_ids = await fetch_and_process_many(
+                ids
+            )
         else:
             flash(
                 "No valid Steam IDs found. Please input in SteamID64, SteamID2, or SteamID3 format."
             )
             return render_template(
                 "index.html",
-                users=users,
+                completed_users=[],
+                failed_users=[],
                 steamids=steamids_input,
                 ids=[],
                 failed_ids=[],
             )
     return render_template(
         "index.html",
-        users=users,
+        completed_users=completed_users,
+        failed_users=failed_users,
         steamids=steamids_input,
         ids=ids,
         failed_ids=failed_ids,
