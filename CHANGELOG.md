@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 
 - Accessibility and pressed-state styling for Compact and Border mode buttons.
 - Synchronized documentation and JSDoc for updated UI behavior.
+- Isolated stacking contexts so sticky user headers render above item content.
 
 ## [2025-08-15]
 

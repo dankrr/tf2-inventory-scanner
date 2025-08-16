@@ -15,3 +15,4 @@ Client-side JavaScript handles form submission, retry flows, and dynamic UI upda
 `static/ui.js` adds per-user inventory search with sticky headers and provides global
 toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.
+Sticky user headers now isolate their stacking context so they remain above item cards and prices while scrolling.
