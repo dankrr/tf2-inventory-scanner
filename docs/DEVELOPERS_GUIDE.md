@@ -6,6 +6,7 @@
 - Use `addCardToBucket` when adding or moving cards so scroll and jump
   behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
-- UI behavior, including per-user search, filters, sorting, and global density/quality
+- UI behavior, including per-user search, filters, and global density/quality
   toggles, lives in `static/ui.js`. Call `attachHandlers()` after adding new
-  cards so features initialize.
+  cards so features initialize. Use `window.reapplyFilters()` after appending
+  items to existing cards.

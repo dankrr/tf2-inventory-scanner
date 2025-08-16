@@ -4,7 +4,6 @@
     quality: "ui:quality", // 'fill'|'border'
     filter: (sid) => `ui:filter:${sid}`,
     search: (sid) => `ui:search:${sid}`,
-    sort: (sid) => `ui:sort:${sid}`,
   };
 
   /**
@@ -82,42 +81,6 @@
   }
 
   /**
-   * Sort items within a user card.
-   *
-   * @param {HTMLElement} card - User card element.
-   * @param {"name"|"value"} key - Sort key.
-   * @returns {void}
-   * @example
-   * sortItems(card, "value");
-   */
-  function sortItems(card, key) {
-    const container = card.querySelector(".items");
-    if (!container) return;
-    const items = Array.from(container.querySelectorAll(".item-wrapper"));
-    const compare =
-      key === "name"
-        ? (a, b) =>
-            (a.dataset.name || "").localeCompare(
-              b.dataset.name || "",
-              undefined,
-              {
-                sensitivity: "base",
-              },
-            )
-        : (a, b) =>
-            Number(b.dataset.valueKeys || 0) - Number(a.dataset.valueKeys || 0);
-    items.sort(compare);
-    let i = 0;
-    function batch() {
-      const slice = items.slice(i, i + 50);
-      slice.forEach((el) => container.appendChild(el));
-      i += slice.length;
-      if (i < items.length) requestAnimationFrame(batch);
-    }
-    requestAnimationFrame(batch);
-  }
-
-  /**
    * Initialize per-card search and filter behavior.
    *
    * @param {HTMLElement} card - User card element.
@@ -129,11 +92,9 @@
     const itemsWrap = card.querySelector(".items");
     const search = card.querySelector(".inv-search");
     const chips = card.querySelectorAll(".filters .chip");
-    const sortSel = card.querySelector(".sort-select");
 
     const savedFilter = localStorage.getItem(LS_KEYS.filter(steamid)) || "all";
     const savedSearch = localStorage.getItem(LS_KEYS.search(steamid)) || "";
-    const savedSort = localStorage.getItem(LS_KEYS.sort(steamid)) || "default";
 
     if (search) search.value = savedSearch;
 
@@ -142,11 +103,6 @@
         c.classList.toggle("is-active", c.dataset.filter === savedFilter),
       );
       filterItems(card, savedFilter, savedSearch);
-    }
-
-    if (sortSel) {
-      sortSel.value = savedSort;
-      if (savedSort !== "default") sortItems(card, savedSort);
     }
 
     chips.forEach((chip) => {
@@ -163,13 +119,6 @@
       const active =
         card.querySelector(".filters .chip.is-active")?.dataset.filter || "all";
       filterItems(card, active, search.value || "");
-    });
-
-    sortSel?.addEventListener("change", () => {
-      const val = sortSel.value;
-      localStorage.setItem(LS_KEYS.sort(steamid), val);
-      if (val === "default") return;
-      sortItems(card, val);
     });
 
     if (itemsWrap) {
@@ -283,16 +232,39 @@
     });
   }
 
+  /**
+   * Reapply saved filters and search queries to all user cards.
+   * Call after new items append to ensure visibility matches current settings.
+   *
+   * @returns {void}
+   * @example
+   * reapplyAllFilters();
+   */
+  function reapplyAllFilters() {
+    document.querySelectorAll(".user-card.user-box").forEach((card) => {
+      const steamid =
+        card.getAttribute("data-steamid") || card.id.replace("user-", "");
+      const filter = localStorage.getItem(LS_KEYS.filter(steamid)) || "all";
+      const search = localStorage.getItem(LS_KEYS.search(steamid)) || "";
+      filterItems(card, filter, search);
+    });
+  }
+
+  // expose public reapply function
+  window.reapplyFilters = reapplyAllFilters;
+
   if (window.attachHandlers) {
     const old = window.attachHandlers;
     window.attachHandlers = function () {
       old();
       attachUI();
+      reapplyAllFilters();
     };
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     initGlobalToggles();
     attachUI();
+    reapplyAllFilters();
   });
 })();

@@ -854,3 +854,8 @@ footer {
 .quality-border .item-card.quality-unusual {
   border-color: #7f3fbf;
 }
+
+/* Hide sort controls */
+.sort-wrap {
+  display: none;
+}

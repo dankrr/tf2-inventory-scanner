@@ -5,4 +5,4 @@
 - **static/submit.js** – Handles form submission, fetches user cards and appends them to buckets.
 - **static/retry.js** – Manages retry logic for failed scans and modal interactions.
 - **static/style.css** – Provides styling including bucket layout and jump button.
-- **static/ui.js** – Handles search, filters, sorting, and global density and quality toggles.
+- **static/ui.js** – Handles search, filters, and global density and quality toggles. Exposes `reapplyFilters` for applying saved filters after new items append.
