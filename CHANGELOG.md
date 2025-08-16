@@ -35,3 +35,11 @@ All notable changes to this project will be documented in this file.
 
 - Separated scan results into Completed and Failed buckets with a jump-to-new-results button.
 - Updated client scripts with JSDoc comments and synchronized project documentation.
+
+## [2025-05-11]
+
+### Added
+
+- Sticky user headers with per-user search.
+- Global Compact and Border mode toggles with persistence.
+- Documentation and JSDoc synchronization.

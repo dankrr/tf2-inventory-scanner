@@ -19,6 +19,7 @@ button,
   border-radius: 4px;
   padding: 8px;
   margin-bottom: 16px;
+  position: relative;
 }
 
 .user-box.loading {
@@ -53,6 +54,10 @@ button,
   align-items: center;
   margin-bottom: 1rem;
   padding: 0 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #1e1e1e;
 }
 
 .user-profile {
@@ -69,6 +74,24 @@ button,
 .profile-pic {
   width: 64px;
   border-radius: 8px;
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-search {
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #fff;
+}
+
+.action-button.active {
+  background-color: #666;
 }
 
 .profile-info {
@@ -261,6 +284,19 @@ button {
   overflow: hidden;
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
+}
+body.border-mode .item-card {
+  background-color: #1e1e1e;
+}
+body.compact .item-wrapper {
+  margin: 2px;
+}
+body.compact .item-card {
+  width: 80px;
+  height: 110px;
+}
+body.compact .item-name {
+  font-size: 10px;
 }
 .item-card.trade-hold {
   border-color: #ff4040;
