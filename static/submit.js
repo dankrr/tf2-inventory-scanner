@@ -1,47 +1,108 @@
-function createPlaceholder(id) {
-  const ph = document.createElement('div');
-  ph.id = 'user-' + id;
-  ph.dataset.steamid = id;
-  ph.className = 'user-card user-box loading';
-  return ph;
-}
+/**
+ * Number of unseen results waiting below the viewport.
+ * @type {number}
+ */
+let pendingResults = 0;
 
-async function fetchUserCard(id) {
-  try {
-    const resp = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [id] })
-    });
-    if (!resp.ok) throw new Error('Request failed');
-    const data = await resp.json();
-    const html = Array.isArray(data.html) ? data.html[0] : '';
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = html;
-    const card = wrapper.firstElementChild;
-    const placeholder = document.getElementById('user-' + id);
-    if (card && placeholder) {
-      placeholder.replaceWith(card);
-      if (window.attachHandlers) {
-        window.attachHandlers();
-      }
-      if (window.refreshLazyLoad) {
-        window.refreshLazyLoad();
-      }
-    } else if (placeholder) {
-      placeholder.classList.remove('loading');
-      placeholder.classList.add('failed');
-    }
-  } catch (err) {
-    console.error('Failed to fetch user', id, err);
-    const placeholder = document.getElementById('user-' + id);
-    if (placeholder) {
-      placeholder.classList.remove('loading');
-      placeholder.classList.add('failed');
-    }
+/** Button used to jump to newly appended cards. */
+const jumpBtn = document.getElementById("jump-btn");
+
+/**
+ * Update visibility and text of the jump button.
+ * @returns {void}
+ */
+function updateJumpButton() {
+  if (!jumpBtn) return;
+  if (pendingResults > 0) {
+    jumpBtn.textContent = `New results — Jump ↓ (${pendingResults})`;
+    jumpBtn.classList.remove("hidden");
+  } else {
+    jumpBtn.classList.add("hidden");
   }
 }
 
+jumpBtn?.addEventListener("click", () => {
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  pendingResults = 0;
+  updateJumpButton();
+});
+
+window.addEventListener("scroll", () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 5) {
+    pendingResults = 0;
+    updateJumpButton();
+  }
+});
+
+/**
+ * Append a user card to the specified bucket.
+ * Auto-scrolls if the bucket bottom is visible; otherwise tracks unseen cards.
+ *
+ * @param {HTMLElement} card - Rendered user card element.
+ * @param {string} containerId - ID of the bucket container.
+ * @returns {void}
+ */
+function addCardToBucket(card, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container || !card) return;
+  const atBottom =
+    container.getBoundingClientRect().bottom <= window.innerHeight + 5;
+  container.appendChild(card);
+  if (window.attachHandlers) {
+    window.attachHandlers();
+  }
+  if (window.refreshLazyLoad) {
+    window.refreshLazyLoad();
+  }
+  if (atBottom) {
+    card.scrollIntoView({ behavior: "smooth", block: "end" });
+  } else {
+    pendingResults += 1;
+    updateJumpButton();
+  }
+}
+
+// Expose for reuse in other modules
+window.addCardToBucket = addCardToBucket;
+
+/**
+ * Fetch a user card for a given Steam ID and append it to a bucket.
+ *
+ * @param {string} id - Steam identifier.
+ * @returns {Promise<void>} Resolves when the card is processed.
+ */
+async function fetchUserCard(id) {
+  try {
+    const resp = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [id] }),
+    });
+    if (!resp.ok) throw new Error("Request failed");
+    const data = await resp.json();
+    const html =
+      (Array.isArray(data.completed) && data.completed[0]) ||
+      (Array.isArray(data.failed) && data.failed[0]) ||
+      "";
+    if (!html) return;
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html;
+    const card = wrapper.firstElementChild;
+    const containerId = card.classList.contains("failed")
+      ? "failed-container"
+      : "completed-container";
+    addCardToBucket(card, containerId);
+  } catch (err) {
+    console.error("Failed to fetch user", id, err);
+  }
+}
+
+/**
+ * Extract valid Steam IDs from raw text input.
+ *
+ * @param {string} text - Raw user-provided input.
+ * @returns {string[]} Array of unique Steam IDs.
+ */
 function extractSteamIds(text) {
   const tokens = text.trim().split(/\s+/);
   const steam2 = /^STEAM_0:[01]:\d+$/;
@@ -61,27 +122,32 @@ function extractSteamIds(text) {
   return ids;
 }
 
+/**
+ * Handle submission of the scan form.
+ *
+ * @param {SubmitEvent} e - Form submission event.
+ * @returns {void}
+ */
 function handleSubmit(e) {
   e.preventDefault();
-  const container = document.getElementById('user-container');
-  if (!container) return;
-  container.innerHTML = '';
-  const text = document.getElementById('steamids').value || '';
+  const completed = document.getElementById("completed-container");
+  const failed = document.getElementById("failed-container");
+  if (completed) completed.innerHTML = "";
+  if (failed) failed.innerHTML = "";
+  const text = document.getElementById("steamids").value || "";
   const ids = extractSteamIds(text);
-  ids.forEach(id => {
-    const ph = createPlaceholder(id);
-    container.appendChild(ph);
+  ids.forEach((id) => {
     fetchUserCard(id);
   });
-  const results = document.getElementById('results');
+  const results = document.getElementById("results");
   if (results) {
-    results.classList.add('show');
+    results.classList.add("show");
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('form.input-form');
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form.input-form");
   if (form) {
-    form.addEventListener('submit', handleSubmit);
+    form.addEventListener("submit", handleSubmit);
   }
 });
