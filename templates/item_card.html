@@ -8,7 +8,7 @@
   {%
   endif
   %}
-  data-item="{{ item|tojson|safe }}"
+  data-item='{{ item|tojson|safe }}'
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
