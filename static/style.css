@@ -750,6 +750,42 @@ footer {
   pointer-events: none;
 }
 
+/* --- Center the media inside each card --- */
+.item-card {
+  position: relative;            /* keep cursor rule elsewhere if you have one */
+}
+.item-media {
+  /* fill the card and center its contents */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px;                  /* keeps icons off the border ring */
+  position: relative;            /* containing block for .particle-bg */
+}
+.item-media > img.item-img,
+.item-media > .kit-composite,
+.item-media > .missing-icon {
+  /* ensure the visible element is centered perfectly */
+  margin: 0 auto;
+}
+/* keep the effect image behind, never clickable */
+.item-media > .particle-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+/* visible media sits above overlay */
+.item-img,
+.kit-composite,
+.missing-icon {
+  position: relative;
+  z-index: 1;
+}
+
 /* Make the whole card reliably clickable; overlays never intercept */
 .item-card {
   position: relative;
