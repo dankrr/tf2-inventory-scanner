@@ -3,6 +3,7 @@
     density: "ui:density", // 'comfortable'|'compact'
     quality: "ui:quality", // 'fill'|'border'
     filter: (sid) => `ui:filter:${sid}`,
+    extra: (sid) => `ui:extra:${sid}`,
     search: (sid) => `ui:search:${sid}`,
   };
 
@@ -33,18 +34,33 @@
   }
 
   /**
-   * Filter items in a user card by type and search query.
+   * Toggle high-value highlighting on a user card.
    *
    * @param {HTMLElement} card - User card element.
-   * @param {string} filter - Active filter name.
+   * @param {boolean} on - Whether to enable highlighting.
+   * @returns {void}
+   * @example
+   * applyHighValue(card, true);
+   */
+  function applyHighValue(card, on) {
+    card.classList.toggle("highvalue-on", on);
+  }
+
+  /**
+   * Filter items in a user card by type, extra filter, and search query.
+   *
+   * @param {HTMLElement} card - User card element.
+   * @param {string} filter - Primary filter name.
+   * @param {string} extra - Secondary filter name.
    * @param {string} [query] - Search text.
    * @returns {void}
    * @example
-   * filterItems(card, 'unusual', 'hat');
+   * filterItems(card, 'unusual', '', 'hat');
    */
-  function filterItems(card, filter, query) {
+  function filterItems(card, filter, extra, query) {
     const items = card.querySelectorAll(".item-wrapper");
     const q = (query || "").trim().toLowerCase();
+    applyHighValue(card, extra === "value");
     items.forEach((wrap) => {
       const name = (wrap.dataset.name || "").toLowerCase();
       const keys = Number(wrap.dataset.valueKeys || 0);
@@ -52,29 +68,37 @@
 
       switch (filter) {
         case "unusual":
-          vis = wrap.classList.contains("quality-unusual");
+          vis = wrap.dataset.quality === "unusual";
           break;
         case "strange":
-          vis = wrap.classList.contains("quality-strange");
+          vis = wrap.dataset.quality === "strange";
           break;
         case "cosmetic":
-          vis = wrap.classList.contains("is-cosmetic");
+          vis = wrap.dataset.type === "cosmetic";
           break;
         case "weapon":
-          vis = wrap.classList.contains("is-weapon");
-          break;
-        case "dupe":
-          vis = wrap.classList.contains("is-duplicate");
-          break;
-        case "attrs":
-          vis = wrap.classList.contains("has-attrs");
-          break;
-        case "value":
-          vis = keys >= 5;
+          vis = wrap.dataset.type === "weapon";
           break;
         default:
           vis = true;
       }
+
+      if (vis) {
+        switch (extra) {
+          case "dupe":
+            vis = wrap.dataset.dupe === "1";
+            break;
+          case "attrs":
+            vis = wrap.dataset.attrs === "1";
+            break;
+          case "value":
+            vis = keys >= 5;
+            break;
+          default:
+            break;
+        }
+      }
+
       if (vis && q) vis = name.includes(q);
       wrap.style.display = vis ? "" : "none";
     });
@@ -85,40 +109,55 @@
    *
    * @param {HTMLElement} card - User card element.
    * @returns {void}
+   * @example
+   * initCardBehavior(document.querySelector('.user-card'));
    */
   function initCardBehavior(card) {
     const steamid =
       card.getAttribute("data-steamid") || card.id.replace("user-", "");
     const itemsWrap = card.querySelector(".items");
     const search = card.querySelector(".inv-search");
-    const chips = card.querySelectorAll(".filters .chip");
+    const filterSel = card.querySelector(".filter-select");
+    const extraSel = card.querySelector(".extra-select");
 
     const savedFilter = localStorage.getItem(LS_KEYS.filter(steamid)) || "all";
+    const savedExtra = localStorage.getItem(LS_KEYS.extra(steamid)) || "";
     const savedSearch = localStorage.getItem(LS_KEYS.search(steamid)) || "";
 
     if (search) search.value = savedSearch;
+    if (filterSel) filterSel.value = savedFilter;
+    if (extraSel) extraSel.value = savedExtra;
 
-    if (chips.length) {
-      chips.forEach((c) =>
-        c.classList.toggle("is-active", c.dataset.filter === savedFilter),
+    filterItems(card, savedFilter, savedExtra, savedSearch);
+
+    filterSel?.addEventListener("change", () => {
+      localStorage.setItem(LS_KEYS.filter(steamid), filterSel.value);
+      filterItems(
+        card,
+        filterSel.value,
+        extraSel?.value || "",
+        search?.value || "",
       );
-      filterItems(card, savedFilter, savedSearch);
-    }
+    });
 
-    chips.forEach((chip) => {
-      chip.addEventListener("click", () => {
-        chips.forEach((c) => c.classList.remove("is-active"));
-        chip.classList.add("is-active");
-        localStorage.setItem(LS_KEYS.filter(steamid), chip.dataset.filter);
-        filterItems(card, chip.dataset.filter, search?.value || "");
-      });
+    extraSel?.addEventListener("change", () => {
+      localStorage.setItem(LS_KEYS.extra(steamid), extraSel.value);
+      filterItems(
+        card,
+        filterSel?.value || "all",
+        extraSel.value,
+        search?.value || "",
+      );
     });
 
     search?.addEventListener("input", () => {
       localStorage.setItem(LS_KEYS.search(steamid), search.value || "");
-      const active =
-        card.querySelector(".filters .chip.is-active")?.dataset.filter || "all";
-      filterItems(card, active, search.value || "");
+      filterItems(
+        card,
+        filterSel?.value || "all",
+        extraSel?.value || "",
+        search.value || "",
+      );
     });
 
     if (itemsWrap) {
@@ -172,6 +211,8 @@
    * Update density button label and state.
    *
    * @returns {void}
+   * @example
+   * updateDensityBtn();
    */
   function updateDensityBtn() {
     if (!densityBtn) return;
@@ -184,6 +225,8 @@
    * Update quality button label and state.
    *
    * @returns {void}
+   * @example
+   * updateQualityBtn();
    */
   function updateQualityBtn() {
     if (!qualityBtn) return;
@@ -195,6 +238,8 @@
    * Initialize global toggle buttons and apply modes.
    *
    * @returns {void}
+   * @example
+   * initGlobalToggles();
    */
   function initGlobalToggles() {
     applyDensityAll(densityMode);
@@ -221,6 +266,8 @@
    * Attach UI behavior to new user cards.
    *
    * @returns {void}
+   * @example
+   * attachUI();
    */
   function attachUI() {
     document.querySelectorAll(".user-card.user-box").forEach((card) => {
@@ -245,8 +292,9 @@
       const steamid =
         card.getAttribute("data-steamid") || card.id.replace("user-", "");
       const filter = localStorage.getItem(LS_KEYS.filter(steamid)) || "all";
+      const extra = localStorage.getItem(LS_KEYS.extra(steamid)) || "";
       const search = localStorage.getItem(LS_KEYS.search(steamid)) || "";
-      filterItems(card, filter, search);
+      filterItems(card, filter, extra, search);
     });
   }
 

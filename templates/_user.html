@@ -63,30 +63,20 @@
         aria-label="Search items"
       />
     </div>
-
-    <div class="sort-wrap">
-      <select class="sort-select" aria-label="Sort items">
-        <option value="default">Sort: Default</option>
-        <option value="name">Name</option>
-        <option value="value">Value</option>
+    <div class="filters">
+      <select class="filter-select" aria-label="Filter items">
+        <option value="all">All types</option>
+        <option value="unusual">Unusual</option>
+        <option value="strange">Strange</option>
+        <option value="cosmetic">Cosmetics</option>
+        <option value="weapon">Weapons</option>
       </select>
-    </div>
-
-    <div class="filters" role="toolbar" aria-label="Filters">
-      <button class="chip is-active" data-filter="all" type="button">
-        All
-      </button>
-      <button class="chip" data-filter="unusual" type="button">Unusual</button>
-      <button class="chip" data-filter="strange" type="button">Strange</button>
-      <button class="chip" data-filter="cosmetic" type="button">
-        Cosmetics
-      </button>
-      <button class="chip" data-filter="weapon" type="button">Weapons</button>
-      <button class="chip" data-filter="dupe" type="button">Duplicates</button>
-      <button class="chip" data-filter="attrs" type="button">
-        Has Spells/Paints/Parts
-      </button>
-      <button class="chip" data-filter="value" type="button">High value</button>
+      <select class="extra-select" aria-label="Extra filters">
+        <option value="">Any</option>
+        <option value="dupe">Duplicates</option>
+        <option value="attrs">Has Spells/Paints/Parts</option>
+        <option value="value">High value</option>
+      </select>
     </div>
   </div>
   <div class="card-body">
@@ -114,6 +104,10 @@
         type_hint) or ('cosmetic' in type_hint) %}
         <div
           class="item-wrapper quality-{{ quality_class }}{% if is_weapon %} is-weapon{% endif %}{% if is_cosmetic %} is-cosmetic{% endif %}{% if item.has_spells or item.has_paint or item.has_parts %} has-attrs{% endif %}{% if item.duplicate_count and item.duplicate_count>1 %} is-duplicate{% endif %}"
+          data-quality="{{ quality_class }}"
+          data-type="{% if is_weapon %}weapon{% elif is_cosmetic %}cosmetic{% else %}other{% endif %}"
+          data-dupe="{% if item.duplicate_count and item.duplicate_count>1 %}1{% else %}0{% endif %}"
+          data-attrs="{% if item.has_spells or item.has_paint or item.has_parts %}1{% else %}0{% endif %}"
           data-value-keys="{{ item.value_keys|default(0) }}"
           data-name="{{ item.display_name or item.composite_name }}"
         >

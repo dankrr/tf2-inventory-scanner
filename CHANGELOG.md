@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Documentation moved to `docs/` with a detailed workflow guide.
 - License changed to an MIT-style Non-Commercial license.
 - Sticky inventory headers, per-user search, filters, and toggles with updated docs.
+- Replaced filter chips with dropdown selects and enriched item wrappers with data attributes for filtering; documentation synced.
 
 ### Removed
 
@@ -40,3 +41,4 @@ All notable changes to this project will be documented in this file.
   2025-08-16 - Moved density and quality toggles to global controls, removed drag-panning, and dropped high-value highlighting; documentation synced.
   2025-08-16 - Fixed filtering to operate on item wrappers and added batched sorting with documentation sync.
   2025-08-16 - Removed sorting logic and added a filter-only module with reapply utility; documentation synced.
+  2025-08-16 - Swapped filter chips for dropdown selects and added item wrapper data attributes; documentation synced.
