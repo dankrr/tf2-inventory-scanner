@@ -772,3 +772,100 @@ footer {
     font-size: 10px;
   }
 }
+
+/* Sticky header */
+.user-card .user-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* Controls */
+.user-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.25rem 0 0.5rem;
+}
+.user-controls .filters {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.user-controls .chip {
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+.user-controls .chip.is-active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.user-controls .btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Items grid perf */
+.items {
+  content-visibility: auto;
+  contain-intrinsic-size: 1200px 800px;
+}
+
+/* Price chip */
+.item-price {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.85rem;
+}
+
+/* High-value highlighting (when enabled) */
+.highvalue-on .item-card[data-value-keys][data-value-keys~="5"],
+.highvalue-on .item-card[data-value-keys="5"],
+.highvalue-on
+  .item-card[data-value-keys]:not([data-value-keys="0"])[data-value-keys*="5"] {
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.28);
+}
+
+/* Density */
+.density-compact .item-wrapper {
+  padding: 4px;
+}
+.density-compact .item-name {
+  font-size: 0.85rem;
+  line-height: 1.1;
+}
+
+/* Quality border mode */
+.quality-border .item-card {
+  background: #151515 !important;
+  border: 3px solid transparent;
+}
+.quality-border .item-card.quality-unique {
+  border-color: #ffcc00;
+}
+.quality-border .item-card.quality-strange {
+  border-color: #c84b31;
+}
+.quality-border .item-card.quality-unusual {
+  border-color: #7f3fbf;
+}
+
+/* Horizontal scroll helpers */
+.inventory-scroll {
+  cursor: grab;
+}
+.inventory-scroll.is-dragging {
+  cursor: grabbing;
+}

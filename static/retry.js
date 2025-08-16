@@ -138,6 +138,13 @@ function attachHandlers() {
   });
   updateRefreshButton();
   attachItemModal();
+  if (window.modal && typeof window.modal.initModal === "function") {
+    window.modal.initModal();
+  }
+  // ensure UI for new/updated cards initializes
+  if (window.attachHandlers) {
+    /* our ui.js wraps this already */
+  }
 }
 
 /**

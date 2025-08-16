@@ -12,3 +12,10 @@ existing cards. When the user is not at the bottom of the page, a floating
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.
+
+## Client UI Enhancements
+
+Each user card renders a sticky header with search, density and quality toggles.
+Filter chips and a quick search box allow per-user item filtering and horizontal
+scroll improvements. Preferences persist in `localStorage` and behavior is
+managed by `static/ui.js`.

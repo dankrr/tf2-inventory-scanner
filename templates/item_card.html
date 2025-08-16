@@ -1,102 +1,146 @@
-<div class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
-     style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
-     {% if item.has_strange_tracking %}title="Has Strange tracking"{% endif %}
-     data-item='{{ item|tojson|safe }}'
-     data-craftable="{{ 'true' if item.craftable else 'false' }}">
+{% set quality_class = (item.quality|default('unknown')|lower|replace(' ', '-'))
+%} {% set slot_hint = (item.slot|default('')|lower) %} {% set type_hint =
+(item.type|default('')|lower) %} {% set is_weapon =
+(item.is_weapon|default(false)) or ('weapon' in type_hint) or ('primary' in
+slot_hint) or ('secondary' in slot_hint) or ('melee' in slot_hint) %} {% set
+is_cosmetic = (item.is_cosmetic|default(false)) or ('hat' in type_hint) or
+('cosmetic' in type_hint) %}
+<div
+  class="item-card quality-{{ quality_class }}{% if is_weapon %} is-weapon{% endif %}{% if is_cosmetic %} is-cosmetic{% endif %}{% if item.has_spells or item.has_paint or item.has_parts %} has-attrs{% endif %}{% if item.duplicate_count and item.duplicate_count>1 %} is-duplicate{% endif %}{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
+  style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
+  {%
+  if
+  item.has_strange_tracking
+  %}title="Has Strange tracking"
+  {%
+  endif
+  %}
+  data-item="{{ item|tojson|safe }}"
+  data-craftable="{{ 'true' if item.craftable else 'false' }}"
+  data-value-keys="{{ item.value_keys|default(0) }}"
+  data-name="{{ item.display_name or item.composite_name }}"
+>
   <div class="item-badges">
     {% if item.is_australium %}
-      <img src="/static/images/logos/australium.png" class="australium-icon" alt="Australium">
-    {% endif %}
-    {% if item.paint_hex %}
-      <span class="paint-dot" style="background-color: {{ item.paint_hex }};" title="Paint: {{ item.paint_name }}"></span>
-    {% endif %}
-      {% for badge in item.badges %}
-        {% if badge.type != 'statclock' and badge.icon != '🎨' %}
-          {% if badge.type == 'killstreak' %}
-            <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
-              <span class="chevron-icon"
-                {% if item.sheen_gradient_css %}
-                  style="{{ item.sheen_gradient_css }}; -webkit-background-clip: text; background-clip: text; color: transparent;"
-                {% elif item.sheen_color %}
-                  style="color: {{ item.sheen_color }};"
-                {% endif %}
-              >{{ badge.icon }}</span>
-            </span>
-          {% elif badge.icon_url %}
-            <img src="{{ badge.icon_url }}" class="badge-icon" alt="" title="{{ badge.title }}">
-          {% else %}
-            <span class="badge" data-icon="{{ badge.icon }}"{% if badge.color %} style="color:{{ badge.color }}"{% endif %} title="{{ badge.title }}">{{ badge.icon }}</span>
-          {% endif %}
-        {% endif %}
-      {% endfor %}
+    <img
+      src="/static/images/logos/australium.png"
+      class="australium-icon"
+      alt="Australium"
+    />
+    {% endif %} {% if item.paint_hex %}
+    <span
+      class="paint-dot"
+      style="background-color: {{ item.paint_hex }};"
+      title="Paint: {{ item.paint_name }}"
+    ></span>
+    {% endif %} {% for badge in item.badges %} {% if badge.type != 'statclock'
+    and badge.icon != '🎨' %} {% if badge.type == 'killstreak' %}
+    <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
+      <span
+        class="chevron-icon"
+        {%
+        if
+        item.sheen_gradient_css
+        %}
+        style="{{ item.sheen_gradient_css }}; -webkit-background-clip: text; background-clip: text; color: transparent;"
+        {%
+        elif
+        item.sheen_color
+        %}
+        style="color: {{ item.sheen_color }};"
+        {%
+        endif
+        %}
+        >{{ badge.icon }}</span
+      >
+    </span>
+    {% elif badge.icon_url %}
+    <img
+      src="{{ badge.icon_url }}"
+      class="badge-icon"
+      alt=""
+      title="{{ badge.title }}"
+    />
+    {% else %}
+    <span
+      class="badge"
+      data-icon="{{ badge.icon }}"
+      {%
+      if
+      badge.color
+      %}
+      style="color:{{ badge.color }}"
+      {%
+      endif
+      %}
+      title="{{ badge.title }}"
+      >{{ badge.icon }}</span
+    >
+    {% endif %} {% endif %} {% endfor %}
   </div>
   {% if item.quantity and item.quantity > 1 %}
-    <span class="item-qty">x{{ item.quantity }}</span>
-  {% endif %}
-  {% if item.statclock_badge %}
-    <img src="{{ item.statclock_badge }}" class="statclock-badge" alt="StatTrak™" title="StatTrak™ Active">
-  {% endif %}
-  {% if item.unusual_effect_id %}
+  <span class="item-qty">x{{ item.quantity }}</span>
+  {% endif %} {% if item.statclock_badge %}
+  <img
+    src="{{ item.statclock_badge }}"
+    class="statclock-badge"
+    alt="StatTrak™"
+    title="StatTrak™ Active"
+  />
+  {% endif %} {% if item.unusual_effect_id %}
+  <img
+    class="particle-bg"
+    loading="lazy"
+    src="/static/images/effects/{{ item.unusual_effect_id }}.png"
+    data-src="/static/images/effects/{{ item.unusual_effect_id }}.png"
+    alt="effect"
+  />
+  {% endif %} {% if item.target_weapon_image %}
+  <div class="kit-composite">
     <img
-      class="particle-bg"
-      loading="lazy"
-      src="/static/images/effects/{{ item.unusual_effect_id }}.png"
-      data-src="/static/images/effects/{{ item.unusual_effect_id }}.png"
-      alt="effect"
-    >
-  {% endif %}
-  {% if item.target_weapon_image %}
-    <div class="kit-composite">
-      <img class="kit-bg" src="{{ item.image_url }}" loading="lazy" width="96" height="96" alt="{{ item.display_name }}">
-      <img class="kit-weapon-overlay" src="{{ item.target_weapon_image }}" loading="lazy" alt="overlay">
-    </div>
-  {% elif item.image_url %}
-    <img
-      class="item-img"
-      loading="lazy"
+      class="kit-bg"
       src="{{ item.image_url }}"
-      data-src="{{ item.image_url }}"
+      loading="lazy"
+      width="96"
+      height="96"
       alt="{{ item.display_name }}"
-      width="64"
-      height="64"
-      onerror="this.style.display='none';"
-    >
+    />
+    <img
+      class="kit-weapon-overlay"
+      src="{{ item.target_weapon_image }}"
+      loading="lazy"
+      alt="overlay"
+    />
+  </div>
+  {% elif item.image_url %}
+  <img
+    class="item-img"
+    loading="lazy"
+    src="{{ item.image_url }}"
+    data-src="{{ item.image_url }}"
+    alt="{{ item.display_name }}"
+    width="64"
+    height="64"
+    onerror="this.style.display='none';"
+  />
   {% else %}
-    <div class="missing-icon"></div>
-  {% endif %}
-  {% set title_parts = [] %}
-  {% if item.killstreak_name %}
-    {% if item.killstreak_name == 'Killstreak' %}
-      {% set _ = title_parts.append('Killstreak') %}
-    {% else %}
-      {% set _ = title_parts.append(item.killstreak_name) %}
-      {% set _ = title_parts.append('Killstreak') %}
-    {% endif %}
-  {% endif %}
-  {% set quality = item.quality %}
-  {% if not item.is_australium %}
-    {% if quality == 'Strange' %}
-      {% set _ = title_parts.append('Strange') %}
-    {% elif quality and quality not in ('Unique', 'Normal', 'Decorated Weapon') %}
-      {% if not (quality == 'Unusual' and item.unusual_effect_id) %}
-        {% set _ = title_parts.append(quality) %}
-      {% endif %}
-    {% endif %}
-  {% endif %}
-  {% if item.is_war_paint_tool %}
-    {% if item.target_weapon_name %}
-      {% set base = (item.warpaint_name ~ ' ' ~ item.target_weapon_name) %}
-    {% else %}
-      {% set base = item.warpaint_name or item.display_name %}
-    {% endif %}
-  {% elif item.unusual_effect_id %}
-    {% set base = item.display_name %}
-  {% else %}
-    {% set base = item.composite_name or item.base_name or item.display_name or item.name %}
-  {% endif %}
-  {% if item.is_australium %}
-    {% set base = 'Australium ' ~ base %}
-  {% endif %}
-  {% set _ = title_parts.append(base) %}
+  <div class="missing-icon"></div>
+  {% endif %} {% set title_parts = [] %} {% if item.killstreak_name %} {% if
+  item.killstreak_name == 'Killstreak' %} {% set _ =
+  title_parts.append('Killstreak') %} {% else %} {% set _ =
+  title_parts.append(item.killstreak_name) %} {% set _ =
+  title_parts.append('Killstreak') %} {% endif %} {% endif %} {% set quality =
+  item.quality %} {% if not item.is_australium %} {% if quality == 'Strange' %}
+  {% set _ = title_parts.append('Strange') %} {% elif quality and quality not in
+  ('Unique', 'Normal', 'Decorated Weapon') %} {% if not (quality == 'Unusual'
+  and item.unusual_effect_id) %} {% set _ = title_parts.append(quality) %} {%
+  endif %} {% endif %} {% endif %} {% if item.is_war_paint_tool %} {% if
+  item.target_weapon_name %} {% set base = (item.warpaint_name ~ ' ' ~
+  item.target_weapon_name) %} {% else %} {% set base = item.warpaint_name or
+  item.display_name %} {% endif %} {% elif item.unusual_effect_id %} {% set base
+  = item.display_name %} {% else %} {% set base = item.composite_name or
+  item.base_name or item.display_name or item.name %} {% endif %} {% if
+  item.is_australium %} {% set base = 'Australium ' ~ base %} {% endif %} {% set
+  _ = title_parts.append(base) %}
   <div class="item-name">{{ title_parts | join(' ') }}</div>
 </div>

@@ -6,3 +6,5 @@
 - Use `addCardToBucket` when adding or moving cards so scroll and jump
   behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
+- Per-user UI behavior lives in `static/ui.js`. Call `attachHandlers()` after
+  adding new cards so search, filters, and other features initialize.

@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - IntersectionObserver-based image lazy loading script.
 - Documentation moved to `docs/` with a detailed workflow guide.
 - License changed to an MIT-style Non-Commercial license.
+- Sticky inventory headers, per-user search, filters, and toggles with updated docs.
 
 ### Removed
 
@@ -35,3 +36,4 @@ All notable changes to this project will be documented in this file.
 
 - Separated scan results into Completed and Failed buckets with a jump-to-new-results button.
 - Updated client scripts with JSDoc comments and synchronized project documentation.
+  2025-08-16 - Added sticky inventory headers, per-user search and filters, and documentation sync.
