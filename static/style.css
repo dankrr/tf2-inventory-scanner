@@ -342,16 +342,6 @@ body.compact .item-name {
   object-fit: contain;
 }
 
-.particle-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
 .item-card:hover {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
@@ -753,6 +743,66 @@ footer {
   opacity: 0.9;
   z-index: 1;
   pointer-events: none;
+}
+
+/* Ensure effect overlays don't block item card clicks */
+.item-card > .particle-bg {
+  pointer-events: none;
+}
+
+/* --- Center the media inside each card --- */
+.item-card {
+  position: relative;
+}
+.item-media {
+  /* fill the card and center its contents */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px; /* keeps icons off the border ring */
+  position: relative; /* establishes a containing block for .particle-bg */
+}
+.item-media > img.item-img,
+.item-media > .kit-composite,
+.item-media > .missing-icon {
+  /* ensure the visible element is centered perfectly */
+  margin: 0 auto;
+}
+/* keep the effect image behind, never clickable */
+.item-media > .particle-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+/* visible media sits above overlay */
+.item-img,
+.kit-composite,
+.missing-icon {
+  position: relative;
+  z-index: 1;
+}
+
+/* Make the whole card reliably clickable; overlays never intercept */
+.item-card {
+  position: relative;
+  cursor: pointer;
+}
+.item-badges,
+.item-qty,
+.badge,
+.badge-icon,
+.paint-dot,
+.statclock-badge {
+  pointer-events: none;
+}
+
+/* Safety: if any old markup remains, hide card titles globally */
+.item-name {
+  display: none !important;
 }
 
 #modal-custom-name {
