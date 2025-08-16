@@ -128,8 +128,12 @@ function handleRetryClick(event) {
 }
 
 /**
- * Attach click handlers and modal logic to current cards.
- * @returns {void}
+ * Attach click handlers, modal logic, and search bindings to current cards.
+ *
+ * @param {void} none
+ * @returns {void} No return value.
+ * @example
+ * attachHandlers();
  */
 function attachHandlers() {
   document.querySelectorAll(".retry-button").forEach((btn) => {
@@ -138,6 +142,81 @@ function attachHandlers() {
   });
   updateRefreshButton();
   attachItemModal();
+  attachUserSearch();
+}
+
+/**
+ * Per-user inventory search that filters item wrappers under each user card.
+/**
+ * Per-user inventory search that filters item wrappers under each user card.
+ * Falls back to parsing `.item-card[data-item]` when `data-name` is unavailable.
+ *
+ * @param {void} none
+ * @returns {void} Adjusts item visibility based on the search query.
+ * @example
+ * attachUserSearch();
+ */
+function attachUserSearch() {
+  document.querySelectorAll(".user-search").forEach((input) => {
+    if (input.dataset.bound === "1") return;
+    input.dataset.bound = "1";
+
+    const userCard = input.closest(".user-card");
+    if (!userCard) return;
+
+    // Support both old and new templates
+    const itemsEl =
+      userCard.querySelector(".inventory-container") ||
+      userCard.querySelector(".items") ||
+      userCard.querySelector(".inventory-grid");
+    if (!itemsEl) return;
+
+    const wrappers = () => itemsEl.querySelectorAll(".item-wrapper");
+
+    const getName = (wrap) => {
+      // Cache once per wrapper
+      if (!wrap.dataset.searchName) {
+        let nm = (wrap.dataset.name || "").trim();
+        if (!nm) {
+          const card = wrap.querySelector(".item-card");
+          if (card) {
+            try {
+              const raw =
+                card.getAttribute("data-item") || card.dataset.item || "";
+              if (raw && raw[0] === "{") {
+                const obj = JSON.parse(raw);
+                nm =
+                  obj.display_name ||
+                  obj.composite_name ||
+                  obj.base_name ||
+                  obj.name ||
+                  "";
+              }
+            } catch {
+              /* ignore parse errors */
+            }
+          }
+        }
+        wrap.dataset.searchName = (nm || "").toLowerCase();
+      }
+      return wrap.dataset.searchName;
+    };
+
+    const apply = () => {
+      const q = (input.value || "").trim().toLowerCase();
+      wrappers().forEach((w) => {
+        if (!q) {
+          w.style.display = "";
+          return;
+        }
+        w.style.display = getName(w).includes(q) ? "" : "none";
+      });
+    };
+
+    input.addEventListener("input", apply);
+    input.addEventListener("search", apply); // supports clear (x)
+    apply();
+  });
 }
 
 /**

@@ -34,7 +34,6 @@ All notable changes to this project will be documented in this file.
 - [2025-08-16] - Delegated item modal clicks, removed card titles, and synchronized documentation.
 - [2025-08-16] - Use single quotes for serialized item data to avoid HTML issues. Documentation synchronized.
 
-
 ## [2025-08-16]
 
 ### Added
@@ -42,6 +41,9 @@ All notable changes to this project will be documented in this file.
 - Accessibility and pressed-state styling for Compact and Border mode buttons.
 - Synchronized documentation and JSDoc for updated UI behavior.
 - Isolated stacking contexts so sticky user headers render above item content.
+- Added per-user inventory search binding and item `data-name` attributes for filtering.
+- Enhanced search to cache item names and support legacy/new inventory containers.
+- Synchronized documentation and JSDoc comments.
 
 ## [2025-08-15]
 
