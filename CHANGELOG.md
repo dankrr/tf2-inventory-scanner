@@ -29,6 +29,13 @@ All notable changes to this project will be documented in this file.
   such items are hidden without price data.
 - Untradable timed-drop items are now marked as hidden.
 
+## [2025-08-16]
+
+### Added
+
+- Accessibility and pressed-state styling for Compact and Border mode buttons.
+- Synchronized documentation and JSDoc for updated UI behavior.
+
 ## [2025-08-15]
 
 ### Added

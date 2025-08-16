@@ -8,3 +8,5 @@
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding
   dynamic elements so new cards receive search and modal behavior.
+- Global toggle buttons should update `aria-pressed` and `title` attributes for
+  accessibility; follow the pattern in `updateToggleButtons`.

@@ -14,4 +14,4 @@ The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.
 `static/ui.js` adds per-user inventory search with sticky headers and provides global
 toggles for compact density and border-only quality modes, both persisted via
-`localStorage`.
+`localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.

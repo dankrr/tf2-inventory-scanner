@@ -185,6 +185,14 @@ button {
   cursor: pointer;
 }
 
+.action-button[aria-pressed="true"] {
+  background-color: #666;
+}
+
+.action-button[aria-pressed="true"] i {
+  filter: invert(1);
+}
+
 .btn-disabled {
   background-color: #444;
   color: #aaa;
