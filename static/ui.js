@@ -14,7 +14,8 @@ function applyStoredPreferences() {
 }
 
 /**
- * Update button states to match current UI modes.
+ * Update global toggle buttons to match current UI modes.
+ * Sets `aria-pressed` and dynamic titles for accessibility.
  *
  * @returns {void}
  * @example
@@ -22,15 +23,23 @@ function applyStoredPreferences() {
  */
 function updateToggleButtons() {
   const compactBtn = document.getElementById("toggle-density");
-  compactBtn?.classList.toggle(
-    "active",
-    document.body.classList.contains("compact"),
-  );
+  if (compactBtn) {
+    const compactActive = document.body.classList.contains("compact");
+    compactBtn.classList.toggle("active", compactActive);
+    compactBtn.setAttribute("aria-pressed", String(compactActive));
+    compactBtn.title = compactActive
+      ? "Disable compact mode"
+      : "Enable compact mode";
+  }
   const borderBtn = document.getElementById("toggle-quality");
-  borderBtn?.classList.toggle(
-    "active",
-    document.body.classList.contains("border-mode"),
-  );
+  if (borderBtn) {
+    const borderActive = document.body.classList.contains("border-mode");
+    borderBtn.classList.toggle("active", borderActive);
+    borderBtn.setAttribute("aria-pressed", String(borderActive));
+    borderBtn.title = borderActive
+      ? "Disable border mode"
+      : "Enable border mode";
+  }
 }
 
 /**

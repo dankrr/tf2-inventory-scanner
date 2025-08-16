@@ -20,6 +20,8 @@ button,
   padding: 8px;
   margin-bottom: 16px;
   position: relative;
+  isolation: isolate;
+  z-index: 0;
 }
 
 .user-box.loading {
@@ -58,6 +60,16 @@ button,
   top: 0;
   z-index: 2;
   background-color: #1e1e1e;
+}
+
+.user-card .card-body {
+  position: relative;
+  z-index: 0;
+}
+
+.user-card .user-header,
+.user-card .sticky-header {
+  z-index: 5;
 }
 
 .user-profile {
@@ -183,6 +195,14 @@ button {
   color: white;
   border: none;
   cursor: pointer;
+}
+
+.action-button[aria-pressed="true"] {
+  background-color: #666;
+}
+
+.action-button[aria-pressed="true"] i {
+  filter: invert(1);
 }
 
 .btn-disabled {
