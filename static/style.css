@@ -785,7 +785,7 @@ footer {
 /* Controls */
 .user-controls {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr;
   gap: 0.5rem;
   align-items: center;
   margin: 0.25rem 0 0.5rem;
@@ -807,12 +807,6 @@ footer {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.25);
 }
-.user-controls .btn {
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-}
 
 /* Items grid perf */
 .items {
@@ -828,14 +822,6 @@ footer {
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.06);
   font-size: 0.85rem;
-}
-
-/* High-value highlighting (when enabled) */
-.highvalue-on .item-card[data-value-keys][data-value-keys~="5"],
-.highvalue-on .item-card[data-value-keys="5"],
-.highvalue-on
-  .item-card[data-value-keys]:not([data-value-keys="0"])[data-value-keys*="5"] {
-  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.28);
 }
 
 /* Density */
@@ -860,12 +846,4 @@ footer {
 }
 .quality-border .item-card.quality-unusual {
   border-color: #7f3fbf;
-}
-
-/* Horizontal scroll helpers */
-.inventory-scroll {
-  cursor: grab;
-}
-.inventory-scroll.is-dragging {
-  cursor: grabbing;
 }

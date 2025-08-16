@@ -1,17 +1,16 @@
 (function () {
   const LS_KEYS = {
-    density: (sid) => `ui:density:${sid}`, // 'comfortable'|'compact'
-    quality: (sid) => `ui:quality:${sid}`, // 'fill'|'border'
-    hv: (sid) => `ui:highvalue:${sid}`, // 'on'|'off'
-    filter: (sid) => `ui:filter:${sid}`, // 'all'|'unusual'|...
-    search: (sid) => `ui:search:${sid}`, // last query
+    density: "ui:density", // 'comfortable'|'compact'
+    quality: "ui:quality", // 'fill'|'border'
+    filter: (sid) => `ui:filter:${sid}`,
+    search: (sid) => `ui:search:${sid}`,
   };
 
   /**
    * Apply density mode to a user card.
    *
    * @param {HTMLElement} card - User card element.
-   * @param {string} mode - 'comfortable' or 'compact'.
+   * @param {'comfortable'|'compact'} mode - Density mode.
    * @returns {void}
    * @example
    * applyDensity(card, 'compact');
@@ -24,7 +23,7 @@
    * Apply quality color mode to a user card.
    *
    * @param {HTMLElement} card - User card element.
-   * @param {string} mode - 'fill' or 'border'.
+   * @param {'fill'|'border'} mode - Quality mode.
    * @returns {void}
    * @example
    * applyQuality(card, 'border');
@@ -34,27 +33,14 @@
   }
 
   /**
-   * Toggle high-value highlighting on a user card.
-   *
-   * @param {HTMLElement} card - User card element.
-   * @param {boolean} on - Whether highlighting is enabled.
-   * @returns {void}
-   * @example
-   * applyHighValue(card, true);
-   */
-  function applyHighValue(card, on) {
-    card.classList.toggle("highvalue-on", !!on);
-  }
-
-  /**
-   * Filter items in a user card by type, search query, and value.
+   * Filter items in a user card by type and search query.
    *
    * @param {HTMLElement} card - User card element.
    * @param {string} filter - Active filter name.
-   * @param {string} [query] - Search query string.
+   * @param {string} [query] - Search text.
    * @returns {void}
    * @example
-   * filterItems(card, 'strange', 'rocket');
+   * filterItems(card, 'unusual', 'hat');
    */
   function filterItems(card, filter, query) {
     const items = card.querySelectorAll(".item-card");
@@ -85,7 +71,7 @@
           break;
         case "value":
           vis = keys >= 5;
-          break; // threshold adjustable
+          break;
         default:
           vis = true;
       }
@@ -95,7 +81,7 @@
   }
 
   /**
-   * Initialize behavior and preference persistence for a user card.
+   * Initialize per-card search and filter behavior.
    *
    * @param {HTMLElement} card - User card element.
    * @returns {void}
@@ -106,48 +92,18 @@
     const itemsWrap = card.querySelector(".items");
     const search = card.querySelector(".inv-search");
     const chips = card.querySelectorAll(".filters .chip");
-    const densityBtn = card.querySelector(".density-toggle");
-    const qualityBtn = card.querySelector(".quality-toggle");
 
-    // restore prefs
-    const density =
-      localStorage.getItem(LS_KEYS.density(steamid)) || "comfortable";
-    const quality = localStorage.getItem(LS_KEYS.quality(steamid)) || "fill";
-    const hv = localStorage.getItem(LS_KEYS.hv(steamid)) === "on";
     const savedFilter = localStorage.getItem(LS_KEYS.filter(steamid)) || "all";
     const savedSearch = localStorage.getItem(LS_KEYS.search(steamid)) || "";
 
-    applyDensity(card, density);
-    applyQuality(card, quality);
-    applyHighValue(card, hv);
-    if (search) {
-      search.value = savedSearch;
-    }
+    if (search) search.value = savedSearch;
 
-    // apply initial filter
     if (chips.length) {
       chips.forEach((c) =>
         c.classList.toggle("is-active", c.dataset.filter === savedFilter),
       );
       filterItems(card, savedFilter, savedSearch);
     }
-
-    // handlers
-    densityBtn?.addEventListener("click", () => {
-      const next = card.classList.contains("density-compact")
-        ? "comfortable"
-        : "compact";
-      localStorage.setItem(LS_KEYS.density(steamid), next);
-      applyDensity(card, next);
-    });
-
-    qualityBtn?.addEventListener("click", () => {
-      const next = card.classList.contains("quality-border")
-        ? "fill"
-        : "border";
-      localStorage.setItem(LS_KEYS.quality(steamid), next);
-      applyQuality(card, next);
-    });
 
     chips.forEach((chip) => {
       chip.addEventListener("click", () => {
@@ -165,7 +121,6 @@
       filterItems(card, active, search.value || "");
     });
 
-    // horizontal scroll enhancements
     if (itemsWrap) {
       itemsWrap.addEventListener(
         "wheel",
@@ -177,29 +132,93 @@
         },
         { passive: false },
       );
-
-      let dragging = false,
-        startX = 0,
-        startLeft = 0;
-      itemsWrap.addEventListener("mousedown", (e) => {
-        dragging = true;
-        startX = e.clientX;
-        startLeft = itemsWrap.scrollLeft;
-        itemsWrap.classList.add("is-dragging");
-      });
-      window.addEventListener("mousemove", (e) => {
-        if (!dragging) return;
-        itemsWrap.scrollLeft = startLeft - (e.clientX - startX);
-      });
-      window.addEventListener("mouseup", () => {
-        dragging = false;
-        itemsWrap.classList.remove("is-dragging");
-      });
     }
   }
 
+  let densityMode = localStorage.getItem(LS_KEYS.density) || "comfortable";
+  let qualityMode = localStorage.getItem(LS_KEYS.quality) || "fill";
+  const densityBtn = document.getElementById("density-toggle");
+  const qualityBtn = document.getElementById("quality-toggle");
+
   /**
-   * Attach UI behavior to all uninitialized user cards.
+   * Apply density mode to all user cards.
+   *
+   * @param {'comfortable'|'compact'} mode - Density mode.
+   * @returns {void}
+   * @example
+   * applyDensityAll('compact');
+   */
+  function applyDensityAll(mode) {
+    document
+      .querySelectorAll(".user-card.user-box")
+      .forEach((card) => applyDensity(card, mode));
+  }
+
+  /**
+   * Apply quality mode to all user cards.
+   *
+   * @param {'fill'|'border'} mode - Quality mode.
+   * @returns {void}
+   * @example
+   * applyQualityAll('border');
+   */
+  function applyQualityAll(mode) {
+    document
+      .querySelectorAll(".user-card.user-box")
+      .forEach((card) => applyQuality(card, mode));
+  }
+
+  /**
+   * Update density button label and state.
+   *
+   * @returns {void}
+   */
+  function updateDensityBtn() {
+    if (!densityBtn) return;
+    densityBtn.textContent =
+      densityMode === "compact" ? "Comfortable" : "Compact";
+    densityBtn.setAttribute("aria-pressed", String(densityMode === "compact"));
+  }
+
+  /**
+   * Update quality button label and state.
+   *
+   * @returns {void}
+   */
+  function updateQualityBtn() {
+    if (!qualityBtn) return;
+    qualityBtn.textContent = qualityMode === "border" ? "Fill" : "Border";
+    qualityBtn.setAttribute("aria-pressed", String(qualityMode === "border"));
+  }
+
+  /**
+   * Initialize global toggle buttons and apply modes.
+   *
+   * @returns {void}
+   */
+  function initGlobalToggles() {
+    applyDensityAll(densityMode);
+    applyQualityAll(qualityMode);
+    updateDensityBtn();
+    updateQualityBtn();
+
+    densityBtn?.addEventListener("click", () => {
+      densityMode = densityMode === "compact" ? "comfortable" : "compact";
+      localStorage.setItem(LS_KEYS.density, densityMode);
+      applyDensityAll(densityMode);
+      updateDensityBtn();
+    });
+
+    qualityBtn?.addEventListener("click", () => {
+      qualityMode = qualityMode === "border" ? "fill" : "border";
+      localStorage.setItem(LS_KEYS.quality, qualityMode);
+      applyQualityAll(qualityMode);
+      updateQualityBtn();
+    });
+  }
+
+  /**
+   * Attach UI behavior to new user cards.
    *
    * @returns {void}
    */
@@ -207,27 +226,22 @@
     document.querySelectorAll(".user-card.user-box").forEach((card) => {
       if (card.dataset.uiInit === "1") return;
       card.dataset.uiInit = "1";
+      applyDensity(card, densityMode);
+      applyQuality(card, qualityMode);
       initCardBehavior(card);
     });
   }
 
-  // Run on initial load and whenever new cards are appended
-  /**
-   * Entry point to bind UI features.
-   * @returns {void}
-   */
-  function runAttach() {
-    attachUI();
-  }
-
-  // integrate with existing attachHandlers hook if present
   if (window.attachHandlers) {
     const old = window.attachHandlers;
     window.attachHandlers = function () {
       old();
-      runAttach();
+      attachUI();
     };
   }
 
-  document.addEventListener("DOMContentLoaded", runAttach);
+  document.addEventListener("DOMContentLoaded", () => {
+    initGlobalToggles();
+    attachUI();
+  });
 })();

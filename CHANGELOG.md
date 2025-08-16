@@ -37,3 +37,4 @@ All notable changes to this project will be documented in this file.
 - Separated scan results into Completed and Failed buckets with a jump-to-new-results button.
 - Updated client scripts with JSDoc comments and synchronized project documentation.
   2025-08-16 - Added sticky inventory headers, per-user search and filters, and documentation sync.
+  2025-08-16 - Moved density and quality toggles to global controls, removed drag-panning, and dropped high-value highlighting; documentation synced.
