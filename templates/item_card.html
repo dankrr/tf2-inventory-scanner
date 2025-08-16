@@ -8,7 +8,7 @@
   {%
   endif
   %}
-  data-item="{{ item|tojson|safe }}"
+  data-item='{{ item|tojson|safe }}'
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
@@ -133,6 +133,6 @@
   = item.display_name %} {% else %} {% set base = item.composite_name or
   item.base_name or item.display_name or item.name %} {% endif %} {% if
   item.is_australium %} {% set base = 'Australium ' ~ base %} {% endif %} {% set
-  _ = title_parts.append(base) %}
-  <div class="item-name">{{ title_parts | join(' ') }}</div>
+  _ = title_parts.append(base) %} {# Card title removed by design; keep names
+  for modal only. #}
 </div>

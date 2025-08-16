@@ -235,14 +235,33 @@ function attachEffectFallback() {
 }
 
 /**
- * Attach modal click handlers to all item cards.
+ * Delegate modal click handling from inventory buckets so all item cards trigger the modal.
+ *
  * @returns {void}
+ * @example
+ * attachItemModal();
  */
 function attachItemModal() {
-  document.querySelectorAll(".item-card").forEach((card) => {
-    if (card.dataset.handler) return;
-    card.dataset.handler = "true";
-    card.addEventListener("click", handleItemClick);
+  // Delegate from stable parents so newly appended cards work too
+  const roots = [
+    document.getElementById("completed-container"),
+    document.getElementById("failed-container"),
+    document.getElementById("user-container"),
+  ].filter(Boolean);
+
+  roots.forEach((root) => {
+    if (root.dataset.modalDelegated === "1") return;
+    root.dataset.modalDelegated = "1";
+    // Capture phase so overlays/badges can't swallow the click
+    root.addEventListener(
+      "click",
+      (e) => {
+        const card = e.target.closest(".item-card");
+        if (!card || !root.contains(card)) return;
+        handleItemClick({ currentTarget: card });
+      },
+      true,
+    );
   });
   attachEffectFallback();
 }
