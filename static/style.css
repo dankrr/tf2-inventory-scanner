@@ -755,6 +755,11 @@ footer {
   pointer-events: none;
 }
 
+/* Ensure effect overlays don't block item card clicks */
+.item-card > .particle-bg {
+  pointer-events: none;
+}
+
 #modal-custom-name {
   font-size: 0.9rem;
   color: #ccc;

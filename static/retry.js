@@ -222,6 +222,19 @@ function handleItemClick(event) {
 }
 
 /**
+ * Remove particle effect images when they fail to load.
+ *
+ * @returns {void}
+ */
+function attachEffectFallback() {
+  document.querySelectorAll("img.particle-bg").forEach((img) => {
+    if (img.dataset.effectFallback) return;
+    img.dataset.effectFallback = "true";
+    img.addEventListener("error", () => img.remove());
+  });
+}
+
+/**
  * Attach modal click handlers to all item cards.
  * @returns {void}
  */
@@ -231,7 +244,11 @@ function attachItemModal() {
     card.dataset.handler = "true";
     card.addEventListener("click", handleItemClick);
   });
+  attachEffectFallback();
 }
+
+// Initialize effect fallback for existing items
+attachEffectFallback();
 
 document.addEventListener("DOMContentLoaded", () => {
   attachHandlers();

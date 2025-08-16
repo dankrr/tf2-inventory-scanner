@@ -11,4 +11,4 @@
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
   accessibility; follow the pattern in `updateToggleButtons`.
 
-- Unusual effect icons use empty alt text and automatically remove themselves if the image cannot be loaded.
+- Unusual effect icons use empty alt text, ignore pointer events so modals remain clickable, and a small helper removes the image if loading fails.

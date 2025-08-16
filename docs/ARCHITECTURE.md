@@ -17,4 +17,4 @@ toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.
 Sticky user headers now isolate their stacking context so they remain above item cards and prices while scrolling.
 
-Unusual effect icons on item cards are rendered as decorative images. If an effect icon fails to load, the element removes itself to avoid displaying broken imagery.
+Unusual effect icons on item cards are rendered as decorative images. They ignore pointer events so clicks reach the underlying card, and a JavaScript fallback removes the icon if it fails to load.
