@@ -42,6 +42,7 @@ All notable changes to this project will be documented in this file.
 - Synchronized documentation and JSDoc for updated UI behavior.
 - Isolated stacking contexts so sticky user headers render above item content.
 - Added per-user inventory search binding and item `data-name` attributes for filtering.
+- Enhanced search to cache item names and support legacy/new inventory containers.
 - Synchronized documentation and JSDoc comments.
 
 ## [2025-08-15]

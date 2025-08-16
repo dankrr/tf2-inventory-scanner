@@ -147,6 +147,8 @@ function attachHandlers() {
 
 /**
  * Per-user inventory search that filters item wrappers under each user card.
+/**
+ * Per-user inventory search that filters item wrappers under each user card.
  * Falls back to parsing `.item-card[data-item]` when `data-name` is unavailable.
  *
  * @param {void} none
@@ -156,48 +158,63 @@ function attachHandlers() {
  */
 function attachUserSearch() {
   document.querySelectorAll(".user-search").forEach((input) => {
-    if (input.dataset.bound) return;
+    if (input.dataset.bound === "1") return;
     input.dataset.bound = "1";
+
     const userCard = input.closest(".user-card");
-    const itemsEl = userCard ? userCard.querySelector(".items") : null;
+    if (!userCard) return;
+
+    // Support both old and new templates
+    const itemsEl =
+      userCard.querySelector(".inventory-container") ||
+      userCard.querySelector(".items") ||
+      userCard.querySelector(".inventory-grid");
     if (!itemsEl) return;
 
+    const wrappers = () => itemsEl.querySelectorAll(".item-wrapper");
+
     const getName = (wrap) => {
-      let name = (wrap.dataset.name || "").toLowerCase();
-      if (name) return name;
-      const card = wrap.querySelector(".item-card");
-      if (!card) return "";
-      try {
-        const raw = card.getAttribute("data-item") || card.dataset.item || "";
-        const obj = raw && raw[0] === "{" ? JSON.parse(raw) : null;
-        name = (
-          obj?.display_name ||
-          obj?.composite_name ||
-          obj?.base_name ||
-          obj?.name ||
-          ""
-        ).toLowerCase();
-      } catch (_) {
-        /* ignore */
+      // Cache once per wrapper
+      if (!wrap.dataset.searchName) {
+        let nm = (wrap.dataset.name || "").trim();
+        if (!nm) {
+          const card = wrap.querySelector(".item-card");
+          if (card) {
+            try {
+              const raw =
+                card.getAttribute("data-item") || card.dataset.item || "";
+              if (raw && raw[0] === "{") {
+                const obj = JSON.parse(raw);
+                nm =
+                  obj.display_name ||
+                  obj.composite_name ||
+                  obj.base_name ||
+                  obj.name ||
+                  "";
+              }
+            } catch {
+              /* ignore parse errors */
+            }
+          }
+        }
+        wrap.dataset.searchName = (nm || "").toLowerCase();
       }
-      return name || "";
+      return wrap.dataset.searchName;
     };
 
     const apply = () => {
       const q = (input.value || "").trim().toLowerCase();
-      const wraps = itemsEl.querySelectorAll(".item-wrapper");
-      wraps.forEach((w) => {
+      wrappers().forEach((w) => {
         if (!q) {
           w.style.display = "";
           return;
         }
-        const name = getName(w);
-        w.style.display = name.includes(q) ? "" : "none";
+        w.style.display = getName(w).includes(q) ? "" : "none";
       });
     };
 
     input.addEventListener("input", apply);
-    // Normalize state on load or dynamic append
+    input.addEventListener("search", apply); // supports clear (x)
     apply();
   });
 }
