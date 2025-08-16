@@ -15,6 +15,7 @@ Client-side JavaScript handles form submission, retry flows, and dynamic UI upda
 `static/ui.js` adds per-user inventory search with sticky headers and provides global
 toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.
+Uncraftable items rely solely on a dashed quality border without the previous inner gray ring.
 Sticky user headers now isolate their stacking context so they remain above item cards and prices while scrolling.
 Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts can filter items by name. `static/retry.js` rebinds these per-user searches after inventory refreshes, caching item names and handling legacy and new inventory containers.
 

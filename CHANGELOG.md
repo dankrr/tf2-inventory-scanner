@@ -52,6 +52,13 @@ All notable changes to this project will be documented in this file.
 - Separated scan results into Completed and Failed buckets with a jump-to-new-results button.
 - Updated client scripts with JSDoc comments and synchronized project documentation.
 
+## [2025-08-16]
+
+### Changed
+
+- Removed inner gray ring from uncraftable item cards, relying solely on the dashed quality border.
+- Synchronized documentation.
+
 ## [2025-05-11]
 
 ### Added
