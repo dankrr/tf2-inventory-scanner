@@ -128,8 +128,12 @@ function handleRetryClick(event) {
 }
 
 /**
- * Attach click handlers and modal logic to current cards.
- * @returns {void}
+ * Attach click handlers, modal logic, and search bindings to current cards.
+ *
+ * @param {void} none
+ * @returns {void} No return value.
+ * @example
+ * attachHandlers();
  */
 function attachHandlers() {
   document.querySelectorAll(".retry-button").forEach((btn) => {
@@ -138,6 +142,64 @@ function attachHandlers() {
   });
   updateRefreshButton();
   attachItemModal();
+  attachUserSearch();
+}
+
+/**
+ * Per-user inventory search that filters item wrappers under each user card.
+ * Falls back to parsing `.item-card[data-item]` when `data-name` is unavailable.
+ *
+ * @param {void} none
+ * @returns {void} Adjusts item visibility based on the search query.
+ * @example
+ * attachUserSearch();
+ */
+function attachUserSearch() {
+  document.querySelectorAll(".user-search").forEach((input) => {
+    if (input.dataset.bound) return;
+    input.dataset.bound = "1";
+    const userCard = input.closest(".user-card");
+    const itemsEl = userCard ? userCard.querySelector(".items") : null;
+    if (!itemsEl) return;
+
+    const getName = (wrap) => {
+      let name = (wrap.dataset.name || "").toLowerCase();
+      if (name) return name;
+      const card = wrap.querySelector(".item-card");
+      if (!card) return "";
+      try {
+        const raw = card.getAttribute("data-item") || card.dataset.item || "";
+        const obj = raw && raw[0] === "{" ? JSON.parse(raw) : null;
+        name = (
+          obj?.display_name ||
+          obj?.composite_name ||
+          obj?.base_name ||
+          obj?.name ||
+          ""
+        ).toLowerCase();
+      } catch (_) {
+        /* ignore */
+      }
+      return name || "";
+    };
+
+    const apply = () => {
+      const q = (input.value || "").trim().toLowerCase();
+      const wraps = itemsEl.querySelectorAll(".item-wrapper");
+      wraps.forEach((w) => {
+        if (!q) {
+          w.style.display = "";
+          return;
+        }
+        const name = getName(w);
+        w.style.display = name.includes(q) ? "" : "none";
+      });
+    };
+
+    input.addEventListener("input", apply);
+    // Normalize state on load or dynamic append
+    apply();
+  });
 }
 
 /**

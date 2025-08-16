@@ -75,7 +75,11 @@
       <div class="inventory-container">
         {% for item in user.items if not item._hidden %} {# ↑ keep border-color
         for quality #}
-        <div class="item-wrapper">
+
+        <div
+          class="item-wrapper"
+          data-name="{{ (item.display_name or item.composite_name or item.base_name or item.name)|e }}"
+        >
           {% include "item_card.html" %} {% if item.price_string %}
           <div class="item-price">{{ item.formatted_price }}</div>
           {% endif %}
