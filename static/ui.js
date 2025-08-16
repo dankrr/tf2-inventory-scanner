@@ -4,6 +4,7 @@
     quality: "ui:quality", // 'fill'|'border'
     filter: (sid) => `ui:filter:${sid}`,
     search: (sid) => `ui:search:${sid}`,
+    sort: (sid) => `ui:sort:${sid}`,
   };
 
   /**
@@ -43,31 +44,31 @@
    * filterItems(card, 'unusual', 'hat');
    */
   function filterItems(card, filter, query) {
-    const items = card.querySelectorAll(".item-card");
+    const items = card.querySelectorAll(".item-wrapper");
     const q = (query || "").trim().toLowerCase();
-    items.forEach((it) => {
-      const name = (it.dataset.name || "").toLowerCase();
-      const keys = Number(it.dataset.valueKeys || 0);
+    items.forEach((wrap) => {
+      const name = (wrap.dataset.name || "").toLowerCase();
+      const keys = Number(wrap.dataset.valueKeys || 0);
       let vis = true;
 
       switch (filter) {
         case "unusual":
-          vis = it.classList.contains("quality-unusual");
+          vis = wrap.classList.contains("quality-unusual");
           break;
         case "strange":
-          vis = it.classList.contains("quality-strange");
+          vis = wrap.classList.contains("quality-strange");
           break;
         case "cosmetic":
-          vis = it.classList.contains("is-cosmetic");
+          vis = wrap.classList.contains("is-cosmetic");
           break;
         case "weapon":
-          vis = it.classList.contains("is-weapon");
+          vis = wrap.classList.contains("is-weapon");
           break;
         case "dupe":
-          vis = it.classList.contains("is-duplicate");
+          vis = wrap.classList.contains("is-duplicate");
           break;
         case "attrs":
-          vis = it.classList.contains("has-attrs");
+          vis = wrap.classList.contains("has-attrs");
           break;
         case "value":
           vis = keys >= 5;
@@ -76,8 +77,44 @@
           vis = true;
       }
       if (vis && q) vis = name.includes(q);
-      it.style.display = vis ? "" : "none";
+      wrap.style.display = vis ? "" : "none";
     });
+  }
+
+  /**
+   * Sort items within a user card.
+   *
+   * @param {HTMLElement} card - User card element.
+   * @param {"name"|"value"} key - Sort key.
+   * @returns {void}
+   * @example
+   * sortItems(card, "value");
+   */
+  function sortItems(card, key) {
+    const container = card.querySelector(".items");
+    if (!container) return;
+    const items = Array.from(container.querySelectorAll(".item-wrapper"));
+    const compare =
+      key === "name"
+        ? (a, b) =>
+            (a.dataset.name || "").localeCompare(
+              b.dataset.name || "",
+              undefined,
+              {
+                sensitivity: "base",
+              },
+            )
+        : (a, b) =>
+            Number(b.dataset.valueKeys || 0) - Number(a.dataset.valueKeys || 0);
+    items.sort(compare);
+    let i = 0;
+    function batch() {
+      const slice = items.slice(i, i + 50);
+      slice.forEach((el) => container.appendChild(el));
+      i += slice.length;
+      if (i < items.length) requestAnimationFrame(batch);
+    }
+    requestAnimationFrame(batch);
   }
 
   /**
@@ -92,9 +129,11 @@
     const itemsWrap = card.querySelector(".items");
     const search = card.querySelector(".inv-search");
     const chips = card.querySelectorAll(".filters .chip");
+    const sortSel = card.querySelector(".sort-select");
 
     const savedFilter = localStorage.getItem(LS_KEYS.filter(steamid)) || "all";
     const savedSearch = localStorage.getItem(LS_KEYS.search(steamid)) || "";
+    const savedSort = localStorage.getItem(LS_KEYS.sort(steamid)) || "default";
 
     if (search) search.value = savedSearch;
 
@@ -103,6 +142,11 @@
         c.classList.toggle("is-active", c.dataset.filter === savedFilter),
       );
       filterItems(card, savedFilter, savedSearch);
+    }
+
+    if (sortSel) {
+      sortSel.value = savedSort;
+      if (savedSort !== "default") sortItems(card, savedSort);
     }
 
     chips.forEach((chip) => {
@@ -119,6 +163,13 @@
       const active =
         card.querySelector(".filters .chip.is-active")?.dataset.filter || "all";
       filterItems(card, active, search.value || "");
+    });
+
+    sortSel?.addEventListener("change", () => {
+      const val = sortSel.value;
+      localStorage.setItem(LS_KEYS.sort(steamid), val);
+      if (val === "default") return;
+      sortItems(card, val);
     });
 
     if (itemsWrap) {

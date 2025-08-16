@@ -1,12 +1,7 @@
 {% set quality_class = (item.quality|default('unknown')|lower|replace(' ', '-'))
-%} {% set slot_hint = (item.slot|default('')|lower) %} {% set type_hint =
-(item.type|default('')|lower) %} {% set is_weapon =
-(item.is_weapon|default(false)) or ('weapon' in type_hint) or ('primary' in
-slot_hint) or ('secondary' in slot_hint) or ('melee' in slot_hint) %} {% set
-is_cosmetic = (item.is_cosmetic|default(false)) or ('hat' in type_hint) or
-('cosmetic' in type_hint) %}
+%}
 <div
-  class="item-card quality-{{ quality_class }}{% if is_weapon %} is-weapon{% endif %}{% if is_cosmetic %} is-cosmetic{% endif %}{% if item.has_spells or item.has_paint or item.has_parts %} has-attrs{% endif %}{% if item.duplicate_count and item.duplicate_count>1 %} is-duplicate{% endif %}{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
+  class="item-card quality-{{ quality_class }}{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
   style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
   {%
   if
@@ -17,8 +12,6 @@ is_cosmetic = (item.is_cosmetic|default(false)) or ('hat' in type_hint) or
   %}
   data-item="{{ item|tojson|safe }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
-  data-value-keys="{{ item.value_keys|default(0) }}"
-  data-name="{{ item.display_name or item.composite_name }}"
 >
   <div class="item-badges">
     {% if item.is_australium %}

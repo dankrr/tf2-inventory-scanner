@@ -64,6 +64,14 @@
       />
     </div>
 
+    <div class="sort-wrap">
+      <select class="sort-select" aria-label="Sort items">
+        <option value="default">Sort: Default</option>
+        <option value="name">Name</option>
+        <option value="value">Value</option>
+      </select>
+    </div>
+
     <div class="filters" role="toolbar" aria-label="Filters">
       <button class="chip is-active" data-filter="all" type="button">
         All
@@ -96,9 +104,19 @@
         data-steamid="{{ user.steamid }}"
         aria-live="polite"
       >
-        {% for item in user.items if not item._hidden %} {# ↑ keep border-color
-        for quality #}
-        <div class="item-wrapper">
+        {% for item in user.items if not item._hidden %} {% set quality_class =
+        (item.quality|default('unknown')|lower|replace(' ', '-')) %} {% set
+        slot_hint = (item.slot|default('')|lower) %} {% set type_hint =
+        (item.type|default('')|lower) %} {% set is_weapon =
+        (item.is_weapon|default(false)) or ('weapon' in type_hint) or ('primary'
+        in slot_hint) or ('secondary' in slot_hint) or ('melee' in slot_hint) %}
+        {% set is_cosmetic = (item.is_cosmetic|default(false)) or ('hat' in
+        type_hint) or ('cosmetic' in type_hint) %}
+        <div
+          class="item-wrapper quality-{{ quality_class }}{% if is_weapon %} is-weapon{% endif %}{% if is_cosmetic %} is-cosmetic{% endif %}{% if item.has_spells or item.has_paint or item.has_parts %} has-attrs{% endif %}{% if item.duplicate_count and item.duplicate_count>1 %} is-duplicate{% endif %}"
+          data-value-keys="{{ item.value_keys|default(0) }}"
+          data-name="{{ item.display_name or item.composite_name }}"
+        >
           {% include "item_card.html" %} {% if item.price_string %}
           <div class="item-price">{{ item.formatted_price }}</div>
           {% endif %}

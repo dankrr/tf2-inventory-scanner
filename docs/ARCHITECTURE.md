@@ -15,7 +15,10 @@ Client-side JavaScript handles form submission, retry flows, and dynamic UI upda
 
 ## Client UI Enhancements
 
-Each user card renders a sticky header with search and filter chips. Global
-density and quality toggles placed next to the form actions affect all user
-cards. Search and filters operate per user and persist in `localStorage`, and
-behavior is managed by `static/ui.js`.
+Each user card renders a sticky header with search, filter chips, and a sort
+selector. Global density and quality toggles placed next to the form actions
+affect all user cards. Search, filters, and sorting operate per user and persist
+in `localStorage`. Item filtering and sorting work on `.item-wrapper` elements
+that encapsulate both the card and price chip, and sorting reattaches wrappers
+in small batches via `requestAnimationFrame` for smoother updates. Behavior is
+managed by `static/ui.js`.

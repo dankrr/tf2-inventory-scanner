@@ -38,3 +38,4 @@ All notable changes to this project will be documented in this file.
 - Updated client scripts with JSDoc comments and synchronized project documentation.
   2025-08-16 - Added sticky inventory headers, per-user search and filters, and documentation sync.
   2025-08-16 - Moved density and quality toggles to global controls, removed drag-panning, and dropped high-value highlighting; documentation synced.
+  2025-08-16 - Fixed filtering to operate on item wrappers and added batched sorting with documentation sync.

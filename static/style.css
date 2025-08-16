@@ -785,7 +785,7 @@ footer {
 /* Controls */
 .user-controls {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr auto;
   gap: 0.5rem;
   align-items: center;
   margin: 0.25rem 0 0.5rem;
@@ -806,6 +806,13 @@ footer {
 .user-controls .chip.is-active {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.25);
+}
+.user-controls .sort-select {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
 }
 
 /* Items grid perf */
