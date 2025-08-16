@@ -8,7 +8,7 @@
   {%
   endif
   %}
-  data-item='{{ item|tojson|safe }}'
+  data-item="{{ item|tojson|safe }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
@@ -78,46 +78,51 @@
     alt="StatTrak™"
     title="StatTrak™ Active"
   />
-  {% endif %} {% if item.unusual_effect_id %}
-  <img
-    class="particle-bg"
-    loading="lazy"
-    src="/static/images/effects/{{ item.unusual_effect_id }}.png"
-    data-src="/static/images/effects/{{ item.unusual_effect_id }}.png"
-    alt=""
-    aria-hidden="true"
-  />
-  {% endif %} {% if item.target_weapon_image %}
-  <div class="kit-composite">
+  {% endif %}
+  <div class="item-media">
+    {% if item.unusual_effect_id %}
     <img
-      class="kit-bg"
+      class="particle-bg"
+      loading="lazy"
+      src="/static/images/effects/{{ item.unusual_effect_id }}.png"
+      data-src="/static/images/effects/{{ item.unusual_effect_id }}.png"
+      alt=""
+      aria-hidden="true"
+      onerror="this.remove()"
+    />
+    {% endif %} {% if item.target_weapon_image %}
+    <div class="kit-composite">
+      <img
+        class="kit-bg"
+        src="{{ item.image_url }}"
+        loading="lazy"
+        width="96"
+        height="96"
+        alt="{{ item.display_name }}"
+      />
+      <img
+        class="kit-weapon-overlay"
+        src="{{ item.target_weapon_image }}"
+        loading="lazy"
+        alt="overlay"
+      />
+    </div>
+    {% elif item.image_url %}
+    <img
+      class="item-img"
+      loading="lazy"
       src="{{ item.image_url }}"
-      loading="lazy"
-      width="96"
-      height="96"
+      data-src="{{ item.image_url }}"
       alt="{{ item.display_name }}"
+      width="64"
+      height="64"
+      onerror="this.style.display='none';"
     />
-    <img
-      class="kit-weapon-overlay"
-      src="{{ item.target_weapon_image }}"
-      loading="lazy"
-      alt="overlay"
-    />
+    {% else %}
+    <div class="missing-icon"></div>
+    {% endif %}
   </div>
-  {% elif item.image_url %}
-  <img
-    class="item-img"
-    loading="lazy"
-    src="{{ item.image_url }}"
-    data-src="{{ item.image_url }}"
-    alt="{{ item.display_name }}"
-    width="64"
-    height="64"
-    onerror="this.style.display='none';"
-  />
-  {% else %}
-  <div class="missing-icon"></div>
-  {% endif %} {% set title_parts = [] %} {% if item.killstreak_name %} {% if
+  {% set title_parts = [] %} {% if item.killstreak_name %} {% if
   item.killstreak_name == 'Killstreak' %} {% set _ =
   title_parts.append('Killstreak') %} {% else %} {% set _ =
   title_parts.append(item.killstreak_name) %} {% set _ =

@@ -13,3 +13,4 @@
 - Item cards omit inline titles; names surface only within the modal.
 - Modal clicks are delegated from result containers. Ensure overlays and badges do not capture pointer events.
 - Unusual effect icons use empty alt text, ignore pointer events, and a helper removes the image if loading fails.
+- Wrap icon elements in `.item-media` to center content and place particle overlays behind; include `onerror="this.remove()"` on effect images so missing assets vanish cleanly.
