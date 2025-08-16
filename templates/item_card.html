@@ -78,9 +78,9 @@
     alt="StatTrak™"
     title="StatTrak™ Active"
   />
-  {% endif %}
-  <div class="item-media">
-    {% if item.unusual_effect_id %}
+{% endif %}
+<div class="item-media">
+  {% if item.unusual_effect_id %}
     <img
       class="particle-bg"
       loading="lazy"
@@ -90,7 +90,9 @@
       aria-hidden="true"
       onerror="this.remove()"
     />
-    {% endif %} {% if item.target_weapon_image %}
+  {% endif %}
+
+  {% if item.target_weapon_image %}
     <div class="kit-composite">
       <img
         class="kit-bg"
@@ -107,7 +109,7 @@
         alt="overlay"
       />
     </div>
-    {% elif item.image_url %}
+  {% elif item.image_url %}
     <img
       class="item-img"
       loading="lazy"
@@ -118,11 +120,11 @@
       height="64"
       onerror="this.style.display='none';"
     />
-    {% else %}
+  {% else %}
     <div class="missing-icon"></div>
-    {% endif %}
-  </div>
-  {% set title_parts = [] %} {% if item.killstreak_name %} {% if
+  {% endif %}
+</div>
+{% set title_parts = [] %} {% if item.killstreak_name %} {% if
   item.killstreak_name == 'Killstreak' %} {% set _ =
   title_parts.append('Killstreak') %} {% else %} {% set _ =
   title_parts.append(item.killstreak_name) %} {% set _ =

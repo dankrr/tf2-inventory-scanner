@@ -752,7 +752,7 @@ footer {
 
 /* --- Center the media inside each card --- */
 .item-card {
-  position: relative;
+  position: relative;            /* keep cursor rule elsewhere if you have one */
 }
 .item-media {
   /* fill the card and center its contents */
@@ -762,8 +762,8 @@ footer {
   height: 100%;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px; /* keeps icons off the border ring */
-  position: relative; /* establishes a containing block for .particle-bg */
+  padding: 6px;                  /* keeps icons off the border ring */
+  position: relative;            /* containing block for .particle-bg */
 }
 .item-media > img.item-img,
 .item-media > .kit-composite,
