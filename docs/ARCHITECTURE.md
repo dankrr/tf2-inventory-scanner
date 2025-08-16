@@ -16,3 +16,5 @@ Client-side JavaScript handles form submission, retry flows, and dynamic UI upda
 toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.
 Sticky user headers now isolate their stacking context so they remain above item cards and prices while scrolling.
+
+Item cards no longer render inline titles, keeping the grid clean; names appear only in the modal. Unusual effect icons are decorative overlays that ignore pointer events, and a JavaScript fallback removes the icon if it fails to load. Modal clicks are delegated from result containers so dynamically added cards remain interactive.

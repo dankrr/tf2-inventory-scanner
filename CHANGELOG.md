@@ -28,6 +28,9 @@ All notable changes to this project will be documented in this file.
 - Plain craft weapons from achievements or promotions are no longer filtered and
   such items are hidden without price data.
 - Untradable timed-drop items are now marked as hidden.
+- [2025-08-16] - Effect icons remove themselves when missing, keeping item cards clean. Documentation synchronized.
+- [2025-08-16] - Restored item modal clicks and added JS fallback to remove missing effect icons. Documentation synchronized.
+- [2025-08-16] - Delegated item modal clicks, removed card titles, and synchronized documentation.
 
 ## [2025-08-16]
 
