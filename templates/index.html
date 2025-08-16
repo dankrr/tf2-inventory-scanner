@@ -149,6 +149,12 @@
             >
               <i class="fa-solid fa-arrows-rotate"></i> Refresh Failed
             </button>
+            <button id="toggle-density" type="button" class="action-button">
+              <i class="fa-solid fa-compress"></i> Compact
+            </button>
+            <button id="toggle-quality" type="button" class="action-button">
+              <i class="fa-solid fa-border-all"></i> Border Mode
+            </button>
           </div>
         </form>
 
@@ -246,6 +252,7 @@
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
     <script src="{{ url_for('static', filename='retry.js') }}"></script>
     <script src="{{ url_for('static', filename='submit.js') }}"></script>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
     <script>
       function attachScrollButtons() {
         document.querySelectorAll(".inventory-scroll").forEach((wrapper) => {

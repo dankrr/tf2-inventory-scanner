@@ -1,22 +1,48 @@
-<div id="user-{{ user.steamid }}" class="user-card user-box {{ user.status }}{% if user.status == 'failed' %} retry-card{% endif %}" data-steamid="{{ user.steamid }}">
+<div
+  id="user-{{ user.steamid }}"
+  class="user-card user-box {{ user.status }}{% if user.status == 'failed' %} retry-card{% endif %}"
+  data-steamid="{{ user.steamid }}"
+>
   <div class="user-header">
     <div class="user-profile">
       <a href="{{ user.profile }}" target="_blank" class="avatar-link">
-        <img src="{{ user.avatar }}" alt="Avatar" class="profile-pic" loading="lazy" />
+        <img
+          src="{{ user.avatar }}"
+          alt="Avatar"
+          class="profile-pic"
+          loading="lazy"
+        />
       </a>
       <div class="profile-details">
         <div class="username">{{ user.username }}</div>
         <div class="tf2-hours">TF2 Playtime: {{ user.playtime }} hrs</div>
         <div class="profile-link">
-          <a href="https://next.backpack.tf/profiles/{{ user.steamid }}" class="backpack-link" target="_blank" rel="noopener">
+          <a
+            href="https://next.backpack.tf/profiles/{{ user.steamid }}"
+            class="backpack-link"
+            target="_blank"
+            rel="noopener"
+          >
             Backpack.tf
-            <img src="/static/images/logos/bptf_small.PNG" alt="Backpack.tf" class="inline-icon" loading="lazy" />
+            <img
+              src="/static/images/logos/bptf_small.PNG"
+              alt="Backpack.tf"
+              class="inline-icon"
+              loading="lazy"
+            />
           </a>
         </div>
       </div>
     </div>
-    <div class="privacy-status">
-      {% if user.status == 'failed' %}
+    <div class="user-controls">
+      <input
+        type="search"
+        class="user-search"
+        placeholder="Search items…"
+        aria-label="Search items"
+      />
+      <div class="privacy-status">
+        {% if user.status == 'failed' %}
         <button
           class="pill status-pill failed retry-button"
           type="button"
@@ -25,41 +51,42 @@
         >
           <i class="fa-solid fa-arrows-rotate"></i> Retry
         </button>
-      {% else %}
+        {% else %}
         <span class="pill status-pill {{ user.status }}">
           {% if user.status == 'parsed' %}
-            <i class="fa-solid fa-check"></i> Public
-          {% elif user.status == 'private' %}
-            <i class="fa-solid fa-lock"></i> Private
-          {% else %}
-            <i class="fa-solid fa-arrows-rotate"></i> Failed
-          {% endif %}
+          <i class="fa-solid fa-check"></i> Public {% elif user.status ==
+          'private' %} <i class="fa-solid fa-lock"></i> Private {% else %}
+          <i class="fa-solid fa-arrows-rotate"></i> Failed {% endif %}
         </span>
-      {% endif %}
+        {% endif %}
+      </div>
     </div>
   </div>
   <div class="card-body">
     {% if user.status == 'incomplete' %}
-      <span class="badge bg-warning text-dark">Fetched but unparsed</span>
+    <span class="badge bg-warning text-dark">Fetched but unparsed</span>
     {% elif user.status == 'private' %}
-      <span class="badge bg-secondary">Private</span>
+    <span class="badge bg-secondary">Private</span>
     {% endif %}
     <div class="inventory-scroll">
       <button class="scroll-arrow left" type="button" aria-label="Scroll left">
         <i class="fa-solid fa-chevron-left"></i>
       </button>
-        <div class="inventory-container">
-          {% for item in user.items if not item._hidden %}
-            {# ↑ keep border-color for quality #}
-            <div class="item-wrapper">
-              {% include "item_card.html" %}
-              {% if item.price_string %}
-                <div class="item-price">{{ item.formatted_price }}</div>
-              {% endif %}
-            </div>
-          {% endfor %}
+      <div class="inventory-container">
+        {% for item in user.items if not item._hidden %} {# ↑ keep border-color
+        for quality #}
+        <div class="item-wrapper">
+          {% include "item_card.html" %} {% if item.price_string %}
+          <div class="item-price">{{ item.formatted_price }}</div>
+          {% endif %}
         </div>
-      <button class="scroll-arrow right" type="button" aria-label="Scroll right">
+        {% endfor %}
+      </div>
+      <button
+        class="scroll-arrow right"
+        type="button"
+        aria-label="Scroll right"
+      >
         <i class="fa-solid fa-chevron-right"></i>
       </button>
     </div>

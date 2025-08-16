@@ -6,3 +6,5 @@
 - Use `addCardToBucket` when adding or moving cards so scroll and jump
   behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
+- UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding
+  dynamic elements so new cards receive search and modal behavior.
