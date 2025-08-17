@@ -10,6 +10,8 @@ New results are appended to the appropriate bucket. The Completed bucket keeps
 public results ahead of private ones, ensuring private inventories collect at
 the bottom. When the user is not at the bottom of the page, a floating
 "New results — Jump ↓" button appears to quickly navigate to the latest results.
+Two compact floating buttons in the lower-right corner provide quick access to
+refresh failed inventories or scroll back to the top.
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.

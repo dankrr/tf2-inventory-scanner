@@ -137,21 +137,35 @@ function updateFailedCount() {
 }
 
 /**
- * Enable or disable the "Refresh Failed" button based on failures.
- * @returns {void}
+ * Enable or disable the "Refresh Failed" buttons based on failures.
+ * Toggles visibility of the floating refresh control.
+ *
+ * @param {void} none
+ * @returns {void} No return value.
+ * @example
+ * updateRefreshButton();
  */
 function updateRefreshButton() {
   const btn = document.getElementById("refresh-failed-btn");
+  const floatBtn = document.getElementById("refresh-floating-btn");
   if (!btn) return;
   const failures = getFailedUsers().length;
   if (failures === 0) {
     btn.disabled = true;
     btn.textContent = "Nothing to Refresh";
     btn.classList.add("btn-disabled");
+    if (floatBtn) {
+      floatBtn.style.display = "none";
+      floatBtn.setAttribute("disabled", "true");
+    }
   } else {
     btn.disabled = false;
     btn.textContent = `Refresh Failed (${failures})`;
     btn.classList.remove("btn-disabled");
+    if (floatBtn) {
+      floatBtn.style.display = "block";
+      floatBtn.removeAttribute("disabled");
+    }
   }
   updateFailedCount();
 }
@@ -171,6 +185,37 @@ function handleRetryClick(event) {
   const btn = event.currentTarget;
   if (!btn) return;
   retryInventory(btn.dataset.steamid);
+}
+
+/** Bind floating buttons (idempotent).
+ *
+ * @param {void} none
+ * @returns {void} No return value.
+ * @example
+ * setupFloatingControls();
+ */
+function setupFloatingControls() {
+  const topBtn = document.getElementById("scroll-top-btn");
+  const refBtn = document.getElementById("refresh-floating-btn");
+  const mainRefresh = document.getElementById("refresh-failed-btn");
+
+  if (topBtn && !topBtn.dataset.bound) {
+    topBtn.dataset.bound = "1";
+    topBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  if (refBtn && !refBtn.dataset.bound) {
+    refBtn.dataset.bound = "1";
+    refBtn.addEventListener("click", () => {
+      if (typeof refreshAll === "function") {
+        refreshAll();
+      } else {
+        mainRefresh?.click();
+      }
+    });
+  }
 }
 
 /**
@@ -403,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btn) {
     btn.addEventListener("click", refreshAll);
   }
+  setupFloatingControls();
   if (window.modal && typeof window.modal.initModal === "function") {
     window.modal.initModal();
   }
