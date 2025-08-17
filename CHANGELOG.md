@@ -66,3 +66,14 @@ All notable changes to this project will be documented in this file.
 - Sticky user headers with per-user search.
 - Global Compact and Border mode toggles with persistence.
 - Documentation and JSDoc synchronization.
+
+## [2025-08-17]
+
+### Changed
+
+- Precompute full item titles for tooltip and remove redundant inline names.
+
+### Fixed
+
+- Restore single quotes on item cards and guard modal against malformed `data-item`.
+- Synchronized documentation.
