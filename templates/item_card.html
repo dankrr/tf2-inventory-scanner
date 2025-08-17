@@ -1,14 +1,26 @@
+{# --- Precompute the full display title used by the modal --- #} {% set
+title_parts = [] %} {% if item.killstreak_name %} {% if item.killstreak_name ==
+'Killstreak' %} {% set _ = title_parts.append('Killstreak') %} {% else %} {% set
+_ = title_parts.append(item.killstreak_name) %} {% set _ =
+title_parts.append('Killstreak') %} {% endif %} {% endif %} {% set quality =
+item.quality %} {% if not item.is_australium %} {% if quality == 'Strange' %} {%
+set _ = title_parts.append('Strange') %} {% elif quality and quality not in
+('Unique', 'Normal', 'Decorated Weapon') %} {% if not (quality == 'Unusual' and
+item.unusual_effect_id) %} {% set _ = title_parts.append(quality) %} {% endif %}
+{% endif %} {% endif %} {% if item.is_war_paint_tool %} {% if
+item.target_weapon_name %} {% set base = (item.warpaint_name ~ ' ' ~
+item.target_weapon_name) %} {% else %} {% set base = item.warpaint_name or
+item.display_name %} {% endif %} {% elif item.unusual_effect_id %} {% set base =
+item.display_name %} {% else %} {% set base = item.composite_name or
+item.base_name or item.display_name or item.name %} {% endif %} {% if
+item.is_australium %} {% set base = 'Australium ' ~ base %} {% endif %} {% set
+full_title = (title_parts + [base]) | join(' ') %}
+
 <div
   class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
   style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
-  {%
-  if
-  item.has_strange_tracking
-  %}title="Has Strange tracking"
-  {%
-  endif
-  %}
-  data-item='{{ item|tojson|safe }}'
+  title="{{ full_title }}"
+  data-item="{{ item|tojson|safe }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
@@ -78,9 +90,9 @@
     alt="StatTrak™"
     title="StatTrak™ Active"
   />
-{% endif %}
-<div class="item-media">
-  {% if item.unusual_effect_id %}
+  {% endif %}
+  <div class="item-media">
+    {% if item.unusual_effect_id %}
     <img
       class="particle-bg"
       loading="lazy"
@@ -90,9 +102,7 @@
       aria-hidden="true"
       onerror="this.remove()"
     />
-  {% endif %}
-
-  {% if item.target_weapon_image %}
+    {% endif %} {% if item.target_weapon_image %}
     <div class="kit-composite">
       <img
         class="kit-bg"
@@ -109,7 +119,7 @@
         alt="overlay"
       />
     </div>
-  {% elif item.image_url %}
+    {% elif item.image_url %}
     <img
       class="item-img"
       loading="lazy"
@@ -120,26 +130,10 @@
       height="64"
       onerror="this.style.display='none';"
     />
-  {% else %}
+    {% else %}
     <div class="missing-icon"></div>
-  {% endif %}
-</div>
-{% set title_parts = [] %} {% if item.killstreak_name %} {% if
-  item.killstreak_name == 'Killstreak' %} {% set _ =
-  title_parts.append('Killstreak') %} {% else %} {% set _ =
-  title_parts.append(item.killstreak_name) %} {% set _ =
-  title_parts.append('Killstreak') %} {% endif %} {% endif %} {% set quality =
-  item.quality %} {% if not item.is_australium %} {% if quality == 'Strange' %}
-  {% set _ = title_parts.append('Strange') %} {% elif quality and quality not in
-  ('Unique', 'Normal', 'Decorated Weapon') %} {% if not (quality == 'Unusual'
-  and item.unusual_effect_id) %} {% set _ = title_parts.append(quality) %} {%
-  endif %} {% endif %} {% endif %} {% if item.is_war_paint_tool %} {% if
-  item.target_weapon_name %} {% set base = (item.warpaint_name ~ ' ' ~
-  item.target_weapon_name) %} {% else %} {% set base = item.warpaint_name or
-  item.display_name %} {% endif %} {% elif item.unusual_effect_id %} {% set base
-  = item.display_name %} {% else %} {% set base = item.composite_name or
-  item.base_name or item.display_name or item.name %} {% endif %} {% if
-  item.is_australium %} {% set base = 'Australium ' ~ base %} {% endif %} {% set
-  _ = title_parts.append(base) %} {# Card title removed by design; keep names
-  for modal only. #}
+    {% endif %}
+  </div>
+  {# Title is shown as tooltip via the title attribute above; no inline name
+  row. #}
 </div>
