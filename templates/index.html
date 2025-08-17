@@ -244,6 +244,13 @@
         </p>
       </footer>
     </div>
+    <button
+      id="refresh-floating-btn"
+      class="floating-refresh-btn"
+      aria-label="Refresh failed"
+    >
+      <i class="fa-solid fa-arrows-rotate"></i>
+    </button>
 
     <script>
       window.initialIds = {{ failed_ids|tojson|safe }};

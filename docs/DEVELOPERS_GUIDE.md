@@ -7,6 +7,7 @@
   and jump behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding dynamic elements so new cards receive search and modal behavior, including the `attachUserSearch` filter.
+- A floating refresh button (`#refresh-floating-btn`) mirrors `#refresh-failed-btn` and should be updated if retry logic changes. The Steam ID textarea auto-focuses on load to speed up input.
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
   accessibility; follow the pattern in `updateToggleButtons`.
 - Item cards omit inline titles; names surface only within the modal.

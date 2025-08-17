@@ -137,29 +137,31 @@ function updateFailedCount() {
 }
 
 /**
- * Enable or disable the "Refresh Failed" button based on failures.
+ * Enable or disable refresh controls based on current failures.
  * @returns {void}
  */
 function updateRefreshButton() {
   const btn = document.getElementById("refresh-failed-btn");
+  const floatBtn = document.getElementById("refresh-floating-btn");
   if (!btn) return;
   const failures = getFailedUsers().length;
   if (failures === 0) {
     btn.disabled = true;
     btn.textContent = "Nothing to Refresh";
     btn.classList.add("btn-disabled");
+    if (floatBtn) {
+      floatBtn.style.display = "none";
+    }
   } else {
     btn.disabled = false;
     btn.textContent = `Refresh Failed (${failures})`;
     btn.classList.remove("btn-disabled");
+    if (floatBtn) {
+      floatBtn.style.display = "block";
+    }
   }
   updateFailedCount();
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  updateRefreshButton();
-  updateFailedCount();
-});
 
 /**
  * Handle retry button clicks for individual cards.
@@ -397,12 +399,42 @@ function attachItemModal() {
 // Initialize effect fallback for existing items
 attachEffectFallback();
 
+/**
+ * Bind the floating refresh button to trigger the main refresh action.
+ * @returns {void}
+ * @example
+ * setupFloatingRefresh();
+ */
+function setupFloatingRefresh() {
+  const floatBtn = document.getElementById("refresh-floating-btn");
+  const mainBtn = document.getElementById("refresh-failed-btn");
+  if (!floatBtn || !mainBtn) return;
+  floatBtn.addEventListener("click", () => mainBtn.click());
+}
+
+/**
+ * Focus the Steam ID input textarea on page load.
+ * @returns {void}
+ * @example
+ * focusSteamInput();
+ */
+function focusSteamInput() {
+  const textarea = document.getElementById("steamids");
+  if (textarea) {
+    textarea.focus();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  updateRefreshButton();
+  updateFailedCount();
   attachHandlers();
   const btn = document.getElementById("refresh-failed-btn");
   if (btn) {
     btn.addEventListener("click", refreshAll);
   }
+  setupFloatingRefresh();
+  focusSteamInput();
   if (window.modal && typeof window.modal.initModal === "function") {
     window.modal.initModal();
   }

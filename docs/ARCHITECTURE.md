@@ -11,6 +11,10 @@ public results ahead of private ones, ensuring private inventories collect at
 the bottom. When the user is not at the bottom of the page, a floating
 "New results — Jump ↓" button appears to quickly navigate to the latest results.
 
+To streamline retries, a compact floating refresh button mirrors the "Refresh
+Failed" control and is only visible when failed scans exist. The main textarea
+auto-focuses on load so users can immediately paste Steam IDs.
+
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.
 `static/ui.js` adds per-user inventory search with sticky headers and provides global
