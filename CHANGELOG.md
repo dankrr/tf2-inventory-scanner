@@ -80,3 +80,10 @@ All notable changes to this project will be documented in this file.
 
 - Restore single quotes on item cards and guard modal against malformed `data-item`.
 - Synchronized documentation.
+
+## [2025-08-17]
+
+### Fixed
+
+- Floating refresh button scrolls to the top before retrying and hides via CSS.
+- Synchronized documentation.

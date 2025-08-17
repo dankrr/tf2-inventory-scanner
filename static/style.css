@@ -187,19 +187,45 @@ button {
   color: #fff;
 }
 
-#refresh-floating-btn {
+.floating-refresh {
   position: fixed;
-  right: 1rem;
-  bottom: 1rem;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: #333;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  z-index: 999;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2000;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
   display: none;
+  place-items: center;
+  backdrop-filter: blur(4px);
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.32);
+}
+.floating-refresh .icon-stack {
+  font-size: 14px;
+  line-height: 1;
+}
+.floating-refresh:hover:not([disabled]),
+.floating-refresh:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+.floating-refresh[disabled],
+.floating-refresh.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (max-width: 640px) {
+  .floating-refresh {
+    right: 10px;
+    bottom: 10px;
+    width: 32px;
+    height: 32px;
+  }
+  .floating-refresh .icon-stack {
+    font-size: 12px;
+  }
 }
 
 .action-button {

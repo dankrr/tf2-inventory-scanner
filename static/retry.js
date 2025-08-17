@@ -157,7 +157,7 @@ function updateRefreshButton() {
     btn.textContent = `Refresh Failed (${failures})`;
     btn.classList.remove("btn-disabled");
     if (floatBtn) {
-      floatBtn.style.display = "block";
+      floatBtn.style.display = "grid";
     }
   }
   updateFailedCount();
@@ -400,7 +400,8 @@ function attachItemModal() {
 attachEffectFallback();
 
 /**
- * Bind the floating refresh button to trigger the main refresh action.
+ * Bind the floating refresh button to scroll to the top and trigger the main refresh action.
+ *
  * @returns {void}
  * @example
  * setupFloatingRefresh();
@@ -409,7 +410,10 @@ function setupFloatingRefresh() {
   const floatBtn = document.getElementById("refresh-floating-btn");
   const mainBtn = document.getElementById("refresh-failed-btn");
   if (!floatBtn || !mainBtn) return;
-  floatBtn.addEventListener("click", () => mainBtn.click());
+  floatBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    mainBtn.click();
+  });
 }
 
 /**
