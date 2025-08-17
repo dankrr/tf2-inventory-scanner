@@ -36,18 +36,40 @@ window.addEventListener("scroll", () => {
 
 /**
  * Append a user card to the specified bucket.
- * Auto-scrolls if the bucket bottom is visible; otherwise tracks unseen cards.
+ * Keeps public cards before private ones in the Completed bucket and
+ * auto-scrolls if the bucket bottom is visible; otherwise tracks unseen cards.
  *
  * @param {HTMLElement} card - Rendered user card element.
  * @param {string} containerId - ID of the bucket container.
- * @returns {void}
+ * @returns {void} No return value.
+ * @example
+ * addCardToBucket(cardEl, "completed-container");
  */
 function addCardToBucket(card, containerId) {
   const container = document.getElementById(containerId);
   if (!container || !card) return;
   const atBottom =
     container.getBoundingClientRect().bottom <= window.innerHeight + 5;
-  container.appendChild(card);
+
+  // For Completed bucket, keep public first and private last
+  if (containerId === "completed-container") {
+    const isPrivate = card.classList.contains("private");
+    if (isPrivate) {
+      // Private cards always go to the very end
+      container.appendChild(card);
+    } else {
+      // Insert before the first private card, if any; otherwise append
+      const firstPrivate = container.querySelector(".user-card.private");
+      if (firstPrivate) {
+        container.insertBefore(card, firstPrivate);
+      } else {
+        container.appendChild(card);
+      }
+    }
+  } else {
+    container.appendChild(card);
+  }
+
   if (window.attachHandlers) {
     window.attachHandlers();
   }

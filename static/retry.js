@@ -25,6 +25,52 @@ function hideScanToast() {
 }
 
 /**
+ * Append a user card to the specified bucket.
+ * Keeps public cards before private ones in the Completed bucket.
+ *
+ * @param {HTMLElement} card - Rendered user card element.
+ * @param {string} containerId - ID of the bucket container.
+ * @returns {void} No return value.
+ * @example
+ * addCardToBucket(cardEl, "completed-container");
+ */
+function addCardToBucket(card, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container || !card) return;
+  const atBottom =
+    container.getBoundingClientRect().bottom <= window.innerHeight + 5;
+
+  // For Completed bucket, keep public first and private last
+  if (containerId === "completed-container") {
+    const isPrivate = card.classList.contains("private");
+    if (isPrivate) {
+      container.appendChild(card);
+    } else {
+      const firstPrivate = container.querySelector(".user-card.private");
+      if (firstPrivate) {
+        container.insertBefore(card, firstPrivate);
+      } else {
+        container.appendChild(card);
+      }
+    }
+  } else {
+    container.appendChild(card);
+  }
+
+  if (window.attachHandlers) {
+    window.attachHandlers();
+  }
+  if (window.refreshLazyLoad) {
+    window.refreshLazyLoad();
+  }
+  if (atBottom) {
+    card.scrollIntoView({ behavior: "smooth", block: "end" });
+  }
+}
+
+window.addCardToBucket = addCardToBucket;
+
+/**
  * Retry fetching inventory for a specific user.
  *
  * @param {string} id - Steam ID to refresh.

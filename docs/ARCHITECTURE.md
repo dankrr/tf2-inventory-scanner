@@ -6,8 +6,9 @@ The frontend renders two result buckets:
 - **Completed** – successful inventory scans
 - **Failed** – scans that could not be processed
 
-New results are appended to the bottom of the appropriate bucket without reordering
-existing cards. When the user is not at the bottom of the page, a floating
+New results are appended to the appropriate bucket. The Completed bucket keeps
+public results ahead of private ones, ensuring private inventories collect at
+the bottom. When the user is not at the bottom of the page, a floating
 "New results — Jump ↓" button appears to quickly navigate to the latest results.
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.

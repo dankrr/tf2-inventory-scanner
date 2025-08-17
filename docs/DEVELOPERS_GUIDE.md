@@ -2,9 +2,9 @@
 
 - Follow JSDoc conventions for all JavaScript functions.
 - Inventory scan results are split into **Completed** and **Failed** buckets.
-  Always append new cards to the bottom of the appropriate bucket.
-- Use `addCardToBucket` when adding or moving cards so scroll and jump
-  behavior remains consistent.
+  The Completed bucket keeps public cards before private ones.
+- Use `addCardToBucket` when adding or moving cards so ordering, scroll,
+  and jump behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding dynamic elements so new cards receive search and modal behavior, including the `attachUserSearch` filter.
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
