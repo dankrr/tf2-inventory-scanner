@@ -879,3 +879,61 @@ footer {
     font-size: 10px;
   }
 }
+
+/* --- Floating buttons (compact, lower-right) --- */
+.floating-btn {
+  position: fixed;
+  right: 12px;
+  z-index: 2000;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.32);
+  cursor: pointer;
+}
+
+#refresh-floating-btn {
+  bottom: 12px;
+}
+
+#scroll-top-btn {
+  bottom: 56px;
+} /* sits just above refresh */
+
+.floating-btn .icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.floating-btn:hover:not([disabled]),
+.floating-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.floating-btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .floating-btn {
+    right: 10px;
+    width: 32px;
+    height: 32px;
+  }
+  #refresh-floating-btn {
+    bottom: 10px;
+  }
+  #scroll-top-btn {
+    bottom: 50px;
+  }
+  .floating-btn .icon {
+    font-size: 12px;
+  }
+}

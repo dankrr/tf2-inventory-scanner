@@ -245,6 +245,28 @@
       </footer>
     </div>
 
+    <!-- Floating controls -->
+    <button
+      id="scroll-top-btn"
+      type="button"
+      class="floating-btn"
+      aria-label="Go to top"
+      title="Go to top"
+    >
+      <span class="icon" aria-hidden="true">↑</span>
+    </button>
+
+    <button
+      id="refresh-floating-btn"
+      type="button"
+      class="floating-btn"
+      aria-label="Refresh failed inventories"
+      title="Refresh failed"
+      style="display: none"
+    >
+      <span class="icon" aria-hidden="true">↻</span>
+    </button>
+
     <script>
       window.initialIds = {{ failed_ids|tojson|safe }};
     </script>
