@@ -273,8 +273,11 @@ function showResults() {
  */
 function handleItemClick(event) {
   const card = event.currentTarget || event;
-  let data = card.dataset.item;
-  if (!data) return;
+  let data = card.getAttribute("data-item") || card.dataset.item || "";
+  if (!data || data[0] !== "{") {
+    console.warn("Bad data-item on card:", card, data);
+    return;
+  }
   try {
     data = JSON.parse(data);
   } catch {
