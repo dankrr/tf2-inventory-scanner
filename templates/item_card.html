@@ -20,7 +20,7 @@ full_title = (title_parts + [base]) | join(' ') %}
   class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
   style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
   title="{{ full_title }}"
-  data-item="{{ item|tojson|safe }}"
+  data-item='{{ item|tojson|safe }}'
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
