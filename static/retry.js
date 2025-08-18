@@ -442,7 +442,30 @@ function attachItemModal() {
 // Initialize effect fallback for existing items
 attachEffectFallback();
 
+/**
+ * Focus and select the Steam IDs textarea so it's ready for paste.
+ * Safe to call multiple times.
+ * @returns {void}
+ * @example
+ * focusSteamInput();
+ */
+function focusSteamInput() {
+  const el =
+    document.getElementById("steamids") ||
+    document.querySelector('textarea[name="steamids"]');
+  if (!el) return;
+  // Defer to allow layout/other handlers to settle
+  requestAnimationFrame(() => {
+    try {
+      el.focus();
+      el.select(); // highlight all for quick paste
+    } catch {}
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  // Make input paste-ready immediately
+  focusSteamInput();
   attachHandlers();
   const btn = document.getElementById("refresh-failed-btn");
   if (btn) {

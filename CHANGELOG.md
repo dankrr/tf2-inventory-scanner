@@ -80,3 +80,13 @@ All notable changes to this project will be documented in this file.
 
 - Restore single quotes on item cards and guard modal against malformed `data-item`.
 - Synchronized documentation.
+
+## [2025-08-18]
+
+### Added
+
+- Autofocus attribute and JS fallback to focus the Steam IDs input on load.
+
+### Fixed
+
+- Synchronized documentation.
