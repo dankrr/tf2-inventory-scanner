@@ -15,6 +15,8 @@ refresh failed inventories or scroll back to the top.
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.
+The Steam ID input auto-focuses on load via HTML `autofocus` with a JavaScript
+fallback to ensure it's ready for pasting immediately.
 `static/ui.js` adds per-user inventory search with sticky headers and provides global
 toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.

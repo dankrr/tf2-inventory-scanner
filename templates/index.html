@@ -129,13 +129,14 @@
           <label for="steamids" class="visually-hidden">Steam IDs</label>
           <div class="input-wrapper">
             <i class="fa-brands fa-steam input-steam-icon"></i>
+            <!-- prettier-ignore -->
             <textarea
               id="steamids"
               name="steamids"
               placeholder="Enter SteamID64, SteamID2, or SteamID3…"
-            >
-{{ steamids|default('') }}</textarea
-            >
+              rows="3"
+              autofocus
+            >{{ steamids|default('') }}</textarea>
           </div>
           <div class="form-actions">
             <button type="submit" class="primary-btn action-button">
