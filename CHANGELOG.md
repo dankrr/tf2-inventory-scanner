@@ -97,3 +97,5 @@ All notable changes to this project will be documented in this file.
 - 2025-08-18 - add final safety net for legacy display toggles and sync docs
 
 - 2025-08-18 - load Font Awesome icons for settings menu and sync docs
+
+- 2025-08-18 - add Font Awesome Border Mode icon and menu icon alignment, documentation sync

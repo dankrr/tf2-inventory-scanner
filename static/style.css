@@ -971,6 +971,19 @@ footer {
   pointer-events: none;
 }
 
+/* Neat alignment for settings-menu icons */
+.settings-item .icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+}
+.settings-item .icon i {
+  line-height: 1;
+  font-size: 16px;
+}
+
 #settings-fab:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
