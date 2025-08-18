@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 /**
  * Setup toast hints directing users to the Steam API health page after
  * repeated refresh failures. Tracks failures in sessionStorage and shows a
- * toast on the 4th, 14th, 24th... attempt until a successful refresh resets
+ * toast on the 10th, 20th, 30th... attempt until a successful refresh resets
  * the streak.
  *
  * @returns {void}
@@ -494,14 +494,14 @@ document.addEventListener("DOMContentLoaded", () => {
 (function steamHealthHint() {
   const HEALTH_URL = "https://next.backpack.tf/almanac/steam-api-health";
   let failureStreak = 0; // consecutive refresh attempts leaving failures
-  let nextThreshold = 4; // show at 4, 14, 24, ...
+  let nextThreshold = 10; // show at 10, 20, 30, ...
   const KEY_STREAK = "tf2_inv_streak";
   const KEY_NEXT = "tf2_inv_next_threshold";
 
   // Restore counters (survive reloads in same session)
   try {
     const s = parseInt(sessionStorage.getItem(KEY_STREAK) || "0", 10);
-    const n = parseInt(sessionStorage.getItem(KEY_NEXT) || "4", 10);
+    const n = parseInt(sessionStorage.getItem(KEY_NEXT) || "10", 10);
     if (!Number.isNaN(s)) failureStreak = s;
     if (!Number.isNaN(n)) nextThreshold = n;
   } catch {}
@@ -595,11 +595,11 @@ document.addEventListener("DOMContentLoaded", () => {
       failureStreak += 1;
       if (failureStreak >= nextThreshold) {
         showHealthToast();
-        nextThreshold += 10;
+        nextThreshold += 10; // keep firing on each additional block of 10
       }
     } else {
       failureStreak = 0;
-      nextThreshold = 4;
+      nextThreshold = 10;
     }
     persist();
   }

@@ -1078,12 +1078,13 @@ button[data-role="toggle-border"] {
   background: rgba(20, 24, 30, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: #e9edf3;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px; /* slightly round, rectangular look */
+  padding: 12px 14px;
   font-size: 14px;
   line-height: 1.35;
   box-shadow: 0 14px 38px rgba(0, 0, 0, 0.5);
-  max-width: min(92vw, 520px);
+  max-width: min(96vw, 560px);
+  min-width: clamp(280px, 60vw, 420px); /* ensure width so it’s not a square */
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -1122,4 +1123,7 @@ button[data-role="toggle-border"] {
   #toast-container {
     bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   } /* keep off FABs */
+  .toast {
+    min-width: min(92vw, 360px);
+  } /* still rectangular on small screens */
 }
