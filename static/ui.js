@@ -151,7 +151,7 @@ function updateSettingsMenuState() {
 }
 
 /**
- * Hide legacy header display toggles and mark the FAB as active.
+ * Hide legacy header display toggles and mark the FAB as active, with a final text-based safety net.
  *
  * @returns {void}
  * @example
@@ -159,6 +159,12 @@ function updateSettingsMenuState() {
  */
 function hideLegacyDisplayToggles() {
   document.body.classList.add("settings-fab-enabled");
+  /**
+   * Fully hide an element from view and the accessibility tree.
+   *
+   * @param {HTMLElement|null} el - Element to hide.
+   * @returns {void}
+   */
   const hide = (el) => {
     if (el) {
       el.hidden = true;
@@ -174,7 +180,36 @@ function hideLegacyDisplayToggles() {
       ".toolbar .compact-btn, .toolbar .border-btn, button[data-role='toggle-compact'], button[data-role='toggle-border']",
     )
     .forEach(hide);
+
+  // Final safety net: hide any stray text-labeled header buttons *outside* the settings menu.
+  /**
+   * Determine whether an element resembles a legacy display toggle outside the settings FAB.
+   *
+   * @param {Element} el - Candidate element to test.
+   * @returns {boolean} True if the element should be hidden.
+   */
+  const looksLikeLegacy = (el) =>
+    !el.closest("#settings-menu") &&
+    !el.closest("#settings-fab") &&
+    el.id !== "settings-compact-btn" &&
+    el.id !== "settings-border-btn";
+
+  const candidates = document.querySelectorAll(
+    "button, .btn, [role='button'], a.btn, a[role='button']",
+  );
+  candidates.forEach((el) => {
+    const label = (el.textContent || el.getAttribute("aria-label") || "")
+      .trim()
+      .toLowerCase();
+    if (
+      looksLikeLegacy(el) &&
+      (label === "compact" || label === "border mode")
+    ) {
+      hide(el);
+    }
+  });
 }
+
 /**
  * Copy legacy header icons into the settings menu so icons stay consistent.
  * Falls back to default emoji if no legacy icons are present.
@@ -227,12 +262,22 @@ function setupSettingsFab() {
   hideLegacyDisplayToggles();
   updateSettingsMenuState();
 
+  /**
+   * Open the floating settings menu.
+   *
+   * @returns {void}
+   */
   function openMenu() {
     menu.classList.add("open");
     menu.setAttribute("aria-hidden", "false");
     fab.setAttribute("aria-expanded", "true");
     updateSettingsMenuState();
   }
+  /**
+   * Close the floating settings menu.
+   *
+   * @returns {void}
+   */
   function closeMenu() {
     menu.classList.remove("open");
     menu.setAttribute("aria-hidden", "true");
