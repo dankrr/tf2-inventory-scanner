@@ -106,6 +106,16 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Robust modal/backdrop manager that prevents stuck overlays and recenters on resize.
+
+### Fixed
+
+- Ensured modal backdrop fades out cleanly and documentation remains synced.
+
+## [2025-08-18]
+
+### Added
+
 - Modal backdrop and placement helpers with centered desktop panel and mobile bottom sheet.
 
 ### Fixed

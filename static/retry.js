@@ -597,3 +597,157 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("resize", centerModal);
 })();
+
+/* ==== Robust modal/backdrop manager (append-only) ==== */
+/**
+ * Rewrap modal show/hide with a resilient backdrop and centering logic.
+ *
+ * @returns {void}
+ */
+(function modalFix() {
+  if (!window.modal) window.modal = {};
+
+  const originalShow = window.modal.showItemModal || null;
+  const originalHide = window.modal.hideItemModal || null;
+
+  const API = {
+    overlay: null,
+
+    /**
+     * Ensure the overlay exists and fades in.
+     *
+     * @returns {void}
+     */
+    ensureOverlay() {
+      if (this.overlay && document.body.contains(this.overlay)) return;
+      const el = document.createElement("div");
+      el.id = "modal-backdrop";
+      // Close on click and prevent bubbling side effects
+      el.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation?.();
+          this.teardown();
+        },
+        { passive: true },
+      );
+      document.body.appendChild(el);
+      requestAnimationFrame(() => el.classList.add("open"));
+      this.overlay = el;
+    },
+
+    /**
+     * Retrieve the active modal node.
+     *
+     * @returns {HTMLElement | null} Modal element if found.
+     */
+    modalNode() {
+      return (
+        document.getElementById("item-modal") ||
+        document.querySelector(".item-modal") ||
+        document.querySelector(".tf2-item-modal")
+      );
+    },
+
+    /**
+     * Center the modal or dock it to the bottom on small screens.
+     *
+     * @returns {void}
+     */
+    center() {
+      const el = this.modalNode();
+      if (!el) return;
+      el.style.position = "fixed";
+      el.style.left = "50%";
+      if (window.matchMedia("(max-width: 680px)").matches) {
+        el.style.top = "auto";
+        el.style.bottom = "0";
+        el.style.transform = "translate(-50%, 0)";
+      } else {
+        el.style.top = "50%";
+        el.style.bottom = "auto";
+        el.style.transform = "translate(-50%, -50%)";
+      }
+      el.style.zIndex = "3000";
+
+      // Bind a close button if present
+      const closer = el.querySelector(
+        ".modal-close, [data-close], .close, .x, .btn-close",
+      );
+      if (closer && !closer.dataset.boundClose) {
+        closer.dataset.boundClose = "1";
+        closer.addEventListener(
+          "click",
+          (e) => {
+            e.preventDefault();
+            this.teardown();
+          },
+          { passive: true },
+        );
+      }
+    },
+
+    /**
+     * Fade out an element then remove it from the DOM.
+     *
+     * @param {HTMLElement} node - Element to remove.
+     * @returns {void}
+     */
+    fadeOutAndRemove(node) {
+      if (!node) return;
+      node.classList.remove("open");
+      const remove = () => node.parentNode && node.parentNode.removeChild(node);
+      node.addEventListener("transitionend", remove, { once: true });
+      setTimeout(remove, 240);
+    },
+
+    /**
+     * Remove overlay and hide the modal via the original hide method.
+     * Falls back to hard removal if no hide method exists.
+     *
+     * @returns {void}
+     */
+    teardown() {
+      if (this.overlay) {
+        this.fadeOutAndRemove(this.overlay);
+        this.overlay = null;
+      }
+      if (typeof originalHide === "function") {
+        try {
+          originalHide.call(window.modal);
+        } catch {}
+      } else {
+        const el = this.modalNode();
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }
+    },
+
+    /**
+     * Show the modal and manage overlay/centering.
+     *
+     * @param {string} html - Modal markup to render.
+     * @returns {void}
+     */
+    show(html) {
+      if (typeof originalShow === "function") {
+        originalShow.call(window.modal, html);
+      }
+      this.ensureOverlay();
+      // Center after DOM insertion
+      setTimeout(() => {
+        this.center();
+        // Safety: remove overlay if modal failed to render
+        if (!this.modalNode()) this.teardown();
+      }, 0);
+    },
+  };
+
+  // Override show/hide with wrappers that delegate to the API
+  window.modal.showItemModal = (html) => API.show(html);
+  window.modal.hideItemModal = () => API.teardown();
+
+  // Keep modal centered on resize
+  window.addEventListener("resize", () => API.center());
+})();

@@ -44,3 +44,10 @@
 | `setParticleBackground(effectId)`    | Display particle effect background.                                                                                           | `effectId` _(string\|number)_ – effect id                                              | `void`                                       | `static/modal.js`                     |
 | `showItemModal(html)`                | Populate and display the modal.                                                                                               | `html` _(string)_ – markup to show                                                     | `void`                                       | `static/modal.js`                     |
 | `initModal()`                        | Attach modal event handlers.                                                                                                  | –                                                                                      | `void`                                       | `static/modal.js`                     |
+
+| `ensureOverlay()` | Create and reveal the modal backdrop. | – | `void` | `static/retry.js` |
+| `modalNode()` | Retrieve the current modal element. | – | `HTMLElement \| null` | `static/retry.js` |
+| `center()` | Center the modal or dock it to the bottom on small screens. | – | `void` | `static/retry.js` |
+| `fadeOutAndRemove(node)` | Fade out and remove a DOM node. | `node` _(HTMLElement)_ – element to remove | `void` | `static/retry.js` |
+| `teardown()` | Remove overlay and hide the modal, falling back to hard removal. | – | `void` | `static/retry.js` |
+| `show(html)` | Render the modal then manage overlay and placement. | `html` _(string)_ – modal markup | `void` | `static/retry.js` |
