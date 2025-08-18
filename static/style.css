@@ -1050,9 +1050,14 @@ button[data-role="toggle-border"] {
 }
 
 @media (max-width: 640px) {
+  /* Toast sits ~70px from bottom on mobile; lift the gear above it */
+  .fab-left {
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Lift the menu too so it still opens above the higher FAB */
   #settings-menu {
     left: calc(12px + env(safe-area-inset-left, 0px));
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(148px + env(safe-area-inset-bottom, 0px));
     min-width: 152px;
   }
   #settings-fab.fab-left {

@@ -101,3 +101,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-18 - add Font Awesome Border Mode icon and menu icon alignment, documentation sync
 - 2025-08-18 - add Steam API health toast for repeated refresh failures and documentation sync
 - 2025-08-19 - widen toast style, trigger health hint after 10 failed refreshes, documentation sync
+- 2025-08-18 - lift settings gear and menu above toast on mobile, documentation sync

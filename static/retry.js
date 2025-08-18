@@ -507,7 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch {}
 
   /**
-   * Persist streak counters to sessionStorage.
+   * Persist failure counters to sessionStorage.
    *
    * @returns {void}
    * @example
@@ -521,9 +521,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Ensure the toast container exists in the DOM.
+   * Create or return the toast container element.
    *
-   * @returns {HTMLElement} Toast container element.
+   * @returns {HTMLElement} Host element for toasts.
    * @example
    * const host = ensureToastHost();
    */
