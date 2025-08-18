@@ -488,6 +488,20 @@ document.addEventListener("DOMContentLoaded", () => {
  * Initialize backdrop and placement helpers for the item modal.
  */
 (function () {
+  // Guard: if a native <dialog> exists, skip installing the legacy wrapper
+  try {
+    const nativeDialog = document.getElementById("item-modal");
+    const hasNative =
+      nativeDialog && typeof nativeDialog.showModal === "function";
+    if (hasNative) {
+      // Remove stray legacy backdrops if any
+      document.querySelectorAll("#modal-backdrop").forEach((el) => el.remove());
+      return;
+    }
+  } catch (e) {
+    // Fail open; if detection fails we continue with the legacy helper
+  }
+
   // Guard if modal feature isn't on this page
   if (!window.modal) window.modal = {};
 
@@ -751,3 +765,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // Keep modal centered on resize
   window.addEventListener("resize", () => API.center());
 })();
+
+// Ensure input is immediately ready for pasting/typing on page load
+document.addEventListener(
+  "DOMContentLoaded",
+  /**
+   * Focus the Steam IDs textarea as soon as the DOM is ready.
+   *
+   * @returns {void}
+   */
+  () => {
+    const ta = document.getElementById("steamids");
+    if (ta && typeof ta.focus === "function") {
+      // Small timeout helps some mobile browsers place the caret reliably
+      setTimeout(() => ta.focus(), 0);
+    }
+  },
+);

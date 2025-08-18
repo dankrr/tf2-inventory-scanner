@@ -93,6 +93,16 @@ All notable changes to this project will be documented in this file.
 
 ## [2025-08-18]
 
+### Fixed
+
+- Skip legacy modal wrapper when native `<dialog>` is present and auto-focus the Steam IDs textarea for faster input.
+
+### Docs
+
+- Documented native `<dialog>` guard and autofocus behavior in architecture guide.
+
+## [2025-08-18]
+
 ### Added
 
 - Modal header close button with glass-styled layout.
