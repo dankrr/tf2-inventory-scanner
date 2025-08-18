@@ -1090,3 +1090,149 @@ footer {
     height: 68px;
   }
 }
+/* ==== Item Modal polish & positioning (append-only) ==== */
+
+/* Backdrop (created by JS when modal opens) */
+#modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 2990;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+#modal-backdrop.open {
+  opacity: 1;
+}
+
+/* Panel – apply to your existing modal root (id or class) */
+#item-modal,
+.item-modal,
+.tf2-item-modal {
+  position: fixed !important; /* force out of any flow calculations */
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 3000;
+  width: min(92vw, 560px);
+  max-height: min(82vh, 720px);
+  overflow: hidden;
+  border: none;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.02)
+    ),
+    #161616;
+  box-shadow:
+    0 22px 70px rgba(0, 0, 0, 0.65),
+    0 2px 0 1px rgba(255, 255, 255, 0.05) inset;
+  color: #f0f0f0;
+  animation: modalIn 0.16s ease-out;
+}
+@keyframes modalIn {
+  from {
+    transform: translate(-50%, -54%) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Header / body scaffolding (works with your current markup names if present) */
+#item-modal .modal-header,
+.item-modal .modal-header,
+.tf2-item-modal .modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+#item-modal .modal-title {
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  margin: 0;
+  flex: 1 1 auto;
+}
+#item-modal .modal-subtitle {
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+#item-modal .modal-close,
+.item-modal .modal-close,
+.tf2-item-modal .modal-close {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #eee;
+  cursor: pointer;
+}
+#item-modal .modal-close:hover,
+.item-modal .modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+#item-modal .modal-body,
+.item-modal .modal-body,
+.tf2-item-modal .modal-body {
+  padding: 16px;
+  overflow: auto;
+  max-height: calc(min(82vh, 720px) - 56px);
+}
+
+/* Larger icon in a soft card (selectors are forgiving) */
+#item-modal #modal-img,
+.item-modal #modal-img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  margin: 0 0 10px 0;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Pill badges */
+#item-modal .item-badges {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+#item-modal .badge-pill {
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+/* Mobile: bottom sheet */
+@media (max-width: 680px) {
+  #item-modal,
+  .item-modal,
+  .tf2-item-modal {
+    top: auto !important;
+    bottom: 0 !important;
+    transform: translate(-50%, 0) !important;
+    width: 100vw;
+    max-height: 70vh;
+    border-radius: 14px 14px 0 0;
+  }
+  #item-modal .modal-body {
+    max-height: calc(70vh - 56px);
+  }
+}

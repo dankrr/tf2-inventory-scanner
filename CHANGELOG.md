@@ -101,3 +101,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Synchronized documentation.
+
+## [2025-08-18]
+
+### Added
+
+- Modal backdrop and placement helpers with centered desktop panel and mobile bottom sheet.
+
+### Fixed
+
+- Synchronized documentation.

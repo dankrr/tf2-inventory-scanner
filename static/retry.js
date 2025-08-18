@@ -482,3 +482,118 @@ document.addEventListener("DOMContentLoaded", () => {
     showResults();
   }
 });
+
+/* ==== Modal placement & backdrop helpers (append-only) ==== */
+/**
+ * Initialize backdrop and placement helpers for the item modal.
+ */
+(function () {
+  // Guard if modal feature isn't on this page
+  if (!window.modal) window.modal = {};
+
+  /**
+   * Ensure a backdrop element exists and fade it in.
+   *
+   * @returns {void}
+   * @example
+   * ensureBackdrop();
+   */
+  function ensureBackdrop() {
+    let back = document.getElementById("modal-backdrop");
+    if (!back) {
+      back = document.createElement("div");
+      back.id = "modal-backdrop";
+      document.body.appendChild(back);
+      back.addEventListener("click", () => closeModal());
+    }
+    requestAnimationFrame(() => back.classList.add("open"));
+  }
+
+  /**
+   * Center the item modal or dock it as a bottom sheet on small screens.
+   *
+   * @returns {void}
+   * @example
+   * centerModal();
+   */
+  function centerModal() {
+    const el =
+      document.getElementById("item-modal") ||
+      document.querySelector(".item-modal") ||
+      document.querySelector(".tf2-item-modal");
+    if (!el) return;
+    // Force fixed + centered; CSS takes care of layout/animation
+    el.style.position = "fixed";
+    el.style.left = "50%";
+    if (window.matchMedia("(max-width: 680px)").matches) {
+      el.style.top = "auto";
+      el.style.bottom = "0";
+      el.style.transform = "translate(-50%, 0)";
+    } else {
+      el.style.top = "50%";
+      el.style.bottom = "auto";
+      el.style.transform = "translate(-50%, -50%)";
+    }
+  }
+
+  /**
+   * Remove the modal backdrop and hide or remove the modal element.
+   * Uses existing `window.modal.hideItemModal` when available.
+   *
+   * @returns {void}
+   * @example
+   * closeModal();
+   */
+  function closeModal() {
+    const back = document.getElementById("modal-backdrop");
+    if (back) back.remove();
+    // Defer to your existing close if present
+    if (window.modal && typeof window.modal.hideItemModal === "function") {
+      window.modal.hideItemModal();
+      return;
+    }
+    // Fallback: remove common modal node
+    const el =
+      document.getElementById("item-modal") ||
+      document.querySelector(".item-modal") ||
+      document.querySelector(".tf2-item-modal");
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  // Esc to close
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+
+  const originalShow = window.modal.showItemModal;
+  /**
+   * Wrap the existing show method to add a backdrop and center the modal.
+   *
+   * @param {string} html - Modal markup to display.
+   * @returns {*} Result of the original show method.
+   */
+  window.modal.showItemModal = function (html) {
+    const result = originalShow ? originalShow.call(this, html) : undefined;
+    ensureBackdrop();
+    centerModal();
+    return result;
+  };
+
+  // Also wrap a likely close if present
+  const originalHide = window.modal.hideItemModal;
+  if (originalHide) {
+    /**
+     * Wrap the existing hide method to remove the backdrop after closing.
+     *
+     * @returns {*} Result of the original hide method.
+     */
+    window.modal.hideItemModal = function () {
+      const res = originalHide.apply(this, arguments);
+      const back = document.getElementById("modal-backdrop");
+      if (back) back.remove();
+      return res;
+    };
+  }
+
+  window.addEventListener("resize", centerModal);
+})();
