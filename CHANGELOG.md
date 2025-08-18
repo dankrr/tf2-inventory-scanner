@@ -95,3 +95,5 @@ All notable changes to this project will be documented in this file.
 - Synchronized documentation.
 - 2025-08-18 - hard-hide legacy toggles, mirror icons into settings menu, document sync
 - 2025-08-18 - add final safety net for legacy display toggles and sync docs
+
+- 2025-08-18 - load Font Awesome icons for settings menu and sync docs

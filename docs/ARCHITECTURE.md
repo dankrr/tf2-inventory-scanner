@@ -14,7 +14,7 @@ Two compact floating buttons in the lower-right corner provide quick access to
 refresh failed inventories or scroll back to the top.
 A floating gear button in the lower-left now exposes display settings, allowing
 users to toggle compact and border modes without relying on legacy header
-buttons.
+buttons. Font Awesome icons are loaded via CDN and injected to keep gear and menu icons consistent.
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.

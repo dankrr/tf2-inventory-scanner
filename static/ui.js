@@ -209,6 +209,27 @@ function hideLegacyDisplayToggles() {
     }
   });
 }
+/**
+ * Ensure our floating settings gear and Compact setting use Font Awesome icons.
+ * Safe to call multiple times; only adds icons if missing.
+ *
+ * @returns {void} No return value.
+ * @example
+ * setFAIcons();
+ */
+function setFAIcons() {
+  // Gear FAB
+  const fab = document.getElementById("settings-fab");
+  if (fab && !fab.querySelector("i.fa-solid")) {
+    fab.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i>';
+  }
+  // Compact icon in the settings menu
+  const compactIconWrap = document.querySelector("#settings-compact-btn .icon");
+  if (compactIconWrap && !compactIconWrap.querySelector("i.fa-solid")) {
+    compactIconWrap.innerHTML =
+      '<i class="fa-solid fa-down-left-and-up-right-to-center" aria-hidden="true"></i>';
+  }
+}
 
 /**
  * Copy legacy header icons into the settings menu so icons stay consistent.
@@ -219,6 +240,8 @@ function hideLegacyDisplayToggles() {
  * syncSettingsIconsFromLegacy();
  */
 function syncSettingsIconsFromLegacy() {
+  // If we've already set FA icons, don't override them.
+  if (document.querySelector("#settings-compact-btn .icon i.fa-solid")) return;
   // Compact
   const compactMenuIcon = document.querySelector("#settings-compact-btn .icon");
   if (compactMenuIcon) {
@@ -257,6 +280,7 @@ function setupSettingsFab() {
   const cBtn = document.getElementById("settings-compact-btn");
   const bBtn = document.getElementById("settings-border-btn");
   if (!fab || !menu) return;
+  setFAIcons();
   // Make sure menu icons match whatever you used previously in the header
   syncSettingsIconsFromLegacy();
   hideLegacyDisplayToggles();
