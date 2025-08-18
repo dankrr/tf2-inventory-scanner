@@ -11,7 +11,7 @@
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
   accessibility; follow the pattern in `updateToggleButtons`.
 - Display settings now live behind a floating gear menu initialized by `setupSettingsFab()`.
-  Legacy header toggles are hidden by `hideLegacyDisplayToggles()`.
+  Legacy header toggles are hard-hidden by CSS, and any header icons are copied into the menu via `syncSettingsIconsFromLegacy()`.
 - Item cards omit inline titles; names surface only within the modal.
 - Uncraftable items rely on dashed borders only; the inner gray ring has been removed to reduce visual clutter.
 - Modal clicks are delegated from result containers. Ensure overlays and badges do not capture pointer events.

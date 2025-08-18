@@ -126,18 +126,13 @@ function initUI() {
   attachUserFeatures();
 }
 
-document.addEventListener("DOMContentLoaded", initUI);
-
-if (window.attachHandlers) {
-  const old = window.attachHandlers;
-  window.attachHandlers = function () {
-    old();
-    attachUserFeatures();
-  };
-} else {
-  window.attachHandlers = attachUserFeatures;
-}
-
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    setupSettingsFab();
+  } catch {
+    /* ignore */
+  }
+});
 /**
  * Update pressed state in the floating settings menu to match body classes.
  *
@@ -146,8 +141,8 @@ if (window.attachHandlers) {
  * updateSettingsMenuState();
  */
 function updateSettingsMenuState() {
-  const compactBtn = document.getElementById("settings-compact");
-  const borderBtn = document.getElementById("settings-border");
+  const compactBtn = document.getElementById("settings-compact-btn");
+  const borderBtn = document.getElementById("settings-border-btn");
   if (!compactBtn || !borderBtn) return;
   const isCompact = document.body.classList.contains("compact");
   const isBorder = document.body.classList.contains("border-mode");
@@ -180,6 +175,39 @@ function hideLegacyDisplayToggles() {
     )
     .forEach(hide);
 }
+/**
+ * Copy legacy header icons into the settings menu so icons stay consistent.
+ * Falls back to default emoji if no legacy icons are present.
+ *
+ * @returns {void}
+ * @example
+ * syncSettingsIconsFromLegacy();
+ */
+function syncSettingsIconsFromLegacy() {
+  // Compact
+  const compactMenuIcon = document.querySelector("#settings-compact-btn .icon");
+  if (compactMenuIcon) {
+    let icon = "🗜️"; // default 'clamp' for compact
+    const legacy =
+      document.querySelector("#compact-toggle-btn .icon") ||
+      document.querySelector(".toolbar .compact-btn .icon") ||
+      document.querySelector("button[data-role='toggle-compact'] .icon");
+    if (legacy && legacy.textContent.trim()) icon = legacy.textContent.trim();
+    compactMenuIcon.textContent = icon;
+  }
+  // Border (optional; keep consistent if you had an icon there)
+  const borderMenuIcon = document.querySelector("#settings-border-btn .icon");
+  if (borderMenuIcon) {
+    let icon = "▦"; // fallback grid-ish icon
+    const legacyB =
+      document.querySelector("#border-mode-btn .icon") ||
+      document.querySelector(".toolbar .border-btn .icon") ||
+      document.querySelector("button[data-role='toggle-border'] .icon");
+    if (legacyB && legacyB.textContent.trim())
+      icon = legacyB.textContent.trim();
+    borderMenuIcon.textContent = icon;
+  }
+}
 
 /**
  * Initialize the floating settings FAB and its dropdown menu.
@@ -191,9 +219,13 @@ function hideLegacyDisplayToggles() {
 function setupSettingsFab() {
   const fab = document.getElementById("settings-fab");
   const menu = document.getElementById("settings-menu");
-  const cBtn = document.getElementById("settings-compact");
-  const bBtn = document.getElementById("settings-border");
+  const cBtn = document.getElementById("settings-compact-btn");
+  const bBtn = document.getElementById("settings-border-btn");
   if (!fab || !menu) return;
+  // Make sure menu icons match whatever you used previously in the header
+  syncSettingsIconsFromLegacy();
+  hideLegacyDisplayToggles();
+  updateSettingsMenuState();
 
   function openMenu() {
     menu.classList.add("open");
@@ -271,11 +303,6 @@ function setupSettingsFab() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  try {
-    hideLegacyDisplayToggles();
-  } catch {
-    /* ignore */
-  }
   try {
     setupSettingsFab();
   } catch {

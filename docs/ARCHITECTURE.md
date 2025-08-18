@@ -24,9 +24,7 @@ fallback to ensure it's ready for pasting immediately.
 toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.
 
-Legacy header toggles are hidden in favor of the new floating settings menu,
-which synchronizes with the existing body classes and keeps display options
-accessible on all layouts.
+Legacy header toggles are hard-hidden in favor of the new floating settings menu, which synchronizes with the existing body classes, mirrors legacy icons into the menu, and keeps display options consistent on all layouts.
 Uncraftable items rely solely on a dashed quality border without the previous inner gray ring.
 Sticky user headers now isolate their stacking context so they remain above item cards and prices while scrolling.
 Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts can filter items by name. `static/retry.js` rebinds these per-user searches after inventory refreshes, caching item names and handling legacy and new inventory containers.

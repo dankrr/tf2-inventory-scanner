@@ -1016,13 +1016,13 @@ footer {
   border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
-/* Hide legacy header toggles when the FAB is enabled (best-effort selectors) */
-body.settings-fab-enabled #compact-toggle-btn,
-body.settings-fab-enabled #border-mode-btn,
-body.settings-fab-enabled .toolbar .compact-btn,
-body.settings-fab-enabled .toolbar .border-btn,
-body.settings-fab-enabled button[data-role="toggle-compact"],
-body.settings-fab-enabled button[data-role="toggle-border"] {
+/* Hard-hide legacy header toggles; settings menu replaces them */
+#compact-toggle-btn,
+#border-mode-btn,
+.toolbar .compact-btn,
+.toolbar .border-btn,
+button[data-role="toggle-compact"],
+button[data-role="toggle-border"] {
   display: none !important;
 }
 

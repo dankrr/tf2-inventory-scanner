@@ -93,3 +93,4 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Synchronized documentation.
+- 2025-08-18 - hard-hide legacy toggles, mirror icons into settings menu, document sync

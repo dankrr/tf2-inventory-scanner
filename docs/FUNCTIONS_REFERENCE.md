@@ -27,6 +27,11 @@
 | `hideLegacyDisplayToggles()`         | Hide header display toggles by known selectors in favor of the settings FAB.                                                  |
 | –                                    |
 | `void`                               | `static/ui.js`                                                                                                                |
+| `syncSettingsIconsFromLegacy()`      | Copy legacy header icons into the settings menu so icons stay consistent.                                                     |
+|                                      |
+| –                                    |
+| `void`                               | `static/ui.js`                                                                                                                |
+|                                      |
 | `setupSettingsFab()`                 | Initialize floating settings FAB and sync menu state.                                                                         |
 | –                                    |
 | `void`                               | `static/ui.js`                                                                                                                |
