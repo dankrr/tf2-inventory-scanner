@@ -13,5 +13,6 @@
 - Item cards omit inline titles; names surface only within the modal.
 - Uncraftable items rely on dashed borders only; the inner gray ring has been removed to reduce visual clutter.
 - Modal clicks are delegated from result containers. Ensure overlays and badges do not capture pointer events.
+- The item modal is handled by `static/modal.js` and provides a `.modal-close` button bound to `closeModal` for accessibility.
 - Unusual effect icons use empty alt text, ignore pointer events, and a helper removes the image if loading fails.
 - Wrap icon elements in `.item-media` to center content and place particle overlays behind; include `onerror="this.remove()"` on effect images so missing assets vanish cleanly.

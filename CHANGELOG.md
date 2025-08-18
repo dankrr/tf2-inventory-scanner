@@ -90,3 +90,14 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Synchronized documentation.
+
+## [2025-08-18]
+
+### Added
+
+- Modal header close button with glass-styled layout.
+- JSDoc comments for modal utilities.
+
+### Fixed
+
+- Synchronized documentation.

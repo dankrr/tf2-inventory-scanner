@@ -6,3 +6,4 @@
 - **static/retry.js** – Manages retry logic, modal interactions, per-user search binding, floating controls, and provides an `addCardToBucket` fallback.
 - **static/style.css** – Provides styling including bucket layout, jump button, and floating controls.
 - **static/ui.js** – Provides global display toggles and extends handler binding.
+- **static/modal.js** – Manages item modal rendering and interactions.
