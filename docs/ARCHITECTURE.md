@@ -27,3 +27,8 @@ Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts
 Item cards no longer render inline titles, keeping the grid clean; names appear only in the modal. Unusual effect icons are decorative overlays that ignore pointer events, and a JavaScript fallback removes the icon if it fails to load. Modal clicks are delegated from result containers so dynamically added cards remain interactive.
 
 Card media sit inside an `.item-media` wrapper that centers the main icon while keeping particle overlays behind it; failed effect images remove themselves to avoid broken placeholders.
+
+The frontend now applies shared design tokens for item cards and the native
+`<dialog id="item-modal">` element. Item cards optionally display a small
+price chip when given a `price-chip` class, and the modal layout has been
+polished to match the new card styling.

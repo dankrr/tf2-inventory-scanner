@@ -90,3 +90,10 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Synchronized documentation.
+
+## [2025-08-18]
+
+### Added
+
+- Introduced design tokens and polished modal styling for item cards.
+- Synchronized documentation.

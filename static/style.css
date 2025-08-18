@@ -937,3 +937,284 @@ footer {
     font-size: 12px;
   }
 }
+/* ===============  Clean Cards + Polished Modal  =============== */
+/* Design tokens (non-breaking: only add) */
+:root {
+  --tf2-bg-0: #0f1216;
+  --tf2-bg-1: #14181e;
+  --tf2-bg-2: #182028;
+  --tf2-ring: rgba(255, 255, 255, 0.1);
+  --tf2-chip: rgba(255, 255, 255, 0.06);
+  --tf2-chip-border: rgba(255, 255, 255, 0.14);
+  --tf2-text: #e9edf3;
+  --tf2-muted: #aeb6c3;
+  --tf2-shadow: 0 14px 38px rgba(0, 0, 0, 0.48);
+}
+
+/* ---------- Item card surface ---------- */
+.item-card {
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid var(--tf2-ring);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025),
+      rgba(255, 255, 255, 0.015)
+    ),
+    var(--tf2-bg-1);
+  box-shadow: var(--tf2-shadow);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    border-color 0.14s ease;
+  overflow: hidden;
+}
+/* quality halo (uses existing --quality-color inline var) */
+.item-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--quality-color) inset;
+  opacity: 0.7;
+}
+/* dashed for uncraftable, kept as requested */
+.item-card.uncraftable {
+  border-style: dashed;
+  border-width: 2px;
+}
+.item-card.trade-hold {
+  border-color: #ff4040;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.58);
+}
+
+/* Media wrapper (keeps icon perfectly centered) */
+.item-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  position: relative;
+}
+.item-media > .particle-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.item-img,
+.kit-composite,
+.missing-icon {
+  position: relative;
+  z-index: 1;
+}
+
+/* Qty chip (restyles existing .item-qty) */
+.item-qty {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Badges bottom-right remain non-clickable */
+.item-badges {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  gap: 4px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Optional price pill — just add class="price-chip" to your existing price node.
+   Works whether it lives inside the card or immediately below it. */
+.item-card .price-chip,
+.item-card + .price-chip {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: var(--tf2-text);
+  background: var(--tf2-chip);
+  border: 1px solid var(--tf2-chip-border);
+  border-radius: 9px;
+}
+.price-chip .ico {
+  width: 14px;
+  height: 14px;
+  opacity: 0.9;
+}
+
+/* Compact density support stays intact */
+body.compact .item-card {
+  border-radius: 10px;
+}
+
+/* Border Mode (quality as ring only) */
+body.border-mode .item-card {
+  background: var(--tf2-bg-1);
+}
+body.border-mode .item-card::before {
+  opacity: 0.95;
+}
+
+/* ---------- Modal polish (native <dialog id="item-modal">) ---------- */
+dialog#item-modal {
+  border: none;
+  padding: 0;
+  color: var(--tf2-text);
+  width: min(92vw, 560px);
+  max-height: min(82vh, 720px);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.02)
+    ),
+    var(--tf2-bg-1);
+  border-radius: 14px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65);
+}
+dialog#item-modal::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+#item-modal .modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+#item-modal #modal-img {
+  width: 72px;
+  height: 72px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--tf2-chip);
+  border: 1px solid var(--tf2-chip-border);
+}
+#item-modal .modal-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+#item-modal .modal-subtitle {
+  color: var(--tf2-muted);
+  margin-top: 2px;
+}
+#item-modal .modal-close {
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--tf2-chip);
+  color: var(--tf2-text);
+  cursor: pointer;
+}
+#item-modal .modal-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+#item-modal .modal-body {
+  padding: 16px;
+  max-height: calc(min(82vh, 720px) - 56px);
+  overflow: auto;
+}
+
+/* Pills for attributes (e.g., Killstreak tier, sheen, effect) */
+#item-modal .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+  background: var(--tf2-chip);
+  border: 1px solid var(--tf2-chip-border);
+  margin-right: 6px;
+  margin-bottom: 6px;
+}
+
+/* Definition rows (label/value) — apply .kv around pairs if convenient */
+#item-modal .kv {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 6px 14px;
+  font-size: 14px;
+  margin: 6px 0;
+}
+#item-modal .kv .k {
+  color: var(--tf2-muted);
+}
+
+/* Price row & actions grid (optional, if you render these) */
+#item-modal .price-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 2px;
+}
+#item-modal .price-chip {
+  background: var(--tf2-chip);
+  border: 1px solid var(--tf2-chip-border);
+}
+#item-modal .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+#item-modal .btn-ghost {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--tf2-chip-border);
+  background: var(--tf2-chip);
+  font-size: 13px;
+  color: var(--tf2-text);
+  text-decoration: none;
+}
+#item-modal .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Mobile: bottom sheet */
+@media (max-width: 680px) {
+  dialog#item-modal {
+    width: 100vw;
+    max-height: 72vh;
+    border-radius: 14px 14px 0 0;
+  }
+  #item-modal .modal-body {
+    max-height: calc(72vh - 56px);
+  }
+}
