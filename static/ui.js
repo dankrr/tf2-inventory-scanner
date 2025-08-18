@@ -171,6 +171,7 @@ function hideLegacyDisplayToggles() {
       el.style.display = "none";
     }
   };
+  // Only hide by known IDs/classes—do NOT hide by text to avoid catching the new menu.
   hide(document.getElementById("compact-toggle-btn"));
   hide(document.getElementById("border-mode-btn"));
   document
@@ -178,13 +179,6 @@ function hideLegacyDisplayToggles() {
       ".toolbar .compact-btn, .toolbar .border-btn, button[data-role='toggle-compact'], button[data-role='toggle-border']",
     )
     .forEach(hide);
-  const buttons = Array.from(
-    document.querySelectorAll("button, .btn, [role='button']"),
-  );
-  buttons.forEach((b) => {
-    const t = (b.textContent || "").trim().toLowerCase();
-    if (t === "compact" || t === "border mode") hide(b);
-  });
 }
 
 /**
@@ -235,6 +229,14 @@ function setupSettingsFab() {
       e.stopPropagation();
       if (typeof window.toggleCompactMode === "function") {
         window.toggleCompactMode();
+      } else {
+        document.body.classList.toggle("compact");
+        try {
+          localStorage.setItem(
+            "compactMode",
+            document.body.classList.contains("compact") ? "1" : "0",
+          );
+        } catch {}
       }
       updateSettingsMenuState();
     });
@@ -245,6 +247,14 @@ function setupSettingsFab() {
       e.stopPropagation();
       if (typeof window.toggleBorderMode === "function") {
         window.toggleBorderMode();
+      } else {
+        document.body.classList.toggle("border-mode");
+        try {
+          localStorage.setItem(
+            "borderMode",
+            document.body.classList.contains("border-mode") ? "1" : "0",
+          );
+        } catch {}
       }
       updateSettingsMenuState();
     });

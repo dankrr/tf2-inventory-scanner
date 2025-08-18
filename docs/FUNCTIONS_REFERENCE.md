@@ -24,7 +24,7 @@
 | `updateSettingsMenuState()`          | Reflect body compact/border classes on settings menu buttons.                                                                 |
 | –                                    |
 | `void`                               | `static/ui.js`                                                                                                                |
-| `hideLegacyDisplayToggles()`         | Hide header display toggles in favor of the settings FAB.                                                                     |
+| `hideLegacyDisplayToggles()`         | Hide header display toggles by known selectors in favor of the settings FAB.                                                  |
 | –                                    |
 | `void`                               | `static/ui.js`                                                                                                                |
 | `setupSettingsFab()`                 | Initialize floating settings FAB and sync menu state.                                                                         |

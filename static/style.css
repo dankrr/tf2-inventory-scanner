@@ -939,19 +939,21 @@ footer {
 }
 
 /* ===== Floating Settings (gear FAB + menu) ===== */
-.fab {
+#settings-fab {
   position: fixed;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   width: 42px;
   height: 42px;
   border-radius: 999px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--tf2-bg-2, #182028);
   border: 1px solid var(--tf2-ring, rgba(255, 255, 255, 0.12));
   color: var(--tf2-text, #e9edf3);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-  font-size: 18px;
+  font-size: 20px; /* slightly larger emoji */
+  line-height: 1; /* keep emoji centered */
   cursor: pointer;
   z-index: 2100;
   transition:
@@ -959,11 +961,11 @@ footer {
     box-shadow 0.12s ease,
     background 0.12s ease;
 }
-.fab:hover {
+#settings-fab:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
 }
-.fab-left {
+#settings-fab.fab-left {
   left: calc(16px + env(safe-area-inset-left, 0px));
 }
 
@@ -1022,4 +1024,15 @@ body.settings-fab-enabled .toolbar .border-btn,
 body.settings-fab-enabled button[data-role="toggle-compact"],
 body.settings-fab-enabled button[data-role="toggle-border"] {
   display: none !important;
+}
+
+@media (max-width: 640px) {
+  #settings-menu {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    min-width: 152px;
+  }
+  #settings-fab.fab-left {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+  }
 }
