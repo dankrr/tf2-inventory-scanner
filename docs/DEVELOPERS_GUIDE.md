@@ -8,6 +8,7 @@
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding dynamic elements so new cards receive search and modal behavior, including the `attachUserSearch` filter.
 - Floating scroll-to-top and refresh controls are initialized by `setupFloatingControls`; call it after DOM load.
+- Repeated refresh failures show a toast linking to the Steam API health page; keep `tf2_inv_streak` and `tf2_inv_next_threshold` sessionStorage keys intact when altering refresh logic.
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
   accessibility; follow the pattern in `updateToggleButtons`.
 - Display settings now live behind a floating gear menu initialized by `setupSettingsFab()`.

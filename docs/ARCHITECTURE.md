@@ -11,7 +11,7 @@ public results ahead of private ones, ensuring private inventories collect at
 the bottom. When the user is not at the bottom of the page, a floating
 "New results — Jump ↓" button appears to quickly navigate to the latest results.
 Two compact floating buttons in the lower-right corner provide quick access to
-refresh failed inventories or scroll back to the top.
+refresh failed inventories or scroll back to the top. A toast notification suggests the Steam API health page after repeated refresh failures, appearing after the fourth attempt and every ten thereafter until the failures clear.
 A floating gear button in the lower-left now exposes display settings, allowing
 users to toggle compact and border modes without relying on legacy header
 buttons. Font Awesome icons are loaded via CDN and injected to keep gear, Compact, and Border Mode menu icons consistent.

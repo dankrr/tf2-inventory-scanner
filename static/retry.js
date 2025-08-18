@@ -170,11 +170,6 @@ function updateRefreshButton() {
   updateFailedCount();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  updateRefreshButton();
-  updateFailedCount();
-});
-
 /**
  * Handle retry button clicks for individual cards.
  *
@@ -464,6 +459,8 @@ function focusSteamInput() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  updateRefreshButton();
+  updateFailedCount();
   // Make input paste-ready immediately
   focusSteamInput();
   attachHandlers();
@@ -482,3 +479,164 @@ document.addEventListener("DOMContentLoaded", () => {
     showResults();
   }
 });
+
+/**
+ * Setup toast hints directing users to the Steam API health page after
+ * repeated refresh failures. Tracks failures in sessionStorage and shows a
+ * toast on the 4th, 14th, 24th... attempt until a successful refresh resets
+ * the streak.
+ *
+ * @returns {void}
+ * @example
+ * // invoked automatically on script load
+ * steamHealthHint();
+ */
+(function steamHealthHint() {
+  const HEALTH_URL = "https://next.backpack.tf/almanac/steam-api-health";
+  let failureStreak = 0; // consecutive refresh attempts leaving failures
+  let nextThreshold = 4; // show at 4, 14, 24, ...
+  const KEY_STREAK = "tf2_inv_streak";
+  const KEY_NEXT = "tf2_inv_next_threshold";
+
+  // Restore counters (survive reloads in same session)
+  try {
+    const s = parseInt(sessionStorage.getItem(KEY_STREAK) || "0", 10);
+    const n = parseInt(sessionStorage.getItem(KEY_NEXT) || "4", 10);
+    if (!Number.isNaN(s)) failureStreak = s;
+    if (!Number.isNaN(n)) nextThreshold = n;
+  } catch {}
+
+  /**
+   * Persist streak counters to sessionStorage.
+   *
+   * @returns {void}
+   * @example
+   * persist();
+   */
+  function persist() {
+    try {
+      sessionStorage.setItem(KEY_STREAK, String(failureStreak));
+      sessionStorage.setItem(KEY_NEXT, String(nextThreshold));
+    } catch {}
+  }
+
+  /**
+   * Ensure the toast container exists in the DOM.
+   *
+   * @returns {HTMLElement} Toast container element.
+   * @example
+   * const host = ensureToastHost();
+   */
+  function ensureToastHost() {
+    let host = document.getElementById("toast-container");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "toast-container";
+      document.body.appendChild(host);
+    }
+    return host;
+  }
+
+  /**
+   * Display a toast message.
+   *
+   * @param {string} html - Toast body HTML content.
+   * @param {{autohideMs?: number}} [opts] - Display options.
+   * @returns {void}
+   * @example
+   * showToast("Hello world");
+   */
+  function showToast(html, { autohideMs = 8000 } = {}) {
+    const host = ensureToastHost();
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.setAttribute("role", "status");
+    el.setAttribute("aria-live", "polite");
+    el.innerHTML = `
+      <div class="toast-body">${html}</div>
+      <button class="toast-close" aria-label="Close">\xD7</button>
+    `;
+    host.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    const closer = el.querySelector(".toast-close");
+    const destroy = () => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 200);
+    };
+    closer.addEventListener("click", destroy, { passive: true });
+    if (autohideMs) {
+      setTimeout(destroy, autohideMs);
+    }
+  }
+
+  /**
+   * Display a toast linking to the Steam API health page.
+   *
+   * @returns {void}
+   * @example
+   * showHealthToast();
+   */
+  function showHealthToast() {
+    const msg = `Is Steam inventory APIs down? <a href="${HEALTH_URL}" target="_blank" rel="noopener noreferrer">Check the health ↗</a>`;
+    showToast(msg);
+  }
+
+  /**
+   * Track refresh outcomes and reveal hints after thresholds are reached.
+   *
+   * @param {number} beforeCount - Failures before running refresh.
+   * @param {number} afterCount - Failures after refresh completes.
+   * @returns {void}
+   * @example
+   * evaluateAfterRefresh(3, 2);
+   */
+  function evaluateAfterRefresh(beforeCount, afterCount) {
+    if (afterCount > 0) {
+      failureStreak += 1;
+      if (failureStreak >= nextThreshold) {
+        showHealthToast();
+        nextThreshold += 10;
+      }
+    } else {
+      failureStreak = 0;
+      nextThreshold = 4;
+    }
+    persist();
+  }
+
+  // Wrap the global refreshAll to measure outcomes and trigger hints.
+  const originalRefreshAll =
+    window.refreshAll || (typeof refreshAll === "function" ? refreshAll : null);
+  if (
+    typeof originalRefreshAll === "function" &&
+    !originalRefreshAll.__wrapped
+  ) {
+    /**
+     * Wrapper for `refreshAll` that evaluates failures and shows hints.
+     *
+     * @param {...any} args - Arguments forwarded to `refreshAll`.
+     * @returns {Promise<void>} Resolves after the original function completes.
+     * @example
+     * wrapped();
+     */
+    const wrapped = function (...args) {
+      const before = getFailedUsers().length;
+      try {
+        const result = originalRefreshAll.apply(this, args);
+        return Promise.resolve(result)
+          .then(() => {
+            const after = getFailedUsers().length;
+            evaluateAfterRefresh(before, after);
+          })
+          .catch(() => {
+            evaluateAfterRefresh(before, getFailedUsers().length || before);
+          });
+      } catch (e) {
+        evaluateAfterRefresh(before, getFailedUsers().length || before);
+        throw e;
+      }
+    };
+    wrapped.__wrapped = true;
+    window.refreshAll = wrapped;
+  }
+})();
