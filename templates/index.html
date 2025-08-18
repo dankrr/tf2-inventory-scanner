@@ -337,5 +337,46 @@
       }
       document.addEventListener("DOMContentLoaded", attachScrollButtons);
     </script>
+    <!-- Floating Display Settings (gear) -->
+    <button
+      id="settings-fab"
+      class="fab fab-left"
+      aria-label="Display settings"
+      aria-expanded="false"
+      aria-controls="settings-menu"
+      title="Display settings"
+      type="button"
+    >
+      ⚙️
+    </button>
+
+    <div
+      id="settings-menu"
+      class="settings-menu"
+      role="menu"
+      aria-hidden="true"
+    >
+      <button
+        class="settings-item"
+        id="settings-compact-btn"
+        role="menuitem"
+        aria-pressed="false"
+        type="button"
+      >
+        <span class="icon" aria-hidden="true">🗜️</span>
+        <span class="label">Compact</span>
+      </button>
+      <button
+        class="settings-item"
+        id="settings-border-btn"
+        role="menuitem"
+        aria-pressed="false"
+        type="button"
+      >
+        <span class="icon" aria-hidden="true">⬚</span>
+        <span class="label">Border Mode</span>
+      </button>
+      <!-- Add more settings here later -->
+    </div>
   </body>
 </html>

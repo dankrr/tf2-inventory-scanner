@@ -937,3 +937,102 @@ footer {
     font-size: 12px;
   }
 }
+
+/* ===== Floating Settings (gear FAB + menu) ===== */
+#settings-fab {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tf2-bg-2, #182028);
+  border: 1px solid var(--tf2-ring, rgba(255, 255, 255, 0.12));
+  color: var(--tf2-text, #e9edf3);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  font-size: 20px; /* slightly larger emoji */
+  line-height: 1; /* keep emoji centered */
+  cursor: pointer;
+  z-index: 2100;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease;
+}
+#settings-fab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+}
+#settings-fab.fab-left {
+  left: calc(16px + env(safe-area-inset-left, 0px));
+}
+
+#settings-menu {
+  position: fixed;
+  left: calc(16px + env(safe-area-inset-left, 0px));
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  /* above FAB */
+  display: none;
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  background: var(--tf2-bg-1, #14181e);
+  border: 1px solid var(--tf2-ring, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.6);
+  padding: 8px;
+  border-radius: 12px;
+  z-index: 2100;
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+  min-width: 170px;
+}
+#settings-menu.open {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--tf2-text, #e9edf3);
+  font-size: 14px;
+  text-align: left;
+}
+.settings-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+.settings-item[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* Hard-hide legacy header toggles; settings menu replaces them */
+#compact-toggle-btn,
+#border-mode-btn,
+.toolbar .compact-btn,
+.toolbar .border-btn,
+button[data-role="toggle-compact"],
+button[data-role="toggle-border"] {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  #settings-menu {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    min-width: 152px;
+  }
+  #settings-fab.fab-left {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+  }
+}

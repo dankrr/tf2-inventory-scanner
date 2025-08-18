@@ -37,6 +37,9 @@ All notable changes to this project will be documented in this file.
 - [2025-08-16] - Delegated item modal clicks, removed card titles, and synchronized documentation.
 - [2025-08-16] - Use single quotes for serialized item data to avoid HTML issues. Documentation synchronized.
 
+- [2025-08-18] - Added floating display settings gear and menu, hiding legacy header toggles. Documentation synchronized.
+- [2025-08-18] - Refined settings FAB styles and added fallback toggle logic. Documentation synchronized.
+
 ## [2025-08-16]
 
 ### Added
@@ -90,3 +93,5 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Synchronized documentation.
+- 2025-08-18 - hard-hide legacy toggles, mirror icons into settings menu, document sync
+- 2025-08-18 - add final safety net for legacy display toggles and sync docs

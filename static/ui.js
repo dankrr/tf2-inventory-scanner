@@ -126,14 +126,231 @@ function initUI() {
   attachUserFeatures();
 }
 
-document.addEventListener("DOMContentLoaded", initUI);
-
-if (window.attachHandlers) {
-  const old = window.attachHandlers;
-  window.attachHandlers = function () {
-    old();
-    attachUserFeatures();
-  };
-} else {
-  window.attachHandlers = attachUserFeatures;
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    setupSettingsFab();
+  } catch {
+    /* ignore */
+  }
+});
+/**
+ * Update pressed state in the floating settings menu to match body classes.
+ *
+ * @returns {void}
+ * @example
+ * updateSettingsMenuState();
+ */
+function updateSettingsMenuState() {
+  const compactBtn = document.getElementById("settings-compact-btn");
+  const borderBtn = document.getElementById("settings-border-btn");
+  if (!compactBtn || !borderBtn) return;
+  const isCompact = document.body.classList.contains("compact");
+  const isBorder = document.body.classList.contains("border-mode");
+  compactBtn.setAttribute("aria-pressed", String(isCompact));
+  borderBtn.setAttribute("aria-pressed", String(isBorder));
 }
+
+/**
+ * Hide legacy header display toggles and mark the FAB as active, with a final text-based safety net.
+ *
+ * @returns {void}
+ * @example
+ * hideLegacyDisplayToggles();
+ */
+function hideLegacyDisplayToggles() {
+  document.body.classList.add("settings-fab-enabled");
+  /**
+   * Fully hide an element from view and the accessibility tree.
+   *
+   * @param {HTMLElement|null} el - Element to hide.
+   * @returns {void}
+   */
+  const hide = (el) => {
+    if (el) {
+      el.hidden = true;
+      el.setAttribute("aria-hidden", "true");
+      el.style.display = "none";
+    }
+  };
+  // Only hide by known IDs/classes—do NOT hide by text to avoid catching the new menu.
+  hide(document.getElementById("compact-toggle-btn"));
+  hide(document.getElementById("border-mode-btn"));
+  document
+    .querySelectorAll(
+      ".toolbar .compact-btn, .toolbar .border-btn, button[data-role='toggle-compact'], button[data-role='toggle-border']",
+    )
+    .forEach(hide);
+
+  // Final safety net: hide any stray text-labeled header buttons *outside* the settings menu.
+  /**
+   * Determine whether an element resembles a legacy display toggle outside the settings FAB.
+   *
+   * @param {Element} el - Candidate element to test.
+   * @returns {boolean} True if the element should be hidden.
+   */
+  const looksLikeLegacy = (el) =>
+    !el.closest("#settings-menu") &&
+    !el.closest("#settings-fab") &&
+    el.id !== "settings-compact-btn" &&
+    el.id !== "settings-border-btn";
+
+  const candidates = document.querySelectorAll(
+    "button, .btn, [role='button'], a.btn, a[role='button']",
+  );
+  candidates.forEach((el) => {
+    const label = (el.textContent || el.getAttribute("aria-label") || "")
+      .trim()
+      .toLowerCase();
+    if (
+      looksLikeLegacy(el) &&
+      (label === "compact" || label === "border mode")
+    ) {
+      hide(el);
+    }
+  });
+}
+
+/**
+ * Copy legacy header icons into the settings menu so icons stay consistent.
+ * Falls back to default emoji if no legacy icons are present.
+ *
+ * @returns {void}
+ * @example
+ * syncSettingsIconsFromLegacy();
+ */
+function syncSettingsIconsFromLegacy() {
+  // Compact
+  const compactMenuIcon = document.querySelector("#settings-compact-btn .icon");
+  if (compactMenuIcon) {
+    let icon = "🗜️"; // default 'clamp' for compact
+    const legacy =
+      document.querySelector("#compact-toggle-btn .icon") ||
+      document.querySelector(".toolbar .compact-btn .icon") ||
+      document.querySelector("button[data-role='toggle-compact'] .icon");
+    if (legacy && legacy.textContent.trim()) icon = legacy.textContent.trim();
+    compactMenuIcon.textContent = icon;
+  }
+  // Border (optional; keep consistent if you had an icon there)
+  const borderMenuIcon = document.querySelector("#settings-border-btn .icon");
+  if (borderMenuIcon) {
+    let icon = "▦"; // fallback grid-ish icon
+    const legacyB =
+      document.querySelector("#border-mode-btn .icon") ||
+      document.querySelector(".toolbar .border-btn .icon") ||
+      document.querySelector("button[data-role='toggle-border'] .icon");
+    if (legacyB && legacyB.textContent.trim())
+      icon = legacyB.textContent.trim();
+    borderMenuIcon.textContent = icon;
+  }
+}
+
+/**
+ * Initialize the floating settings FAB and its dropdown menu.
+ *
+ * @returns {void}
+ * @example
+ * setupSettingsFab();
+ */
+function setupSettingsFab() {
+  const fab = document.getElementById("settings-fab");
+  const menu = document.getElementById("settings-menu");
+  const cBtn = document.getElementById("settings-compact-btn");
+  const bBtn = document.getElementById("settings-border-btn");
+  if (!fab || !menu) return;
+  // Make sure menu icons match whatever you used previously in the header
+  syncSettingsIconsFromLegacy();
+  hideLegacyDisplayToggles();
+  updateSettingsMenuState();
+
+  /**
+   * Open the floating settings menu.
+   *
+   * @returns {void}
+   */
+  function openMenu() {
+    menu.classList.add("open");
+    menu.setAttribute("aria-hidden", "false");
+    fab.setAttribute("aria-expanded", "true");
+    updateSettingsMenuState();
+  }
+  /**
+   * Close the floating settings menu.
+   *
+   * @returns {void}
+   */
+  function closeMenu() {
+    menu.classList.remove("open");
+    menu.setAttribute("aria-hidden", "true");
+    fab.setAttribute("aria-expanded", "false");
+  }
+  if (!fab.dataset.bound) {
+    fab.dataset.bound = "1";
+    fab.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (menu.classList.contains("open")) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && e.target !== fab) closeMenu();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+  }
+  if (cBtn && !cBtn.dataset.bound) {
+    cBtn.dataset.bound = "1";
+    cBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (typeof window.toggleCompactMode === "function") {
+        window.toggleCompactMode();
+      } else {
+        document.body.classList.toggle("compact");
+        try {
+          localStorage.setItem(
+            "compactMode",
+            document.body.classList.contains("compact") ? "1" : "0",
+          );
+        } catch {}
+      }
+      updateSettingsMenuState();
+    });
+  }
+  if (bBtn && !bBtn.dataset.bound) {
+    bBtn.dataset.bound = "1";
+    bBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (typeof window.toggleBorderMode === "function") {
+        window.toggleBorderMode();
+      } else {
+        document.body.classList.toggle("border-mode");
+        try {
+          localStorage.setItem(
+            "borderMode",
+            document.body.classList.contains("border-mode") ? "1" : "0",
+          );
+        } catch {}
+      }
+      updateSettingsMenuState();
+    });
+  }
+  updateSettingsMenuState();
+  const origUpdate = window.updateToggleButtons;
+  if (typeof origUpdate === "function" && !setupSettingsFab._patched) {
+    setupSettingsFab._patched = true;
+    window.updateToggleButtons = function () {
+      origUpdate.apply(this, arguments);
+      updateSettingsMenuState();
+    };
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    setupSettingsFab();
+  } catch {
+    /* ignore */
+  }
+});
