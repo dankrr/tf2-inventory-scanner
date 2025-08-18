@@ -21,4 +21,13 @@
 | `initUI()`                           | Initialize global toggles and per-user search on page load.                                                                   | –                                                                                      | `void`                                       | `static/ui.js`                        |
 | `updateRefreshButton()`              | Enable or disable refresh buttons and toggle floating control.                                                                | –                                                                                      | `void`                                       | `static/retry.js`                     |
 | `setupFloatingControls()`            | Bind scroll-to-top and floating refresh buttons.                                                                              | –                                                                                      | `void`                                       | `static/retry.js`                     |
+| `updateSettingsMenuState()`          | Reflect body compact/border classes on settings menu buttons.                                                                 |
+| –                                    |
+| `void`                               | `static/ui.js`                                                                                                                |
+| `hideLegacyDisplayToggles()`         | Hide header display toggles in favor of the settings FAB.                                                                     |
+| –                                    |
+| `void`                               | `static/ui.js`                                                                                                                |
+| `setupSettingsFab()`                 | Initialize floating settings FAB and sync menu state.                                                                         |
+| –                                    |
+| `void`                               | `static/ui.js`                                                                                                                |
 | `focusSteamInput()`                  | Focus and select the Steam IDs textarea so it is ready for paste on load.                                                     | –                                                                                      | `void`                                       | `static/retry.js`                     |

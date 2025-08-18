@@ -37,6 +37,8 @@ All notable changes to this project will be documented in this file.
 - [2025-08-16] - Delegated item modal clicks, removed card titles, and synchronized documentation.
 - [2025-08-16] - Use single quotes for serialized item data to avoid HTML issues. Documentation synchronized.
 
+- [2025-08-18] - Added floating display settings gear and menu, hiding legacy header toggles. Documentation synchronized.
+
 ## [2025-08-16]
 
 ### Added
