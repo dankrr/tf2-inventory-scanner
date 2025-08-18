@@ -209,6 +209,48 @@ function hideLegacyDisplayToggles() {
     }
   });
 }
+/**
+ * Ensure our floating settings gear, Compact, and Border Mode settings use Font Awesome icons.
+ * Safe to call multiple times; only adds icons if missing.
+ *
+ * @returns {void} No return value.
+ * @example
+ * setFAIcons();
+ */
+function setFAIcons() {
+  // Gear FAB
+  const fab = document.getElementById("settings-fab");
+  if (fab && !fab.querySelector("i.fa-solid")) {
+    fab.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i>';
+  }
+  // Compact icon in the settings menu
+  const compactIconWrap = document.querySelector("#settings-compact-btn .icon");
+  if (compactIconWrap && !compactIconWrap.querySelector("i.fa-solid")) {
+    compactIconWrap.innerHTML =
+      '<i class="fa-solid fa-down-left-and-up-right-to-center" aria-hidden="true"></i>';
+  }
+  // Border Mode icon in the settings menu -> fa-border-none
+  let borderIconWrap = document.querySelector(
+    "#settings-border-btn .icon, #settings-border .icon",
+  );
+  if (borderIconWrap && !borderIconWrap.querySelector("i.fa-solid")) {
+    borderIconWrap.innerHTML =
+      '<i class="fa-solid fa-border-none" aria-hidden="true"></i>';
+  } else {
+    // Fallback: if no .icon span exists, construct one without breaking the label
+    const borderBtn =
+      document.getElementById("settings-border-btn") ||
+      document.getElementById("settings-border");
+    if (borderBtn && !borderBtn.querySelector(".icon")) {
+      const labelText =
+        borderBtn.querySelector(".label")?.textContent?.trim() ||
+        (borderBtn.textContent || "Border Mode").trim();
+      borderBtn.innerHTML =
+        '<span class="icon" aria-hidden="true"><i class="fa-solid fa-border-none"></i></span>' +
+        `<span class="label">${labelText}</span>`;
+    }
+  }
+}
 
 /**
  * Copy legacy header icons into the settings menu so icons stay consistent.
@@ -219,6 +261,8 @@ function hideLegacyDisplayToggles() {
  * syncSettingsIconsFromLegacy();
  */
 function syncSettingsIconsFromLegacy() {
+  // If we've already set FA icons, don't override them.
+  if (document.querySelector("#settings-compact-btn .icon i.fa-solid")) return;
   // Compact
   const compactMenuIcon = document.querySelector("#settings-compact-btn .icon");
   if (compactMenuIcon) {
@@ -257,6 +301,7 @@ function setupSettingsFab() {
   const cBtn = document.getElementById("settings-compact-btn");
   const bBtn = document.getElementById("settings-border-btn");
   if (!fab || !menu) return;
+  setFAIcons();
   // Make sure menu icons match whatever you used previously in the header
   syncSettingsIconsFromLegacy();
   hideLegacyDisplayToggles();

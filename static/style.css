@@ -1,3 +1,6 @@
+/* --- Font Awesome (for UI icons) --- */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css");
+
 body {
   background-color: #121212;
   color: #e0e0e0;
@@ -961,6 +964,26 @@ footer {
     box-shadow 0.12s ease,
     background 0.12s ease;
 }
+#settings-fab i {
+  display: block;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Neat alignment for settings-menu icons */
+.settings-item .icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+}
+.settings-item .icon i {
+  line-height: 1;
+  font-size: 16px;
+}
+
 #settings-fab:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
