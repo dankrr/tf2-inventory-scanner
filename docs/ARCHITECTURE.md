@@ -24,7 +24,7 @@ fallback to ensure it's ready for pasting immediately.
 `static/ui.js` adds per-user inventory search with sticky headers and provides global
 toggles for compact density and border-only quality modes, both persisted via
 `localStorage` and reflected through `aria-pressed` states and descriptive titles for accessibility.
-A unified quality palette colors normal borders and drives Border Mode's gradient ring. Dual-quality items render secondary corner wedges using conic gradients overlaying the base ring.
+A unified quality palette colors normal borders and drives Border Mode's ring. Dual-quality cards are flagged with `data-split`/`data-dual` and render secondary corner wedges via conic gradients masked to the border.
 
 Legacy header toggles are hard-hidden in favor of the new floating settings menu, which synchronizes with the existing body classes, mirrors legacy icons into the menu, and keeps display options consistent on all layouts.
 Uncraftable items rely solely on a dashed quality border without the previous inner gray ring.

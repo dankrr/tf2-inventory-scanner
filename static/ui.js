@@ -239,7 +239,7 @@ function computeQualities(card) {
 }
 
 /**
- * Paint palette colors on all item cards for normal mode.
+ * Paint palette colors on item cards and expose primary/secondary variables.
  *
  * @param {ParentNode} [scope=document] - DOM scope to search for cards.
  * @returns {void}
@@ -250,12 +250,18 @@ function applyQualityPalette(scope = document) {
   const cards = scope.querySelectorAll(".item-card");
   cards.forEach((card) => {
     rememberBaseQuality(card);
-    const { primary } = computeQualities(card);
-    const color = QUALITY_COLORS[primary] || QUALITY_COLORS.Unique;
+    const { primary, secondary } = computeQualities(card);
+    const c1 = QUALITY_COLORS[primary] || QUALITY_COLORS.Unique;
+    const c2 = QUALITY_COLORS[secondary] || "";
 
     // expose as CSS variables used by both modes
-    card.style.setProperty("--quality-color", color);
-    card.style.setProperty("--ring", color);
+    card.style.setProperty("--quality-color", c1);
+    card.style.setProperty("--ring", c1);
+    if (c2) {
+      card.style.setProperty("--quality-alt", c2);
+    } else {
+      card.style.removeProperty("--quality-alt");
+    }
 
     // In normal (non-border) mode many themes use the element border color.
     // Only set it if not a forced-status style like 'trade-hold'.
@@ -263,13 +269,13 @@ function applyQualityPalette(scope = document) {
       !document.body.classList.contains("border-mode") &&
       !card.classList.contains("trade-hold")
     ) {
-      card.style.borderColor = color;
+      card.style.borderColor = c1;
     }
   });
 }
 
 /**
- * Apply single or split gradient ring to item cards when Border Mode is toggled.
+ * Toggle Border Mode ring behavior and mark dual-quality items with data attributes.
  *
  * @param {boolean} enabled - Whether Border Mode is active.
  * @param {ParentNode} [scope=document] - DOM scope to search for cards.
@@ -285,30 +291,33 @@ function applyBorderModeToCards(enabled, scope = document) {
     const c1 = QUALITY_COLORS[primary] || QUALITY_COLORS.Unique;
     const c2 = QUALITY_COLORS[secondary] || "";
 
-    // Always set these so switching modes is instant
+    // ensure palette variables for ring drawing
     card.style.setProperty("--ring", c1);
+    card.style.setProperty("--quality-color", c1);
+    if (c2) {
+      card.style.setProperty("--quality-alt", c2);
+    } else {
+      card.style.removeProperty("--quality-alt");
+    }
     card.dataset.quality = primary;
 
     if (!enabled) {
-      // Clear split state when Border Mode is off
-      delete card.dataset.quality2;
-      card.style.removeProperty("--q1");
-      card.style.removeProperty("--q2");
-      // In normal mode, also push the border color unless the card forces its own
+      delete card.dataset.split;
+      delete card.dataset.dual;
       if (!card.classList.contains("trade-hold")) {
         card.style.borderColor = c1;
       }
       return;
     }
 
+    // Border Mode enabled
+    card.style.borderColor = "";
     if (c2) {
-      card.dataset.quality2 = secondary;
-      card.style.setProperty("--q1", c1);
-      card.style.setProperty("--q2", QUALITY_COLORS[secondary]);
+      card.dataset.split = "1";
+      card.dataset.dual = "1";
     } else {
-      delete card.dataset.quality2;
-      card.style.removeProperty("--q1");
-      card.style.removeProperty("--q2");
+      delete card.dataset.split;
+      delete card.dataset.dual;
     }
   });
 }

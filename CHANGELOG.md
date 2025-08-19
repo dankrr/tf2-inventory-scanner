@@ -106,3 +106,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-19 - normalize missing user payloads into failed stubs and expose error metadata; documentation sync
 - 2025-08-19 - refine Border Mode ring using conic-gradient border-image and drop accent bars; documentation sync
 - 2025-08-19 - implement corner-split ring overlay for dual-quality items; documentation sync
+- 2025-02-14 - fix Border Mode dual-quality ring with masked corner wedges; documentation sync

@@ -949,61 +949,75 @@ footer {
   --ring: var(--quality-color, #facc15);
 }
 
-/* ===== Border Mode: corner-split ring ===== */
+/* ===== Border Mode: base ring ===== */
 body.border-mode .item-card {
   --ring-w: 4px; /* ring thickness; adjust if needed */
   border: var(--ring-w) solid var(--ring);
   background-color: var(--tf2-card-bg, #0f141a);
 }
 
-/* Neutralize old accent pseudo-element */
-body.border-mode .item-card[data-quality2]::before {
-  content: none !important;
-}
-
-/* Dual-quality items: draw secondary color on opposite corners */
-body.border-mode .item-card[data-quality2] {
-  --split-a: var(--q1, var(--ring));
-  --split-b: var(--q2, var(--ring));
+/* --- FIX: Rounded corner split ring for multi-quality in Border Mode --- */
+/* Base: primary ring color via border; keep your existing radius */
+body.border-mode .item-card[data-split="1"],
+body.border-mode .item-card[data-dual="1"] {
+  --ring-w: 4px; /* ring thickness */
+  --split-a: var(--quality-color, #8d6cf6); /* primary */
+  --split-b: var(--quality-alt, #ff9a2b); /* secondary */
   border: var(--ring-w) solid var(--split-a);
-  border-image: none !important;
+  border-image: none !important; /* override earlier conic border-image */
   position: relative;
 }
 
-body.border-mode .item-card[data-quality2]::after {
+/* Wipe any accidental interior bg from older attempts */
+body.border-mode .item-card[data-split="1"] > .item-media,
+body.border-mode .item-card[data-dual="1"] > .item-media {
+  background: none !important;
+}
+
+/* Paint ONLY the ring with secondary color arcs that follow the corner radius */
+body.border-mode .item-card[data-split="1"]::after,
+body.border-mode .item-card[data-dual="1"]::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  inset: 0; /* full card */
+  border-radius: inherit; /* keep rounded corners */
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 
-  /* How much of each corner to paint (90deg = one quarter of the ring) */
-  --arc: 90deg;
+  /* How “big” each corner wedge is — reduce to 70deg, 60deg, etc., if you
+     want smaller accents */
+  --arc: 80deg;
 
+  /* Draw two conic gradients at opposite corners */
   background:
     conic-gradient(
       from 45deg at 0% 0%,
       var(--split-b) 0 var(--arc),
-      transparent 0 360deg
+      transparent 0 1turn
     ),
     conic-gradient(
       from 225deg at 100% 100%,
       var(--split-b) 0 var(--arc),
-      transparent 0 360deg
+      transparent 0 1turn
     );
 
-  /* Reveal only the ring band (curved, follows border radius) */
-  -webkit-mask: radial-gradient(
-    closest-side,
-    transparent calc(100% - var(--ring-w)),
-    #000 0
-  );
-  mask: radial-gradient(
-    closest-side,
-    transparent calc(100% - var(--ring-w)),
-    #000 0
-  );
+  /* Restrict painting to the border ring using a mask “stroke” trick.
+     Padding defines the ring thickness that remains visible. */
+  padding: var(--ring-w);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* Safety: disable any older pseudo-elements that tried to draw strip bars */
+body.border-mode .item-card[data-split="1"]::before,
+body.border-mode .item-card[data-dual="1"]::before {
+  content: none !important;
 }
 
 /* ===== Floating Settings (gear FAB + menu) ===== */
