@@ -135,10 +135,9 @@ def test_unusual_effect_rendered(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("div", class_="item-name")
-    assert title is not None
-    text = title.text.strip()
-    assert text == "Burning Flames Cap"
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    assert card.get("title") == "Burning Flames Cap"
 
 
 def test_war_paint_tool_target_displayed(app):
@@ -185,9 +184,9 @@ def test_decorated_quality_not_shown(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("div", class_="item-name")
-    assert title is not None
-    assert title.text.strip() == "Warhawk Flamethrower"
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    assert card.get("title") == "Warhawk Flamethrower"
 
 
 def test_failed_user_has_retry_class(app):
@@ -274,7 +273,7 @@ def test_elevated_strange_class_rendered(app):
     assert card is not None
     classes = card.get("class", [])
     assert "elevated-strange" in classes
-    assert card.get("title") == "Has Strange tracking"
+    assert card.get("title") == "Gadget"
 
 
 def test_australium_name_omits_strange_prefix(app):
@@ -298,9 +297,9 @@ def test_australium_name_omits_strange_prefix(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("div", class_="item-name")
-    assert title is not None
-    assert title.text.strip() == "Australium Scattergun"
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    assert card.get("title") == "Australium Scattergun"
 
 
 def test_professional_killstreak_australium_title(app):
@@ -325,6 +324,6 @@ def test_professional_killstreak_australium_title(app):
         context["user"] = app_module.normalize_user_payload(context["user"])
         html = render_template_string(HTML, **context)
     soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("div", class_="item-name")
-    assert title is not None
-    assert title.text.strip() == "Professional Killstreak Australium Scattergun"
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    assert card.get("title") == "Professional Killstreak Australium Scattergun"

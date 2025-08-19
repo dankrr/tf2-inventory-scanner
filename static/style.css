@@ -350,28 +350,17 @@ body.border-mode .item-card {
       border-box;
 }
 
-/* 2) Dual-quality: add two 45° wedges in opposite elbows */
+/* 2) Dual-quality: exact 50/50 split along the TL ↔ BR diagonal.         */
+/*    Primary (e.g., Strange) fills the first half; alt fills the second. */
 body.border-mode .item-card.has-dual-quality {
+  /* Change this angle if you want the split on the other diagonal: 45deg. */
+  --split-angle: 135deg; /* TL ↔ BR */
   background:
     linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
-    /* top-left wedge (rounded by border-radius) */
-      conic-gradient(
-        from 45deg at 0% 0%,
-        var(--quality-alt, transparent) 0 90deg,
-        transparent 0 1turn
-      )
-      border-box,
-    /* bottom-right wedge */
-      conic-gradient(
-        from 225deg at 100% 100%,
-        var(--quality-alt, transparent) 0 90deg,
-        transparent 0 1turn
-      )
-      border-box,
-    /* base ring */
-      linear-gradient(
-        var(--quality-color, #cf6a32),
-        var(--quality-color, #cf6a32)
+    conic-gradient(
+        from var(--split-angle) at 50% 50%,
+        var(--quality-color, #cf6a32) 0 50%,
+        var(--quality-alt, #8650ac) 0 100%
       )
       border-box;
 }
