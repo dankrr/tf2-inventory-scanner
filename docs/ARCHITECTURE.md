@@ -3,8 +3,8 @@
 This project is an async-enabled Flask application that scans Team Fortress 2 inventories.
 The frontend renders two result buckets:
 
-- **Completed** – successful inventory scans
-- **Failed** – scans that could not be processed (automatically hidden when empty)
+- **Completed** – successful inventory scans (hidden when empty)
+- **Failed** – scans that could not be processed (hidden when empty)
 
 New results are appended to the appropriate bucket. The Completed bucket keeps
 public results ahead of private ones, ensuring private inventories collect at

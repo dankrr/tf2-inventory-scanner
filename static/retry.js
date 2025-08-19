@@ -160,10 +160,55 @@ function toggleFailedBucket(failures) {
 }
 
 /**
+ * Count completed user cards in the Completed bucket.
+ *
+ * @returns {number} Total number of completed user cards.
+ * @example
+ * const completed = getCompletedUsers();
+ */
+function getCompletedUsers() {
+  const completed = document.getElementById("completed-container");
+  if (!completed) return 0;
+  return completed.querySelectorAll(".user-card").length;
+}
+
+/**
+ * Hide or show the entire "Completed" bucket when empty or populated.
+ *
+ * @param {number} completedCount - Number of completed user cards.
+ * @returns {void}
+ * @example
+ * toggleCompletedBucket(5);
+ */
+function toggleCompletedBucket(completedCount) {
+  const completedContainer = document.getElementById("completed-container");
+  if (!completedContainer) return;
+  let wrapper =
+    document.getElementById("completed-bucket") ||
+    completedContainer.closest('[data-bucket="completed"]') ||
+    completedContainer.closest(".bucket") ||
+    completedContainer.parentElement;
+  if (wrapper) {
+    wrapper.classList.toggle("bucket-hidden", completedCount === 0);
+  }
+}
+
+/**
+ * Toggle visibility for both Failed and Completed buckets based on counts.
+ *
+ * @returns {void}
+ * @example
+ * updateBucketVisibility();
+ */
+function updateBucketVisibility() {
+  toggleFailedBucket(getFailedUsers().length);
+  toggleCompletedBucket(getCompletedUsers());
+}
+
+/**
  * Enable or disable the "Refresh Failed" buttons based on failures.
  * Toggles visibility of the floating refresh control.
  *
- * @param {void} none
  * @returns {void} No return value.
  * @example
  * updateRefreshButton();
@@ -191,12 +236,14 @@ function updateRefreshButton() {
     }
   }
   updateFailedCount();
-  toggleFailedBucket(failures);
+  // Keep bucket visibility in sync whenever counts can change.
+  updateBucketVisibility();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Ensure initial visibility is correct on load.
+  updateBucketVisibility();
   updateRefreshButton();
-  updateFailedCount();
 });
 
 /**
