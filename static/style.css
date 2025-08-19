@@ -949,37 +949,61 @@ footer {
   --ring: var(--quality-color, #facc15);
 }
 
-/* ===== Border Mode: split-quality ring via border-image ===== */
+/* ===== Border Mode: corner-split ring ===== */
 body.border-mode .item-card {
-  --ring-w: 3px; /* matches default card border */
+  --ring-w: 4px; /* ring thickness; adjust if needed */
   border: var(--ring-w) solid var(--ring);
   background-color: var(--tf2-card-bg, #0f141a);
 }
 
-/* remove legacy accent pseudo-elements */
-body.border-mode .item-card[data-quality2]::before,
-body.border-mode .item-card[data-quality2]::after {
+/* Neutralize old accent pseudo-element */
+body.border-mode .item-card[data-quality2]::before {
   content: none !important;
 }
 
-/* Dual-quality ring drawn with a conic-gradient */
+/* Dual-quality items: draw secondary color on opposite corners */
 body.border-mode .item-card[data-quality2] {
   --split-a: var(--q1, var(--ring));
   --split-b: var(--q2, var(--ring));
-  --split-angle: 315deg;
-
-  border: var(--ring-w) solid transparent;
-  border-image-slice: 1;
-  border-image-source: conic-gradient(
-    from var(--split-angle),
-    var(--split-a) 0 180deg,
-    var(--split-b) 0 360deg
-  );
+  border: var(--ring-w) solid var(--split-a);
+  border-image: none !important;
+  position: relative;
 }
 
-/* Single-quality cards keep solid ring color */
-body.border-mode .item-card:not([data-quality2]) {
-  border-image: none;
+body.border-mode .item-card[data-quality2]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+
+  /* How much of each corner to paint (90deg = one quarter of the ring) */
+  --arc: 90deg;
+
+  background:
+    conic-gradient(
+      from 45deg at 0% 0%,
+      var(--split-b) 0 var(--arc),
+      transparent 0 360deg
+    ),
+    conic-gradient(
+      from 225deg at 100% 100%,
+      var(--split-b) 0 var(--arc),
+      transparent 0 360deg
+    );
+
+  /* Reveal only the ring band (curved, follows border radius) */
+  -webkit-mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--ring-w)),
+    #000 0
+  );
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--ring-w)),
+    #000 0
+  );
 }
 
 /* ===== Floating Settings (gear FAB + menu) ===== */
