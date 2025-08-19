@@ -27,3 +27,14 @@
 | `syncSettingsIconsFromLegacy()`      | Copy legacy header icons into the settings menu when Font Awesome icons are absent.                           | –                                                                                  | `void`          | `static/ui.js`                        |
 | `setupSettingsFab()`                 | Initialize floating settings FAB, sync menu state, and mirror legacy icons.                                   | –                                                                                  | `void`          | `static/ui.js`                        |
 | `focusSteamInput()`                  | Focus and select the Steam IDs textarea so it is ready for paste on load.                                     | –                                                                                  | `void`          | `static/retry.js`                     |
+
+### Newly Added
+
+| Function                                | Purpose                                               | Parameters                                           | Returns  | Used In           |
+| --------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------- | -------- | ----------------- |
+| `getCompletedUsers()`                   | Count user cards in the Completed bucket.             | –                                                    | `number` | `static/retry.js` |
+| `toggleCompletedBucket(completedCount)` | Hide or show the Completed results bucket when empty. | `completedCount` (number) – count of completed cards | `void`   | `static/retry.js` |
+| `updateBucketVisibility()`              | Toggle visibility for Completed and Failed buckets.   | –                                                    | `void`   | `static/retry.js` |
+| `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards          | `void`   | `static/retry.js` |
+
+_Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.

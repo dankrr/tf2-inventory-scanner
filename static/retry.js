@@ -137,10 +137,78 @@ function updateFailedCount() {
 }
 
 /**
+ * Hide/show the entire "Failed" bucket when it becomes empty/non-empty.
+ * Tries several wrappers so this works across layouts.
+ *
+ * @param {number} failures - Number of failed user cards.
+ * @returns {void}
+ * @example
+ * toggleFailedBucket(0);
+ */
+function toggleFailedBucket(failures) {
+  const failedContainer = document.getElementById("failed-container");
+  if (!failedContainer) return;
+  // Prefer an explicit wrapper if present, else fall back to a reasonable parent.
+  let wrapper =
+    document.getElementById("failed-bucket") ||
+    failedContainer.closest('[data-bucket="failed"]') ||
+    failedContainer.closest(".bucket") ||
+    failedContainer.parentElement;
+  if (wrapper) {
+    wrapper.classList.toggle("bucket-hidden", failures === 0);
+  }
+}
+
+/**
+ * Count completed user cards in the Completed bucket.
+ *
+ * @returns {number} Total number of completed user cards.
+ * @example
+ * const completed = getCompletedUsers();
+ */
+function getCompletedUsers() {
+  const completed = document.getElementById("completed-container");
+  if (!completed) return 0;
+  return completed.querySelectorAll(".user-card").length;
+}
+
+/**
+ * Hide or show the entire "Completed" bucket when empty or populated.
+ *
+ * @param {number} completedCount - Number of completed user cards.
+ * @returns {void}
+ * @example
+ * toggleCompletedBucket(5);
+ */
+function toggleCompletedBucket(completedCount) {
+  const completedContainer = document.getElementById("completed-container");
+  if (!completedContainer) return;
+  let wrapper =
+    document.getElementById("completed-bucket") ||
+    completedContainer.closest('[data-bucket="completed"]') ||
+    completedContainer.closest(".bucket") ||
+    completedContainer.parentElement;
+  if (wrapper) {
+    wrapper.classList.toggle("bucket-hidden", completedCount === 0);
+  }
+}
+
+/**
+ * Toggle visibility for both Failed and Completed buckets based on counts.
+ *
+ * @returns {void}
+ * @example
+ * updateBucketVisibility();
+ */
+function updateBucketVisibility() {
+  toggleFailedBucket(getFailedUsers().length);
+  toggleCompletedBucket(getCompletedUsers());
+}
+
+/**
  * Enable or disable the "Refresh Failed" buttons based on failures.
  * Toggles visibility of the floating refresh control.
  *
- * @param {void} none
  * @returns {void} No return value.
  * @example
  * updateRefreshButton();
@@ -168,11 +236,14 @@ function updateRefreshButton() {
     }
   }
   updateFailedCount();
+  // Keep bucket visibility in sync whenever counts can change.
+  updateBucketVisibility();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Ensure initial visibility is correct on load.
+  updateBucketVisibility();
   updateRefreshButton();
-  updateFailedCount();
 });
 
 /**
