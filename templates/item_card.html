@@ -17,11 +17,26 @@ item.is_australium %} {% set base = 'Australium ' ~ base %} {% endif %} {% set
 full_title = (title_parts + [base]) | join(' ') %}
 
 <!-- prettier-ignore -->
+{# Try a few common keys for the secondary/alt quality color. If none exist, no dual split will render. #}
+{% set alt_q =
+     item.alt_quality_color
+  or item.secondary_quality_color
+  or item.quality2_color
+  or (item.multi_quality_colors[1] if item.multi_quality_colors is defined and (item.multi_quality_colors|length) > 1 else None)
+%}
+
 <div
-  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
-  style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
+  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
+  style="--quality-color: {{ item.quality_color }};{% if alt_q %} --quality-alt: {{ alt_q }};{% endif %} border-color: {{ item.border_color or item.quality_color }};"
   title="{{ full_title }}"
-  data-item='{{ item|tojson|safe }}'
+  {%
+  if
+  alt_q
+  %}data-dual="1"
+  {%
+  endif
+  %}
+  data-item="{{ item|tojson|safe }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
