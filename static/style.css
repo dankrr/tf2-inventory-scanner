@@ -327,6 +327,29 @@ body.compact .item-name {
 .item-card.trade-hold {
   border-color: #ff4040;
 }
+/* ===== Non-border-mode tweaks: separate ring vs inner background ===== */
+/* In normal mode, keep the border bright, but darken the inner fill so the
+   item stands out without losing the quality color identity. */
+body:not(.border-mode) .item-card {
+  --ring-w: 3px;
+  border-width: var(--ring-w);
+  border-style: solid;
+  border-color: var(--quality-color, #cf6a32);
+  position: relative;
+  background:
+    linear-gradient(var(--quality-bg, #111), var(--quality-bg, #111))
+      padding-box,
+    linear-gradient(
+        var(--quality-color, #cf6a32),
+        var(--quality-color, #cf6a32)
+      )
+      border-box;
+}
+
+/* Derive a slightly darker tone for the background */
+body:not(.border-mode) .item-card {
+  --quality-bg: color-mix(in srgb, var(--quality-color, #cf6a32) 60%, black);
+}
 .item-card.uncraftable {
   border-style: dashed;
   border-width: 2px;
