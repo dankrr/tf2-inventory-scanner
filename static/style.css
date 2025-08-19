@@ -333,58 +333,38 @@ body.compact .item-name {
 
 /* Border mode styles exist already; this only adds the diagonal split for dual-quality items. */
 
-/* ===== Border Mode — 45° split on elbows for multi-quality items ===== */
-/* The base ring uses the primary quality (via border-color). We paint only the
-   ring with the secondary color in the top-left and bottom-right corners. */
-body.border-mode .item-card.has-dual-quality {
-  /* Ensure the ring is visible with the primary quality color. Thickness can be tuned. */
-  --ring-w: 4px;
-  border-width: var(--ring-w);
-  border-style: solid;
-  border-color: var(--quality-color);
-  position: relative;
-}
-
-/* Draw the secondary color wedges on the ring only (not the interior). */
+/* ===== Border Mode — 45° diagonal split on outer ring (multi-quality) ===== */
+/* Turn off any older ::after implementation if present */
 body.border-mode .item-card.has-dual-quality::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit; /* keep rounded corners */
-  pointer-events: none;
-  z-index: 2;
-
-  /* 45° sweep per elbow; adjust if you want more/less of each corner painted */
-  --sweep: 45deg;
-
-  /* Two conic wedges of the alt color in opposite elbows */
-  background:
-    conic-gradient(
-      from 45deg at 0% 0%,
-      var(--quality-alt, transparent) 0 var(--sweep),
-      transparent 0 1turn
-    ),
-    conic-gradient(
-      from 225deg at 100% 100%,
-      var(--quality-alt, transparent) 0 var(--sweep),
-      transparent 0 1turn
-    );
-
-  /* Mask to keep paint only on the ring (XOR content vs border box) */
-  padding: var(--ring-w);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
+  content: none !important;
 }
 
-/* Guard: if someone toggled border thickness elsewhere, keep wedges aligned */
+/* New implementation: layered backgrounds clipped to the border box.
+   Broad browser support, keeps rounded corners, and paints only the ring. */
 body.border-mode .item-card.has-dual-quality {
-  --ring-w: max(3px, var(--ring-w));
+  --ring-w: 4px;
+  --card-fill: #1e1e1e; /* matches existing border-mode fill */
+  border: var(--ring-w) solid transparent;
+  border-radius: inherit;
+  background:
+    /* inner fill */
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    /* top-left wedge (45°) */
+      linear-gradient(
+        45deg,
+        var(--quality-alt, transparent) 0 49.5%,
+        transparent 50%
+      )
+      border-box,
+    /* bottom-right wedge (225°) */
+      linear-gradient(
+        225deg,
+        var(--quality-alt, transparent) 0 49.5%,
+        transparent 50%
+      )
+      border-box,
+    /* base ring in primary quality */
+      linear-gradient(var(--quality-color), var(--quality-color)) border-box;
 }
 
 .particle-overlay {
