@@ -350,11 +350,33 @@ body:not(.border-mode) .item-card {
 body:not(.border-mode) .item-card {
   --quality-bg: color-mix(in srgb, var(--quality-color, #cf6a32) 60%, black);
 }
-.item-card.uncraftable {
-  border-style: dashed;
-  border-width: 2px;
-  /* Remove inner gray ring; rely on dashed quality border only */
-  box-shadow: none;
+
+/* --- Uncraftable: always show a dashed outline in the primary quality color --- */
+/* Normal (non-border) mode: remove the painted ring layer so the dashed border is visible. */
+body:not(.border-mode) .item-card.uncraftable {
+  border-style: dashed !important;
+  border-width: 3px;
+  border-color: var(--quality-color, #cf6a32);
+  /* Only keep the inner background; drop the border-box gradient layer */
+  background: linear-gradient(var(--quality-bg, #111), var(--quality-bg, #111))
+    padding-box;
+}
+
+/* Border mode: dashed outline; no conic wedges / split ring. */
+body.border-mode .item-card.uncraftable {
+  /* Always show a true dashed outline in border mode */
+  border-style: dashed !important;
+  border-width: 3px !important;
+  border-color: var(--quality-color, #cf6a32) !important;
+  /* Remove any painted rings so the dashed stroke is visible */
+  background: var(--tf2-card, #0f1216) !important;
+  background-clip: padding-box;
+  box-shadow: none !important;
+}
+/* Disable any ring overlays that could cover the dashed stroke */
+body.border-mode .item-card.uncraftable::before,
+body.border-mode .item-card.uncraftable::after {
+  content: none !important;
 }
 
 /* ===== Border Mode ring (rounded) ======================================= */
