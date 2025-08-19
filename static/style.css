@@ -308,8 +308,11 @@ button {
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
 }
+/* Base fill in border mode */
 body.border-mode .item-card {
-  background-color: #1e1e1e;
+  --ring-w: 4px; /* ring thickness */
+  --card-fill: #1e1e1e; /* interior fill (same as before) */
+  background-color: var(--card-fill);
 }
 body.compact .item-wrapper {
   margin: 2px;
@@ -329,6 +332,37 @@ body.compact .item-name {
   border-width: 2px;
   /* Remove inner gray ring; rely on dashed quality border only */
   box-shadow: none;
+}
+
+/* ===== Border Mode ring (rounded) ======================================= */
+/* 1) Single-quality: solid ring using layered backgrounds clipped to boxes */
+body.border-mode .item-card {
+  /* the inline border-color would otherwise cover our gradient ring */
+  border: var(--ring-w) solid transparent !important;
+  background:
+    /* inner fill */
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    /* base ring using primary quality */
+      linear-gradient(
+        var(--quality-color, #cf6a32),
+        var(--quality-color, #cf6a32)
+      )
+      border-box;
+}
+
+/* 2) Dual-quality: exact 50/50 split along the TL ↔ BR diagonal.         */
+/*    Primary (e.g., Strange) fills the first half; alt fills the second. */
+body.border-mode .item-card.has-dual-quality {
+  /* Change this angle if you want the split on the other diagonal: 45deg. */
+  --split-angle: 135deg; /* TL ↔ BR */
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    conic-gradient(
+        from var(--split-angle) at 50% 50%,
+        var(--quality-color, #cf6a32) 0 50%,
+        var(--quality-alt, #8650ac) 0 100%
+      )
+      border-box;
 }
 
 .particle-overlay {

@@ -17,11 +17,50 @@ item.is_australium %} {% set base = 'Australium ' ~ base %} {% endif %} {% set
 full_title = (title_parts + [base]) | join(' ') %}
 
 <!-- prettier-ignore -->
+{# --- Derive an alternate quality color for dual-quality borders --- #}
+{# Direct field if backend provides it #}
+{% set alt_q =
+     item.alt_quality_color
+  or item.secondary_quality_color
+  or item.quality2_color
+  or (item.multi_quality_colors[1] if item.multi_quality_colors is defined and (item.multi_quality_colors|length) > 1 else None)
+%}
+{# Heuristics for common combos if no explicit alt provided #}
+{% if not alt_q %}
+  {% set qcolor = {
+    'Strange':  '#CF6A32',
+    'Unusual':  '#8650AC',
+    'Genuine':  '#4D7455',
+    'Vintage':  '#476291',
+    'Haunted':  '#38F3AB'
+  } %}
+  {% set primary_name = item.quality %}
+  {# Strange + Unusual #}
+  {% if item.unusual_effect_id and primary_name != 'Unusual' %}
+    {% set alt_q = qcolor['Unusual'] %}
+  {% endif %}
+  {# Strange + Genuine (or similar secondary tag) #}
+  {% if not alt_q and (item.is_genuine or (item.quality2 is defined and item.quality2 == 'Genuine')) and primary_name != 'Genuine' %}
+    {% set alt_q = qcolor['Genuine'] %}
+  {% endif %}
+  {# Unusual item whose primary is Unusual but also Strange #}
+  {% if not alt_q and item.has_strange_tracking and primary_name != 'Strange' %}
+    {% set alt_q = qcolor['Strange'] %}
+  {% endif %}
+{% endif %}
+
 <div
-  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}"
-  style="--quality-color: {{ item.quality_color }}; border-color: {{ item.border_color or item.quality_color }};"
+  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
+  style="--quality-color: {{ item.quality_color }};{% if alt_q %} --quality-alt: {{ alt_q }};{% endif %} border-color: {{ item.border_color or item.quality_color }};"
   title="{{ full_title }}"
-  data-item='{{ item|tojson|safe }}'
+  {%
+  if
+  alt_q
+  %}data-dual="1"
+  {%
+  endif
+  %}
+  data-item="{{ item|tojson|forceescape }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">

@@ -29,6 +29,8 @@ Uncraftable items rely solely on a dashed quality border without the previous in
 Sticky user headers now isolate their stacking context so they remain above item cards and prices while scrolling.
 Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts can filter items by name. `static/retry.js` rebinds these per-user searches after inventory refreshes, caching item names and handling legacy and new inventory containers.
 
+Item cards can display a split border in **Border Mode** when an item exposes or infers a secondary quality color. If the backend omits an explicit value, heuristics try common mixes (Unusual, then Genuine, then Strange) to derive an alternate hue. A centered conic gradient divides the ring along the top-left to bottom-right diagonal, filling the first half with the primary quality and the second with the alternate hue.
+
 Item cards no longer render inline titles, keeping the grid clean; names appear only in the modal. Unusual effect icons are decorative overlays that ignore pointer events, and a JavaScript fallback removes the icon if it fails to load. Modal clicks are delegated from result containers so dynamically added cards remain interactive.
 
 Card media sit inside an `.item-media` wrapper that centers the main icon while keeping particle overlays behind it; failed effect images remove themselves to avoid broken placeholders.
