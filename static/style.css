@@ -308,8 +308,11 @@ button {
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
 }
+/* Base fill in border mode */
 body.border-mode .item-card {
-  background-color: #1e1e1e;
+  --ring-w: 4px; /* ring thickness */
+  --card-fill: #1e1e1e; /* interior fill (same as before) */
+  background-color: var(--card-fill);
 }
 body.compact .item-wrapper {
   margin: 2px;
@@ -331,40 +334,46 @@ body.compact .item-name {
   box-shadow: none;
 }
 
-/* Border mode styles exist already; this only adds the diagonal split for dual-quality items. */
-
-/* ===== Border Mode — 45° diagonal split on outer ring (multi-quality) ===== */
-/* Turn off any older ::after implementation if present */
-body.border-mode .item-card.has-dual-quality::after {
-  content: none !important;
-}
-
-/* New implementation: layered backgrounds clipped to the border box.
-   Broad browser support, keeps rounded corners, and paints only the ring. */
-body.border-mode .item-card.has-dual-quality {
-  --ring-w: 4px;
-  --card-fill: #1e1e1e; /* matches existing border-mode fill */
-  border: var(--ring-w) solid transparent;
-  border-radius: inherit;
+/* ===== Border Mode ring (rounded) ======================================= */
+/* 1) Single-quality: solid ring using layered backgrounds clipped to boxes */
+body.border-mode .item-card {
+  /* the inline border-color would otherwise cover our gradient ring */
+  border: var(--ring-w) solid transparent !important;
   background:
     /* inner fill */
     linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
-    /* top-left wedge (45°) */
+    /* base ring using primary quality */
       linear-gradient(
-        45deg,
-        var(--quality-alt, transparent) 0 49.5%,
-        transparent 50%
+        var(--quality-color, #cf6a32),
+        var(--quality-color, #cf6a32)
+      )
+      border-box;
+}
+
+/* 2) Dual-quality: add two 45° wedges in opposite elbows */
+body.border-mode .item-card.has-dual-quality {
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    /* top-left wedge (rounded by border-radius) */
+      conic-gradient(
+        from 45deg at 0% 0%,
+        var(--quality-alt, transparent) 0 90deg,
+        transparent 0 1turn
       )
       border-box,
-    /* bottom-right wedge (225°) */
-      linear-gradient(
-        225deg,
-        var(--quality-alt, transparent) 0 49.5%,
-        transparent 50%
+    /* bottom-right wedge */
+      conic-gradient(
+        from 225deg at 100% 100%,
+        var(--quality-alt, transparent) 0 90deg,
+        transparent 0 1turn
       )
       border-box,
-    /* base ring in primary quality */
-      linear-gradient(var(--quality-color), var(--quality-color)) border-box;
+    /* base ring */
+      linear-gradient(
+        var(--quality-color, #cf6a32),
+        var(--quality-color, #cf6a32)
+      )
+      border-box;
 }
 
 .particle-overlay {

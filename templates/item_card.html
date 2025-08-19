@@ -26,24 +26,27 @@ full_title = (title_parts + [base]) | join(' ') %}
   or (item.multi_quality_colors[1] if item.multi_quality_colors is defined and (item.multi_quality_colors|length) > 1 else None)
 %}
 {# Heuristics for common combos if no explicit alt provided #}
-{% set qcolor = {
-  'Strange':  '#CF6A32',
-  'Unusual':  '#8650AC',
-  'Genuine':  '#4D7455',
-  'Vintage':  '#476291',
-  'Haunted':  '#38F3AB'
-} %}
-{% set primary_name = item.quality %}
-{# Strange + Unusual #}
-{% if not alt_q and item.unusual_effect_id and primary_name != 'Unusual' %}
-  {% set alt_q = qcolor['Unusual'] %}
-{% endif %}
-{% if not alt_q and item.has_strange_tracking and primary_name != 'Strange' %}
-  {% set alt_q = qcolor['Strange'] %}
-{% endif %}
-{# Strange + Genuine (or similar secondary tag) #}
-{% if not alt_q and (item.is_genuine or (item.quality2 is defined and item.quality2 == 'Genuine')) and primary_name != 'Genuine' %}
-  {% set alt_q = qcolor['Genuine'] %}
+{% if not alt_q %}
+  {% set qcolor = {
+    'Strange':  '#CF6A32',
+    'Unusual':  '#8650AC',
+    'Genuine':  '#4D7455',
+    'Vintage':  '#476291',
+    'Haunted':  '#38F3AB'
+  } %}
+  {% set primary_name = item.quality %}
+  {# Strange + Unusual #}
+  {% if item.unusual_effect_id and primary_name != 'Unusual' %}
+    {% set alt_q = qcolor['Unusual'] %}
+  {% endif %}
+  {# Strange + Genuine (or similar secondary tag) #}
+  {% if not alt_q and (item.is_genuine or (item.quality2 is defined and item.quality2 == 'Genuine')) and primary_name != 'Genuine' %}
+    {% set alt_q = qcolor['Genuine'] %}
+  {% endif %}
+  {# Unusual item whose primary is Unusual but also Strange #}
+  {% if not alt_q and item.has_strange_tracking and primary_name != 'Strange' %}
+    {% set alt_q = qcolor['Strange'] %}
+  {% endif %}
 {% endif %}
 
 <div

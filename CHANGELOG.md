@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 - [2025-08-18] - Added floating display settings gear and menu, hiding legacy header toggles. Documentation synchronized.
 - [2025-08-18] - Refined settings FAB styles and added fallback toggle logic. Documentation synchronized.
 - [2025-08-19] - Render dual-quality border splits in Border Mode for multi-quality items, inferring secondary colors heuristically. Documentation synchronized.
+- [2025-08-19] - Refined alternate quality heuristics and conic gradient ring for dual-quality items. Documentation synchronized.
 
 ## [2025-08-16]
 
