@@ -364,12 +364,19 @@ body:not(.border-mode) .item-card.uncraftable {
 
 /* Border mode: dashed outline; no conic wedges / split ring. */
 body.border-mode .item-card.uncraftable {
+  /* Always show a true dashed outline in border mode */
   border-style: dashed !important;
-  border-width: 3px;
-  border-color: var(--quality-color, #cf6a32);
+  border-width: 3px !important;
+  border-color: var(--quality-color, #cf6a32) !important;
+  /* Remove any painted rings so the dashed stroke is visible */
+  background: var(--tf2-card, #0f1216) !important;
+  background-clip: padding-box;
+  box-shadow: none !important;
 }
-body.border-mode .item-card.uncraftable.has-dual-quality::after {
-  content: none !important; /* disable the secondary-color wedges */
+/* Disable any ring overlays that could cover the dashed stroke */
+body.border-mode .item-card.uncraftable::before,
+body.border-mode .item-card.uncraftable::after {
+  content: none !important;
 }
 
 /* ===== Border Mode ring (rounded) ======================================= */
