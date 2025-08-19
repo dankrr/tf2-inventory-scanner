@@ -137,6 +137,29 @@ function updateFailedCount() {
 }
 
 /**
+ * Hide/show the entire "Failed" bucket when it becomes empty/non-empty.
+ * Tries several wrappers so this works across layouts.
+ *
+ * @param {number} failures - Number of failed user cards.
+ * @returns {void}
+ * @example
+ * toggleFailedBucket(0);
+ */
+function toggleFailedBucket(failures) {
+  const failedContainer = document.getElementById("failed-container");
+  if (!failedContainer) return;
+  // Prefer an explicit wrapper if present, else fall back to a reasonable parent.
+  let wrapper =
+    document.getElementById("failed-bucket") ||
+    failedContainer.closest('[data-bucket="failed"]') ||
+    failedContainer.closest(".bucket") ||
+    failedContainer.parentElement;
+  if (wrapper) {
+    wrapper.classList.toggle("bucket-hidden", failures === 0);
+  }
+}
+
+/**
  * Enable or disable the "Refresh Failed" buttons based on failures.
  * Toggles visibility of the floating refresh control.
  *
@@ -168,6 +191,7 @@ function updateRefreshButton() {
     }
   }
   updateFailedCount();
+  toggleFailedBucket(failures);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

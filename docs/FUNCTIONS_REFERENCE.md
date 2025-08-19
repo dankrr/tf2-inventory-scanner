@@ -27,3 +27,11 @@
 | `syncSettingsIconsFromLegacy()`      | Copy legacy header icons into the settings menu when Font Awesome icons are absent.                           | –                                                                                  | `void`          | `static/ui.js`                        |
 | `setupSettingsFab()`                 | Initialize floating settings FAB, sync menu state, and mirror legacy icons.                                   | –                                                                                  | `void`          | `static/ui.js`                        |
 | `focusSteamInput()`                  | Focus and select the Steam IDs textarea so it is ready for paste on load.                                     | –                                                                                  | `void`          | `static/retry.js`                     |
+
+### Newly Added
+
+| Function                       | Purpose                                            | Parameters                                  | Returns | Used In           |
+| ------------------------------ | -------------------------------------------------- | ------------------------------------------- | ------- | ----------------- |
+| `toggleFailedBucket(failures)` | Hide or show the Failed results bucket when empty. | `failures` (number) – count of failed cards | `void`  | `static/retry.js` |
+
+_Updated_: `updateRefreshButton()` now also calls `toggleFailedBucket` to hide empty buckets.

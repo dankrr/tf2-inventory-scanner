@@ -737,6 +737,10 @@ footer {
   display: none;
 }
 
+/* Hide whole sections/buckets when empty */
+.bucket-hidden {
+  display: none !important;
+}
 .particle-bg {
   position: absolute;
   top: 0;
