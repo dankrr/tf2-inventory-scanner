@@ -308,9 +308,6 @@ button {
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
 }
-body.border-mode .item-card {
-  background-color: #1e1e1e;
-}
 body.compact .item-wrapper {
   margin: 2px;
 }
@@ -952,50 +949,37 @@ footer {
   --ring: var(--quality-color, #facc15);
 }
 
-/* ===== Border Mode: draw the ring with gradient layers ===== */
+/* ===== Border Mode: split-quality ring via border-image ===== */
 body.border-mode .item-card {
-  border: 2px solid transparent;
-  /* inner fill + single-color ring (overridden by dual-tone rule when needed) */
-  background:
-    linear-gradient(var(--tf2-card-bg, #0f141a), var(--tf2-card-bg, #0f141a))
-      padding-box,
-    linear-gradient(var(--ring), var(--ring)) border-box;
+  --ring-w: 3px; /* matches default card border */
+  border: var(--ring-w) solid var(--ring);
+  background-color: var(--tf2-card-bg, #0f141a);
 }
 
-/* Dual-tone split (50/50 at 45°) when a second quality is present */
-body.border-mode .item-card[data-quality2] {
-  background:
-    linear-gradient(var(--tf2-card-bg, #0f141a), var(--tf2-card-bg, #0f141a))
-      padding-box,
-    conic-gradient(from 45deg, var(--q1) 0 50%, var(--q2) 0 100%) border-box;
-}
-
-/* 45° accent bars top and bottom for dual-quality items */
+/* remove legacy accent pseudo-elements */
 body.border-mode .item-card[data-quality2]::before,
 body.border-mode .item-card[data-quality2]::after {
-  content: "";
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  height: 4px;
-  border-radius: 6px;
-  pointer-events: none;
-  z-index: 2;
-  background: linear-gradient(45deg, var(--q1) 0 50%, var(--q2) 50% 100%);
-  opacity: 0.95;
-}
-body.border-mode .item-card[data-quality2]::before {
-  top: 6px;
-}
-body.border-mode .item-card[data-quality2]::after {
-  bottom: 6px;
+  content: none !important;
 }
 
-/* keep badges/qty above the accents */
-.item-badges,
-.item-qty {
-  position: absolute;
-  z-index: 3;
+/* Dual-quality ring drawn with a conic-gradient */
+body.border-mode .item-card[data-quality2] {
+  --split-a: var(--q1, var(--ring));
+  --split-b: var(--q2, var(--ring));
+  --split-angle: 315deg;
+
+  border: var(--ring-w) solid transparent;
+  border-image-slice: 1;
+  border-image-source: conic-gradient(
+    from var(--split-angle),
+    var(--split-a) 0 180deg,
+    var(--split-b) 0 360deg
+  );
+}
+
+/* Single-quality cards keep solid ring color */
+body.border-mode .item-card:not([data-quality2]) {
+  border-image: none;
 }
 
 /* ===== Floating Settings (gear FAB + menu) ===== */

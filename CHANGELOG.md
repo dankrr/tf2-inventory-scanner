@@ -104,3 +104,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-19 - hide completed bucket when empty via updateBucketVisibility; documentation sync
 - 2025-08-19 - add dual-tone quality ring and palette; documentation sync
 - 2025-08-19 - normalize missing user payloads into failed stubs and expose error metadata; documentation sync
+- 2025-08-19 - refine Border Mode ring using conic-gradient border-image and drop accent bars; documentation sync
