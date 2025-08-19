@@ -945,6 +945,59 @@ footer {
   }
 }
 
+/* ===== Quality palette ring plumbing ===== */
+/* In normal mode we still use the card's border, but we always compute a --ring color in JS. */
+.item-card {
+  /* --ring is set by JS from the new palette; used by Border Mode and may be used by normal mode UIs */
+  --ring: var(--quality-color, #facc15);
+}
+
+/* ===== Border Mode: draw the ring with gradient layers ===== */
+body.border-mode .item-card {
+  border: 2px solid transparent;
+  /* inner fill + single-color ring (overridden by dual-tone rule when needed) */
+  background:
+    linear-gradient(var(--tf2-card-bg, #0f141a), var(--tf2-card-bg, #0f141a))
+      padding-box,
+    linear-gradient(var(--ring), var(--ring)) border-box;
+}
+
+/* Dual-tone split (50/50 at 45°) when a second quality is present */
+body.border-mode .item-card[data-quality2] {
+  background:
+    linear-gradient(var(--tf2-card-bg, #0f141a), var(--tf2-card-bg, #0f141a))
+      padding-box,
+    conic-gradient(from 45deg, var(--q1) 0 50%, var(--q2) 0 100%) border-box;
+}
+
+/* 45° accent bars top and bottom for dual-quality items */
+body.border-mode .item-card[data-quality2]::before,
+body.border-mode .item-card[data-quality2]::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 4px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(45deg, var(--q1) 0 50%, var(--q2) 50% 100%);
+  opacity: 0.95;
+}
+body.border-mode .item-card[data-quality2]::before {
+  top: 6px;
+}
+body.border-mode .item-card[data-quality2]::after {
+  bottom: 6px;
+}
+
+/* keep badges/qty above the accents */
+.item-badges,
+.item-qty {
+  position: absolute;
+  z-index: 3;
+}
+
 /* ===== Floating Settings (gear FAB + menu) ===== */
 #settings-fab {
   position: fixed;

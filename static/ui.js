@@ -58,7 +58,7 @@ function toggleCompactMode() {
 }
 
 /**
- * Toggle quality border mode for item cards and persist the choice.
+ * Toggle border-only quality mode, persist preference, and refresh item card rings.
  *
  * @returns {void}
  * @example
@@ -70,6 +70,7 @@ function toggleBorderMode() {
   const border = document.body.classList.toggle("border-mode");
   localStorage.setItem("borderMode", border);
   updateToggleButtons();
+  applyBorderModeToCards(border, document);
 }
 
 /**
@@ -132,6 +133,194 @@ document.addEventListener("DOMContentLoaded", () => {
   } catch {
     /* ignore */
   }
+});
+
+// ===== Quality palette (use the colors you approved) =====
+const QUALITY_COLORS = {
+  Unusual: "#b57cf7",
+  "Collector's": "#e74c3c",
+  Strange: "#ffa500",
+  Genuine: "#4caf50",
+  Haunted: "#2dd4bf",
+  Vintage: "#7aa2f7",
+  Community: "#00bcd4",
+  "Decorated Weapon": "#6ee7b7",
+  Unique: "#facc15",
+  Normal: "#9ca3af",
+};
+
+// Precedence when an item has multiple qualities
+const QUALITY_PRECEDENCE = [
+  "Unusual",
+  "Collector's",
+  "Strange",
+  "Genuine",
+  "Haunted",
+  "Vintage",
+  "Community",
+  "Decorated Weapon",
+  "Unique",
+  "Normal",
+];
+
+/**
+ * Safely parse the JSON payload from an item card's dataset.
+ *
+ * @param {HTMLElement} card - Card element containing item data.
+ * @returns {Object} Parsed item data object or empty object on failure.
+ * @example
+ * const data = safeParseItem(document.querySelector('.item-card'));
+ */
+function safeParseItem(card) {
+  try {
+    return JSON.parse(card.dataset.item || "{}");
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Cache the original quality from the server on the card for future palette calculations.
+ *
+ * @param {HTMLElement} card - Item card element to annotate.
+ * @returns {void}
+ * @example
+ * rememberBaseQuality(card);
+ */
+function rememberBaseQuality(card) {
+  if (!card.dataset.qualityBase) {
+    const data = safeParseItem(card);
+    card.dataset.qualityBase = data.quality || card.dataset.quality || "";
+    card.dataset.quality = card.dataset.qualityBase;
+  }
+}
+
+/**
+ * Pick up to two unique qualities based on configured precedence.
+ *
+ * @param {string[]} candidates - Array of quality names to evaluate.
+ * @returns {string[]} Ordered array with up to two qualities.
+ * @example
+ * pickTwoByPrecedence(['Unique', 'Strange', 'Unusual']);
+ */
+function pickTwoByPrecedence(candidates) {
+  const set = new Set(candidates.filter(Boolean));
+  const ordered = [];
+  for (const q of QUALITY_PRECEDENCE) {
+    if (set.has(q)) ordered.push(q);
+    if (ordered.length === 2) break;
+  }
+  if (!ordered.length && candidates[0]) ordered.push(candidates[0]);
+  return ordered;
+}
+
+/**
+ * Determine primary and secondary quality for an item card.
+ *
+ * @param {HTMLElement} card - Card element containing quality metadata.
+ * @returns {{primary: string, secondary: string}} Selected quality names.
+ * @example
+ * const { primary, secondary } = computeQualities(card);
+ */
+function computeQualities(card) {
+  const data = safeParseItem(card);
+  const base =
+    card.dataset.qualityBase || data.quality || card.dataset.quality || "";
+  const c = [];
+  if (base) c.push(base);
+  if (data.unusual_effect_id) c.push("Unusual");
+  if (data.has_strange_tracking) c.push("Strange");
+  if (data.quality && data.quality !== base) c.push(data.quality);
+  const [primary, secondary] = pickTwoByPrecedence(c);
+  return {
+    primary: primary || base,
+    secondary: secondary && secondary !== primary ? secondary : "",
+  };
+}
+
+/**
+ * Paint palette colors on all item cards for normal mode.
+ *
+ * @param {ParentNode} [scope=document] - DOM scope to search for cards.
+ * @returns {void}
+ * @example
+ * applyQualityPalette();
+ */
+function applyQualityPalette(scope = document) {
+  const cards = scope.querySelectorAll(".item-card");
+  cards.forEach((card) => {
+    rememberBaseQuality(card);
+    const { primary } = computeQualities(card);
+    const color = QUALITY_COLORS[primary] || QUALITY_COLORS.Unique;
+
+    // expose as CSS variables used by both modes
+    card.style.setProperty("--quality-color", color);
+    card.style.setProperty("--ring", color);
+
+    // In normal (non-border) mode many themes use the element border color.
+    // Only set it if not a forced-status style like 'trade-hold'.
+    if (
+      !document.body.classList.contains("border-mode") &&
+      !card.classList.contains("trade-hold")
+    ) {
+      card.style.borderColor = color;
+    }
+  });
+}
+
+/**
+ * Apply single or split gradient ring to item cards when Border Mode is toggled.
+ *
+ * @param {boolean} enabled - Whether Border Mode is active.
+ * @param {ParentNode} [scope=document] - DOM scope to search for cards.
+ * @returns {void}
+ * @example
+ * applyBorderModeToCards(true);
+ */
+function applyBorderModeToCards(enabled, scope = document) {
+  const cards = scope.querySelectorAll(".item-card");
+  cards.forEach((card) => {
+    rememberBaseQuality(card);
+    const { primary, secondary } = computeQualities(card);
+    const c1 = QUALITY_COLORS[primary] || QUALITY_COLORS.Unique;
+    const c2 = QUALITY_COLORS[secondary] || "";
+
+    // Always set these so switching modes is instant
+    card.style.setProperty("--ring", c1);
+    card.dataset.quality = primary;
+
+    if (!enabled) {
+      // Clear split state when Border Mode is off
+      delete card.dataset.quality2;
+      card.style.removeProperty("--q1");
+      card.style.removeProperty("--q2");
+      // In normal mode, also push the border color unless the card forces its own
+      if (!card.classList.contains("trade-hold")) {
+        card.style.borderColor = c1;
+      }
+      return;
+    }
+
+    if (c2) {
+      card.dataset.quality2 = secondary;
+      card.style.setProperty("--q1", c1);
+      card.style.setProperty("--q2", QUALITY_COLORS[secondary]);
+    } else {
+      delete card.dataset.quality2;
+      card.style.removeProperty("--q1");
+      card.style.removeProperty("--q2");
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  applyQualityPalette(document);
+  // if you already call applyBorderModeToCards() in your toggle, great.
+  // Ensure a first-pass state here too:
+  applyBorderModeToCards(
+    document.body.classList.contains("border-mode"),
+    document,
+  );
 });
 /**
  * Update pressed state in the floating settings menu to match body classes.

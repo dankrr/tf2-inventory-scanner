@@ -102,3 +102,4 @@ All notable changes to this project will be documented in this file.
 
 - 2025-08-19 - hide failed bucket when empty via toggleFailedBucket; documentation sync
 - 2025-08-19 - hide completed bucket when empty via updateBucketVisibility; documentation sync
+- 2025-08-19 - add dual-tone quality ring and palette; documentation sync
