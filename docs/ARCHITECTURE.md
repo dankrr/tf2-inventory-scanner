@@ -5,6 +5,7 @@ The frontend renders two result buckets:
 
 - **Completed** – successful inventory scans (hidden when empty)
 - **Failed** – scans that could not be processed (hidden when empty)
+  Invalid or empty payloads are coerced into minimal stubs so they render in the Failed bucket with `data-status` and `data-error` attributes for retry logic.
 
 New results are appended to the appropriate bucket. The Completed bucket keeps
 public results ahead of private ones, ensuring private inventories collect at

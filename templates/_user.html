@@ -1,7 +1,17 @@
 <div
   id="user-{{ user.steamid }}"
-  class="user-card user-box {{ user.status }}{% if user.status == 'failed' %} retry-card{% endif %}"
+  class="user-card user-box {{ user.status }}{% if user.meta and user.meta.errored %} failed{% endif %}{% if user.status == 'failed' %} retry-card{% endif %}"
   data-steamid="{{ user.steamid }}"
+  {%
+  if
+  user.meta
+  and
+  user.meta.errored
+  %}data-status="failed"
+  data-error="{{ user.meta.error_reason }}"
+  {%
+  endif
+  %}
 >
   <div class="user-header">
     <div class="user-profile">

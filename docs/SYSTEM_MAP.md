@@ -1,6 +1,6 @@
 # System Map
 
-- **app.py** – Flask application with routes for scanning users and retrying failed scans.
+- **app.py** – Flask application with routes for scanning users and retrying failed scans; normalizes missing payloads into failed stubs with error metadata.
 - **templates/index.html** – Displays input form, two result buckets, floating top/refresh buttons, and a settings gear.
 - **static/submit.js** – Handles form submission, defines `addCardToBucket`, and keeps public cards before private ones in the Completed bucket.
 - **static/retry.js** – Manages retry logic, modal interactions, per-user search binding, floating controls, and provides an `addCardToBucket` fallback.

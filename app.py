@@ -12,7 +12,7 @@ from typing import List, Dict, Any
 from types import SimpleNamespace
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, jsonify
+from flask import Flask, render_template, request, flash, jsonify, current_app
 from utils.steam_api_client import extract_steam_ids
 import utils.inventory_processor as ip
 
@@ -90,6 +90,28 @@ UNSTACKABLE_NAMES = {
     "Professional Killstreak Kit",
     "Killstreak Kit Fabricator",
 }
+
+
+def _make_failed_user_stub(steamid64: str, reason: str) -> dict:
+    """Return a minimal failed user payload.
+
+    Args:
+        steamid64: Steam ID for the user.
+        reason: Human-readable reason for failure.
+
+    Returns:
+        Dict structured like a normal user payload but marked as errored.
+    """
+
+    return {
+        "steamid": steamid64,
+        "items": [],
+        "status": "failed",
+        "meta": {
+            "errored": True,
+            "error_reason": reason,
+        },
+    }
 
 
 def kill_process_on_port(port: int) -> None:
@@ -260,16 +282,46 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any] | None:
     return summary
 
 
-def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
-    """Return a namespace with ``items`` guaranteed to be a list."""
+def normalize_user_payload(user: Dict[str, Any] | None) -> SimpleNamespace:
+    """Return a namespace with ``items`` guaranteed to be a list.
 
-    items = user.get("items", [])
+    Tolerates ``None`` or non-mapping inputs by coercing them into a failed
+    stub so the UI can display and retry them later.
+    """
+
+    if user is None:
+        current_app.logger.warning(
+            "normalize_user_payload: None payload; coercing to failed stub"
+        )
+        user = {
+            "items": [],
+            "status": "failed",
+            "meta": {"errored": True, "error_reason": "empty user payload"},
+        }
+    elif not isinstance(user, dict):
+        current_app.logger.warning(
+            "normalize_user_payload: non-dict payload %r; coercing to failed stub",
+            type(user),
+        )
+        user = {
+            "items": [],
+            "status": "failed",
+            "meta": {"errored": True, "error_reason": "invalid user payload"},
+        }
+
+    items = user.get("items") or []
     user["items"] = items if isinstance(items, list) else []
     return SimpleNamespace(**user)
 
 
 async def fetch_and_process_single_user(steamid64: int) -> str:
     user = await build_user_data_async(str(steamid64))
+    if user is None:
+        current_app.logger.warning(
+            "fetch_and_process_single_user: no payload for %s; marking as failed",
+            steamid64,
+        )
+        user = _make_failed_user_stub(str(steamid64), "empty user payload")
     user = normalize_user_payload(user)
     return render_template("_user.html", user=user)
 

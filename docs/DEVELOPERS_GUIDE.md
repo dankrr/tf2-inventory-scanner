@@ -3,6 +3,7 @@
 - Follow JSDoc conventions for all JavaScript functions.
 - Inventory scan results are split into **Completed** and **Failed** buckets.
   The Completed bucket keeps public cards before private ones.
+- Missing or invalid user payloads are converted into failed stubs with error metadata so templates can render and retries can be triggered.
 - Use `addCardToBucket` when adding or moving cards so ordering, scroll,
   and jump behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.

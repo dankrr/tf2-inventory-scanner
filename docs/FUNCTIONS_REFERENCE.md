@@ -43,4 +43,12 @@
 | `applyQualityPalette(scope)`             | Paint palette colors on item cards in normal mode.                       | `scope` (ParentNode) – DOM scope (default `document`)                      | `void`                                 | `static/ui.js`    |
 | `applyBorderModeToCards(enabled, scope)` | Apply single or dual-color rings to item cards when Border Mode toggles. | `enabled` (boolean) – Border Mode active; `scope` (ParentNode) – DOM scope | `void`                                 | `static/ui.js`    |
 
+### Backend
+
+| Function                                    | Purpose                                                                       | Parameters                                                        | Returns           | Used In  |
+| ------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------- | -------- |
+| `_make_failed_user_stub(steamid64, reason)` | Build a minimal failed user payload when upstream data is missing.            | `steamid64` (str) – user ID; `reason` (str) – failure description | `dict`            | `app.py` |
+| `normalize_user_payload(user)`              | Coerce missing or invalid payloads into failed stubs and ensure an item list. | `user` (dict \| None) – raw user payload                          | `SimpleNamespace` | `app.py` |
+| `fetch_and_process_single_user(steamid64)`  | Fetch user data, stub failures, and render HTML for one user.                 | `steamid64` (int) – SteamID64                                     | `str` (HTML)      | `app.py` |
+
 _Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.
