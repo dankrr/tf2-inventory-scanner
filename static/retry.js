@@ -25,6 +25,99 @@ function hideScanToast() {
 }
 
 /**
+ * Render a temporary notification toast near the bottom-left.
+ *
+ * @param {string} message - Main text content for the toast.
+ * @param {{href?: string, linkText?: string, duration?: number}} [opts] -
+ *        Optional settings: `href` for a link, `linkText` for the anchor text,
+ *        and `duration` (ms) before auto-dismiss. Use a non-positive duration to
+ *        persist until manually closed.
+ * @returns {void} No return value.
+ * @example
+ * showToast("Scan complete", { href: "https://example.com" });
+ */
+window.showToast = function showToast(message, opts = {}) {
+  const { href, linkText = "Learn more", duration = 8000 } = opts;
+  const host = document.getElementById("toast-container");
+  if (!host) return;
+  const el = document.createElement("div");
+  el.className = "toast";
+  const msg = document.createElement("span");
+  msg.textContent = message + (href ? " " : "");
+  el.appendChild(msg);
+  if (href) {
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = linkText;
+    el.appendChild(a);
+  }
+  const btn = document.createElement("button");
+  btn.className = "close";
+  btn.setAttribute("aria-label", "Close");
+  btn.textContent = "×";
+  btn.addEventListener("click", () => {
+    el.remove();
+  });
+  el.appendChild(btn);
+  host.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("show"));
+  if (duration > 0) {
+    setTimeout(() => el.remove(), duration);
+  }
+};
+
+const FAIL_KEY = "inv.consecutiveRefreshFailures";
+
+/**
+ * Retrieve the number of consecutive refresh failures from storage.
+ *
+ * @returns {number} Count of consecutive failures.
+ * @example
+ * const n = getConsecutiveFailures();
+ */
+function getConsecutiveFailures() {
+  const n = parseInt(localStorage.getItem(FAIL_KEY) || "0", 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Persist the number of consecutive refresh failures.
+ *
+ * @param {number} n - New count to store (clamped at 0).
+ * @returns {void}
+ * @example
+ * setConsecutiveFailures(5);
+ */
+function setConsecutiveFailures(n) {
+  localStorage.setItem(FAIL_KEY, String(Math.max(0, n)));
+}
+
+/**
+ * Maybe display a Steam API health toast after repeated failures.
+ *
+ * @param {number} prevFailures - Failure count before the refresh batch.
+ * @param {number} newFailures - Failure count after the refresh batch.
+ * @returns {void}
+ * @example
+ * maybeShowSteamHealthToast(3, 5);
+ */
+function maybeShowSteamHealthToast(prevFailures, newFailures) {
+  const delta = Math.max(newFailures - prevFailures, 0);
+  const current = getConsecutiveFailures();
+  const next = delta > 0 ? current + delta : 0;
+  setConsecutiveFailures(next);
+  if (next >= 10 && next % 10 === 0) {
+    window.showToast("Is Steam inventory APIs down?", {
+      href: "https://next.backpack.tf/almanac/steam-api-health",
+      linkText: "Check the health ↗",
+      duration: 12000,
+    });
+  }
+}
+
+/**
  * Append a user card to the specified bucket.
  * Keeps public cards before private ones in the Completed bucket.
  *
@@ -388,6 +481,7 @@ function attachUserSearch() {
 async function refreshAll() {
   const btn = document.getElementById("refresh-failed-btn");
   if (!btn) return;
+  const before = getFailedUsers().length;
   btn.disabled = true;
   const original = btn.textContent;
   btn.textContent = "Refreshing…";
@@ -412,6 +506,8 @@ async function refreshAll() {
   updateRefreshButton();
   updateFailedCount();
   hideScanToast();
+  const after = getFailedUsers().length;
+  maybeShowSteamHealthToast(before, after);
 }
 
 /**

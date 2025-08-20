@@ -18,6 +18,9 @@ buttons. Font Awesome icons are loaded via CDN and injected to keep gear, Compac
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.
+A toast container pinned to the bottom-left surfaces ephemeral messages. After
+ten consecutive refresh failures, a toast links to the Steam API health page so
+users can quickly check whether upstream services are degraded.
 The Steam ID input auto-focuses on load via HTML `autofocus` with a JavaScript
 fallback to ensure it's ready for pasting immediately.
 `static/ui.js` adds per-user inventory search with sticky headers and provides global

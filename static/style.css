@@ -1144,3 +1144,54 @@ button[data-role="toggle-border"] {
     left: calc(12px + env(safe-area-inset-left, 0px));
   }
 }
+
+/* ===== Toasts ===== */
+#toast-container {
+  position: fixed;
+  left: calc(16px + env(safe-area-inset-left, 0px));
+  bottom: calc(
+    84px + env(safe-area-inset-bottom, 0px)
+  ); /* clears the gear FAB */
+  display: grid;
+  gap: 10px;
+  z-index: 2500;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(90vw, 640px);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--tf2-bg-2, #182028);
+  border: 1px solid var(--tf2-ring, rgba(255, 255, 255, 0.12));
+  color: var(--tf2-text, #e9edf3);
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast a {
+  color: #8ab4ff;
+  text-decoration: underline;
+}
+.toast .close {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+.toast .close:hover {
+  background: rgba(255, 255, 255, 0.06);
+}

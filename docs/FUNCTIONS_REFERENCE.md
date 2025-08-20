@@ -38,3 +38,10 @@
 | `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards          | `void`   | `static/retry.js` |
 
 _Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.
+
+| Function                                               | Purpose                                                                                       | Parameters                                                                                                   | Returns  | Used In           |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------- | ----------------- |
+| `showToast(message, opts)`                             | Display a temporary toast notification with an optional link and auto-dismiss.                | `message` (string) – text to show; `opts` (object) – `{href?: string, linkText?: string, duration?: number}` | `void`   | `static/retry.js` |
+| `getConsecutiveFailures()`                             | Retrieve the current consecutive refresh failure count from `localStorage`.                   | –                                                                                                            | `number` | `static/retry.js` |
+| `setConsecutiveFailures(n)`                            | Persist a new consecutive failure count into `localStorage`.                                  | `n` (number) – new count                                                                                     | `void`   | `static/retry.js` |
+| `maybeShowSteamHealthToast(prevFailures, newFailures)` | Increment or reset consecutive failure tracking and toast Steam API health every 10 failures. | `prevFailures` (number) – failure count before refresh; `newFailures` (number) – count after refresh         | `void`   | `static/retry.js` |
