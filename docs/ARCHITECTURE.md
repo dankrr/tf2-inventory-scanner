@@ -36,4 +36,4 @@ Item cards no longer render inline titles, keeping the grid clean; names appear 
 
 Card media sit inside an `.item-media` wrapper that centers the main icon while keeping particle overlays behind it; failed effect images remove themselves to avoid broken placeholders.
 
-Festivized weapons (attribute defindex 2053) are detected during inventory processing. The template renders a small festive badge in the top-right badge row when this flag is present.
+Festivized weapons (attribute defindex 2053) are detected during inventory processing. The template renders a small festive badge in the top-right badge row when this flag is present, and the item modal appends a simple "Festivized" line when applicable.

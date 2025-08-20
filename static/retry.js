@@ -463,6 +463,57 @@ function handleItemClick(event) {
   if (window.modal && typeof window.modal.renderBadges === "function") {
     window.modal.renderBadges(data.badges);
   }
+
+  queueMicrotask(() => {
+    try {
+      const modal = document.querySelector(".item-modal, #item-modal, .modal"); // be generous
+      if (!modal) return;
+      appendFestivizedToModal(modal, data);
+    } catch (err) {
+      console.warn("Festivized modal patch failed:", err);
+    }
+  });
+}
+
+/**
+ * Append a simple "Festivized" row to the modal details.
+ * Prefers `item.is_festivized` and falls back to attribute defindex 2053.
+ *
+ * @param {HTMLElement} modalEl - Modal element to append details to.
+ * @param {object} item - Item payload containing Festivized info.
+ * @returns {void} No return value.
+ * @example
+ * appendFestivizedToModal(document.querySelector('.modal'), { is_festivized: true });
+ */
+function appendFestivizedToModal(modalEl, item) {
+  const isFest =
+    !!item?.is_festivized ||
+    (Array.isArray(item?.attributes) &&
+      item.attributes.some((a) => Number(a?.defindex) === 2053));
+
+  if (!isFest) return;
+
+  const detailsContainer =
+    modalEl.querySelector(
+      ".item-details, .modal-details, .item-body, .modal-body, .item-props, dl, .content",
+    ) || modalEl;
+
+  if (detailsContainer.querySelector("[data-row='festivized']")) return;
+
+  const dl =
+    detailsContainer.closest("dl") || detailsContainer.querySelector("dl");
+  if (dl) {
+    const dt = document.createElement("dt");
+    dt.textContent = "Festivized";
+    dt.setAttribute("data-row", "festivized");
+    dl.appendChild(dt);
+    return;
+  }
+
+  const p = document.createElement("p");
+  p.setAttribute("data-row", "festivized");
+  p.textContent = "Festivized";
+  detailsContainer.appendChild(p);
 }
 
 /**
