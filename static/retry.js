@@ -216,33 +216,6 @@ function updateBucketVisibility() {
 }
 
 /**
- * Hide the Completed bucket if all inventories landed in it.
- * Called after scans finish to collapse redundant bucket headings.
- *
- * @returns {void} No return value.
- * @example
- * maybeHideCompletedBucket();
- */
-export function maybeHideCompletedBucket() {
-  const completedBucket = document.getElementById("completed-results");
-  const failedBucket = document.getElementById("failed-results");
-  const publicBucket = document.getElementById("public-results");
-  const privateBucket = document.getElementById("private-results");
-
-  if (!completedBucket) return;
-
-  const hasCompleted = completedBucket.querySelector(".user-card");
-  const hasOthers =
-    (failedBucket && failedBucket.querySelector(".user-card")) ||
-    (publicBucket && publicBucket.querySelector(".user-card")) ||
-    (privateBucket && privateBucket.querySelector(".user-card"));
-
-  if (hasCompleted && !hasOthers) {
-    completedBucket.classList.add("hidden");
-  }
-}
-
-/**
  * Enable or disable the "Refresh Failed" buttons based on failures.
  * Toggles visibility of the floating refresh control.
  *
@@ -344,6 +317,8 @@ function attachHandlers() {
   attachUserSearch();
 }
 
+/**
+ * Per-user inventory search that filters item wrappers under each user card.
 /**
  * Per-user inventory search that filters item wrappers under each user card.
  * Falls back to parsing `.item-card[data-item]` when `data-name` is unavailable.
