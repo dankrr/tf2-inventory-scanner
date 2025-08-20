@@ -472,14 +472,15 @@ body.border-mode .item-card.has-dual-quality {
   filter: drop-shadow(0 0 2px #0008);
 }
 
-/* Festivized badge — subtle golden glow */
+/* Festivized badge — alternating red/green glow */
 .badge.festive {
-  font-size: 14px;
+  font-size: 12px; /* smaller to align with other icons */
   line-height: 1;
-  color: #ffe892;
+  color: #fff;
   background: transparent;
-  filter: drop-shadow(0 0 2px rgba(255, 230, 120, 0.7))
-    drop-shadow(0 0 6px rgba(255, 230, 120, 0.35));
+  filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.8))
+    drop-shadow(0 0 4px rgba(0, 200, 0, 0.7))
+    drop-shadow(0 0 6px rgba(255, 0, 0, 0.6));
 }
 .badge-icon {
   width: 14px;
