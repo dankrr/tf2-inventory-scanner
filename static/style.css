@@ -368,8 +368,10 @@ body.border-mode .item-card.uncraftable {
   border-style: dashed !important;
   border-width: 3px !important;
   border-color: var(--quality-color, #cf6a32) !important;
-  /* Remove any painted rings so the dashed stroke is visible */
-  background: var(--tf2-card, #0f1216) !important;
+  /* Remove any painted rings so the dashed stroke is visible
+     and make the inner background match other cards */
+  background: none !important;
+  background-color: inherit !important; /* use body.border-mode .item-card background */
   background-clip: padding-box;
   box-shadow: none !important;
 }
