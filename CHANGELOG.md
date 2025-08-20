@@ -112,3 +112,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-20 - Festivized badge: backend detects defindex 2053 and template renders a small image badge (no glow); documentation sync
 - 2025-08-20 - Align festive badge with other badges (top-right row) and fine-tune spacing/sizing; documentation sync
 - 2025-08-20 - Add simple "Festivized" line to item modal; documentation sync
+- 2025-08-20 - Keep History at bottom and compact Festivized modal line; documentation sync

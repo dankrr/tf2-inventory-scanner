@@ -476,7 +476,7 @@ function handleItemClick(event) {
 }
 
 /**
- * Append a simple "Festivized" row to the modal details.
+ * Append a compact "Festivized" row to the modal details before History when present.
  * Prefers `item.is_festivized` and falls back to attribute defindex 2053.
  *
  * @param {HTMLElement} modalEl - Modal element to append details to.
@@ -506,14 +506,36 @@ function appendFestivizedToModal(modalEl, item) {
     const dt = document.createElement("dt");
     dt.textContent = "Festivized";
     dt.setAttribute("data-row", "festivized");
-    dl.appendChild(dt);
+    dt.classList.add("festivized-row");
+    // Keep History at the very bottom if present
+    const historyDt =
+      dl.querySelector("dt[data-row='history']") ||
+      Array.from(dl.querySelectorAll("dt")).find((el) =>
+        /history/i.test(el.textContent || ""),
+      );
+    if (historyDt) {
+      dl.insertBefore(dt, historyDt);
+    } else {
+      dl.appendChild(dt);
+    }
     return;
   }
 
   const p = document.createElement("p");
   p.setAttribute("data-row", "festivized");
   p.textContent = "Festivized";
-  detailsContainer.appendChild(p);
+  p.classList.add("festivized-row");
+  // Keep History last if we can find it
+  const historyEl =
+    detailsContainer.querySelector("[data-row='history']") ||
+    Array.from(detailsContainer.querySelectorAll("a, p, div, span")).find(
+      (el) => /history/i.test(el.textContent || ""),
+    );
+  if (historyEl && historyEl.parentNode === detailsContainer) {
+    detailsContainer.insertBefore(p, historyEl);
+  } else {
+    detailsContainer.appendChild(p);
+  }
 }
 
 /**
