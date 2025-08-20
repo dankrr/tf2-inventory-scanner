@@ -8,6 +8,7 @@ from pathlib import Path
 
 from . import local_data
 from .helpers import best_match_from_keys
+from .schema_provider import is_festivized
 from .valuation_service import ValuationService, get_valuation_service
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
@@ -1033,6 +1034,8 @@ def _process_item(
     if valuation_service is None:
         valuation_service = get_valuation_service()
 
+    attrs = asset.get("attributes", [])
+
     origin_raw = asset.get("origin")
     tradable_raw = asset.get("tradable", 1)
     trade_hold_ts = _trade_hold_timestamp(asset)
@@ -1288,6 +1291,8 @@ def _process_item(
         "original_name": original_name,
         "base_name": base_name,
         "display_name": display_name,
+        "attributes": attrs,
+        "is_festivized": bool(is_festivized(attrs)),
         "is_australium": bool(is_australium),
         "quality": q_name,
         "quality_color": q_col,

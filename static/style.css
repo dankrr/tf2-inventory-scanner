@@ -433,10 +433,11 @@ body.border-mode .item-card.has-dual-quality {
 }
 .item-badges {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
+  top: 6px; /* align with chevrons row */
+  right: 6px;
   display: flex;
-  gap: 1px;
+  align-items: center;
+  gap: 6px; /* a little breathing room between badges */
   pointer-events: none;
   font-size: 14px;
   z-index: 3;
@@ -461,6 +462,22 @@ body.border-mode .item-card.has-dual-quality {
   height: 14px;
   filter: drop-shadow(0 0 2px #0008);
   pointer-events: none;
+}
+
+/* Festivized badge — image, no glow, sized to match other badges by height */
+.badge.festive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* keep tight like other badges */
+  background: transparent; /* no box background */
+}
+.badge.festive .festive-icon {
+  height: 13px; /* nudge down to visually match chevrons */
+  width: auto; /* preserve 32x22 aspect ratio */
+  display: block;
+  object-fit: contain;
+  filter: none; /* no glow */
 }
 
 @media (max-width: 480px) {

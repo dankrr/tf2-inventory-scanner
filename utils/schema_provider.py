@@ -4,10 +4,41 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Iterable, Mapping
 
 import httpx
 import requests
+
+FESTIVIZED_DEFINDEX = 2053  # Valve attribute that marks a Festivized weapon
+
+
+def _attributes_iter(attrs: Any) -> Iterable[Mapping[str, Any]]:
+    """
+    Safely iterate a maybe-missing, maybe-non-list attributes collection.
+    Returns [] if attrs is falsy.
+    """
+    if not attrs:
+        return []
+    if isinstance(attrs, dict):
+        # Some payloads use a dict keyed by index; flatten values.
+        return attrs.values()
+    return attrs  # assume iterable of dicts
+
+
+def has_attribute(attrs: Any, defindex: int) -> bool:
+    """True if any attribute has the given defindex."""
+    for a in _attributes_iter(attrs):
+        try:
+            if int(a.get("defindex")) == int(defindex):
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def is_festivized(attrs: Any) -> bool:
+    """Festivized is defindex 2053."""
+    return has_attribute(attrs, FESTIVIZED_DEFINDEX)
 
 
 class SchemaProvider:

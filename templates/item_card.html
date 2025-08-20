@@ -76,6 +76,19 @@ full_title = (title_parts + [base]) | join(' ') %}
       style="background-color: {{ item.paint_hex }};"
       title="Paint: {{ item.paint_name }}"
     ></span>
+    {% endif %} {# Festivized badge (uses small PNG, no glow). Backed by server
+    flag. #} {% if item.is_festivized %}
+    <span class="badge festive" title="Festivized" aria-label="Festivized">
+      <img
+        src="/static/images/logos/festive.png"
+        class="festive-icon"
+        alt=""
+        width="32"
+        height="22"
+        decoding="async"
+        loading="lazy"
+      />
+    </span>
     {% endif %} {% for badge in item.badges %} {% if badge.type != 'statclock'
     and badge.icon != '🎨' %} {% if badge.type == 'killstreak' %}
     <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
