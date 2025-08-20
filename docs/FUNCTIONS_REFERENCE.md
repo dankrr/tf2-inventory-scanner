@@ -38,6 +38,7 @@
 | `updateBucketVisibility()`              | Toggle visibility for Completed and Failed buckets.   | –                                                                 | `void`   | `static/retry.js` |
 | `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards                       | `void`   | `static/retry.js` |
 | `updateScanToast(current, total)`       | Display scanning progress with a rotating spinner.    | `current` (number) – current scan; `total` (number) – total scans | `void`   | `static/retry.js` |
+| `hideScanToast()`                       | Hide the scan progress toast after scans finish.      | –                                                                 | `void`   | `static/retry.js` |
 
 _Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.
 
