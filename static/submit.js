@@ -167,6 +167,7 @@ async function handleSubmit(e) {
 
   // Start global scan toast for the initial scan batch
   if (window.scanToast) window.scanToast.start(total);
+  // Back-compat in case styles rely on .show (handled inside scanToast.render)
 
   const results = document.getElementById("results");
   if (results) {
@@ -206,9 +207,24 @@ async function handleSubmit(e) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+/**
+ * Initialize form submission and refresh button bindings after DOM ready.
+ *
+ * @returns {void}
+ * @example
+ * document.addEventListener("DOMContentLoaded", initSubmitPage);
+ */
+function initSubmitPage() {
   const form = document.querySelector("form.input-form");
   if (form) {
     form.addEventListener("submit", handleSubmit);
   }
-});
+  // Ensure the Refresh Failed button is wired (safety)
+  const btn = document.getElementById("refresh-failed-btn");
+  if (btn) {
+    btn.removeEventListener("click", refreshAll);
+    btn.addEventListener("click", refreshAll);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", initSubmitPage);

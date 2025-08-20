@@ -3,7 +3,7 @@
   /**
    * Retrieve the scan progress toast element.
    *
-   * @returns {HTMLElement|null} Toast node or {@code null} if missing.
+   * @returns {HTMLElement | null} Toast node or {@code null} if missing.
    * @example
    * const node = el();
    */
@@ -36,6 +36,7 @@
       label +
       "</span>";
     node.classList.remove("hidden");
+    node.classList.add("show"); // keep CSS transition behavior
     visible = true;
   }
 
@@ -75,15 +76,64 @@
   function finish() {
     const node = el();
     if (!node) return;
-    node.classList.add("hidden");
-    node.innerHTML = "";
-    visible = false;
-    total = 0;
-    current = 0;
+    node.classList.remove("show");
+    // Let fade-out complete if CSS animates .show -> hidden
+    setTimeout(() => {
+      node.classList.add("hidden");
+      node.innerHTML = "";
+      visible = false;
+      total = 0;
+      current = 0;
+    }, 250);
+  }
+
+  /**
+   * Set absolute progress values and re-render the toast.
+   *
+   * @param {number} nextTotal - Total number of scans.
+   * @param {number} nextCurrent - Current completed scans.
+   * @returns {void}
+   * @example
+   * setProgress(10, 3);
+   */
+  function setProgress(nextTotal, nextCurrent) {
+    total = Number.isFinite(nextTotal) && nextTotal > 0 ? nextTotal : 0;
+    current = Math.max(0, Math.min(nextCurrent || 0, total || 0));
+    render();
   }
 
   // Expose globally
-  window.scanToast = { start, tick, finish };
+  window.scanToast = { start, tick, finish, setProgress };
+
+  // ---- Back-compat wrappers (some older code may still call these) ----
+  /**
+   * Legacy wrapper for updating or starting the scan toast.
+   *
+   * @param {number} cur - Current completed scans.
+   * @param {number} tot - Total number of scans.
+   * @returns {void}
+   * @example
+   * updateScanToast(2, 5);
+   */
+  window.updateScanToast = function (cur, tot) {
+    if (!window.scanToast) return;
+    if (!tot || cur <= 0) {
+      window.scanToast.start(tot || 0);
+    } else {
+      window.scanToast.setProgress(tot, cur);
+    }
+  };
+
+  /**
+   * Legacy wrapper to hide the scan toast.
+   *
+   * @returns {void}
+   * @example
+   * hideScanToast();
+   */
+  window.hideScanToast = function () {
+    if (window.scanToast) window.scanToast.finish();
+  };
 })();
 
 /**
@@ -444,11 +494,8 @@ function attachUserSearch() {
 }
 
 /**
- * Refresh all failed inventories in small batches.
- * @returns {Promise<void>} Resolves when complete.
- */
-/**
  * Retry all failed scans in parallel with progress feedback.
+ * Disables the "Refresh Failed" button during the operation.
  *
  * @returns {Promise<void>} Resolves when all retries complete.
  * @example
@@ -456,9 +503,19 @@ function attachUserSearch() {
  */
 async function refreshAll() {
   const failed = getFailedUsers();
+  const btn = document.getElementById("refresh-failed-btn");
   if (failed.length === 0) {
     updateRefreshButton();
     return;
+  }
+
+  // Disable the button and show activity
+  let originalHTML = "";
+  if (btn) {
+    originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML =
+      '<i class="fa-solid fa-arrows-rotate fa-spin" aria-hidden="true"></i> Refreshing…';
   }
 
   updateRefreshButton();
@@ -478,6 +535,12 @@ async function refreshAll() {
 
   // Hide toast when everything truly done
   if (window.scanToast) window.scanToast.finish();
+
+  // Restore button state
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML || "Refresh Failed";
+  }
 
   // After everything finished, if 0 failures remain AND there is at least one completed,
   // hide Completed bucket only when all cards are successful.

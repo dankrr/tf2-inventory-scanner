@@ -119,3 +119,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-21 - Ensure toast spinner uses same style as Retry pill button
 - 2025-08-21 - Add CSS alignment for toast spinner icon
 - 2025-08-21 - Unify scan progress toast lifecycle across initial scans and refresh-failed; start/tick/finish centralized to prevent stuck spinner and Completed bucket hides only when all scans succeed. Documentation sync
+- 2025-08-22 - Add scanToast setProgress and legacy wrappers, keep CSS transitions via `.show`, disable refresh button during retries, and sync docs
