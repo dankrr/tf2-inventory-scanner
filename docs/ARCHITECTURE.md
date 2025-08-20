@@ -32,6 +32,8 @@ Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts
 Item cards can display a split border in **Border Mode** when an item exposes or infers a secondary quality color. If the backend omits an explicit value, heuristics try common mixes (Unusual, then Genuine, then Strange) to derive an alternate hue. A centered conic gradient divides the ring along the top-left to bottom-right diagonal, filling the first half with the primary quality and the second with the alternate hue.
 Outside of Border Mode, item cards now darken the inner fill while keeping a bright quality-colored ring so items remain distinct without losing their quality identity.
 
+Festivized weapons are marked with a lightbulb badge when their attributes include defindex `2053`, mirroring the in-game festive indicator.
+
 Item cards no longer render inline titles, keeping the grid clean; names appear only in the modal. Unusual effect icons are decorative overlays that ignore pointer events, and a JavaScript fallback removes the icon if it fails to load. Modal clicks are delegated from result containers so dynamically added cards remain interactive.
 
 Card media sit inside an `.item-media` wrapper that centers the main icon while keeping particle overlays behind it; failed effect images remove themselves to avoid broken placeholders.

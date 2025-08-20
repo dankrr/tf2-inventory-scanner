@@ -453,8 +453,27 @@ body.border-mode .item-card.has-dual-quality {
   pointer-events: none;
   z-index: 3;
 }
+
+.badge {
+  font-size: 12px;
+  padding: 2px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+}
 .item-badges .badge {
   filter: drop-shadow(0 0 2px #0008);
+}
+
+/* Festivized badge — subtle golden glow */
+.badge.festive {
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 2px rgba(255, 230, 120, 0.7))
+    drop-shadow(0 0 6px rgba(255, 230, 120, 0.4));
 }
 .badge-icon {
   width: 14px;

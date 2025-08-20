@@ -76,6 +76,12 @@ full_title = (title_parts + [base]) | join(' ') %}
       style="background-color: {{ item.paint_hex }};"
       title="Paint: {{ item.paint_name }}"
     ></span>
+    {% endif %} {# Festivized indicator (fa-lightbulb) #} {% if item.attributes
+    and (item.attributes | selectattr('defindex', 'equalto', 2053) | list |
+    length > 0) %}
+    <span class="badge festive" title="Festivized" aria-label="Festivized">
+      <i class="fa-regular fa-lightbulb"></i>
+    </span>
     {% endif %} {% for badge in item.badges %} {% if badge.type != 'statclock'
     and badge.icon != '🎨' %} {% if badge.type == 'killstreak' %}
     <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
