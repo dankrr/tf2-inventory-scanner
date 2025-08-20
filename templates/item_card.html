@@ -81,8 +81,10 @@ full_title = (title_parts + [base]) | join(' ') %}
     <span class="badge festive" title="Festivized" aria-label="Festivized">
       <i class="fa-regular fa-lightbulb"></i>
     </span>
-    {% endif %} {% for badge in item.badges %} {% if badge.type != 'statclock'
-    and badge.icon != '🎨' %} {% if badge.type == 'killstreak' %}
+    {% endif %} {% for badge in item.badges %} {# Avoid duplicate festive
+    indicators from any upstream badges #} {% if badge.type != 'festivized' and
+    badge.icon != '💡' %} {% if badge.type != 'statclock' and badge.icon != '🎨'
+    %} {% if badge.type == 'killstreak' %}
     <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
       <span
         class="chevron-icon"
@@ -124,7 +126,7 @@ full_title = (title_parts + [base]) | join(' ') %}
       title="{{ badge.title }}"
       >{{ badge.icon }}</span
     >
-    {% endif %} {% endif %} {% endfor %}
+    {% endif %} {% endif %} {% endif %} {% endfor %}
   </div>
   {% if item.quantity and item.quantity > 1 %}
   <span class="item-qty">x{{ item.quantity }}</span>

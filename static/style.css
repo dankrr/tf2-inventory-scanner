@@ -433,10 +433,16 @@ body.border-mode .item-card.has-dual-quality {
 }
 .item-badges {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
+  /* Anchor firmly to the top-right; do not stretch */
+  top: 6px;
+  right: 6px;
+  left: auto;
+  bottom: auto;
   display: flex;
-  gap: 1px;
+  flex-direction: row;
+  align-items: center; /* prevent vertical stretching */
+  justify-content: flex-end; /* compact row, right-aligned */
+  gap: 6px;
   pointer-events: none;
   font-size: 14px;
   z-index: 3;
@@ -455,10 +461,16 @@ body.border-mode .item-card.has-dual-quality {
 }
 
 .badge {
-  /* neutral baseline; no box background */
   font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
   color: #fff;
-  line-height: 1;
+  display: inline-flex; /* keep intrinsic height */
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto; /* never stretch to container height */
+  height: auto;
 }
 .item-badges .badge {
   filter: drop-shadow(0 0 2px #0008);
@@ -466,15 +478,17 @@ body.border-mode .item-card.has-dual-quality {
 
 /* Festivized badge — subtle golden glow */
 .badge.festive {
+  font-size: 14px;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  padding: 2px;
+  padding: 2px 4px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.45);
+  color: #ffe892;
   filter: drop-shadow(0 0 2px rgba(255, 230, 120, 0.7))
-    drop-shadow(0 0 6px rgba(255, 230, 120, 0.4));
+    drop-shadow(0 0 6px rgba(255, 230, 120, 0.35));
 }
 .badge-icon {
   width: 14px;
