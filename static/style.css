@@ -433,10 +433,11 @@ body.border-mode .item-card.has-dual-quality {
 }
 .item-badges {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
+  top: 6px; /* align with chevrons row */
+  right: 6px;
   display: flex;
-  gap: 1px;
+  align-items: center;
+  gap: 6px; /* a little breathing room between badges */
   pointer-events: none;
   font-size: 14px;
   z-index: 3;
@@ -472,7 +473,7 @@ body.border-mode .item-card.has-dual-quality {
   background: transparent; /* no box background */
 }
 .badge.festive .festive-icon {
-  height: 14px; /* align with other ~14px badges */
+  height: 13px; /* nudge down to visually match chevrons */
   width: auto; /* preserve 32x22 aspect ratio */
   display: block;
   object-fit: contain;
