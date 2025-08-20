@@ -109,6 +109,7 @@ All notable changes to this project will be documented in this file.
 - 2025-08-19 - show dashed outline for uncraftable items; documentation sync
 - 2025-08-19 - refine border-mode dashed outline for uncraftable items; documentation sync
 - 2025-08-20 - remove ring background to reveal dashed uncraftable outline; documentation sync
+- 2025-08-20 - Backend exposes `is_festivized` (defindex 2053) and template shows a lightbulb badge; docs sync
 - [2025-08-20] - Show Festivized lightbulb badge on item cards; documentation sync
 - [2025-03-01] - Render Festivized badges client-side and refine neutral badge styling; documentation sync
 - [2025-08-20] - Precompute Festivized flag server-side and update template/JS; documentation sync

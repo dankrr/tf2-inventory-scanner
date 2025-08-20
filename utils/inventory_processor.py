@@ -21,6 +21,7 @@ from .constants import (
     KILLSTREAK_BADGE_ICONS,
     SPELL_MAP,
 )
+from .schema_provider import SchemaProvider
 
 
 logger = logging.getLogger(__name__)
@@ -1443,12 +1444,20 @@ def enrich_inventory(
     if not isinstance(items_raw, list):
         return []
 
+    schema = SchemaProvider()
     items: List[Dict[str, Any]] = []
 
     for asset in items_raw:
         item = _process_item(asset, valuation_service)
         if not item:
             continue
+
+        attributes = asset.get("attributes") or asset.get("additional_properties") or []
+        item["attributes"] = attributes
+        try:
+            item["is_festivized"] = bool(schema.is_festivized(attributes))
+        except Exception:
+            item["is_festivized"] = False
 
         quality_flag = item.get("quality")
         if (

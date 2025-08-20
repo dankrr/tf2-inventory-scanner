@@ -76,8 +76,8 @@ full_title = (title_parts + [base]) | join(' ') %}
       style="background-color: {{ item.paint_hex }};"
       title="Paint: {{ item.paint_name }}"
     ></span>
-    {% endif %} {# Festivized indicator (server-provided boolean) #} {% if
-    item.festivized %}
+    {% endif %} {# Festivized indicator (derived on backend for reliability) #}
+    {% if item.is_festivized %}
     <span class="badge festive" title="Festivized" aria-label="Festivized">
       <i class="fa-regular fa-lightbulb"></i>
     </span>

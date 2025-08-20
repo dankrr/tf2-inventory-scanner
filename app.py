@@ -92,23 +92,6 @@ UNSTACKABLE_NAMES = {
 }
 
 
-def _is_festivized(item: dict) -> bool:
-    """Return ``True`` if ``item`` has the Festivized attribute.
-
-    Steam uses defindex 2053 for Festivized. Some payloads may use
-    ``def_index`` instead of ``defindex``.
-    """
-
-    attrs = item.get("attributes") or []
-    for a in attrs:
-        if not isinstance(a, dict):
-            continue
-        di = a.get("defindex", a.get("def_index"))
-        if di == 2053:
-            return True
-    return False
-
-
 def kill_process_on_port(port: int) -> None:
     """Terminate any process currently listening on ``port``."""
 
@@ -261,11 +244,6 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any] | None:
         items = []
     else:
         items = stack_items(items)
-        for item in items:
-            try:
-                item["festivized"] = _is_festivized(item)
-            except Exception:
-                item["festivized"] = False
     status = inv_result.get("status", "failed")
 
     summary.update({"steamid": steamid64, "items": items, "status": status})

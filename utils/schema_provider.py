@@ -51,6 +51,36 @@ class SchemaProvider:
         self.origins_by_index: Dict[int, str] | None = None
         self.string_lookups: Dict[str, str] | None = None
 
+    # --- Attribute defindex constants (keep here so they're easy to discover) ---
+    FESTIVIZED_DEFINDEX = 2053  # Valve attribute: "is festivized"
+
+    @staticmethod
+    def _attributes_iter(attrs):
+        """Safely iterate a possibly-missing or non-list attributes collection."""
+
+        if not attrs:
+            return []
+        if isinstance(attrs, dict):
+            # Some payloads ship attributes in a dict keyed by strings/ids
+            return attrs.values()
+        return attrs
+
+    def has_attribute(self, attrs, defindex: int) -> bool:
+        """Return ``True`` if any attribute in ``attrs`` has ``defindex``."""
+
+        for a in self._attributes_iter(attrs):
+            try:
+                if int(a.get("defindex")) == int(defindex):
+                    return True
+            except Exception:
+                continue
+        return False
+
+    def is_festivized(self, attrs) -> bool:
+        """Festivized items carry attribute defindex 2053."""
+
+        return self.has_attribute(attrs, self.FESTIVIZED_DEFINDEX)
+
     # ------------------------------------------------------------------
     def _fetch(self, endpoint: str) -> Any:
         url = f"{self.base_url}{endpoint}"

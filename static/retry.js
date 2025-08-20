@@ -509,7 +509,7 @@ attachEffectFallback();
 
 /**
  * Add "Festivized" lightbulb badges to item cards.
- * Prefers a server-provided `festivized` boolean and falls back to
+ * Prefers a server-provided `is_festivized` boolean and falls back to
  * checking attributes (defindex 2053) from each card's `data-item` JSON.
  *
  * @param {void} none
@@ -533,7 +533,7 @@ function addFestiveBadges() {
       card.dataset.festiveApplied = "1";
       return;
     }
-    let isFestive = !!data?.festivized;
+    let isFestive = !!data?.is_festivized;
     if (!isFestive) {
       const attrs = Array.isArray(data?.attributes) ? data.attributes : [];
       isFestive = attrs.some((a) => {
