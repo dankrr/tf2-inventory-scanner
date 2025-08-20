@@ -15,7 +15,7 @@ refresh failed inventories or scroll back to the top.
 A floating gear button in the lower-left now exposes display settings, allowing
 users to toggle compact and border modes without relying on legacy header
 buttons. Font Awesome icons are loaded via CDN and injected to keep gear, Compact, and Border Mode menu icons consistent.
-A progress toast now uses a rotating Font Awesome spinner to show batch scan status. Its positioning leaves room for the floating controls and clamps width on small screens so long messages remain readable.
+A progress toast appears as soon as the user submits a scan. It uses a rotating Font Awesome spinner to show batch progress. Its positioning leaves room for the floating controls and clamps width on small screens so long messages remain readable.
 
 The server exposes REST endpoints for initiating scans and retrying failed ones.
 Client-side JavaScript handles form submission, retry flows, and dynamic UI updates.
