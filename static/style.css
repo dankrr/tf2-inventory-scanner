@@ -463,6 +463,22 @@ body.border-mode .item-card.has-dual-quality {
   pointer-events: none;
 }
 
+/* Festivized badge — image, no glow, sized to match other badges by height */
+.badge.festive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; /* keep tight like other badges */
+  background: transparent; /* no box background */
+}
+.badge.festive .festive-icon {
+  height: 14px; /* align with other ~14px badges */
+  width: auto; /* preserve 32x22 aspect ratio */
+  display: block;
+  object-fit: contain;
+  filter: none; /* no glow */
+}
+
 @media (max-width: 480px) {
   .badge-icon {
     width: 11px;

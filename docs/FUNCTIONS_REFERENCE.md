@@ -38,3 +38,11 @@
 | `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards          | `void`   | `static/retry.js` |
 
 _Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.
+
+### Backend Utilities
+
+| Function                         | Purpose                                                               | Parameters                           | Returns                       | Used In                        |
+| -------------------------------- | --------------------------------------------------------------------- | ------------------------------------ | ----------------------------- | ------------------------------ |
+| `_attributes_iter(attrs)`        | Safely iterate a maybe-missing, maybe-non-list attributes collection. | `attrs` (Any) – attributes structure | `Iterable[Mapping[str, Any]]` | `utils/schema_provider.py`     |
+| `has_attribute(attrs, defindex)` | True if any attribute has the given defindex.                         | `attrs` (Any); `defindex` (int)      | `bool`                        | `utils/schema_provider.py`     |
+| `is_festivized(attrs)`           | Detects Festivized weapons by attribute 2053.                         | `attrs` (Any)                        | `bool`                        | `utils/inventory_processor.py` |

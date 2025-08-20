@@ -35,3 +35,5 @@ Outside of Border Mode, item cards now darken the inner fill while keeping a bri
 Item cards no longer render inline titles, keeping the grid clean; names appear only in the modal. Unusual effect icons are decorative overlays that ignore pointer events, and a JavaScript fallback removes the icon if it fails to load. Modal clicks are delegated from result containers so dynamically added cards remain interactive.
 
 Card media sit inside an `.item-media` wrapper that centers the main icon while keeping particle overlays behind it; failed effect images remove themselves to avoid broken placeholders.
+
+Festivized weapons (attribute defindex 2053) are detected during inventory processing. The template renders a small festive badge when this flag is present.
