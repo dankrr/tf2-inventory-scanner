@@ -181,12 +181,14 @@ async function handleSubmit(e) {
       if (window.updateScanToast) {
         window.updateScanToast(++current, total);
       }
-    })
+    }),
   );
 
   if (window.hideScanToast) {
     window.hideScanToast();
   }
+
+  import("./retry.js").then((m) => m.maybeHideCompletedBucket());
 }
 
 document.addEventListener("DOMContentLoaded", () => {

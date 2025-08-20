@@ -278,8 +278,14 @@
     </script>
     <script src="{{ url_for('static', filename='lazyload.js') }}"></script>
     <script src="{{ url_for('static', filename='modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='retry.js') }}"></script>
-    <script src="{{ url_for('static', filename='submit.js') }}"></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='retry.js') }}"
+    ></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='submit.js') }}"
+    ></script>
     <script src="{{ url_for('static', filename='ui.js') }}"></script>
     <script>
       function attachScrollButtons() {
