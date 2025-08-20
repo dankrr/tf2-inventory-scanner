@@ -240,12 +240,6 @@ function updateRefreshButton() {
   updateBucketVisibility();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Ensure initial visibility is correct on load.
-  updateBucketVisibility();
-  updateRefreshButton();
-});
-
 /**
  * Handle retry button clicks for individual cards.
  *
@@ -290,7 +284,7 @@ function setupFloatingControls() {
 }
 
 /**
- * Attach click handlers, modal logic, and search bindings to current cards.
+ * Attach click handlers, modal logic, search bindings, and Festivized badges to current cards.
  *
  * @param {void} none
  * @returns {void} No return value.
@@ -302,9 +296,9 @@ function attachHandlers() {
     btn.removeEventListener("click", handleRetryClick);
     btn.addEventListener("click", handleRetryClick);
   });
-  updateRefreshButton();
   attachItemModal();
-  attachUserSearch();
+  attachUserSearch?.();
+  addFestiveBadges();
 }
 
 /**
@@ -514,6 +508,52 @@ function attachItemModal() {
 attachEffectFallback();
 
 /**
+ * Add "Festivized" lightbulb badges by reading each card's data-item JSON.
+ * Looks for attribute defindex 2053.
+ *
+ * @param {void} none
+ * @returns {void} No return value.
+ * @example
+ * addFestiveBadges();
+ */
+function addFestiveBadges() {
+  const cards = document.querySelectorAll(".item-card");
+  cards.forEach((card) => {
+    if (card.dataset.festiveApplied === "1") return;
+    const raw = card.getAttribute("data-item");
+    if (!raw) {
+      card.dataset.festiveApplied = "1";
+      return;
+    }
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      card.dataset.festiveApplied = "1";
+      return;
+    }
+    const attrs = Array.isArray(data?.attributes) ? data.attributes : [];
+    const isFestive = attrs.some((a) => a && a.defindex === 2053);
+    if (!isFestive) {
+      card.dataset.festiveApplied = "1";
+      return;
+    }
+    const badges = card.querySelector(".item-badges");
+    if (!badges) {
+      card.dataset.festiveApplied = "1";
+      return;
+    }
+    const span = document.createElement("span");
+    span.className = "badge festive";
+    span.title = "Festivized";
+    span.setAttribute("aria-label", "Festivized");
+    span.innerHTML = '<i class="fa-regular fa-lightbulb"></i>';
+    badges.appendChild(span);
+    card.dataset.festiveApplied = "1";
+  });
+}
+
+/**
  * Focus and select the Steam IDs textarea so it's ready for paste.
  * Safe to call multiple times.
  * @returns {void}
@@ -535,14 +575,15 @@ function focusSteamInput() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Make input paste-ready immediately
-  focusSteamInput();
+  updateRefreshButton();
+  updateFailedCount();
   attachHandlers();
   const btn = document.getElementById("refresh-failed-btn");
   if (btn) {
     btn.addEventListener("click", refreshAll);
   }
   setupFloatingControls();
+  focusSteamInput();
   if (window.modal && typeof window.modal.initModal === "function") {
     window.modal.initModal();
   }
