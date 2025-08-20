@@ -464,6 +464,12 @@ body.border-mode .item-card.has-dual-quality {
   pointer-events: none;
 }
 
+/* Compact line for the modal "Festivized" row (prevents a big gap) */
+.festivized-row {
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
 /* Festivized badge — image, no glow, sized to match other badges by height */
 .badge.festive {
   display: inline-flex;
