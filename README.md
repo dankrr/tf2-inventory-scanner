@@ -61,22 +61,11 @@ Create a `.env` file in the project root:
 
 ```ini
 # Server
-HOST=127.0.0.1
-PORT=5000
-FLASK_ENV=development
-FLASK_DEBUG=1
-
-# Steam / TF2
-STEAM_API_KEY=your_steam_web_api_key
-# STEAM_API_BASE=https://api.steampowered.com
-
-# Backpack.tf (optional pricing)
-# BACKPACKTF_API_KEY=your_backpacktf_key
-# BACKPACKTF_BASE=https://backpack.tf/api
-
-# Caching
-CACHE_DIR=./cache
-SCHEMA_CACHE_PATH=./cache/schema.json
+STEAM_API_KEY=your_steam_key_here
+BPTF_API_KEY=your_backpack_key_here
+CACHE_RETRIES=2
+CACHE_DELAY=2
+SKIP_CACHE_INIT=01
 ```
 
 ---
