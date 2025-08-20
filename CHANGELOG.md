@@ -111,3 +111,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-20 - remove ring background to reveal dashed uncraftable outline; documentation sync
 - [2025-08-20] - Show Festivized lightbulb badge on item cards; documentation sync
 - [2025-03-01] - Render Festivized badges client-side and refine neutral badge styling; documentation sync
+- [2025-08-20] - Precompute Festivized flag server-side and update template/JS; documentation sync

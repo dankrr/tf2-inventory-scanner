@@ -508,8 +508,9 @@ function attachItemModal() {
 attachEffectFallback();
 
 /**
- * Add "Festivized" lightbulb badges by reading each card's data-item JSON.
- * Looks for attribute defindex 2053.
+ * Add "Festivized" lightbulb badges to item cards.
+ * Prefers a server-provided `festivized` boolean and falls back to
+ * checking attributes (defindex 2053) from each card's `data-item` JSON.
  *
  * @param {void} none
  * @returns {void} No return value.
@@ -532,8 +533,15 @@ function addFestiveBadges() {
       card.dataset.festiveApplied = "1";
       return;
     }
-    const attrs = Array.isArray(data?.attributes) ? data.attributes : [];
-    const isFestive = attrs.some((a) => a && a.defindex === 2053);
+    let isFestive = !!data?.festivized;
+    if (!isFestive) {
+      const attrs = Array.isArray(data?.attributes) ? data.attributes : [];
+      isFestive = attrs.some((a) => {
+        if (!a || typeof a !== "object") return false;
+        const di = a.defindex ?? a.def_index;
+        return di === 2053;
+      });
+    }
     if (!isFestive) {
       card.dataset.festiveApplied = "1";
       return;
