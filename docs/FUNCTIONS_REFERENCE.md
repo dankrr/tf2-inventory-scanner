@@ -6,9 +6,9 @@
 | `fetchUserCard(id)`                      | Fetch a single user card from the server and append it to the correct bucket.                                 | `id` (string) – Steam identifier                                                   | `Promise<void>` | `static/submit.js`                    |
 | `handleItemClick(event)`                 | Display the item modal using data embedded on the card, logging malformed payloads.                           | `event` (MouseEvent \| HTMLElement) – click event or card element                  | `void`          | `static/retry.js`                     |
 | `appendFestivizedToModal(modalEl, item)` | Append a compact 'Festivized' row to modal details before History when applicable.                            | `modalEl` (HTMLElement) – modal container; `item` (object) – item data             | `void`          | `static/retry.js`                     |
-| `handleSubmit(e)`                        | Process form submission, show the scan toast, and launch parallel scans.                           | `e` (SubmitEvent) – form event                                                     | `Promise<void>`    | `static/submit.js`                    |
+| `handleSubmit(e)`                        | Process form submission, show the global scan toast, and launch parallel scans.                               | `e` (SubmitEvent) – form event                                                     | `Promise<void>` | `static/submit.js`                    |
 | `retryInventory(id)`                     | Retry a failed scan and append the updated card to the proper bucket.                                         | `id` (string) – Steam identifier                                                   | `Promise<void>` | `static/retry.js`                     |
-| `refreshAll()`                           | Batch retry all failed scans with progress feedback.                                                          | –                                                                                  | `Promise<void>` | `static/retry.js`                     |
+| `refreshAll()`                           | Batch retry all failed scans with progress feedback using the shared scan toast.                              | –                                                                                  | `Promise<void>` | `static/retry.js`                     |
 | `attachItemModal()`                      | Delegate modal click handling from result containers and attach effect fallback.                              | –                                                                                  | `void`          | `static/retry.js`                     |
 | `attachEffectFallback()`                 | Remove particle effect images if their source fails to load.                                                  | –                                                                                  | `void`          | `static/retry.js`                     |
 | `attachHandlers()`                       | Attach click handlers, modal logic, and search bindings to current cards.                                     | –                                                                                  | `void`          | `static/retry.js`                     |
@@ -31,21 +31,12 @@
 
 ### Newly Added
 
-| Function                                | Purpose                                               | Parameters                                                        | Returns  | Used In           |
-| --------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- | -------- | ----------------- |
-| `getCompletedUsers()`                   | Count user cards in the Completed bucket.             | –                                                                 | `number` | `static/retry.js` |
-| `toggleCompletedBucket(completedCount)` | Hide or show the Completed results bucket when empty. | `completedCount` (number) – count of completed cards              | `void`   | `static/retry.js` |
-| `updateBucketVisibility()`              | Toggle visibility for Completed and Failed buckets.   | –                                                                 | `void`   | `static/retry.js` |
-| `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards                       | `void`   | `static/retry.js` |
-| `updateScanToast(current, total)`       | Display scanning progress with a rotating spinner.    | `current` (number) – current scan; `total` (number) – total scans | `void`   | `static/retry.js` |
-| `hideScanToast()`                       | Hide the scan progress toast after scans finish.      | –                                                                 | `void`   | `static/retry.js` |
-
-_Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.
-
-### Backend Utilities
-
-| Function                         | Purpose                                                               | Parameters                           | Returns                       | Used In                        |
-| -------------------------------- | --------------------------------------------------------------------- | ------------------------------------ | ----------------------------- | ------------------------------ |
-| `_attributes_iter(attrs)`        | Safely iterate a maybe-missing, maybe-non-list attributes collection. | `attrs` (Any) – attributes structure | `Iterable[Mapping[str, Any]]` | `utils/schema_provider.py`     |
-| `has_attribute(attrs, defindex)` | True if any attribute has the given defindex.                         | `attrs` (Any); `defindex` (int)      | `bool`                        | `utils/schema_provider.py`     |
-| `is_festivized(attrs)`           | Detects Festivized weapons by attribute 2053.                         | `attrs` (Any)                        | `bool`                        | `utils/inventory_processor.py` |
+| Function                                | Purpose                                               | Parameters                                           | Returns  | Used In                               |
+| --------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------- | -------- | ------------------------------------- |
+| `getCompletedUsers()`                   | Count user cards in the Completed bucket.             | –                                                    | `number` | `static/retry.js`                     |
+| `toggleCompletedBucket(completedCount)` | Hide or show the Completed results bucket when empty. | `completedCount` (number) – count of completed cards | `void`   | `static/retry.js`                     |
+| `updateBucketVisibility()`              | Toggle visibility for Completed and Failed buckets.   | –                                                    | `void`   | `static/retry.js`                     |
+| `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards          | `void`   | `static/retry.js`                     |
+| `scanToast.start(total)`                | Begin the shared scan toast for a batch of scans.     | `total` (number) – total scans to run                | `void`   | `static/retry.js`, `static/submit.js` |
+| `scanToast.tick()`                      | Increment the scan toast progress counter.            | –                                                    | `void`   | `static/retry.js`, `static/submit.js` |
+| `scanToast.finish()`                    | Hide and reset the scan toast when all scans settle.  | –                                                    | `void`   | `static/retry.js`, `static/submit.js` |

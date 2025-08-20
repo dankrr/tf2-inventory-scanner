@@ -146,7 +146,7 @@ function extractSteamIds(text) {
 
 /**
  * Handle submission of the scan form.
- * Clears existing results, shows the progress toast, and
+ * Clears existing results, shows the global scan toast, and
  * concurrently fetches each requested inventory.
  *
  * @param {SubmitEvent} e - Form submission event.
@@ -165,27 +165,44 @@ async function handleSubmit(e) {
   const total = ids.length;
   if (total === 0) return;
 
-  if (window.updateScanToast) {
-    window.updateScanToast(0, total);
-  }
+  // Start global scan toast for the initial scan batch
+  if (window.scanToast) window.scanToast.start(total);
 
   const results = document.getElementById("results");
   if (results) {
     results.classList.add("show");
   }
 
-  let current = 0;
   await Promise.all(
-    ids.map(async (id) => {
-      await fetchUserCard(id);
-      if (window.updateScanToast) {
-        window.updateScanToast(++current, total);
-      }
-    })
+    ids.map((id) =>
+      fetchUserCard(id)
+        .catch(() => {})
+        .finally(() => {
+          if (window.scanToast) window.scanToast.tick();
+        }),
+    ),
   );
 
-  if (window.hideScanToast) {
-    window.hideScanToast();
+  // Hide toast now that all have settled
+  if (window.scanToast) window.scanToast.finish();
+
+  // Hide Completed bucket only if everything succeeded and we actually have completed cards
+  const failedCount = document.querySelectorAll(
+    "#failed-container .user-card.failed",
+  ).length;
+  const completedCount = document.querySelectorAll(
+    "#completed-container .user-card",
+  ).length;
+  if (failedCount === 0 && completedCount > 0) {
+    const completedContainer = document.getElementById("completed-container");
+    if (completedContainer) {
+      const wrapper =
+        document.getElementById("completed-bucket") ||
+        completedContainer.closest('[data-bucket="completed"]') ||
+        completedContainer.closest(".bucket") ||
+        completedContainer.parentElement;
+      if (wrapper) wrapper.classList.add("bucket-hidden");
+    }
   }
 }
 

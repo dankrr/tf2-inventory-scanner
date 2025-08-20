@@ -1,38 +1,90 @@
-/**
- * Display scanning progress with a rotating Font Awesome spinner.
- *
- * @param {number} current - Index of the current scan.
- * @param {number} total - Total number of scans to run.
- * @returns {void}
- * @example
- * updateScanToast(1, 3);
- */
-function updateScanToast(current, total) {
-  const toast = document.getElementById("scan-toast");
-  if (!toast) return;
-  toast.innerHTML = `
-    <i class="fa-solid fa-arrows-rotate fa-spin" aria-hidden="true"></i>
-    Scanning ${current} of ${total} inventories...
-  `;
-  toast.classList.remove("hidden");
-  toast.classList.add("show");
-}
+// ---- Global Scan Toast controller (shared by submit.js and retry.js) ----
+(function () {
+  /**
+   * Retrieve the scan progress toast element.
+   *
+   * @returns {HTMLElement|null} Toast node or {@code null} if missing.
+   * @example
+   * const node = el();
+   */
+  function el() {
+    return document.getElementById("scan-toast");
+  }
 
-/**
- * Hide the scan progress toast.
- *
- * @returns {void}
- * @example
- * hideScanToast();
- */
-function hideScanToast() {
-  const toast = document.getElementById("scan-toast");
-  if (!toast) return;
-  toast.classList.remove("show");
-  setTimeout(() => toast.classList.add("hidden"), 300);
-}
+  let total = 0;
+  let current = 0;
+  let visible = false;
 
-window.updateScanToast = updateScanToast;
+  /**
+   * Render the toast with current progress information.
+   *
+   * @returns {void}
+   * @example
+   * render();
+   */
+  function render() {
+    const node = el();
+    if (!node) return;
+    const label =
+      total > 0
+        ? `Scanning ${Math.min(current, total)} of ${total} inventories...`
+        : "Scanning...";
+    // Font Awesome spinner to match Retry pill style
+    node.innerHTML =
+      '<i class="fa-solid fa-arrows-rotate fa-spin" aria-hidden="true"></i>' +
+      '<span class="toast-text">' +
+      label +
+      "</span>";
+    node.classList.remove("hidden");
+    visible = true;
+  }
+
+  /**
+   * Begin a new scan toast cycle.
+   *
+   * @param {number} t - Total number of scans to run.
+   * @returns {void}
+   * @example
+   * start(5);
+   */
+  function start(t) {
+    total = Number.isFinite(t) && t > 0 ? t : 0;
+    current = 0;
+    render();
+  }
+
+  /**
+   * Increment progress and re-render when visible.
+   *
+   * @returns {void}
+   * @example
+   * tick();
+   */
+  function tick() {
+    current += 1;
+    if (visible) render();
+  }
+
+  /**
+   * Hide and reset the scan toast.
+   *
+   * @returns {void}
+   * @example
+   * finish();
+   */
+  function finish() {
+    const node = el();
+    if (!node) return;
+    node.classList.add("hidden");
+    node.innerHTML = "";
+    visible = false;
+    total = 0;
+    current = 0;
+  }
+
+  // Expose globally
+  window.scanToast = { start, tick, finish };
+})();
 
 /**
  * Append a user card to the specified bucket.
@@ -395,33 +447,50 @@ function attachUserSearch() {
  * Refresh all failed inventories in small batches.
  * @returns {Promise<void>} Resolves when complete.
  */
+/**
+ * Retry all failed scans in parallel with progress feedback.
+ *
+ * @returns {Promise<void>} Resolves when all retries complete.
+ * @example
+ * await refreshAll();
+ */
 async function refreshAll() {
-  const btn = document.getElementById("refresh-failed-btn");
-  if (!btn) return;
-  btn.disabled = true;
-  const original = btn.textContent;
-  btn.textContent = "Refreshing…";
-  const ids = getFailedUsers();
-  const total = ids.length;
-  const BATCH_SIZE = 3;
-  let current = 0;
-  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-    const batch = ids.slice(i, i + BATCH_SIZE);
-    const tasks = batch.map((id) => {
-      const card = document.getElementById("user-" + id);
-      if (card) card.classList.add("loading");
-      updateScanToast(++current, total);
-      return retryInventory(id);
-    });
-    await Promise.all(tasks);
-    await new Promise((res) => setTimeout(res, 300));
+  const failed = getFailedUsers();
+  if (failed.length === 0) {
+    updateRefreshButton();
+    return;
   }
-  btn.disabled = false;
-  btn.textContent = original;
-  attachHandlers();
+
   updateRefreshButton();
-  updateFailedCount();
-  hideScanToast();
+  // Start shared scan toast for the refresh path
+  if (window.scanToast) window.scanToast.start(failed.length);
+
+  // Run retries in parallel with progress feedback
+  const tasks = failed.map((id) =>
+    retryInventory(id)
+      .catch(() => {})
+      .finally(() => {
+        updateRefreshButton();
+        if (window.scanToast) window.scanToast.tick();
+      }),
+  );
+  await Promise.allSettled(tasks);
+
+  // Hide toast when everything truly done
+  if (window.scanToast) window.scanToast.finish();
+
+  // After everything finished, if 0 failures remain AND there is at least one completed,
+  // hide Completed bucket only when all cards are successful.
+  const remainingFails = getFailedUsers().length;
+  const completedCount = getCompletedUsers();
+  if (remainingFails === 0 && completedCount > 0) {
+    const totalCards =
+      completedCount +
+      document.querySelectorAll("#failed-container .user-card.failed").length;
+    if (totalCards === completedCount) {
+      toggleCompletedBucket(completedCount);
+    }
+  }
 }
 
 /**
