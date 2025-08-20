@@ -28,6 +28,11 @@
 | `setupSettingsFab()`                 | Initialize floating settings FAB, sync menu state, and mirror legacy icons.                                   | –                                                                                  | `void`          | `static/ui.js`                        |
 | `focusSteamInput()`                  | Focus and select the Steam IDs textarea so it is ready for paste on load.                                     | –                                                                                  | `void`          | `static/retry.js`                     |
 
+| `has_attribute(attrs, defindex)` | Check if any attribute in a collection matches the given defindex. | `attrs` (Any) – attribute data; `defindex` (number) – attribute ID | `boolean` | `utils/schema_provider.py` |
+| `is_festivized(attrs)` | Detect Festivized status via attribute 2053. | `attrs` (Any) – attribute data | `boolean` | `utils/schema_provider.py`, `utils/inventory_processor.py` |
+| `addFestiveBadges(root)` | Inject Festivized lightbulb badges on item cards. | `root` (Document \| HTMLElement) – root element to scan under | `void` | `static/retry.js` |
+| `setupFloatingRefresh()` | Initialize floating refresh controls (alias of `setupFloatingControls`).| – | `void` | `static/retry.js` |
+
 ### Newly Added
 
 | Function                                | Purpose                                               | Parameters                                           | Returns  | Used In           |

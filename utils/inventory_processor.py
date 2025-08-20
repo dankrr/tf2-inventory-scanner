@@ -8,6 +8,7 @@ from pathlib import Path
 
 from . import local_data
 from .helpers import best_match_from_keys
+from .schema_provider import is_festivized
 from .valuation_service import ValuationService, get_valuation_service
 from .wear_helpers import _wear_tier, _decode_seed_info
 from .constants import (
@@ -1383,7 +1384,11 @@ def _process_item(
         "uncraftable": uncraftable,
         "craftable": craftable,
         "_hidden": hide_item,
+        "attributes": asset.get("attributes") or [],
     }
+
+    # Backend-friendly flag for the template/JS
+    item["is_festivized"] = is_festivized(item["attributes"])
 
     if valuation_service is not None:
         tradable = tradable_val

@@ -4,10 +4,43 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Iterator, Mapping
 
 import httpx
 import requests
+
+
+FESTIVE_ATTR_DEFINDEX = 2053  # Valve festive/festivized attribute
+
+
+def _iter_attrs(attrs: Any) -> Iterator[Mapping[str, Any]]:
+    """Yield attribute dicts from a possibly-missing/oddly-shaped collection."""
+
+    if not attrs:
+        return
+    if isinstance(attrs, dict):
+        attrs = attrs.get("attributes")
+    if isinstance(attrs, list):
+        for a in attrs:
+            if isinstance(a, dict):
+                yield a
+
+
+def has_attribute(attrs: Any, defindex: int) -> bool:
+    """Return ``True`` if any attribute has the provided defindex."""
+
+    try:
+        return any(
+            int(a.get("defindex", -1)) == int(defindex) for a in _iter_attrs(attrs)
+        )
+    except Exception:
+        return False
+
+
+def is_festivized(attrs: Any) -> bool:
+    """Return ``True`` if the Festivized attribute (2053) is present."""
+
+    return has_attribute(attrs, FESTIVE_ATTR_DEFINDEX)
 
 
 class SchemaProvider:

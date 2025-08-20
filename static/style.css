@@ -433,13 +433,18 @@ body.border-mode .item-card.has-dual-quality {
 }
 .item-badges {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
+  right: 6px;
+  top: 6px;
   display: flex;
-  gap: 1px;
+  align-items: center;
+  gap: 6px;
   pointer-events: none;
   font-size: 14px;
   z-index: 3;
+}
+.item-badges .badge {
+  background: transparent; /* never introduce a tile/box bg */
+  padding: 0;
 }
 .item-qty {
   position: absolute;
@@ -453,14 +458,27 @@ body.border-mode .item-card.has-dual-quality {
   pointer-events: none;
   z-index: 3;
 }
-.item-badges .badge {
-  filter: drop-shadow(0 0 2px #0008);
-}
 .badge-icon {
   width: 14px;
   height: 14px;
   filter: drop-shadow(0 0 2px #0008);
   pointer-events: none;
+}
+
+.badge {
+  color: #fff;
+}
+
+/* Festivized badge — no glow */
+.badge.festive {
+  font-size: 12px; /* small, consistent with other icons */
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: none; /* no glow */
+  position: relative;
+  top: 1px; /* tiny nudge for baseline alignment */
 }
 
 @media (max-width: 480px) {

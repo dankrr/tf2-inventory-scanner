@@ -60,11 +60,17 @@ full_title = (title_parts + [base]) | join(' ') %}
   {%
   endif
   %}
+  data-festive="{{ '1' if item.is_festivized else '0' }}"
   data-item="{{ item|tojson|forceescape }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
-    {% if item.is_australium %}
+    {# Festivized (lightbulb). Put first, then the rest of the badges. #} {% if
+    item.is_festivized %}
+    <span class="badge festive" title="Festivized" aria-label="Festivized">
+      <i class="fa-regular fa-lightbulb"></i>
+    </span>
+    {% endif %} {% if item.is_australium %}
     <img
       src="/static/images/logos/australium.png"
       class="australium-icon"

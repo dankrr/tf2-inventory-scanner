@@ -8,6 +8,7 @@
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding dynamic elements so new cards receive search and modal behavior, including the `attachUserSearch` filter.
 - Floating scroll-to-top and refresh controls are initialized by `setupFloatingControls`; call it after DOM load.
+- Floating scroll-to-top and refresh controls are initialized by `setupFloatingRefresh()`.
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
   accessibility; follow the pattern in `updateToggleButtons`.
 - Display settings now live behind a floating gear menu initialized by `setupSettingsFab()`.
@@ -16,5 +17,6 @@
 - Item cards omit inline titles; names surface only within the modal.
 - Uncraftable items rely on dashed borders only; the inner gray ring has been removed to reduce visual clutter.
 - Modal clicks are delegated from result containers. Ensure overlays and badges do not capture pointer events.
+- `attachHandlers()` now also invokes `addFestiveBadges()` so dynamically inserted cards display the lightbulb icon when the Festivized attribute (2053) is present.
 - Unusual effect icons use empty alt text, ignore pointer events, and a helper removes the image if loading fails.
 - Wrap icon elements in `.item-media` to center content and place particle overlays behind; include `onerror="this.remove()"` on effect images so missing assets vanish cleanly.

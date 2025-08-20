@@ -302,9 +302,9 @@ function attachHandlers() {
     btn.removeEventListener("click", handleRetryClick);
     btn.addEventListener("click", handleRetryClick);
   });
-  updateRefreshButton();
   attachItemModal();
   attachUserSearch();
+  addFestiveBadges(); // make sure newly-added cards get the lightbulb if needed
 }
 
 /**
@@ -514,6 +514,44 @@ function attachItemModal() {
 attachEffectFallback();
 
 /**
+ * Add Festivized (lightbulb) badges to cards lacking them.
+ * Checks `data-festive="1"` first, then scans serialized attributes.
+ *
+ * @param {Document|HTMLElement} [root=document] - Root element to scan under.
+ * @returns {void}
+ * @example
+ * addFestiveBadges();
+ */
+function addFestiveBadges(root = document) {
+  const cards = root.querySelectorAll(".item-card");
+  for (const card of cards) {
+    if (card.querySelector(".badge.festive")) continue; // already present
+    const festFlag = card.dataset.festive === "1";
+    let festive = festFlag;
+    if (!festive) {
+      // Fallback: parse data-item to detect defindex 2053
+      try {
+        const data = JSON.parse(card.dataset.item || "{}");
+        const attrs = Array.isArray(data.attributes) ? data.attributes : [];
+        festive = attrs.some((a) => Number(a?.defindex) === 2053);
+      } catch {
+        festive = false;
+      }
+    }
+    if (!festive) continue;
+    const row = card.querySelector(".item-badges");
+    if (!row) continue;
+    const span = document.createElement("span");
+    span.className = "badge festive";
+    span.title = "Festivized";
+    span.setAttribute("aria-label", "Festivized");
+    span.innerHTML = '<i class="fa-regular fa-lightbulb"></i>';
+    // Put it leftmost for consistency
+    row.insertBefore(span, row.firstChild || null);
+  }
+}
+
+/**
  * Focus and select the Steam IDs textarea so it's ready for paste.
  * Safe to call multiple times.
  * @returns {void}
@@ -534,15 +572,27 @@ function focusSteamInput() {
   });
 }
 
+/**
+ * Wrapper to initialize floating refresh controls.
+ *
+ * @returns {void}
+ * @example
+ * setupFloatingRefresh();
+ */
+function setupFloatingRefresh() {
+  setupFloatingControls();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Make input paste-ready immediately
-  focusSteamInput();
+  updateRefreshButton();
+  updateFailedCount();
   attachHandlers();
   const btn = document.getElementById("refresh-failed-btn");
   if (btn) {
     btn.addEventListener("click", refreshAll);
   }
-  setupFloatingControls();
+  setupFloatingRefresh();
+  focusSteamInput();
   if (window.modal && typeof window.modal.initModal === "function") {
     window.modal.initModal();
   }
@@ -552,4 +602,5 @@ document.addEventListener("DOMContentLoaded", () => {
   if (hasUsers) {
     showResults();
   }
+  addFestiveBadges();
 });
