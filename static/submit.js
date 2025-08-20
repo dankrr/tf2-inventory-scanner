@@ -146,11 +146,15 @@ function extractSteamIds(text) {
 
 /**
  * Handle submission of the scan form.
+ * Clears existing results, shows the progress toast, and
+ * concurrently fetches each requested inventory.
  *
  * @param {SubmitEvent} e - Form submission event.
- * @returns {void}
+ * @returns {Promise<void>} Resolves when all scans complete.
+ * @example
+ * form.addEventListener("submit", handleSubmit);
  */
-function handleSubmit(e) {
+async function handleSubmit(e) {
   e.preventDefault();
   const completed = document.getElementById("completed-container");
   const failed = document.getElementById("failed-container");
@@ -158,12 +162,30 @@ function handleSubmit(e) {
   if (failed) failed.innerHTML = "";
   const text = document.getElementById("steamids").value || "";
   const ids = extractSteamIds(text);
-  ids.forEach((id) => {
-    fetchUserCard(id);
-  });
+  const total = ids.length;
+  if (total === 0) return;
+
+  if (window.updateScanToast) {
+    window.updateScanToast(0, total);
+  }
+
   const results = document.getElementById("results");
   if (results) {
     results.classList.add("show");
+  }
+
+  let current = 0;
+  await Promise.all(
+    ids.map(async (id) => {
+      await fetchUserCard(id);
+      if (window.updateScanToast) {
+        window.updateScanToast(++current, total);
+      }
+    })
+  );
+
+  if (window.hideScanToast) {
+    window.hideScanToast();
   }
 }
 

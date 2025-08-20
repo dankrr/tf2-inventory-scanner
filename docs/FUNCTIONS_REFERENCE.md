@@ -6,7 +6,7 @@
 | `fetchUserCard(id)`                      | Fetch a single user card from the server and append it to the correct bucket.                                 | `id` (string) – Steam identifier                                                   | `Promise<void>` | `static/submit.js`                    |
 | `handleItemClick(event)`                 | Display the item modal using data embedded on the card, logging malformed payloads.                           | `event` (MouseEvent \| HTMLElement) – click event or card element                  | `void`          | `static/retry.js`                     |
 | `appendFestivizedToModal(modalEl, item)` | Append a compact 'Festivized' row to modal details before History when applicable.                            | `modalEl` (HTMLElement) – modal container; `item` (object) – item data             | `void`          | `static/retry.js`                     |
-| `handleSubmit(e)`                        | Process form submission and launch parallel scans.                                                            | `e` (SubmitEvent) – form event                                                     | `void`          | `static/submit.js`                    |
+| `handleSubmit(e)`                        | Process form submission, show the scan toast, and launch parallel scans.                           | `e` (SubmitEvent) – form event                                                     | `Promise<void>`    | `static/submit.js`                    |
 | `retryInventory(id)`                     | Retry a failed scan and append the updated card to the proper bucket.                                         | `id` (string) – Steam identifier                                                   | `Promise<void>` | `static/retry.js`                     |
 | `refreshAll()`                           | Batch retry all failed scans with progress feedback.                                                          | –                                                                                  | `Promise<void>` | `static/retry.js`                     |
 | `attachItemModal()`                      | Delegate modal click handling from result containers and attach effect fallback.                              | –                                                                                  | `void`          | `static/retry.js`                     |
@@ -31,12 +31,14 @@
 
 ### Newly Added
 
-| Function                                | Purpose                                               | Parameters                                           | Returns  | Used In           |
-| --------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------- | -------- | ----------------- |
-| `getCompletedUsers()`                   | Count user cards in the Completed bucket.             | –                                                    | `number` | `static/retry.js` |
-| `toggleCompletedBucket(completedCount)` | Hide or show the Completed results bucket when empty. | `completedCount` (number) – count of completed cards | `void`   | `static/retry.js` |
-| `updateBucketVisibility()`              | Toggle visibility for Completed and Failed buckets.   | –                                                    | `void`   | `static/retry.js` |
-| `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards          | `void`   | `static/retry.js` |
+| Function                                | Purpose                                               | Parameters                                                        | Returns  | Used In           |
+| --------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------- | -------- | ----------------- |
+| `getCompletedUsers()`                   | Count user cards in the Completed bucket.             | –                                                                 | `number` | `static/retry.js` |
+| `toggleCompletedBucket(completedCount)` | Hide or show the Completed results bucket when empty. | `completedCount` (number) – count of completed cards              | `void`   | `static/retry.js` |
+| `updateBucketVisibility()`              | Toggle visibility for Completed and Failed buckets.   | –                                                                 | `void`   | `static/retry.js` |
+| `toggleFailedBucket(failures)`          | Hide or show the Failed results bucket when empty.    | `failures` (number) – count of failed cards                       | `void`   | `static/retry.js` |
+| `updateScanToast(current, total)`       | Display scanning progress with a rotating spinner.    | `current` (number) – current scan; `total` (number) – total scans | `void`   | `static/retry.js` |
+| `hideScanToast()`                       | Hide the scan progress toast after scans finish.      | –                                                                 | `void`   | `static/retry.js` |
 
 _Updated_: `updateRefreshButton()` now calls `updateBucketVisibility()` to hide empty buckets.
 

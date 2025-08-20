@@ -841,6 +841,11 @@ footer {
   display: none;
 }
 
+#scan-toast i.fa-arrows-rotate {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 /* Hide whole sections/buckets when empty */
 .bucket-hidden {
   display: none !important;
@@ -1048,6 +1053,32 @@ footer {
     font-size: 12px;
   }
 }
+
+/* ==== Scan toast: keep clear of floating controls and long text ==== */
+/* We offset the toast from the right edge to avoid overlapping the
+   lower-right floating buttons (scroll/top & refresh). The max-width
+   guard ensures long messages don't run under those controls.        */
+#scan-toast {
+  /* If these properties already exist earlier, these will override them */
+  right: 72px; /* ~4.5rem; leaves room for the FAB cluster */
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 12px; /* consistent internal spacing */
+  max-width: calc(100% - 120px); /* text can grow without colliding */
+  z-index: 2050; /* above content, below modals (which are typically >3000) */
+}
+
+/* Slightly tighter offset on narrow screens while still avoiding overlap */
+@media (max-width: 640px) {
+  #scan-toast {
+    right: 60px; /* ~3.75rem */
+    max-width: calc(100% - 104px);
+  }
+}
+
+/* Optional: if your toast is centered by default, ensure it's right-aligned.
+   Comment this back in only if needed in your sheet:
+   #scan-toast { left: auto; transform: none; } 
+*/
 
 /* ===== Floating Settings (gear FAB + menu) ===== */
 #settings-fab {

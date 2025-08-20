@@ -1,21 +1,29 @@
 /**
- * Update the progress toast while refreshing failed inventories.
+ * Display scanning progress with a rotating Font Awesome spinner.
  *
  * @param {number} current - Index of the current scan.
  * @param {number} total - Total number of scans to run.
  * @returns {void}
+ * @example
+ * updateScanToast(1, 3);
  */
 function updateScanToast(current, total) {
   const toast = document.getElementById("scan-toast");
   if (!toast) return;
-  toast.textContent = `\u{1F504} Scanning ${current} of ${total} inventories...`;
+  toast.innerHTML = `
+    <i class="fa-solid fa-arrows-rotate fa-spin" aria-hidden="true"></i>
+    Scanning ${current} of ${total} inventories...
+  `;
   toast.classList.remove("hidden");
   toast.classList.add("show");
 }
 
 /**
  * Hide the scan progress toast.
+ *
  * @returns {void}
+ * @example
+ * hideScanToast();
  */
 function hideScanToast() {
   const toast = document.getElementById("scan-toast");
@@ -23,6 +31,8 @@ function hideScanToast() {
   toast.classList.remove("show");
   setTimeout(() => toast.classList.add("hidden"), 300);
 }
+
+window.updateScanToast = updateScanToast;
 
 /**
  * Append a user card to the specified bucket.
