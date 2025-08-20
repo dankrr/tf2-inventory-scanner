@@ -841,6 +841,11 @@ footer {
   display: none;
 }
 
+#scan-toast i.fa-arrows-rotate {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 /* Hide whole sections/buckets when empty */
 .bucket-hidden {
   display: none !important;
