@@ -433,19 +433,14 @@ body.border-mode .item-card.has-dual-quality {
 }
 .item-badges {
   position: absolute;
-  /* Anchor firmly to the top-right; do not stretch */
   top: 6px;
   right: 6px;
-  left: auto;
-  bottom: auto;
   display: flex;
-  flex-direction: row;
-  align-items: center; /* prevent vertical stretching */
-  justify-content: flex-end; /* compact row, right-aligned */
+  align-items: center;
   gap: 6px;
   pointer-events: none;
-  font-size: 14px;
   z-index: 3;
+  font-size: 14px;
 }
 .item-qty {
   position: absolute;
@@ -461,16 +456,17 @@ body.border-mode .item-card.has-dual-quality {
 }
 
 .badge {
+  /* icon-only; no pill backdrop */
   font-size: 12px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
   color: #fff;
-  display: inline-flex; /* keep intrinsic height */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto; /* never stretch to container height */
-  height: auto;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  flex: 0 0 auto;
 }
 .item-badges .badge {
   filter: drop-shadow(0 0 2px #0008);
@@ -480,13 +476,8 @@ body.border-mode .item-card.has-dual-quality {
 .badge.festive {
   font-size: 14px;
   line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 4px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.45);
   color: #ffe892;
+  background: transparent;
   filter: drop-shadow(0 0 2px rgba(255, 230, 120, 0.7))
     drop-shadow(0 0 6px rgba(255, 230, 120, 0.35));
 }

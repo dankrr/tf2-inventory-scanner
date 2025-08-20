@@ -298,7 +298,7 @@ function attachHandlers() {
   });
   attachItemModal();
   attachUserSearch?.();
-  addFestiveBadges();
+  addFestiveBadges(); // safe: idempotent
 }
 
 /**
@@ -508,56 +508,38 @@ function attachItemModal() {
 attachEffectFallback();
 
 /**
- * Add "Festivized" lightbulb badges to item cards.
- * Prefers a server-provided `is_festivized` boolean and falls back to
- * checking attributes (defindex 2053) from each card's `data-item` JSON.
+ * Add Festivized bulbs for cards that don't have one yet.
+ * Uses server flag if present; falls back to attributes check.
  *
- * @param {void} none
  * @returns {void} No return value.
  * @example
  * addFestiveBadges();
  */
 function addFestiveBadges() {
-  const cards = document.querySelectorAll(".item-card");
-  cards.forEach((card) => {
-    if (card.dataset.festiveApplied === "1") return;
-    const raw = card.getAttribute("data-item");
-    if (!raw) {
-      card.dataset.festiveApplied = "1";
-      return;
-    }
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      card.dataset.festiveApplied = "1";
-      return;
-    }
-    let isFestive = !!data?.is_festivized;
+  document.querySelectorAll(".item-card").forEach((card) => {
+    // Skip if already has a bulb or server marked it and template rendered it
+    if (card.querySelector(".badge.festive")) return;
+    const isFestive = card.dataset.festive === "1";
     if (!isFestive) {
-      const attrs = Array.isArray(data?.attributes) ? data.attributes : [];
-      isFestive = attrs.some((a) => {
-        if (!a || typeof a !== "object") return false;
-        const di = a.defindex ?? a.def_index;
-        return di === 2053;
-      });
+      // last-resort: try to read attributes if included in data-item
+      try {
+        const raw = card.getAttribute("data-item");
+        const obj = raw ? JSON.parse(raw) : null;
+        const attrs = (obj && obj.attributes) || [];
+        if (!Array.isArray(attrs)) return;
+        if (!attrs.some((a) => a && a.defindex === 2053)) return;
+      } catch {
+        return;
+      }
     }
-    if (!isFestive) {
-      card.dataset.festiveApplied = "1";
-      return;
-    }
-    const badges = card.querySelector(".item-badges");
-    if (!badges) {
-      card.dataset.festiveApplied = "1";
-      return;
-    }
+    const host = card.querySelector(".item-badges");
+    if (!host) return;
     const span = document.createElement("span");
     span.className = "badge festive";
     span.title = "Festivized";
     span.setAttribute("aria-label", "Festivized");
     span.innerHTML = '<i class="fa-regular fa-lightbulb"></i>';
-    badges.appendChild(span);
-    card.dataset.festiveApplied = "1";
+    host.appendChild(span);
   });
 }
 

@@ -62,6 +62,7 @@ full_title = (title_parts + [base]) | join(' ') %}
   %}
   data-item="{{ item|tojson|forceescape }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
+  data-festive="{{ '1' if item.is_festivized else '0' }}"
 >
   <div class="item-badges">
     {% if item.is_australium %}
@@ -76,15 +77,16 @@ full_title = (title_parts + [base]) | join(' ') %}
       style="background-color: {{ item.paint_hex }};"
       title="Paint: {{ item.paint_name }}"
     ></span>
-    {% endif %} {# Festivized indicator (derived on backend for reliability) #}
-    {% if item.is_festivized %}
+    {% endif %} {# Festivized indicator (from backend flag) #} {% if
+    item.is_festivized %}
     <span class="badge festive" title="Festivized" aria-label="Festivized">
       <i class="fa-regular fa-lightbulb"></i>
     </span>
-    {% endif %} {% for badge in item.badges %} {# Avoid duplicate festive
-    indicators from any upstream badges #} {% if badge.type != 'festivized' and
-    badge.icon != '💡' %} {% if badge.type != 'statclock' and badge.icon != '🎨'
-    %} {% if badge.type == 'killstreak' %}
+    {% endif %} {% for badge in item.badges %} {# If backend also supplied a
+    festive-like badge, skip to prevent doubles #} {% if badge.type ==
+    'festivized' or badge.icon == '💡' %} {# skip duplicate festive markers #}
+    {% elif badge.type != 'statclock' and badge.icon != '🎨' %} {% if badge.type
+    == 'killstreak' %}
     <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
       <span
         class="chevron-icon"
@@ -126,7 +128,7 @@ full_title = (title_parts + [base]) | join(' ') %}
       title="{{ badge.title }}"
       >{{ badge.icon }}</span
     >
-    {% endif %} {% endif %} {% endif %} {% endfor %}
+    {% endif %} {% endif %} {% endfor %}
   </div>
   {% if item.quantity and item.quantity > 1 %}
   <span class="item-qty">x{{ item.quantity }}</span>
