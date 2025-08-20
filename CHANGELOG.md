@@ -116,3 +116,4 @@ All notable changes to this project will be documented in this file.
 - [2025-08-20] - Anchor item badges to card top-right and filter duplicate Festivized icons; documentation sync
 - [2025-08-20] - Condense badge styling, embed `data-festive` flag, and refine client Festivized badge logic; documentation sync
 - 2025-08-20 - Switch Festivized badge to alternating red/green glow; documentation sync
+- 2025-08-20 - Remove Festivized badge glow and tweak alignment; documentation sync
