@@ -118,3 +118,4 @@ All notable changes to this project will be documented in this file.
 - 2025-08-21 - Replace 🔄 emoji in scanning toast with Font Awesome rotating spinner; documentation sync
 - 2025-08-21 - Ensure toast spinner uses same style as Retry pill button
 - 2025-08-21 - Add CSS alignment for toast spinner icon
+- [2025-08-20] - Hide Completed bucket when all scans succeed; documentation synchronized.
