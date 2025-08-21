@@ -38,7 +38,9 @@ helpers into focused modules for attribute-class caching, schema-based attribute
 ID resolution, extraction routines, and the thin processing core. Attribute
 defindexes like killstreak tiers, paintkits, and unusual effects are resolved
 once from the Steam schema so decorated weapons and war paints rely solely on
-inventory attributes.
+inventory attributes. A `resolve_attr_defindex` helper provides safe ad-hoc
+attribute lookups and all attribute checks short-circuit when a defindex is
+missing.
 
 For legacy imports, the former monolithic `utils.inventory_processor` module now
 re-exports the public API and `get_valuation_service` so existing code continues to

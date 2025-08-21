@@ -10,7 +10,7 @@ from .maps_and_constants import (
     FABRICATOR_PART_IDS,
 )
 from .naming_and_warpaint import _preferred_base_name
-from .extract_attr_classes import get_attr_ids
+from .extract_attr_classes import get_attr_ids, resolve_attr_defindex
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +44,7 @@ def _extract_warpaint_tool_info(
     ids = get_attr_ids()
     paintkit_idx = ids.get("paintkit")
     wear_idxs = ids.get("wear", set())
-    target_idx = None
-    for key, info in (local_data.SCHEMA_ATTRIBUTES or {}).items():
-        if info.get("name") == "tool target item":
-            target_idx = int(key)
-            break
+    target_idx = resolve_attr_defindex("tool target item")
 
     paintkit_id = None
     wear_name = None
@@ -81,7 +77,7 @@ def _extract_warpaint_tool_info(
             if 0 <= val <= 1:
                 name = local_data.WEAR_NAMES.get(str(int(val)))
                 wear_name = name or _wear_tier(val)
-        elif idx == target_idx:
+        elif target_idx is not None and idx == target_idx:
             raw = (
                 attr.get("value")
                 if attr.get("value") is not None
@@ -156,10 +152,7 @@ def _extract_killstreak_tool_info(asset: dict) -> dict | None:
     effect_idx = ids.get("killstreakEffect")
     sheen_idx = ids.get("killstreakSheen")
     tier_idx = ids.get("killstreakTier")
-    target_idx = target_idx or next(
-        (int(k) for k, v in (local_data.SCHEMA_ATTRIBUTES or {}).items() if v.get("name") == "tool target item"),
-        None,
-    )
+    target_idx = resolve_attr_defindex("tool target item")
 
     for attr in attrs:
         idx = attr.get("defindex")
@@ -168,7 +161,7 @@ def _extract_killstreak_tool_info(asset: dict) -> dict | None:
             val = int(float(raw)) if raw is not None else None
         except (TypeError, ValueError):
             continue
-        if idx == target_idx:
+        if target_idx is not None and idx == target_idx:
             weapon_def = val
         elif idx == sheen_idx:
             sheen_id = val

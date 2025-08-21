@@ -11,7 +11,8 @@ CRAFT_WEAPON_ALLOWED_ORIGINS = set(_exclusions.get("craft_weapon_exclusions", []
 SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
 _ids = get_attr_ids()
 SPECIAL_KILLSTREAK_ATTRS: set[int] = {
-    i for i in (
+    i
+    for i in (
         _ids.get("killstreakEffect"),
         _ids.get("killstreakSheen"),
         _ids.get("killstreakTier"),
@@ -33,9 +34,11 @@ SPECIAL_PAINTKIT_ATTRS: set[int] = {
 }
 
 
-def _has_attr(asset: dict, idx: int) -> bool:
-    """Return True if ``asset`` contains an attribute with ``defindex`` ``idx``."""
+def _has_attr(asset: dict, idx: int | None) -> bool:
+    """Return True if ``asset`` contains an attribute with defindex ``idx``."""
 
+    if idx is None:
+        return False
     for attr in asset.get("attributes", []) or []:
         try:
             if int(attr.get("defindex")) == idx:

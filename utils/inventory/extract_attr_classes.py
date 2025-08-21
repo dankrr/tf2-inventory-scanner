@@ -96,21 +96,31 @@ def refresh_attr_classes() -> None:
 
     UNUSUAL_CLASSES = {cls(i) for i in ids["unusual"]} - {None}
     KILLSTREAK_TIER_CLASSES = (
-        {cls(ids["killstreakTier"])} - {None} if ids["killstreakTier"] is not None else set()
+        {cls(ids["killstreakTier"])} - {None}
+        if ids["killstreakTier"] is not None
+        else set()
     )
     KILLSTREAK_SHEEN_CLASSES = (
-        {cls(ids["killstreakSheen"])} - {None} if ids["killstreakSheen"] is not None else set()
+        {cls(ids["killstreakSheen"])} - {None}
+        if ids["killstreakSheen"] is not None
+        else set()
     )
     KILLSTREAK_EFFECT_CLASSES = (
-        {cls(ids["killstreakEffect"])} - {None} if ids["killstreakEffect"] is not None else set()
+        {cls(ids["killstreakEffect"])} - {None}
+        if ids["killstreakEffect"] is not None
+        else set()
     )
     PAINT_CLASSES = {cls(i) for i in ids["paint"]} - {None}
     WEAR_CLASSES = {cls(i) for i in ids["wear"]} - {None}
     PATTERN_SEED_LO_CLASSES = (
-        {cls(ids["patternSeedLo"])} - {None} if ids["patternSeedLo"] is not None else set()
+        {cls(ids["patternSeedLo"])} - {None}
+        if ids["patternSeedLo"] is not None
+        else set()
     )
     PATTERN_SEED_HI_CLASSES = (
-        {cls(ids["patternSeedHi"])} - {None} if ids["patternSeedHi"] is not None else set()
+        {cls(ids["patternSeedHi"])} - {None}
+        if ids["patternSeedHi"] is not None
+        else set()
     )
     PAINTKIT_CLASSES = (
         {cls(ids["paintkit"])} - {None} if ids["paintkit"] is not None else set()
@@ -133,8 +143,16 @@ def _resolve_attr_ids(mapping: Dict[int, Dict[str, Any]]) -> None:
         killstreakTier=find("killstreak tier"),
         killstreakSheen=find("killstreak idleeffect"),
         killstreakEffect=find("killstreak effect"),
-        paint={i for i in (find("set item tint RGB"), find("set item tint RGB 2")) if i is not None},
-        wear={i for i in (find("set_item_texture_wear"), find("texture_wear_default")) if i is not None},
+        paint={
+            i
+            for i in (find("set item tint RGB"), find("set item tint RGB 2"))
+            if i is not None
+        },
+        wear={
+            i
+            for i in (find("set_item_texture_wear"), find("texture_wear_default"))
+            if i is not None
+        },
         patternSeedLo=find("custom_paintkit_seed_lo"),
         patternSeedHi=find("custom_paintkit_seed_hi"),
         paintkit=find("paintkit_proto_def_index"),
@@ -142,7 +160,14 @@ def _resolve_attr_ids(mapping: Dict[int, Dict[str, Any]]) -> None:
         strange=find("kill eater"),
         festive=find("is_festivized"),
         canApplyStrange=find("can apply strange"),
-        unusual={i for i in (find("attach particle effect"), find("taunt attach particle index")) if i is not None},
+        unusual={
+            i
+            for i in (
+                find("attach particle effect"),
+                find("taunt attach particle index"),
+            )
+            if i is not None
+        },
         marketable=find("is marketable"),
         uncraftable=find("never craftable"),
         qualityElevated=find("elevate quality"),
@@ -159,6 +184,19 @@ def get_attr_ids() -> AttrIds:
 
 
 refresh_attr_classes()
+
+
+def resolve_attr_defindex(name: str) -> int | None:
+    """Return the attribute defindex for ``name`` using cached schema data."""
+
+    mapping = local_data.SCHEMA_ATTRIBUTES or {}
+    for idx, info in mapping.items():
+        if info.get("name") == name:
+            try:
+                return int(idx)
+            except (TypeError, ValueError):
+                return None
+    return None
 
 
 def get_attr_class(idx: Any) -> str | None:
@@ -189,4 +227,5 @@ __all__ = [
     "PATTERN_SEED_HI_CLASSES",
     "PAINTKIT_CLASSES",
     "CRATE_SERIES_CLASSES",
+    "resolve_attr_defindex",
 ]

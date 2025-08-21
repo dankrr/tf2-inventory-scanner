@@ -23,8 +23,11 @@ def _attributes_iter(attrs: Any) -> Iterable[Mapping[str, Any]]:
     return attrs  # assume iterable of dicts
 
 
-def has_attribute(attrs: Any, defindex: int) -> bool:
-    """True if any attribute has the given defindex."""
+def has_attribute(attrs: Any, defindex: int | None) -> bool:
+    """True if any attribute has the given defindex. Returns False for ``None``."""
+
+    if defindex is None:
+        return False
     for a in _attributes_iter(attrs):
         try:
             if int(a.get("defindex")) == int(defindex):
@@ -39,7 +42,7 @@ def is_festivized(attrs: Any) -> bool:
     from .inventory.extract_attr_classes import get_attr_ids
 
     idx = get_attr_ids().get("festive")
-    return has_attribute(attrs, idx) if idx is not None else False
+    return has_attribute(attrs, idx)
 
 
 class SchemaProvider:
