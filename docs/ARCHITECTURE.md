@@ -38,9 +38,9 @@ helpers into focused modules for attribute-class caching, schema-based attribute
 ID resolution, extraction routines, and the thin processing core. Attribute
 defindexes like killstreak tiers, paintkits, and unusual effects are resolved
 once from the Steam schema so decorated weapons and war paints rely solely on
-inventory attributes. A `resolve_attr_defindex` helper provides safe ad-hoc
-attribute lookups and all attribute checks short-circuit when a defindex is
-missing.
+inventory attributes. An alias-aware `resolve_attr_defindex` normalizes
+candidate names (case and underscores) and provides safe ad-hoc attribute
+lookups. All attribute checks short-circuit when a defindex is missing.
 
 War paint tool defindexes are derived from the schema so paint-can tools are
 never misclassified as decorated weapons. Border colors follow a single

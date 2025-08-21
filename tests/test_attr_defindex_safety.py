@@ -21,3 +21,14 @@ def test_extract_killstreak_tool_info_handles_missing():
 
 def test_resolve_attr_defindex_missing():
     assert resolve_attr_defindex("nonexistent") is None
+
+
+def test_resolve_attr_defindex_aliases():
+    # underscore and case variations should resolve identically
+    assert resolve_attr_defindex("Killstreak_Tier") == resolve_attr_defindex(
+        "killstreak tier"
+    )
+    # multiple aliases may be supplied
+    assert resolve_attr_defindex("not real", "is_festivized") == resolve_attr_defindex(
+        "is festivized"
+    )

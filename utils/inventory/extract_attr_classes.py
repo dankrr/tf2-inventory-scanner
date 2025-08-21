@@ -74,6 +74,35 @@ ATTR_IDS: AttrIds = AttrIds(
 )
 
 
+def _normalize_attr_name(name: str) -> str:
+    """Return a normalized form of ``name`` for comparison."""
+
+    return name.replace("_", " ").strip().casefold()
+
+
+def resolve_attr_defindex(*names: str) -> int | None:
+    """Resolve and return the attribute defindex for any of ``names``.
+
+    The lookup is case-insensitive and treats spaces and underscores as
+    equivalent, allowing callers to supply multiple aliases for robustness.
+    Returns ``None`` when the attribute is not found or the index is invalid.
+    """
+
+    if not names:
+        return None
+
+    targets = {_normalize_attr_name(n) for n in names if n}
+    mapping = local_data.SCHEMA_ATTRIBUTES or {}
+    for idx, info in mapping.items():
+        schema_name = info.get("name")
+        if schema_name and _normalize_attr_name(schema_name) in targets:
+            try:
+                return int(idx)
+            except (TypeError, ValueError):
+                return None
+    return None
+
+
 def refresh_attr_classes() -> None:
     """Populate attribute class sets from ``local_data.SCHEMA_ATTRIBUTES``."""
 
@@ -133,45 +162,51 @@ def refresh_attr_classes() -> None:
 def _resolve_attr_ids(mapping: Dict[int, Dict[str, Any]]) -> None:
     """Populate :data:`ATTR_IDS` from ``mapping``."""
 
-    def find(name: str) -> int | None:
-        for idx, info in mapping.items():
-            if info.get("name") == name:
-                return int(idx)
-        return None
-
     ATTR_IDS.update(
-        killstreakTier=find("killstreak tier"),
-        killstreakSheen=find("killstreak idleeffect"),
-        killstreakEffect=find("killstreak effect"),
+        killstreakTier=resolve_attr_defindex("killstreak tier", "killstreak_tier"),
+        killstreakSheen=resolve_attr_defindex(
+            "killstreak idleeffect", "killstreak idle effect"
+        ),
+        killstreakEffect=resolve_attr_defindex(
+            "killstreak effect", "killstreak_effect"
+        ),
         paint={
             i
-            for i in (find("set item tint RGB"), find("set item tint RGB 2"))
+            for i in (
+                resolve_attr_defindex("set item tint RGB", "set_item_tint_rgb"),
+                resolve_attr_defindex("set item tint RGB 2", "set_item_tint_rgb_2"),
+            )
             if i is not None
         },
         wear={
             i
-            for i in (find("set_item_texture_wear"), find("texture_wear_default"))
-            if i is not None
-        },
-        patternSeedLo=find("custom_paintkit_seed_lo"),
-        patternSeedHi=find("custom_paintkit_seed_hi"),
-        paintkit=find("paintkit_proto_def_index"),
-        crateSeries=find("set supply crate series"),
-        strange=find("kill eater"),
-        festive=find("is_festivized"),
-        canApplyStrange=find("can apply strange"),
-        unusual={
-            i
             for i in (
-                find("attach particle effect"),
-                find("taunt attach particle index"),
+                resolve_attr_defindex("set_item_texture_wear"),
+                resolve_attr_defindex("texture_wear_default"),
             )
             if i is not None
         },
-        marketable=find("is marketable"),
-        uncraftable=find("never craftable"),
-        qualityElevated=find("elevate quality"),
-        inventoryOffers=find("allow_halloween_offering"),
+        patternSeedLo=resolve_attr_defindex("custom_paintkit_seed_lo"),
+        patternSeedHi=resolve_attr_defindex("custom_paintkit_seed_hi"),
+        paintkit=resolve_attr_defindex("paintkit_proto_def_index"),
+        crateSeries=resolve_attr_defindex("set supply crate series"),
+        strange=resolve_attr_defindex("kill eater"),
+        festive=resolve_attr_defindex("is_festivized", "is festivized"),
+        canApplyStrange=resolve_attr_defindex("can apply strange"),
+        unusual={
+            i
+            for i in (
+                resolve_attr_defindex("attach particle effect"),
+                resolve_attr_defindex("taunt attach particle index"),
+            )
+            if i is not None
+        },
+        marketable=resolve_attr_defindex("is marketable", "is_marketable"),
+        uncraftable=resolve_attr_defindex("never craftable", "never_craftable"),
+        qualityElevated=resolve_attr_defindex("elevate quality", "elevate_quality"),
+        inventoryOffers=resolve_attr_defindex(
+            "allow_halloween_offering", "allow halloween offering"
+        ),
     )
 
 
@@ -184,19 +219,6 @@ def get_attr_ids() -> AttrIds:
 
 
 refresh_attr_classes()
-
-
-def resolve_attr_defindex(name: str) -> int | None:
-    """Return the attribute defindex for ``name`` using cached schema data."""
-
-    mapping = local_data.SCHEMA_ATTRIBUTES or {}
-    for idx, info in mapping.items():
-        if info.get("name") == name:
-            try:
-                return int(idx)
-            except (TypeError, ValueError):
-                return None
-    return None
 
 
 def get_attr_class(idx: Any) -> str | None:
