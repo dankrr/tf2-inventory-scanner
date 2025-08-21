@@ -3,7 +3,21 @@ import json
 from pathlib import Path
 
 from .. import local_data
-from ..valuation_service import ValuationService, get_valuation_service
+
+# Prefer the canonical valuation service module but fall back to older paths.
+try:  # pragma: no cover - import shim
+    from ..valuation_service import ValuationService, get_valuation_service
+except Exception:  # pragma: no cover
+    try:
+        from ..services.valuation_service import (  # type: ignore
+            ValuationService,
+            get_valuation_service,
+        )
+    except Exception:  # pragma: no cover
+        from services.valuation_service import (  # type: ignore
+            ValuationService,
+            get_valuation_service,
+        )
 from .processor import _process_item
 from .extractors_misc import _PARTS_BY_ID
 
@@ -120,4 +134,9 @@ def run_enrichment_test(path: str | None = None) -> None:
     print(json.dumps(items, indent=2))
 
 
-__all__ = ["enrich_inventory", "process_inventory", "run_enrichment_test"]
+__all__ = [
+    "enrich_inventory",
+    "process_inventory",
+    "run_enrichment_test",
+    "get_valuation_service",
+]

@@ -37,6 +37,10 @@ The inventory enrichment logic lives in the `utils/inventory/` package, which sp
 helpers into focused modules for attribute-class caching, extraction routines, and
 the thin processing core.
 
+For legacy imports, the former monolithic `utils.inventory_processor` module now
+re-exports the public API and `get_valuation_service` so existing code continues to
+function without modification.
+
 Item cards no longer render inline titles, keeping the grid clean; names appear only in the modal. Unusual effect icons are decorative overlays that ignore pointer events, and a JavaScript fallback removes the icon if it fails to load. Modal clicks are delegated from result containers so dynamically added cards remain interactive.
 
 Card media sit inside an `.item-media` wrapper that centers the main icon while keeping particle overlays behind it; failed effect images remove themselves to avoid broken placeholders.
