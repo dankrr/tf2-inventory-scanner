@@ -6,6 +6,8 @@
 - Use `addCardToBucket` when adding or moving cards so ordering, scroll,
   and jump behavior remains consistent.
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
+- Inventory enrichment helpers reside under `utils/inventory/`; import from these
+  modules instead of the legacy `inventory_processor` monolith.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding dynamic elements so new cards receive search and modal behavior, including the `attachUserSearch` filter.
 - Floating scroll-to-top and refresh controls are initialized by `setupFloatingControls`; call it after DOM load.
 - Global toggle buttons should update `aria-pressed` and `title` attributes for

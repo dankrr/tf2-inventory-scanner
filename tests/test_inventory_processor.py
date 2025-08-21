@@ -1,6 +1,7 @@
 from utils import inventory_processor as ip
 from utils import local_data as ld
 from utils.valuation_service import ValuationService
+from utils.inventory.extractors_paint_and_wear import _extract_wear
 from pathlib import Path
 import pytest
 
@@ -1338,7 +1339,7 @@ def test_decorated_border_color_with_statclock(monkeypatch):
 def test_extract_wear_attr_749(monkeypatch):
     ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
     asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}
-    wear = ip._extract_wear(asset)
+    wear = _extract_wear(asset)
     assert wear == "Factory New"
 
 

@@ -1,4 +1,4 @@
-from utils.inventory_processor import _extract_spells
+from utils.inventory.extractors_misc import _extract_spells
 
 
 def test_extract_spells_simple():
