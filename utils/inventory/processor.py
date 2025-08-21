@@ -1,6 +1,7 @@
 from typing import Dict, List
 import logging
 import re
+from functools import lru_cache
 
 from .. import local_data
 from ..schema_provider import is_festivized
@@ -17,7 +18,6 @@ from .maps_and_constants import (
     WAR_PAINT_TOOL_DEFINDEXES,
 )
 from .extractors_unusual_killstreak import (
-    _extract_unusual_effect,
     _extract_killstreak_tier,
     _extract_killstreak,
     _extract_killstreak_effect,
@@ -52,6 +52,52 @@ from .naming_and_warpaint import (
 from .filters_and_rules import _is_plain_craft_weapon, _has_attr
 
 logger = logging.getLogger(__name__)
+
+
+ATTRIBUTE_ALIASES = {
+    "attach_particle_effect": [
+        "attach particle effect",
+        "attach_particle_effect",
+        "particle effect",
+        "particle_effect",
+    ],
+    "kill_eater": ["kill eater", "kill_eater"],
+    "kill_eater_score_type": [
+        "kill eater score type",
+        "kill_eater_score_type",
+    ],
+}
+
+
+def _normalize_attr_name(name: str) -> str:
+    """Return a normalized attribute name for comparison."""
+
+    return re.sub(r"[-_\s]+", "", str(name).lower())
+
+
+@lru_cache(maxsize=1)
+def _get_special_attr_defindexes() -> Dict[str, int | None]:
+    """Return mapping of special attribute aliases to defindexes."""
+
+    attributes = local_data.SCHEMA_ATTRIBUTES or {}
+    norm_map = {
+        _normalize_attr_name(info.get("name")): idx
+        for idx, info in attributes.items()
+        if isinstance(info, dict)
+    }
+
+    result: Dict[str, int | None] = {}
+    for key, aliases in ATTRIBUTE_ALIASES.items():
+        idx = next(
+            (
+                norm_map.get(_normalize_attr_name(alias))
+                for alias in aliases
+                if _normalize_attr_name(alias) in norm_map
+            ),
+            None,
+        )
+        result[key] = idx
+    return result
 
 
 def _process_item(
@@ -199,6 +245,55 @@ def _process_item(
     spell_badges, spells = _extract_spells(asset)
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
+    defs = _get_special_attr_defindexes()
+    attach_idx = defs.get("attach_particle_effect")
+    kill_eater_idx = defs.get("kill_eater")
+    kill_eater_score_idx = defs.get("kill_eater_score_type")
+
+    def _attr_val(idx: int | None) -> int | None:
+        if idx is None:
+            return None
+        for attr in attrs:
+            try:
+                if int(attr.get("defindex")) == idx:
+                    raw = (
+                        attr.get("float_value")
+                        if "float_value" in attr
+                        else attr.get("value")
+                    )
+                    return int(float(raw)) if raw is not None else None
+            except (TypeError, ValueError):
+                continue
+        return None
+
+    effect_id = _attr_val(attach_idx)
+    effect_name = (
+        local_data.EFFECT_NAMES.get(str(effect_id)) if effect_id is not None else None
+    )
+    has_attach_attr = effect_id is not None
+
+    has_kill_eater_attr = _attr_val(kill_eater_idx) is not None
+    has_kill_eater_score_attr = _attr_val(kill_eater_score_idx) is not None
+
+    is_unusual = has_attach_attr
+    is_strange_quality = quality_id == STRANGE_QUALITY_ID
+    has_kill_eater = has_kill_eater_attr or has_kill_eater_score_attr
+    is_strange = is_strange_quality or has_kill_eater
+
+    logger.debug(
+        "q=%s attach=%s ke=%s ke_score=%s unusual=%s strange=%s",
+        quality_id,
+        has_attach_attr,
+        has_kill_eater_attr,
+        has_kill_eater_score_attr,
+        is_unusual,
+        is_strange,
+    )
+    extra_qualities: List[str] = []
+    if is_unusual and "Unusual" not in extra_qualities:
+        extra_qualities.append("Unusual")
+    if is_strange and "Strange" not in extra_qualities:
+        extra_qualities.append("Strange")
 
     has_strange_tracking = kill_eater_counts.get(1) is not None
 
@@ -235,17 +330,9 @@ def _process_item(
 
     badges: List[Dict[str, str]] = []
 
-    # --- UNUSUAL EFFECT ----------------------------------------------------
-    effect_info = _extract_unusual_effect(asset)
-    if effect_info:
-        effect_id = effect_info["id"]
-        effect_name = effect_info["name"]
-        effect = effect_info
-    else:
-        effect = None
-        effect_id = effect_name = None
+    effect = {"id": effect_id, "name": effect_name} if is_unusual else None
 
-    if effect_id is not None:
+    if is_unusual and effect_id is not None:
         badges.append(
             {
                 "icon": "★",
@@ -259,11 +346,11 @@ def _process_item(
 
     display_name = (
         f"{display_base}"
-        if effect_id is None
+        if not is_unusual
         else f"{effect_name or f'Effect #{effect_id}'} {display_base}"
     )
-    original_name = name if effect_id is not None else None
-    if effect_id is not None:
+    original_name = name if is_unusual else None
+    if is_unusual:
         name = display_name
     if ks_tier_val:
         tier_id = int(float(ks_tier_val))
@@ -357,6 +444,8 @@ def _process_item(
         "unusual_effect": effect,
         "unusual_effect_id": effect_id,
         "unusual_effect_name": effect_name,
+        "is_unusual": is_unusual,
+        "is_strange": is_strange,
         "killstreak_tier": ks_tier_val,
         "killstreak_name": KILLSTREAK_LABELS.get(ks_tier_val),
         "tier_name": (
@@ -429,6 +518,7 @@ def _process_item(
         "uncraftable": uncraftable,
         "craftable": craftable,
         "_hidden": hide_item,
+        "extra_qualities": extra_qualities,
     }
 
     if valuation_service is not None:

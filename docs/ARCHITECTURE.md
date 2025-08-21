@@ -37,6 +37,12 @@ The inventory enrichment logic lives in the `utils/inventory/` package, which sp
 helpers into focused modules for attribute-class caching, extraction routines, and
 the thin processing core.
 
+During enrichment the processor now inspects particle effect and kill-eater
+attributes directly from the schema. Items gain additive flags:
+`is_unusual`, `unusual_effect_id`, `unusual_effect_name`, `is_strange`, and an
+`extra_qualities` list, enabling downstream UIs to react without changing
+existing structures.
+
 For legacy imports, the former monolithic `utils.inventory_processor` module now
 re-exports the public API and `get_valuation_service` so existing code continues to
 function without modification.

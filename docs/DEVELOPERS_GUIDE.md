@@ -8,6 +8,9 @@
 - Run the commands listed in `docs/COMMANDS.md` before committing changes.
 - Inventory enrichment helpers reside under `utils/inventory/`; import from these
   modules instead of the legacy `inventory_processor` monolith.
+- Each enriched item now includes additive flags `is_unusual`,
+  `unusual_effect_id`, `unusual_effect_name`, `is_strange`, and an
+  `extra_qualities` list derived purely from attributes and quality id.
 - UI helpers live in `static/ui.js`. Extend `window.attachHandlers` when adding dynamic elements so new cards receive search and modal behavior, including the `attachUserSearch` filter.
 - Floating scroll-to-top and refresh controls are initialized by `setupFloatingControls`; call it after DOM load.
 - Global toggle buttons should update `aria-pressed` and `title` attributes for
