@@ -817,7 +817,7 @@ def test_border_color_for_strange_unusual(monkeypatch):
     item = items[0]
     assert item["quality"] == "Unusual"
     assert item["strange_count"] == 3
-    assert item["border_color"] == ip.QUALITY_MAP[11][1]
+    assert item["border_color"] == ip.QUALITY_MAP[5][1]
     assert item["quality_color"] == ip.QUALITY_MAP[5][1]
 
 
@@ -1230,6 +1230,7 @@ def test_war_paint_tool_attributes(monkeypatch):
     items = ip.enrich_inventory(data)
     item = items[0]
     assert item["is_war_paint_tool"] is True
+    assert item["is_skin"] is False
     assert item["paintkit_id"] == 350
     assert item["paintkit_name"] == "Warhawk"
     assert item["wear_name"] == "Field-Tested"
@@ -1331,7 +1332,9 @@ def test_unusual_strange_skin(monkeypatch):
             }
         ]
     }
-    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {"item_name": "Flamethrower", "craft_class": "weapon"}
+    }
     monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 5: "Unusual", 11: "Strange"}
     items = ip.enrich_inventory(data)
@@ -1339,6 +1342,7 @@ def test_unusual_strange_skin(monkeypatch):
     assert item["quality"] == "Unusual"
     assert item["unusual_effect_id"] == 600
     assert item["has_strange_tracking"] is True
+    assert item["border_color"] == ip.QUALITY_MAP[5][1]
 
 
 def test_decorated_border_color_with_statclock(monkeypatch):

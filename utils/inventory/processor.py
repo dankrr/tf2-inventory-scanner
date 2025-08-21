@@ -14,7 +14,6 @@ from ..constants import (
 from .maps_and_constants import (
     QUALITY_MAP,
     STRANGE_QUALITY_ID,
-    WAR_PAINT_TOOL_DEFINDEXES,
 )
 from .extractors_unusual_killstreak import (
     _extract_unusual_effect,
@@ -41,6 +40,7 @@ from .extractors_misc import (
 )
 from .tools_and_kits import (
     _is_warpaint_tool,
+    get_war_paint_tool_defindexes,
     _extract_warpaint_tool_info,
     _extract_killstreak_tool_info,
 )
@@ -126,8 +126,9 @@ def _process_item(
     image_url = schema_entry.get("image_url", "")
 
     warpaintable = _is_warpaintable(schema_entry)
-    warpaint_tool = defindex_int in WAR_PAINT_TOOL_DEFINDEXES or _is_warpaint_tool(
-        schema_entry
+    warpaint_tool = (
+        defindex_int in get_war_paint_tool_defindexes()
+        or _is_warpaint_tool(asset, schema_entry)
     )
 
     paintkit_id = paintkit_name = None
@@ -154,7 +155,10 @@ def _process_item(
 
     pk_idx = ids.get("paintkit")
     is_skin = bool(
-        not warpaint_tool and schema_entry and pk_idx is not None and _has_attr(asset, pk_idx)
+        not warpaint_tool
+        and schema_entry
+        and pk_idx is not None
+        and _has_attr(asset, pk_idx)
     )
 
     base_weapon = _preferred_base_name(defindex, schema_entry)
@@ -215,9 +219,20 @@ def _process_item(
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
 
+    effect_info = _extract_unusual_effect(asset)
+    if effect_info:
+        effect_id = effect_info["id"]
+        effect_name = effect_info["name"]
+        effect = effect_info
+    else:
+        effect = None
+        effect_id = effect_name = None
+
     has_strange_tracking = kill_eater_counts.get(1) is not None
 
-    if has_strange_tracking:
+    if quality_id == 5 or effect_id is not None:
+        border_color = QUALITY_MAP[5][1]
+    elif has_strange_tracking:
         border_color = QUALITY_MAP[STRANGE_QUALITY_ID][1]
     else:
         border_color = q_col
@@ -249,16 +264,6 @@ def _process_item(
     )
 
     badges: List[Dict[str, str]] = []
-
-    # --- UNUSUAL EFFECT ----------------------------------------------------
-    effect_info = _extract_unusual_effect(asset)
-    if effect_info:
-        effect_id = effect_info["id"]
-        effect_name = effect_info["name"]
-        effect = effect_info
-    else:
-        effect = None
-        effect_id = effect_name = None
 
     if effect_id is not None:
         badges.append(

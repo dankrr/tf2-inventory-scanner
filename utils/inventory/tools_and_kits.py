@@ -12,28 +12,69 @@ from .maps_and_constants import (
 from .naming_and_warpaint import _preferred_base_name
 from .extract_attr_classes import get_attr_ids, resolve_attr_defindex
 
+_WAR_PAINT_TOOL_DEFINDEXES: set[int] | None = None
+
 logger = logging.getLogger(__name__)
 
 
-def _is_warpaint_tool(schema_entry: Dict[str, Any]) -> bool:
-    """Return True if ``schema_entry`` represents a warpaint tool."""
+def _is_warpaint_tool(
+    desc: Dict[str, Any] | None,
+    schema_entry: Dict[str, Any] | None = None,
+) -> bool:
+    """Return ``True`` if item metadata represents a war paint tool.
 
-    if schema_entry.get("item_class") != "tool":
+    Parameters
+    ----------
+    desc:
+        Raw item description from the inventory payload.
+    schema_entry:
+        Corresponding schema entry for the item.
+
+    Returns
+    -------
+    bool
+        ``True`` when the item is a war paint tool, otherwise ``False``.
+    """
+
+    entry: Dict[str, Any] = {}
+    if schema_entry:
+        entry.update(schema_entry)
+    if desc:
+        entry.update(desc)
+
+    if entry.get("item_class") != "tool":
         return False
 
-    tool = schema_entry.get("tool")
+    slot = str(entry.get("item_slot") or entry.get("slot_type") or "").lower()
+    if slot and slot not in {"", "action"}:
+        return False
+
+    tool = entry.get("tool")
     if isinstance(tool, dict) and tool.get("type") == "paintkit":
         return True
 
-    item_type = str(schema_entry.get("item_type_name", "")).lower()
+    item_type = str(entry.get("item_type_name", "")).lower()
     if "war paint" in item_type:
         return True
 
-    name = str(schema_entry.get("item_name") or schema_entry.get("name") or "").lower()
+    name = str(entry.get("item_name") or entry.get("name") or "").lower()
     if "war paint" in name:
         return True
 
     return False
+
+
+def get_war_paint_tool_defindexes() -> set[int]:
+    """Return defindex set for known war paint tools resolved from schema."""
+
+    global _WAR_PAINT_TOOL_DEFINDEXES
+    if _WAR_PAINT_TOOL_DEFINDEXES is None:
+        _WAR_PAINT_TOOL_DEFINDEXES = {
+            idx
+            for idx, info in local_data.ITEMS_BY_DEFINDEX.items()
+            if _is_warpaint_tool(None, info)
+        }
+    return _WAR_PAINT_TOOL_DEFINDEXES
 
 
 def _extract_warpaint_tool_info(
@@ -202,6 +243,7 @@ def _extract_killstreak_tool_info(asset: dict) -> dict | None:
 
 __all__ = [
     "_is_warpaint_tool",
+    "get_war_paint_tool_defindexes",
     "_extract_warpaint_tool_info",
     "_extract_killstreak_tool_info",
 ]

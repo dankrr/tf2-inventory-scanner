@@ -14,6 +14,7 @@ from .extract_attr_classes import (
     PAINTKIT_CLASSES,
     get_attr_ids,
 )
+from .tools_and_kits import _is_warpaint_tool
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +146,9 @@ def _extract_paintkit(
 ) -> tuple[int | None, str | None]:
     """Return ``(paintkit_id, name)`` or ``(None, None)`` if not present."""
 
+    if _is_warpaint_tool(asset, schema_entry):
+        return None, None
+
     refresh_attr_classes()
     ids = get_attr_ids()
     pk_idx = ids.get("paintkit")
@@ -164,7 +168,11 @@ def _extract_paintkit(
                 paintkit_id = None
                 continue
             if paintkit_id is not None:
-                if pk_idx is not None and idx == pk_idx and attr_class not in PAINTKIT_CLASSES:
+                if (
+                    pk_idx is not None
+                    and idx == pk_idx
+                    and attr_class not in PAINTKIT_CLASSES
+                ):
                     logger.warning("Using fallback for paintkit index %s", idx)
                 name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
                 return paintkit_id, (name or "Unknown")

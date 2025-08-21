@@ -122,4 +122,5 @@ All notable changes to this project will be documented in this file.
 - 2025-08-21 - restore get_valuation_service compat shim; documentation sync
 
 - 2025-08-21 - support schema-based attribute ids for decorated/unusual items; documentation sync
+- 2025-08-21 - resolve war paint tool defindexes from schema and prioritize Unusual borders over Strange; documentation sync
 - 2025-08-22 - Guard schema defindex lookups with safe resolver to prevent UnboundLocalError; documentation sync

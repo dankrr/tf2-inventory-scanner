@@ -42,6 +42,11 @@ inventory attributes. A `resolve_attr_defindex` helper provides safe ad-hoc
 attribute lookups and all attribute checks short-circuit when a defindex is
 missing.
 
+War paint tool defindexes are derived from the schema so paint-can tools are
+never misclassified as decorated weapons. Border colors follow a single
+precedence: Unusual overrides Strange, which falls back to the base quality
+color.
+
 For legacy imports, the former monolithic `utils.inventory_processor` module now
 re-exports the public API and `get_valuation_service` so existing code continues to
 function without modification.
