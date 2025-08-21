@@ -9,8 +9,6 @@ from typing import Any, Dict, Iterable, Mapping
 import httpx
 import requests
 
-FESTIVIZED_DEFINDEX = 2053  # Valve attribute that marks a Festivized weapon
-
 
 def _attributes_iter(attrs: Any) -> Iterable[Mapping[str, Any]]:
     """
@@ -37,8 +35,11 @@ def has_attribute(attrs: Any, defindex: int) -> bool:
 
 
 def is_festivized(attrs: Any) -> bool:
-    """Festivized is defindex 2053."""
-    return has_attribute(attrs, FESTIVIZED_DEFINDEX)
+    """Return True if attrs include the Festivized attribute."""
+    from .inventory.extract_attr_classes import get_attr_ids
+
+    idx = get_attr_ids().get("festive")
+    return has_attribute(attrs, idx) if idx is not None else False
 
 
 class SchemaProvider:

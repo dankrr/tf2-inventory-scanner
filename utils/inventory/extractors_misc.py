@@ -8,6 +8,7 @@ from .extract_attr_classes import (
     refresh_attr_classes,
     get_attr_class,
     CRATE_SERIES_CLASSES,
+    get_attr_ids,
 )
 
 logger = logging.getLogger(__name__)
@@ -24,14 +25,17 @@ def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
     """Return crate series name if present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    crate_idx = ids.get("crateSeries")
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
         if attr_class in CRATE_SERIES_CLASSES:
             val = int(attr.get("float_value", 0))
             return local_data.CRATE_SERIES_NAMES.get(str(val))
-        elif idx == 187:
-            logger.warning("Using numeric fallback for crate series index %s", idx)
+        elif idx == crate_idx:
+            logger.warning("Using fallback for crate series index %s", idx)
             val = int(attr.get("float_value", 0))
             return local_data.CRATE_SERIES_NAMES.get(str(val))
     return None
@@ -40,10 +44,15 @@ def _extract_crate_series(asset: Dict[str, Any]) -> str | None:
 def _extract_australium(asset: Dict[str, Any]) -> bool:
     """Return True if the asset has an Australium attribute."""
 
+    idx_aussie = None
+    for key, info in (local_data.SCHEMA_ATTRIBUTES or {}).items():
+        if info.get("name") == "is australium item":
+            idx_aussie = int(key)
+            break
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         try:
-            if int(idx) == 2027:
+            if idx_aussie is not None and int(idx) == idx_aussie:
                 return True
         except (TypeError, ValueError):
             continue
@@ -168,37 +177,36 @@ def _extract_kill_eater_info(
     counts: Dict[int, int] = {}
     types: Dict[int, int] = {}
 
+    mapping = local_data.SCHEMA_ATTRIBUTES or {}
+    idx_count = next((int(k) for k, v in mapping.items() if v.get("name") == "kill eater"), None)
+    idx_type = next((int(k) for k, v in mapping.items() if v.get("name") == "kill eater score type"), None)
+    idx_user1 = next((int(k) for k, v in mapping.items() if v.get("name") == "kill eater user 1"), None)
+
     for attr in asset.get("attributes", []):
         idx_raw = attr.get("defindex")
         try:
             idx = int(idx_raw)
         except (TypeError, ValueError):
-            # Ignore non-numeric defindex values
             continue
 
-        val_raw = (
-            attr.get("float_value") if "float_value" in attr else attr.get("value")
-        )
+        val_raw = attr.get("float_value") if "float_value" in attr else attr.get("value")
         try:
             val = int(float(val_raw))
         except (TypeError, ValueError):
-            # Ignore non-numeric values
             continue
 
-        if idx == 214:
+        if idx_count is not None and idx == idx_count:
             counts[1] = val
             continue
-        if idx == 292:
+        if idx_type is not None and idx == idx_type:
             types[1] = val
             continue
 
-        if idx >= 379:
+        if idx_user1 is not None and idx >= idx_user1:
             if idx % 2:  # odd -> kill_eater_X
-                counts[(idx - 379) // 2 + 2] = val
+                counts[(idx - idx_user1) // 2 + 2] = val
             else:  # even -> score_type_X
-                types[(idx - 380) // 2 + 2] = val
-        elif idx in (214, 292):
-            pass
+                types[(idx - idx_user1 - 1) // 2 + 2] = val
 
     return counts, types
 

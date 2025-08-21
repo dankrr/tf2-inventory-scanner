@@ -20,6 +20,7 @@ except Exception:  # pragma: no cover
         )
 from .processor import _process_item
 from .extractors_misc import _PARTS_BY_ID
+from .extract_attr_classes import get_attr_ids
 
 
 def enrich_inventory(
@@ -60,8 +61,9 @@ def enrich_inventory(
             if not isinstance(attrs, list):
                 attrs = asset.get("attributes", [])
             parts_found: set[str] = set()
+            strange_idx = get_attr_ids().get("strange")
             for attr in attrs:
-                if attr.get("defindex") == 214:
+                if attr.get("defindex") == strange_idx:
                     try:
                         idx = int(attr.get("value"))
                     except (TypeError, ValueError):

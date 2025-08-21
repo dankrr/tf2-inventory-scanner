@@ -12,6 +12,7 @@ from .extract_attr_classes import (
     PAINT_CLASSES,
     WEAR_CLASSES,
     PAINTKIT_CLASSES,
+    get_attr_ids,
 )
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,9 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
     """Return paint name and hex color if present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    paint_idxs = ids.get("paint", set())
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
@@ -33,8 +37,8 @@ def _extract_paint(asset: Dict[str, Any]) -> Tuple[str | None, str | None]:
             if hex_color and not re.match(r"^#[0-9A-Fa-f]{6}$", hex_color):
                 hex_color = None
             return name, hex_color
-        elif idx in (142, 261):
-            logger.warning("Using numeric fallback for paint index %s", idx)
+        elif idx in paint_idxs:
+            logger.warning("Using fallback for paint index %s", idx)
             val = int(attr.get("float_value", 0))
             name = local_data.PAINT_NAMES.get(str(val))
             hex_color = PAINT_COLORS.get(val, (None, None))[1]
@@ -57,6 +61,9 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
     """Return wear tier name if present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    wear_idxs = ids.get("wear", set())
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
@@ -73,8 +80,8 @@ def _extract_wear(asset: Dict[str, Any]) -> str | None:
                 logger.warning("Wear value out of range: %s", val)
             name = local_data.WEAR_NAMES.get(str(int(val)))
             return name or _wear_tier(val)
-        elif idx in (725, 749):
-            logger.warning("Using numeric fallback for wear index %s", idx)
+        elif idx in wear_idxs:
+            logger.warning("Using fallback for wear index %s", idx)
             raw = attr.get("float_value")
             if raw is None:
                 raw = attr.get("value")
@@ -100,10 +107,13 @@ def _extract_wear_float(asset: Dict[str, Any]) -> float | None:
     """Return wear float value if present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    wear_idxs = ids.get("wear", set())
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
-        if attr_class in WEAR_CLASSES or idx in (725, 749):
+        if attr_class in WEAR_CLASSES or idx in wear_idxs:
             raw = attr.get("float_value")
             if raw is None:
                 raw = attr.get("value")
@@ -136,11 +146,14 @@ def _extract_paintkit(
     """Return ``(paintkit_id, name)`` or ``(None, None)`` if not present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    pk_idx = ids.get("paintkit")
     paintkit_id = None
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
-        if idx == 834 or attr_class in PAINTKIT_CLASSES:
+        if (pk_idx is not None and idx == pk_idx) or attr_class in PAINTKIT_CLASSES:
             raw = attr.get("value")
             if raw is None:
                 raw = attr.get("float_value")
@@ -151,8 +164,8 @@ def _extract_paintkit(
                 paintkit_id = None
                 continue
             if paintkit_id is not None:
-                if idx == 834 and attr_class not in PAINTKIT_CLASSES:
-                    logger.warning("Using numeric fallback for paintkit index %s", idx)
+                if pk_idx is not None and idx == pk_idx and attr_class not in PAINTKIT_CLASSES:
+                    logger.warning("Using fallback for paintkit index %s", idx)
                 name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
                 return paintkit_id, (name or "Unknown")
 
@@ -160,7 +173,7 @@ def _extract_paintkit(
         for attr in asset.get("attributes", []):
             idx = attr.get("defindex")
             attr_class = get_attr_class(idx)
-            if idx == 834 or attr_class in PAINTKIT_CLASSES:
+            if (pk_idx is not None and idx == pk_idx) or attr_class in PAINTKIT_CLASSES:
                 raw = attr.get("float_value")
                 try:
                     paintkit_id = int(float(raw)) if raw is not None else None
@@ -168,7 +181,7 @@ def _extract_paintkit(
                     logger.warning("Invalid paintkit id: %r", raw)
                     continue
                 if paintkit_id is not None:
-                    logger.warning("Using numeric fallback for paintkit index %s", idx)
+                    logger.warning("Using fallback for paintkit index %s", idx)
                     name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
                     return paintkit_id, (name or "Unknown")
 

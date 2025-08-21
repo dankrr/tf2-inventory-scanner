@@ -10,6 +10,7 @@ from .maps_and_constants import (
     FABRICATOR_PART_IDS,
 )
 from .naming_and_warpaint import _preferred_base_name
+from .extract_attr_classes import get_attr_ids
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,15 @@ def _extract_warpaint_tool_info(
 ) -> tuple[int | None, str | None, str | None, int | None, str | None]:
     """Return paintkit id, name, wear name, target weapon defindex and name."""
 
+    ids = get_attr_ids()
+    paintkit_idx = ids.get("paintkit")
+    wear_idxs = ids.get("wear", set())
+    target_idx = None
+    for key, info in (local_data.SCHEMA_ATTRIBUTES or {}).items():
+        if info.get("name") == "tool target item":
+            target_idx = int(key)
+            break
+
     paintkit_id = None
     wear_name = None
     target_def = None
@@ -48,7 +58,7 @@ def _extract_warpaint_tool_info(
             idx = int(attr.get("defindex"))
         except (TypeError, ValueError):
             continue
-        if idx == 134:
+        if paintkit_idx is not None and idx == paintkit_idx:
             raw = (
                 attr.get("value")
                 if attr.get("value") is not None
@@ -58,7 +68,7 @@ def _extract_warpaint_tool_info(
                 paintkit_id = int(float(raw)) if raw is not None else None
             except (TypeError, ValueError):
                 continue
-        elif idx == 725:
+        elif idx in wear_idxs:
             raw = (
                 attr.get("float_value")
                 if attr.get("float_value") is not None
@@ -71,7 +81,7 @@ def _extract_warpaint_tool_info(
             if 0 <= val <= 1:
                 name = local_data.WEAR_NAMES.get(str(int(val)))
                 wear_name = name or _wear_tier(val)
-        elif idx == 2014:
+        elif idx == target_idx:
             raw = (
                 attr.get("value")
                 if attr.get("value") is not None
@@ -142,6 +152,15 @@ def _extract_killstreak_tool_info(asset: dict) -> dict | None:
     sheen_id = None
     effect_id = None
     tier_id = None
+    ids = get_attr_ids()
+    effect_idx = ids.get("killstreakEffect")
+    sheen_idx = ids.get("killstreakSheen")
+    tier_idx = ids.get("killstreakTier")
+    target_idx = target_idx or next(
+        (int(k) for k, v in (local_data.SCHEMA_ATTRIBUTES or {}).items() if v.get("name") == "tool target item"),
+        None,
+    )
+
     for attr in attrs:
         idx = attr.get("defindex")
         raw = attr.get("float_value") if "float_value" in attr else attr.get("value")
@@ -149,13 +168,13 @@ def _extract_killstreak_tool_info(asset: dict) -> dict | None:
             val = int(float(raw)) if raw is not None else None
         except (TypeError, ValueError):
             continue
-        if idx == 2012:
+        if idx == target_idx:
             weapon_def = val
-        elif idx == 2014:
+        elif idx == sheen_idx:
             sheen_id = val
-        elif idx == 2013:
+        elif idx == effect_idx:
             effect_id = val
-        elif idx == 2025:
+        elif idx == tier_idx:
             tier_id = val
 
     weapon_name = None

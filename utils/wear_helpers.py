@@ -21,7 +21,10 @@ def _wear_tier(value: float) -> str:
 def _decode_seed_info(attrs: Iterable[dict]) -> Tuple[float | None, int | None]:
     """Return ``(wear_float, pattern_seed)`` from custom paintkit seed attrs."""
 
+    from .inventory.extract_attr_classes import get_attr_ids
+
     mapping = local_data.SCHEMA_ATTRIBUTES or {}
+    ids = get_attr_ids()
 
     def get_class(idx: int | None) -> str | None:
         try:
@@ -33,19 +36,19 @@ def _decode_seed_info(attrs: Iterable[dict]) -> Tuple[float | None, int | None]:
             return info.get("attribute_class")
         return None
 
-    lo_class = get_class(866)
-    hi_class = get_class(867)
+    lo_class = get_class(ids.get("patternSeedLo"))
+    hi_class = get_class(ids.get("patternSeedHi"))
 
     lo = hi = None
     for attr in attrs:
         idx = attr.get("defindex")
         attr_class = get_class(idx)
-        if (lo_class and attr_class == lo_class) or idx == 866:
+        if (lo_class and attr_class == lo_class) or idx == ids.get("patternSeedLo"):
             try:
                 lo = int(attr.get("value") or 0)
             except (TypeError, ValueError):
                 continue
-        elif (hi_class and attr_class == hi_class) or idx == 867:
+        elif (hi_class and attr_class == hi_class) or idx == ids.get("patternSeedHi"):
             try:
                 hi = int(attr.get("value") or 0)
             except (TypeError, ValueError):

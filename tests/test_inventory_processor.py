@@ -1316,6 +1316,31 @@ def test_skin_with_statclock(monkeypatch):
     )
 
 
+def test_unusual_strange_skin(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 189, "value": 5},
+                    {"defindex": 134, "float_value": 600},
+                    {"defindex": 214, "value": 10},
+                    {"defindex": 834, "value": 350},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon", 5: "Unusual", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item["quality"] == "Unusual"
+    assert item["unusual_effect_id"] == 600
+    assert item["has_strange_tracking"] is True
+
+
 def test_decorated_border_color_with_statclock(monkeypatch):
     data = {
         "items": [

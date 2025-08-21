@@ -16,6 +16,7 @@ from .extract_attr_classes import (
     KILLSTREAK_TIER_CLASSES,
     KILLSTREAK_SHEEN_CLASSES,
     KILLSTREAK_EFFECT_CLASSES,
+    get_attr_ids,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,11 +28,10 @@ EFFECTS_MAP: Dict[int, str] = {
 
 
 def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
-    """Return unusual effect mapping for Unusual items."""
+    """Return unusual effect mapping if present on the item."""
 
-    # Only Unusual quality (5) items can have a particle effect.
-    if asset.get("quality") != 5:
-        return None
+    ids = get_attr_ids()
+    unusual_idxs = ids.get("unusual", set())
 
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
@@ -40,7 +40,7 @@ def _extract_unusual_effect(asset: Dict[str, Any]) -> dict | None:
         except (TypeError, ValueError):
             continue
 
-        if idx_int not in (134, 2041):
+        if idx_int not in unusual_idxs:
             continue
 
         raw = attr.get("float_value")
@@ -73,10 +73,13 @@ def _extract_killstreak_tier(asset: Dict[str, Any]) -> int | None:
     """Return killstreak tier id if present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    ks_tier_idx = ids.get("killstreakTier")
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
-        if attr_class in KILLSTREAK_TIER_CLASSES or idx == 2025:
+        if attr_class in KILLSTREAK_TIER_CLASSES or idx == ks_tier_idx:
             raw = (
                 attr.get("float_value") if "float_value" in attr else attr.get("value")
             )
@@ -113,6 +116,10 @@ def _extract_killstreak(
     tier = None
     sheen = None
     sheen_id = None
+    ids = get_attr_ids()
+    ks_tier_idx = ids.get("killstreakTier")
+    ks_sheen_idx = ids.get("killstreakSheen")
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         val_raw = (
@@ -135,9 +142,9 @@ def _extract_killstreak(
             sheen = SHEEN_NAMES.get(val)
             if sheen is None:
                 logger.warning("Unknown sheen id: %s", val)
-        elif idx in (2025, 2014):
-            logger.warning("Using numeric fallback for killstreak index %s", idx)
-            if idx == 2025:
+        elif idx in (ks_tier_idx, ks_sheen_idx):
+            logger.warning("Using fallback for killstreak index %s", idx)
+            if idx == ks_tier_idx:
                 tier = local_data.KILLSTREAK_NAMES.get(
                     str(val)
                 ) or KILLSTREAK_TIERS.get(val)
@@ -155,6 +162,9 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
     """Return killstreak effect string if present."""
 
     refresh_attr_classes()
+    ids = get_attr_ids()
+    ks_effect_idx = ids.get("killstreakEffect")
+
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
@@ -166,8 +176,8 @@ def _extract_killstreak_effect(asset: Dict[str, Any]) -> str | None:
             if name:
                 return name
             logger.warning("Unknown killstreak effect id: %s", val)
-        elif idx == 2013:
-            logger.warning("Using numeric fallback for killstreak effect index %s", idx)
+        elif idx == ks_effect_idx:
+            logger.warning("Using fallback for killstreak effect index %s", idx)
             val = int(attr.get("float_value", 0))
             name = local_data.KILLSTREAK_EFFECT_NAMES.get(
                 str(val)

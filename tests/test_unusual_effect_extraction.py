@@ -29,6 +29,12 @@ def test_extract_unusual_effect_value_fallback():
     assert _extract_unusual_effect(asset) == {"id": 3042, "name": "Taunt Effect"}
 
 
+def test_extract_unusual_effect_any_quality():
+    EFFECTS_MAP[777] = "Haunted Spirit"
+    asset = {"quality": 15, "attributes": [{"defindex": 134, "float_value": 777}]}
+    assert _extract_unusual_effect(asset) == {"id": 777, "name": "Haunted Spirit"}
+
+
 def test_extract_unusual_effect_zero_skipped():
     asset = {"quality": 5, "attributes": [{"defindex": 2041, "float_value": 0}]}
     assert _extract_unusual_effect(asset) is None

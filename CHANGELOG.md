@@ -120,3 +120,5 @@ All notable changes to this project will be documented in this file.
 - 2025-08-21 - Ensure toast spinner uses same style as Retry pill button
 - 2025-08-21 - Add CSS alignment for toast spinner icon
 - 2025-08-21 - restore get_valuation_service compat shim; documentation sync
+
+- 2025-08-21 - support schema-based attribute ids for decorated/unusual items; documentation sync

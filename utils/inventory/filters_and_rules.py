@@ -3,14 +3,34 @@ from typing import Dict, Any
 from .. import local_data
 from ..constants import SPELL_MAP
 from .extractors_misc import _extract_australium
+from .extract_attr_classes import get_attr_ids
 
 _exclusions = local_data.load_exclusions()
 CRAFT_WEAPON_ALLOWED_ORIGINS = set(_exclusions.get("craft_weapon_exclusions", []))
 
 SPECIAL_SPELL_ATTRS: set[int] = set(SPELL_MAP.keys()) | set(range(8900, 8926))
-SPECIAL_KILLSTREAK_ATTRS: set[int] = {2013, 2014, 2025}
-SPECIAL_FESTIVIZER_ATTRS: set[int] = {2053}
-SPECIAL_PAINTKIT_ATTRS: set[int] = {834, 866, 867, 725, 749}
+_ids = get_attr_ids()
+SPECIAL_KILLSTREAK_ATTRS: set[int] = {
+    i for i in (
+        _ids.get("killstreakEffect"),
+        _ids.get("killstreakSheen"),
+        _ids.get("killstreakTier"),
+    )
+    if i is not None
+}
+SPECIAL_FESTIVIZER_ATTRS: set[int] = {
+    i for i in (_ids.get("festive"),) if i is not None
+}
+SPECIAL_PAINTKIT_ATTRS: set[int] = {
+    i
+    for i in (
+        _ids.get("paintkit"),
+        _ids.get("patternSeedLo"),
+        _ids.get("patternSeedHi"),
+        *(_ids.get("wear", set())),
+    )
+    if i is not None
+}
 
 
 def _has_attr(asset: dict, idx: int) -> bool:

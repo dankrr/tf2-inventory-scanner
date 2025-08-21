@@ -50,6 +50,7 @@ from .naming_and_warpaint import (
     _build_item_name,
 )
 from .filters_and_rules import _is_plain_craft_weapon, _has_attr
+from .extract_attr_classes import get_attr_ids
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ def _process_item(
         valuation_service = get_valuation_service()
 
     attrs = asset.get("attributes", [])
+    ids = get_attr_ids()
 
     origin_raw = asset.get("origin")
     tradable_raw = asset.get("tradable", 1)
@@ -150,7 +152,10 @@ def _process_item(
         if paintkit_id is not None:
             warpaintable = True
 
-    is_skin = bool(not warpaint_tool and schema_entry and _has_attr(asset, 834))
+    pk_idx = ids.get("paintkit")
+    is_skin = bool(
+        not warpaint_tool and schema_entry and pk_idx is not None and _has_attr(asset, pk_idx)
+    )
 
     base_weapon = _preferred_base_name(defindex, schema_entry)
     if not schema_entry:
@@ -181,6 +186,16 @@ def _process_item(
         display_base = f"Australium {clean_base}"
 
     quality_id = asset.get("quality", 0)
+    q_override_idx = ids.get("qualityElevated")
+    if q_override_idx is not None:
+        for attr in attrs:
+            if attr.get("defindex") == q_override_idx:
+                raw_q = attr.get("value") or attr.get("float_value")
+                try:
+                    quality_id = int(float(raw_q)) if raw_q is not None else quality_id
+                except (TypeError, ValueError):
+                    pass
+                break
     q_name = local_data.QUALITIES_BY_INDEX.get(quality_id)
     if not q_name:
         q_name = QUALITY_MAP.get(quality_id, ("Unknown",))[0]

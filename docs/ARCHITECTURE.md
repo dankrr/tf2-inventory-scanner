@@ -34,8 +34,11 @@ Item cards can display a split border in **Border Mode** when an item exposes or
 Outside of Border Mode, item cards now darken the inner fill while keeping a bright quality-colored ring so items remain distinct without losing their quality identity.
 
 The inventory enrichment logic lives in the `utils/inventory/` package, which splits
-helpers into focused modules for attribute-class caching, extraction routines, and
-the thin processing core.
+helpers into focused modules for attribute-class caching, schema-based attribute
+ID resolution, extraction routines, and the thin processing core. Attribute
+defindexes like killstreak tiers, paintkits, and unusual effects are resolved
+once from the Steam schema so decorated weapons and war paints rely solely on
+inventory attributes.
 
 For legacy imports, the former monolithic `utils.inventory_processor` module now
 re-exports the public API and `get_valuation_service` so existing code continues to
