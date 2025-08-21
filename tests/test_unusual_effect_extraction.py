@@ -1,4 +1,7 @@
-from utils.inventory_processor import _extract_unusual_effect, EFFECTS_MAP
+from utils.inventory.extractors_unusual_killstreak import (
+    _extract_unusual_effect,
+    EFFECTS_MAP,
+)
 from utils import local_data
 
 

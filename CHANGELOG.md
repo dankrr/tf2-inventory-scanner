@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Plain craft weapons from achievements or promotions are no longer filtered and
   such items are hidden without price data.
 - Untradable timed-drop items are now marked as hidden.
+- [2025-08-21] - Split inventory processor into modular `utils/inventory` package and synchronized documentation.
 
 - [2025-08-17] - Completed bucket now keeps public cards before private ones. Documentation synchronized.
 

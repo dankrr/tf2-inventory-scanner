@@ -181,7 +181,7 @@ async function handleSubmit(e) {
       if (window.updateScanToast) {
         window.updateScanToast(++current, total);
       }
-    })
+    }),
   );
 
   if (window.hideScanToast) {
