@@ -121,3 +121,5 @@ All notable changes to this project will be documented in this file.
 - 2025-08-21 - Add CSS alignment for toast spinner icon
 - 2025-08-21 - restore get_valuation_service compat shim; documentation sync
 - 2025-08-21 - detect Unusual and Strange items via attribute defindexes and expose quality flags; documentation sync
+- 2025-08-22 - compute border color variables for item cards and add CSS support; documentation sync
+- 2025-08-22 - enable Jinja 'do' extension for template list operations and update warpaint script import; documentation sync

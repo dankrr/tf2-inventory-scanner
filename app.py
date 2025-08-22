@@ -56,6 +56,12 @@ TEST_API_RESULTS_DIR: Path | None = None
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
+# Enable Jinja "do" extension so templates can use `{% do %}` for side-effects (e.g., list.append)
+try:
+    app.jinja_env.add_extension("jinja2.ext.do")
+except Exception:
+    # If the environment lacks the extension, fail gracefully (templates that use `{% do %}` would still error)
+    app.logger.warning("Jinja 'do' extension not available; templates using `{% do %}` may fail.")
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)

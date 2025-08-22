@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from utils.inventory_processor import _extract_paintkit
+from utils.inventory.extractors_paint_and_wear import _extract_paintkit
 from utils import local_data
 
 

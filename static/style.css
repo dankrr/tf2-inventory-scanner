@@ -1198,3 +1198,58 @@ button[data-role="toggle-border"] {
     left: calc(12px + env(safe-area-inset-left, 0px));
   }
 }
+
+/* === quality & border tokens already exist above === */
+
+/* Ensure quality tokens exist (no-op if already defined) */
+.item-card.quality-unusual {
+  --quality-color: #8650ac; /* Unusual (purple) */
+}
+.item-card.quality-strange {
+  --quality-color: #cf6a32; /* Strange (orange) */
+}
+
+/* Use the provided variables for the NORMAL (non-split) border by default */
+.item-card[data-border-vars] {
+  border: 2px solid var(--border-primary, currentColor);
+}
+
+/* If you already had explicit border classes, they still work,
+   but the inline --border-primary will be the source of truth. */
+.item-card.border-unusual {
+  border-color: #8650ac;
+}
+.item-card.border-strange {
+  border-color: #cf6a32;
+}
+
+/* Split ring (when your Border Mode applies .border-split or equivalent) can keep using the same variables */
+.item-card.border-mode.border-split {
+  position: relative;
+  border: 0; /* ring drawn by ::before */
+}
+.item-card.border-mode.border-split::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px; /* ring thickness */
+  background: conic-gradient(
+    from 315deg,
+    var(--border-primary, currentColor) 0 50%,
+    var(--border-alt, currentColor) 50% 100%
+  );
+  /* Hollow center so only the ring shows */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* If decorated adds overlays that could hide the border, keep them from masking our border variables */
+.item-card.quality-unusual.quality-decorated {
+  box-shadow: none;
+  background-image: none;
+}

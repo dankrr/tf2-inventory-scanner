@@ -49,9 +49,34 @@ full_title = (title_parts + [base]) | join(' ') %}
   {% endif %}
 {% endif %}
 
+{# --- Border color variables + Unusual precedence for skins/warpaints --- #}
+{% set is_unusual_render = item.is_unusual or (item.is_decorated and item.unusual_effect_id) %}
+{% set is_strange = item.has_strange_tracking or item.is_strange %}
+
+{# Build classes: include existing flags and force quality-unusual if Unusual render #}
+{% set classes = ['item-card'] %}
+{% if item.untradable_hold %}{% do classes.append('trade-hold') %}{% endif %}
+{% if item.uncraftable %}{% do classes.append('uncraftable') %}{% endif %}
+{% if item.has_strange_tracking %}{% do classes.append('elevated-strange') %}{% endif %}
+{% if alt_q %}{% do classes.append('has-dual-quality') %}{% endif %}
+{% if is_unusual_render %}
+  {% do classes.append('quality-unusual') %}
+{% elif item.quality_class %}
+  {% do classes.append(item.quality_class) %}
+{% endif %}
+
+{# Determine border colors for normal and split displays #}
+{% if is_unusual_render %}
+  {% set border_primary = '#8650AC' %}
+  {% set border_alt = (alt_q or ('#CF6A32' if is_strange else '#8650AC')) %}
+{% else %}
+  {% set border_primary = item.quality_color %}
+  {% set border_alt = (alt_q or ('#CF6A32' if is_strange else item.quality_color)) %}
+{% endif %}
+
 <div
-  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
-  style="--quality-color: {{ item.quality_color }};{% if alt_q %} --quality-alt: {{ alt_q }};{% endif %} border-color: {{ item.border_color or item.quality_color }};"
+  class="{{ ' '.join(classes) }}"
+  style="--quality-color: {{ border_primary }}; --border-primary: {{ border_primary }}; --border-alt: {{ border_alt }};{% if alt_q %} --quality-alt: {{ border_alt }};{% endif %}"
   title="{{ full_title }}"
   {%
   if
@@ -60,6 +85,7 @@ full_title = (title_parts + [base]) | join(' ') %}
   {%
   endif
   %}
+  data-border-vars="1"
   data-item="{{ item|tojson|forceescape }}"
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
