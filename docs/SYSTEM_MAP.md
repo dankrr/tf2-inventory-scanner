@@ -2,6 +2,7 @@
 
 - **app.py** – Flask application with routes for scanning users and retrying failed scans.
 - **templates/index.html** – Displays input form, two result buckets, floating top/refresh buttons, and a settings gear.
+- **templates/item_card.html** – Renders individual item cards and enforces Unusual border and quality precedence.
 - **static/submit.js** – Handles form submission, defines `addCardToBucket`, and keeps public cards before private ones in the Completed bucket.
 - **static/retry.js** – Manages retry logic, modal interactions, per-user search binding, floating controls, and provides an `addCardToBucket` fallback.
 - **static/style.css** – Provides styling including bucket layout, jump button, floating controls, the settings menu, and hard-hides legacy header toggles. Loads Font Awesome for icons.

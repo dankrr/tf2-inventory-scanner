@@ -22,4 +22,5 @@
 - Uncraftable items rely on dashed borders only; the inner gray ring has been removed to reduce visual clutter.
 - Modal clicks are delegated from result containers. Ensure overlays and badges do not capture pointer events.
 - Unusual effect icons use empty alt text, ignore pointer events, and a helper removes the image if loading fails.
+- Unusual items take precedence over decorated styling; when an item is Unusual or a decorated weapon with an unusual effect, apply `quality-unusual` and `border-unusual` classes and omit dual-quality accents.
 - Wrap icon elements in `.item-media` to center content and place particle overlays behind; include `onerror="this.remove()"` on effect images so missing assets vanish cleanly.

@@ -121,3 +121,5 @@ All notable changes to this project will be documented in this file.
 - 2025-08-21 - Add CSS alignment for toast spinner icon
 - 2025-08-21 - restore get_valuation_service compat shim; documentation sync
 - 2025-08-21 - detect Unusual and Strange items via attribute defindexes and expose quality flags; documentation sync
+- 2025-08-22 - enforce Unusual border/quality precedence for decorated items; documentation sync
+- 2025-08-22 - re-expose \_extract_paintkit for tests; documentation sync

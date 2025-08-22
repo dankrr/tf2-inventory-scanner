@@ -49,9 +49,15 @@ full_title = (title_parts + [base]) | join(' ') %}
   {% endif %}
 {% endif %}
 
+{# Minimal precedence: force Unusual styling when decorated with an effect #}
+{% set is_unusual_render = item.is_unusual or (item.is_decorated and item.unusual_effect_id) %}
+{% if is_unusual_render %}
+  {% set alt_q = None %}
+{% endif %}
+
 <div
-  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
-  style="--quality-color: {{ item.quality_color }};{% if alt_q %} --quality-alt: {{ alt_q }};{% endif %} border-color: {{ item.border_color or item.quality_color }};"
+  class="item-card{% if is_unusual_render %} quality-unusual border-unusual{% endif %}{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
+  style="--quality-color: {% if is_unusual_render %}#8650AC{% else %}{{ item.quality_color }}{% endif %};{% if alt_q %} --quality-alt: {{ alt_q }};{% endif %} border-color: {% if is_unusual_render %}#8650AC{% else %}{{ item.border_color or item.quality_color }}{% endif %};"
   title="{{ full_title }}"
   {%
   if

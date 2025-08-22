@@ -308,6 +308,21 @@ button {
   background-color: var(--quality-color, #1e1e1e);
   position: relative; /* ensure badges overlay */
 }
+
+/* --- Minimal Unusual precedence support --- */
+.item-card.border-unusual {
+  border-color: #8650ac !important;
+}
+
+.item-card.quality-unusual {
+  --quality-color: #8650ac;
+  --quality-color-rgb: 134, 80, 172;
+}
+
+/* Ensure decorated/dual styles cannot override Unusual when both classes appear */
+.item-card.quality-unusual.has-dual-quality {
+  --quality-alt: #8650ac;
+}
 /* Base fill in border mode */
 body.border-mode .item-card {
   --ring-w: 4px; /* ring thickness */

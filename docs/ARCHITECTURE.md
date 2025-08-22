@@ -31,6 +31,7 @@ Sticky user headers now isolate their stacking context so they remain above item
 Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts can filter items by name. `static/retry.js` rebinds these per-user searches after inventory refreshes, caching item names and handling legacy and new inventory containers.
 
 Item cards can display a split border in **Border Mode** when an item exposes or infers a secondary quality color. If the backend omits an explicit value, heuristics try common mixes (Unusual, then Genuine, then Strange) to derive an alternate hue. A centered conic gradient divides the ring along the top-left to bottom-right diagonal, filling the first half with the primary quality and the second with the alternate hue.
+Unusual-quality items take precedence: if an item is Unusual or a decorated weapon with an unusual effect, the card forces the Unusual purple border and quality color, ignoring secondary styling.
 Outside of Border Mode, item cards now darken the inner fill while keeping a bright quality-colored ring so items remain distinct without losing their quality identity.
 
 The inventory enrichment logic lives in the `utils/inventory/` package, which splits
