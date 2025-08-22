@@ -35,6 +35,8 @@ Outside of Border Mode, item cards now darken the inner fill while keeping a bri
 
 The template now sets `--border-primary` and `--border-alt` CSS variables on each item card. Unusual coloration takes precedence, even for decorated skins with effects, while the alternate ring defaults to Strange orange when applicable.
 
+The Flask app enables Jinja's optional `do` extension so templates can execute side-effectful statements, such as building class lists with `{% do %}`.
+
 The inventory enrichment logic lives in the `utils/inventory/` package, which splits
 helpers into focused modules for attribute-class caching, extraction routines, and
 the thin processing core.
