@@ -33,6 +33,8 @@ Each `.item-wrapper` now includes a `data-name` attribute so client-side scripts
 Item cards can display a split border in **Border Mode** when an item exposes or infers a secondary quality color. If the backend omits an explicit value, heuristics try common mixes (Unusual, then Genuine, then Strange) to derive an alternate hue. A centered conic gradient divides the ring along the top-left to bottom-right diagonal, filling the first half with the primary quality and the second with the alternate hue.
 Outside of Border Mode, item cards now darken the inner fill while keeping a bright quality-colored ring so items remain distinct without losing their quality identity.
 
+The template now sets `--border-primary` and `--border-alt` CSS variables on each item card. Unusual coloration takes precedence, even for decorated skins with effects, while the alternate ring defaults to Strange orange when applicable.
+
 The inventory enrichment logic lives in the `utils/inventory/` package, which splits
 helpers into focused modules for attribute-class caching, extraction routines, and
 the thin processing core.
