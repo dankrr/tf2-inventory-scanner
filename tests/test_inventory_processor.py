@@ -589,6 +589,30 @@ def test_warpaint_index_749(monkeypatch):
     assert item["warpaint_name"] == "Warhawk"
 
 
+def test_warpaint_index_749_ignores_fractional_wear(monkeypatch):
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 749, "float_value": 0.04},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {"item_name": "Flamethrower", "craft_class": "weapon"}
+    }
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"0": "Invalid Wear"}, False)
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    items = ip.enrich_inventory(data)
+    item = items[0]
+    assert item.get("warpaint_id") is None
+    assert item.get("warpaint_name") is None
+    assert item.get("wear_name") == "Factory New"
+
+
 def test_unknown_defindex_preserves_warpaint(monkeypatch):
     data = {
         "items": [
