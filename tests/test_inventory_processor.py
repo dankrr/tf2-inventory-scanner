@@ -1466,6 +1466,43 @@ def test_wear_from_schema_wears_mapping():
     assert item["wear_source"] == "schema_wears"
 
 
+def test_wear_float_one_point_zero_is_not_treated_as_schema_id():
+    ld.WEAR_NAMES_BY_ID = {0: "Factory New", 1: "Minimal Wear", 4: "Battle Scarred"}
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 725, "float_value": 1.0}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_name"] == "Battle Scarred"
+    assert item["wear_float"] == 1.0
+
+
+def test_wear_integer_id_still_uses_schema_wear_lookup():
+    ld.WEAR_NAMES_BY_ID = {1: "Minimal Wear"}
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 725, "float_value": 1}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_name"] == "Minimal Wear"
+    assert item["wear_source"] == "schema_wears"
+    assert item["wear_float"] is None
+
+
 def test_invalid_wear_does_not_default_factory_new():
     data = {
         "items": [

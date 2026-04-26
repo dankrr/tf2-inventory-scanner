@@ -153,6 +153,46 @@ def test_load_files_name_key_quality(tmp_path, monkeypatch):
     assert ld.QUALITIES_BY_INDEX == {1: "Unique"}
 
 
+def test_load_files_item_grade_list_shape(tmp_path, monkeypatch):
+    attr_file = tmp_path / "attributes.json"
+    particles_file = tmp_path / "particles.json"
+    items_file = tmp_path / "items.json"
+    qual_file = tmp_path / "qualities.json"
+    currencies_file = tmp_path / "currencies.json"
+    item_grade_file = tmp_path / "item_grade_v2.json"
+
+    attr_file.write_text(json.dumps([{"defindex": 1, "name": "Attr"}]))
+    particles_file.write_text(json.dumps([{"id": 1, "name": "P"}]))
+    items_file.write_text(json.dumps([{"defindex": 1, "name": "One"}]))
+    qual_file.write_text(json.dumps({"1": "Unique"}))
+    currencies_file.write_text(json.dumps({"metal": {"value_raw": 1.0}}))
+    item_grade_file.write_text(
+        json.dumps(
+            {
+                "value": [
+                    {"defindex": 15141, "grade": "Elite Grade"},
+                    {"defindex": "15142", "grade": "Mercenary Grade"},
+                    {"defindex": "abc", "grade": "Ignored"},
+                ]
+            }
+        )
+    )
+
+    monkeypatch.setattr(ld, "ATTRIBUTES_FILE", attr_file)
+    monkeypatch.setattr(ld, "PARTICLES_FILE", particles_file)
+    monkeypatch.setattr(ld, "ITEMS_FILE", items_file)
+    monkeypatch.setattr(ld, "QUALITIES_FILE", qual_file)
+    monkeypatch.setattr(ld, "CURRENCIES_FILE", currencies_file)
+    monkeypatch.setattr(ld, "ITEM_GRADE_FILE", item_grade_file)
+
+    ld.ITEM_GRADE_BY_DEFINDEX = {}
+    ld.load_files()
+    assert ld.ITEM_GRADE_BY_DEFINDEX == {
+        15141: "Elite Grade",
+        15142: "Mercenary Grade",
+    }
+
+
 def test_clean_items_game_parses_all():
     sample = {
         "items_game": {

@@ -109,6 +109,31 @@ def _extract_wear_attr_value(asset: Dict[str, Any]) -> tuple[float | None, Any |
     return None, None
 
 
+def _is_schema_wear_id_value(wear_float: float, wear_raw: Any) -> bool:
+    """Return True when wear metadata is encoded as an integer schema ID."""
+
+    if wear_float not in (0, 1, 2, 3, 4):
+        return False
+
+    # Steam can serialize true boundary floats as float values like ``1.0``.
+    # Treat explicit floats as float-based wear, not schema IDs.
+    if isinstance(wear_raw, float):
+        return False
+
+    if isinstance(wear_raw, int):
+        return True
+
+    if isinstance(wear_raw, str):
+        raw = wear_raw.strip()
+        if not raw:
+            return False
+        if raw in {"0", "1", "2", "3", "4"}:
+            return True
+        return False
+
+    return False
+
+
 def resolve_wear(asset: Dict[str, Any]) -> Dict[str, Any]:
     """Resolve wear metadata using econ tag, schema map, then float fallback."""
 
@@ -128,7 +153,7 @@ def resolve_wear(asset: Dict[str, Any]) -> Dict[str, Any]:
 
     wear_float, wear_raw = _extract_wear_attr_value(asset)
     if wear_float is not None:
-        if wear_float in (0, 1, 2, 3, 4):
+        if _is_schema_wear_id_value(wear_float, wear_raw):
             mapped = local_data.WEAR_NAMES_BY_ID.get(int(wear_float))
             if mapped:
                 return {

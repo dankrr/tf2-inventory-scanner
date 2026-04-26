@@ -209,6 +209,36 @@ def _load_paint_id_map(path: Path) -> Dict[str, str]:
     return {}
 
 
+def _load_item_grade_by_defindex(path: Path) -> Dict[int, str]:
+    """Return a defindex->grade map from dict or list cache shapes."""
+
+    if not path.exists():
+        return {}
+    try:
+        with path.open() as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+
+    raw = data.get("value") if isinstance(data, dict) and "value" in data else data
+
+    if isinstance(raw, dict):
+        return {int(k): str(v) for k, v in raw.items() if str(k).isdigit()}
+
+    if isinstance(raw, list):
+        out: Dict[int, str] = {}
+        for entry in raw:
+            if not isinstance(entry, dict):
+                continue
+            defindex = entry.get("defindex")
+            grade = entry.get("grade")
+            if str(defindex).isdigit() and isinstance(grade, str) and grade.strip():
+                out[int(defindex)] = grade.strip()
+        return out
+
+    return {}
+
+
 def load_files(
     *, auto_refetch: bool = False, verbose: bool = False
 ) -> Tuple[Dict[int, Any], Dict[int, Any]]:
@@ -398,10 +428,7 @@ def load_files(
     KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
-    item_grade_raw = _load_json_map(ITEM_GRADE_FILE)
-    ITEM_GRADE_BY_DEFINDEX = {
-        int(k): str(v) for k, v in item_grade_raw.items() if str(k).isdigit()
-    }
+    ITEM_GRADE_BY_DEFINDEX = _load_item_grade_by_defindex(ITEM_GRADE_FILE)
 
     FOOTPRINT_SPELL_MAP = {}
     PAINT_SPELL_MAP = {}
