@@ -204,14 +204,19 @@ def convert_to_steam64(id_str: str) -> str:
                     "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/",
                     params={"key": key, "vanityurl": id_str},
                 )
-        except httpx.HTTPError as exc:
-            raise ValueError(f"Failed to resolve vanity URL: {id_str}") from exc
+        except httpx.HTTPError:
+            logger.warning("Vanity resolve failed for %s", id_str)
+            raise ValueError(f"Invalid Steam ID format: {id_str}")
         if resp.status_code != 200:
+            logger.warning(
+                "Vanity resolve HTTP %s for %s", resp.status_code, id_str
+            )
             raise ValueError(f"Invalid Steam ID format: {id_str}")
         try:
             payload = resp.json().get("response", {})
-        except ValueError as exc:
-            raise ValueError(f"Invalid Steam ID format: {id_str}") from exc
+        except ValueError:
+            logger.warning("Vanity resolve returned invalid JSON for %s", id_str)
+            raise ValueError(f"Invalid Steam ID format: {id_str}")
         if payload.get("success") == 1 and payload.get("steamid"):
             return str(payload.get("steamid"))
 

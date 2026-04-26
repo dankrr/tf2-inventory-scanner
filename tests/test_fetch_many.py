@@ -47,7 +47,35 @@ async def test_api_users_returns_html(monkeypatch, async_client):
     resp = await async_client.post("/api/users", json={"ids": ["1", "2"]})
     assert resp.status_code == 200
     data = resp.json()
-    assert data == {"completed": ["<div>1</div>", "<div>2</div>"], "failed": []}
+    assert data == {
+        "completed": ["<div>1</div>", "<div>2</div>"],
+        "failed": [],
+        "invalid": 0,
+    }
+
+
+@pytest.mark.asyncio
+async def test_api_users_skips_invalid_ids(monkeypatch, async_client):
+    mod = importlib.import_module("app")
+
+    async def fake_fetch(ids):
+        return [f"<div>{i}</div>" for i in ids], [], []
+
+    def fake_convert(raw):
+        if raw == "bad":
+            raise ValueError("bad id")
+        return raw
+
+    monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
+    monkeypatch.setattr(mod.sac, "convert_to_steam64", fake_convert)
+
+    resp = await async_client.post("/api/users", json={"ids": ["1", "bad", "2"]})
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "completed": ["<div>1</div>", "<div>2</div>"],
+        "failed": [],
+        "invalid": 1,
+    }
 
 
 @pytest.mark.asyncio

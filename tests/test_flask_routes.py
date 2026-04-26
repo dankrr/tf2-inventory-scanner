@@ -95,6 +95,30 @@ async def test_post_mixed_input_ignores_invalid(monkeypatch, async_client):
 
 
 @pytest.mark.asyncio
+async def test_post_vanity_resolution_failure_is_ignored(monkeypatch, async_client):
+    mod = importlib.import_module("app")
+
+    async def fake_fetch(ids):
+        return [f"<div id='user-{i}'></div>" for i in ids], [], []
+
+    monkeypatch.setattr(mod, "fetch_and_process_many", fake_fetch)
+    monkeypatch.setattr(mod, "extract_steam_ids", lambda _text: ["gaben", "1"])
+
+    def fake_convert(token):
+        if token == "gaben":
+            raise ValueError("vanity unavailable")
+        return token
+
+    monkeypatch.setattr(mod.sac, "convert_to_steam64", fake_convert)
+
+    resp = await async_client.post("/", data={"steamids": "https://steamcommunity.com/id/gaben 1"})
+    assert resp.status_code == 200
+    html = resp.text
+    assert "user-1" in html
+    assert "user-gaben" not in html
+
+
+@pytest.mark.asyncio
 async def test_hidden_items_not_rendered(async_client, app):
     mod = importlib.import_module("app")
     user = mod.normalize_user_payload(
