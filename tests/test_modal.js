@@ -61,6 +61,20 @@ if (!html2.includes('<li>Ghosts (2)</li>')) {
 if (!html2.includes('<li>Fire</li>')) {
   throw new Error('Spell object not rendered');
 }
+const htmlWearGrade = modal.generateModalHTML({
+  grade_name: 'Elite Grade',
+  wear_name: 'Factory New',
+  wear_float: 0.042,
+});
+if (!htmlWearGrade.includes('Elite Grade')) {
+  throw new Error('Grade badge not rendered');
+}
+if (!htmlWearGrade.includes('Wear: Factory New')) {
+  throw new Error('Wear line not rendered');
+}
+if (!htmlWearGrade.includes('Wear Float: 0.0420')) {
+  throw new Error('Wear float line not rendered');
+}
 const htmlHistory = modal.generateModalHTML({ id: 123 });
 if (!htmlHistory.includes('https://next.backpack.tf/item/123')) {
   throw new Error('History link missing');
@@ -93,4 +107,3 @@ setTimeout(() => {
   }
   console.log('Modal tests passed');
 }, 250);
-

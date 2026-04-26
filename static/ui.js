@@ -87,8 +87,20 @@ function handleUserSearch(event) {
   if (!card) return;
   const query = input.value.toLowerCase();
   card.querySelectorAll(".item-wrapper").forEach((wrapper) => {
-    const name =
-      wrapper.querySelector(".item-name")?.textContent.toLowerCase() || "";
+    let name = (wrapper.dataset.name || "").toLowerCase();
+    if (!name) {
+      const raw = wrapper.querySelector(".item-card")?.getAttribute("data-item");
+      if (raw && raw.startsWith("{")) {
+        try {
+          const item = JSON.parse(raw);
+          name = String(
+            item.display_name || item.composite_name || item.base_name || item.name || "",
+          ).toLowerCase();
+        } catch {
+          name = "";
+        }
+      }
+    }
     wrapper.style.display = name.includes(query) ? "" : "none";
   });
 }

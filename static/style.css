@@ -442,6 +442,55 @@ body.border-mode .item-card.has-dual-quality {
   font-size: 14px;
   z-index: 3;
 }
+.item-meta-badges {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 3;
+}
+.meta-badge {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 1px 4px;
+  border-radius: 999px;
+  font-size: 9px;
+  line-height: 1.1;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.grade-badge {
+  border: 1px solid currentColor;
+}
+.wear-badge {
+  color: #d9d9d9;
+}
+.grade-civilian-grade {
+  color: #9ed9ff;
+}
+.grade-freelance-grade {
+  color: #5d8eff;
+}
+.grade-mercenary-grade {
+  color: #8c63ff;
+}
+.grade-commando-grade {
+  color: #e65bff;
+}
+.grade-assassin-grade {
+  color: #ffa347;
+}
+.grade-elite-grade {
+  color: #ff5e5e;
+}
 .item-qty {
   position: absolute;
   left: 2px;
@@ -910,6 +959,7 @@ footer {
 }
 .item-badges,
 .item-qty,
+.item-meta-badges,
 .badge,
 .badge-icon,
 .paint-dot,

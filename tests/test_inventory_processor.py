@@ -1367,6 +1367,65 @@ def test_extract_wear_attr_749(monkeypatch):
     assert wear == "Factory New"
 
 
+def test_grade_tier_extracted_from_schema_tags(monkeypatch):
+    data = {
+        "items": [{"defindex": 15141, "quality": 15, "attributes": [{"defindex": 834, "value": 350}]}]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        15141: {
+            "item_name": "Flame Thrower",
+            "craft_class": "weapon",
+            "tags": [{"category": "Rarity", "localized_tag_name": "Elite Grade"}],
+        }
+    }
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    monkeypatch.setattr(ld, "PAINTKIT_NAMES_BY_ID", {"350": "Warhawk"}, False)
+    item = ip.enrich_inventory(data)[0]
+    assert item["grade_name"] == "Elite Grade"
+    assert item["tier_name"] != "Elite Grade"
+    assert item["grade_color"] == "#FF5E5E"
+    assert any(b.get("type") == "grade" for b in item["badges"])
+
+
+def test_grade_tier_fallback_extracted_from_item_name():
+    data = {"items": [{"defindex": 3001, "quality": 6, "attributes": []}]}
+    ld.ITEMS_BY_DEFINDEX = {3001: {"item_name": "Mercenary Grade Hat", "item_class": "hat"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["grade_name"] == "Mercenary Grade"
+    assert item["tier"] == "Mercenary Grade"
+    assert item["grade_color"] == "#8C63FF"
+
+
+@pytest.mark.parametrize(
+    "wear_float,expected",
+    [
+        (0.00, "Factory New"),
+        (0.07, "Minimal Wear"),
+        (0.15, "Field-Tested"),
+        (0.38, "Well-Worn"),
+        (0.45, "Battle Scarred"),
+    ],
+)
+def test_wear_float_boundary_ranges(monkeypatch, wear_float, expected):
+    ld.SCHEMA_ATTRIBUTES = {725: {"attribute_class": "set_item_texture_wear"}}
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 725, "float_value": wear_float}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_name"] == expected
+    assert item["wear"] == expected
+    assert item["exterior"] == expected
+
+
 def test_uncraftable_flag_true():
     data = {"items": [{"defindex": 111, "quality": 6, "flag_cannot_craft": True}]}
     ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
