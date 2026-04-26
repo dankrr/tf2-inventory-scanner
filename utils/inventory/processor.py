@@ -31,6 +31,7 @@ from .extractors_paint_and_wear import (
     _extract_pattern_seed,
     _extract_paintkit,
 )
+from .extractors_grade_tier import _extract_grade_tier
 from .extractors_misc import (
     _extract_crate_series,
     _extract_australium,
@@ -351,6 +352,13 @@ def _process_item(
         if not is_unusual
         else f"{effect_name or f'Effect #{effect_id}'} {display_base}"
     )
+    grade_tier = _extract_grade_tier(
+        asset,
+        schema_entry,
+        display_name=display_name,
+        resolved_name=resolved_name,
+    )
+    wear_exterior = wear_name
     original_name = name if is_unusual else None
     if is_unusual:
         name = display_name
@@ -377,6 +385,23 @@ def _process_item(
                 "title": f"Paint: {paint_name}",
                 "label": paint_name,
                 "type": "paint",
+            }
+        )
+    if grade_tier.get("grade_name"):
+        badges.append(
+            {
+                "title": f"Grade: {grade_tier['grade_name']}",
+                "label": grade_tier["grade_name"],
+                "type": "grade",
+                "color": grade_tier.get("grade_color"),
+            }
+        )
+    if wear_exterior:
+        badges.append(
+            {
+                "title": f"Wear: {wear_exterior}",
+                "label": wear_exterior,
+                "type": "wear",
             }
         )
     if warpaintable and paintkit_id is not None:
@@ -462,8 +487,10 @@ def _process_item(
         "sheen_gradient_css": sheen_gradient_css,
         "paint_name": paint_name,
         "paint_hex": paint_hex,
+        "wear": wear_exterior,
         "wear_name": wear_name,
         "wear_float": wear_float,
+        "exterior": wear_exterior,
         "pattern_seed": pattern_seed,
         "skin_name": skin_name,
         "composite_name": composite_name,
@@ -521,6 +548,12 @@ def _process_item(
         "craftable": craftable,
         "_hidden": hide_item,
         "extra_qualities": extra_qualities,
+        "killstreak_tier_name": (
+            ks_tool_info.get("tier_name")
+            if ks_tool_info
+            else KILLSTREAK_TIERS.get(int(float(ks_tier_val))) if ks_tier_val else None
+        ),
+        **grade_tier,
     }
 
     if valuation_service is not None:

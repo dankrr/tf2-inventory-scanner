@@ -85,3 +85,17 @@ def test_team_shine_gradient(app):
     style = dot.get("style", "")
     assert "linear-gradient" in style
     assert "#cc3434" in style and "#5885a2" in style
+
+
+def test_grade_and_wear_badges(app):
+    item = {
+        "grade_name": "Assassin Grade",
+        "wear_name": "Minimal Wear",
+        "paintkit_name": "Warhawk",
+    }
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("span", class_="grade-assassin-grade") is not None
+    assert "Minimal Wear" in soup.text
+    assert "Warhawk" in soup.text

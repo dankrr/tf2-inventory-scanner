@@ -189,6 +189,27 @@ def test_decorated_quality_not_shown(app):
     assert card.get("title") == "Warhawk Flamethrower"
 
 
+def test_item_data_attribute_remains_single_quoted(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Decorated Weapon Flamethrower",
+                    "display_name": "Warhawk Flamethrower",
+                    "quality_color": "#fff",
+                    "grade_name": "Elite Grade",
+                    "wear_name": "Factory New",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    assert "data-item='" in html
+
+
 def test_failed_user_has_retry_class(app):
     context = {"user": {"steamid": "123", "status": "failed", "items": []}}
     with app.test_request_context():

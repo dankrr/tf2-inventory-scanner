@@ -60,7 +60,7 @@ full_title = (title_parts + [base]) | join(' ') %}
   {%
   endif
   %}
-  data-item="{{ item|tojson|forceescape }}"
+  data-item='{{ item|tojson|forceescape }}'
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
   <div class="item-badges">
@@ -90,7 +90,7 @@ full_title = (title_parts + [base]) | join(' ') %}
       />
     </span>
     {% endif %} {% for badge in item.badges %} {% if badge.type != 'statclock'
-    and badge.icon != '🎨' %} {% if badge.type == 'killstreak' %}
+    and badge.icon != '🎨' and (badge.icon or badge.icon_url) %} {% if badge.type == 'killstreak' %}
     <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
       <span
         class="chevron-icon"
@@ -134,6 +134,16 @@ full_title = (title_parts + [base]) | join(' ') %}
     >
     {% endif %} {% endif %} {% endfor %}
   </div>
+  {% if item.grade_name or item.wear_name %}
+  <div class="item-meta-badges">
+    {% if item.grade_name %}
+    <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}">{{ item.grade_name }}</span>
+    {% endif %}
+    {% if item.wear_name %}
+    <span class="meta-badge wear-badge">{{ item.wear_name }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
   {% if item.quantity and item.quantity > 1 %}
   <span class="item-qty">x{{ item.quantity }}</span>
   {% endif %} {% if item.statclock_badge %}

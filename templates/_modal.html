@@ -30,6 +30,19 @@
       {% endif %}
     </div>
   {% endif %}
+  {% if item.grade_name or item.wear_name or item.paintkit_name %}
+    <div class="killstreak-info">
+      {% if item.grade_name %}
+        <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}">{{ item.grade_name }}</span>
+      {% endif %}
+      {% if item.wear_name %}
+        <span class="meta-badge wear-badge">{{ item.wear_name }}</span>
+      {% endif %}
+      {% if item.paintkit_name %}
+        <span class="meta-badge">{{ item.paintkit_name }}</span>
+      {% endif %}
+    </div>
+  {% endif %}
   {% if item.killstreak_tool_type %}
     <h4>{{ item.tier_name or "Killstreak Item" }}</h4>
     <p><strong>Weapon:</strong> {{ item.target_weapon_name or "Unknown" }}</p>
