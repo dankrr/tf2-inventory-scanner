@@ -57,7 +57,7 @@ async def main() -> None:
 1. Input text is parsed with `extract_steam_ids()` to collect valid Steam IDs.
 2. For each ID, the app fetches profile summaries, playtime and inventory data asynchronously via `steam_api_client`.
 3. `inventory_processor.process_inventory()` enriches each item with schema details and pricing via `valuation_service`.
-   - Wear uses this order: Steam Econ `Exterior` tag → cached `/properties/wears` lookup → safe float fallback.
+   - Wear uses this order: Steam Econ `Exterior` tag → canonical TF2 texture wear attr (`defindex 725`) decoded with `round(float * 5)` and mapped through cached `/properties/wears` IDs `1..5`.
    - Grade uses this order: Steam Econ `Rarity`/`Grade` tags → cached `/getItemGrade/v2` lookup → cached per-defindex endpoint fallback → name parser fallback.
 4. User cards are rendered server‑side using `_user.html` and `item_card.html` and inserted into `index.html`.
 5. JavaScript enhances the page with lazy loading, modal dialogs and retry functionality.

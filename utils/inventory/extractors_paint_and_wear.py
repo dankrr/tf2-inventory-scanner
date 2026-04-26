@@ -5,12 +5,11 @@ import re
 from .. import local_data
 from ..constants import PAINT_COLORS
 from ..helpers import best_match_from_keys
-from ..wear_helpers import _wear_tier, _decode_seed_info
+from ..wear_helpers import _decode_seed_info
 from .extract_attr_classes import (
     refresh_attr_classes,
     get_attr_class,
     PAINT_CLASSES,
-    WEAR_CLASSES,
     PAINTKIT_CLASSES,
 )
 
@@ -82,14 +81,21 @@ def _extract_econ_tag(
     return None
 
 
-def _extract_wear_attr_value(asset: Dict[str, Any]) -> tuple[float | None, Any | None]:
-    """Return ``(wear_float, raw_value)`` when a wear attribute can be parsed."""
+def _extract_wear_attr_value(
+    asset: Dict[str, Any]
+) -> tuple[float | None, Any | None, int | None]:
+    """Return ``(wear_raw_float, wear_raw, source_attr)`` from canonical TF2 wear data.
+
+    TF2 decorated exterior metadata is canonically stored on attribute defindex ``725``
+    (``set_item_texture_wear``). This helper intentionally ignores unrelated numeric
+    attributes so gameplay counters or paintkit values cannot be misinterpreted as wear.
+    """
 
     refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
-        if attr_class not in WEAR_CLASSES and idx not in (725, 749):
+        if idx != 725 and attr_class != "set_item_texture_wear":
             continue
         raw = attr.get("float_value")
         if raw is None:
@@ -97,111 +103,57 @@ def _extract_wear_attr_value(asset: Dict[str, Any]) -> tuple[float | None, Any |
         try:
             val = float(raw)
         except (TypeError, ValueError):
-            logger.warning("Invalid wear value: %r", raw)
-            continue
-        if not 0 <= val <= 1 and val not in (0, 1, 2, 3, 4):
-            logger.warning("Wear value out of range: %s", val)
-        return val, raw
+            logger.warning("Invalid canonical wear value: %r", raw)
+            return None, raw, 725
+        return val, raw, 725
 
-    wear_float, _ = _decode_seed_info(asset.get("attributes", []))
-    if wear_float is not None:
-        return wear_float, wear_float
-    return None, None
+    return None, None, None
 
 
-def _is_schema_wear_id_value(wear_float: float, wear_raw: Any) -> bool:
-    """Return True when wear metadata is encoded as an integer schema ID."""
+def _wear_name_from_id(wear_id: int) -> str | None:
+    """Resolve canonical wear label from cached schema wear IDs."""
 
-    if wear_float not in (0, 1, 2, 3, 4):
-        return False
+    if wear_id < 1 or wear_id > 5:
+        return None
+    mapping = local_data.WEAR_NAMES_BY_ID
+    return mapping.get(wear_id) or mapping.get(str(wear_id))
 
-    # Steam can serialize true boundary floats as float values like ``1.0``.
-    # Treat explicit floats as float-based wear, not schema IDs.
-    if isinstance(wear_raw, float):
-        return False
 
-    if isinstance(wear_raw, int):
-        return True
+def _decode_texture_wear(wear_raw_float: float | None) -> tuple[int | None, str | None]:
+    """Decode TF2 texture wear float to ``(wear_id, wear_name)``.
 
-    if isinstance(wear_raw, str):
-        raw = wear_raw.strip()
-        if not raw:
-            return False
-        if raw in {"0", "1", "2", "3", "4"}:
-            return True
-        return False
+    Canonical mapping uses ``round(wear_raw_float * 5)`` and accepts only IDs 1..5.
+    """
 
-    return False
+    if wear_raw_float is None:
+        return None, None
+    wear_id = round(wear_raw_float * 5)
+    if wear_id < 1 or wear_id > 5:
+        return None, None
+    return wear_id, _wear_name_from_id(wear_id)
 
 
 def resolve_wear(asset: Dict[str, Any]) -> Dict[str, Any]:
-    """Resolve wear metadata using econ tag, schema map, then float fallback."""
+    """Resolve TF2 exterior metadata using econ tags and canonical wear attribute 725."""
 
+    wear_raw_float, wear_raw, wear_source_attr = _extract_wear_attr_value(asset)
+    wear_id, mapped_name = _decode_texture_wear(wear_raw_float)
     econ_wear = _extract_econ_tag(asset, category="Exterior")
-    if econ_wear:
-        wear_float, wear_raw = _extract_wear_attr_value(asset)
-        if wear_float is not None and not (0 <= wear_float <= 1):
-            wear_float = None
-        return {
-            "wear": econ_wear,
-            "wear_name": econ_wear,
-            "exterior": econ_wear,
-            "wear_float": wear_float,
-            "wear_raw": wear_raw,
-            "wear_source": "econ_tag",
-        }
 
-    wear_float, wear_raw = _extract_wear_attr_value(asset)
-    if wear_float is not None:
-        if _is_schema_wear_id_value(wear_float, wear_raw):
-            mapped = local_data.WEAR_NAMES_BY_ID.get(int(wear_float))
-            if mapped:
-                return {
-                    "wear": mapped,
-                    "wear_name": mapped,
-                    "exterior": mapped,
-                    "wear_float": None,
-                    "wear_raw": wear_raw,
-                    "wear_source": "schema_wears",
-                }
-
-        if 0 <= wear_float <= 1:
-            # Prefer canonical schema names when they include this float tier.
-            fallback_name = _wear_tier(wear_float)
-            mapped = next(
-                (
-                    schema_name
-                    for schema_name in local_data.WEAR_NAMES_BY_ID.values()
-                    if str(schema_name).lower() == fallback_name.lower()
-                ),
-                None,
-            )
-            if mapped:
-                return {
-                    "wear": mapped,
-                    "wear_name": mapped,
-                    "exterior": mapped,
-                    "wear_float": wear_float,
-                    "wear_raw": wear_raw,
-                    "wear_source": "schema_wears",
-                }
-
-            return {
-                "wear": fallback_name,
-                "wear_name": fallback_name,
-                "exterior": fallback_name,
-                "wear_float": wear_float,
-                "wear_raw": wear_raw,
-                "wear_source": "float",
-            }
+    wear_name = econ_wear or mapped_name
+    wear_source = "econ_tag" if econ_wear else "schema_wears" if wear_name else "none"
+    wear_float = wear_raw_float if wear_name is not None else None
 
     return {
-        "wear": None,
-        "wear_name": None,
-        "exterior": None,
-        "wear_float": None,
+        "wear": wear_name,
+        "wear_name": wear_name,
+        "exterior": wear_name,
+        "wear_float": wear_float,
         "wear_raw": wear_raw,
-        "wear_source": "none",
+        "wear_raw_float": wear_raw_float if wear_name is not None else None,
+        "wear_id": wear_id if wear_name is not None else None,
+        "wear_source_attr": wear_source_attr if wear_name is not None else None,
+        "wear_source": wear_source,
     }
 
 
