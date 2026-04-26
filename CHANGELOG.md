@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- [2026-04-26] - Polished inventory UI: refined card depth/chips, added compact-safe user summary row, improved Border Mode accents, and redesigned modal sections while preserving Compact/Border toggles and delegated modal behavior.
 - Updated schema caching logic and UI (previous releases).
 - Security audit using git-secrets and pip-audit.
 - Price loader now reads both Craftable and Non-Craftable price entries.

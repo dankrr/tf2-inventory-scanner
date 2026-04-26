@@ -1248,3 +1248,241 @@ button[data-role="toggle-border"] {
     left: calc(12px + env(safe-area-inset-left, 0px));
   }
 }
+
+/* ===== 2026-04 UI polish pass (cards/header/modal/settings) ===== */
+:root {
+  --panel-bg: #171c24;
+  --panel-bg-soft: #1d2330;
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --text-strong: #f4f7ff;
+  --text-muted: #aeb8cc;
+  --focus-ring: #8cb4ff;
+}
+
+.user-card {
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), var(--panel-bg);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.user-header {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.65rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+}
+
+.profile-pic {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.profile-details .username {
+  color: var(--text-strong);
+  letter-spacing: 0.01em;
+}
+
+.tf2-hours {
+  color: var(--text-muted);
+}
+
+.user-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 0.75rem 0.55rem;
+}
+
+.summary-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #d7e0f2;
+  font-size: 11px;
+}
+
+.item-card {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.item-card:hover,
+.item-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.45);
+  filter: saturate(1.05);
+}
+
+.item-card:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.item-qty {
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.72);
+  font-weight: 600;
+}
+
+.item-price {
+  color: #f7f9ff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.meta-badge {
+  padding: 2px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.62);
+  max-width: 100%;
+}
+
+.wear-badge {
+  color: #e7edf9;
+  border-color: rgba(173, 208, 255, 0.4);
+  background: rgba(54, 74, 104, 0.58);
+}
+
+/* Requested explicit grade colors. */
+.grade-civilian-grade { color: #9ed9ff; }
+.grade-freelance-grade { color: #5d8eff; }
+.grade-mercenary-grade { color: #8c63ff; }
+.grade-commando-grade { color: #e65bff; }
+.grade-assassin-grade { color: #ffa347; }
+.grade-elite-grade { color: #ff5e5e; }
+
+body.compact .item-meta-badges { gap: 1px; }
+body.compact .meta-badge { font-size: 8px; padding: 1px 5px; }
+body.compact .wear-badge { max-width: 32px; text-align: center; }
+body.compact .wear-badge { font-size: 0; }
+body.compact .wear-badge::after {
+  content: attr(data-short);
+  font-size: 8px;
+}
+body.compact .user-header {
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+body.compact .profile-pic { width: 52px; }
+body.compact .user-summary { padding-bottom: 0.35rem; gap: 4px; }
+body.compact .summary-pill { font-size: 10px; padding: 2px 7px; }
+
+body.border-mode .item-card {
+  background:
+    linear-gradient(#181d25, #161b22) padding-box,
+    linear-gradient(var(--quality-color, #cf6a32), var(--quality-color, #cf6a32)) border-box;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 16px color-mix(in srgb, var(--quality-color, #cf6a32) 20%, transparent);
+}
+
+body.border-mode .item-card.has-dual-quality {
+  background:
+    linear-gradient(#181d25, #161b22) padding-box,
+    conic-gradient(from 135deg at 50% 50%, var(--quality-color, #cf6a32) 0 50%, var(--quality-alt, #8650ac) 0 100%) border-box;
+}
+
+body:not(.border-mode) .item-card {
+  background:
+    linear-gradient(color-mix(in srgb, var(--quality-color, #cf6a32) 16%, #0f1218), #101520) padding-box,
+    linear-gradient(var(--quality-color, #cf6a32), var(--quality-color, #cf6a32)) border-box;
+}
+
+#item-modal {
+  min-width: min(720px, calc(100vw - 24px));
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.58);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), #10141c;
+}
+
+#item-modal .modal-header {
+  margin: -1rem -1rem 0.75rem;
+  padding: 0.9rem 1rem 0.7rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--modal-accent, #7289da) 32%, #141923), #141923);
+}
+
+#item-modal .modal-header h3 {
+  margin: 0;
+  color: #f2f7ff;
+}
+
+#item-modal .modal-body {
+  display: block;
+}
+
+.modal-layout {
+  display: grid;
+  grid-template-columns: 124px 1fr;
+  gap: 12px;
+}
+
+.modal-media-wrap {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+}
+
+.modal-main-image {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.modal-section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 8px;
+}
+
+.modal-section h4 {
+  margin: 0 0 6px;
+  color: #c8d6f4;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.modal-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#settings-fab {
+  right: auto;
+}
+
+.settings-item.is-active,
+.settings-item[aria-pressed="true"] {
+  background: linear-gradient(180deg, rgba(101, 141, 255, 0.22), rgba(101, 141, 255, 0.12));
+  border: 1px solid rgba(140, 177, 255, 0.44);
+}
+
+.settings-item:focus-visible,
+#settings-fab:focus-visible,
+.user-search:focus-visible,
+.action-button:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 680px) {
+  .modal-layout { grid-template-columns: 1fr; }
+  .modal-media-wrap { justify-content: flex-start; }
+  .user-header { flex-wrap: wrap; gap: 8px; }
+  .user-controls { width: 100%; justify-content: space-between; }
+}

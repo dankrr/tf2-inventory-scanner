@@ -159,7 +159,9 @@ function updateSettingsMenuState() {
   const isCompact = document.body.classList.contains("compact");
   const isBorder = document.body.classList.contains("border-mode");
   compactBtn.setAttribute("aria-pressed", String(isCompact));
+  compactBtn.classList.toggle("is-active", isCompact);
   borderBtn.setAttribute("aria-pressed", String(isBorder));
+  borderBtn.classList.toggle("is-active", isBorder);
 }
 
 /**
@@ -351,6 +353,9 @@ function setupSettingsFab() {
       }
     });
     document.addEventListener("click", (e) => {
+      if (!menu.contains(e.target) && e.target !== fab) closeMenu();
+    });
+    document.addEventListener("pointerdown", (e) => {
       if (!menu.contains(e.target) && e.target !== fab) closeMenu();
     });
     document.addEventListener("keydown", (e) => {
