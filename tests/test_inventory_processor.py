@@ -1366,7 +1366,7 @@ def test_extract_wear_attr_749(monkeypatch):
     ld.SCHEMA_ATTRIBUTES = {749: {"attribute_class": "texture_wear_default"}}
     asset = {"attributes": [{"defindex": 749, "float_value": 0.04}]}
     wear = _extract_wear(asset)
-    assert wear == "Factory New"
+    assert wear is None
 
 
 def test_grade_tier_extracted_from_schema_tags(monkeypatch):
@@ -1449,7 +1449,13 @@ def test_wear_name_from_econ_tag_exterior():
 
 
 def test_wear_from_schema_wears_mapping():
-    ld.WEAR_NAMES_BY_ID = {0: "Factory New", 1: "Minimal Wear", 2: "Field-Tested"}
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
     data = {
         "items": [
             {
@@ -1462,12 +1468,20 @@ def test_wear_from_schema_wears_mapping():
     ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     item = ip.enrich_inventory(data)[0]
-    assert item["wear_name"] == "Field-Tested"
+    assert item["wear_name"] == "Minimal Wear"
+    assert item["wear_id"] == 2
+    assert item["wear_source_attr"] == 725
     assert item["wear_source"] == "schema_wears"
 
 
-def test_wear_float_one_point_zero_is_not_treated_as_schema_id():
-    ld.WEAR_NAMES_BY_ID = {0: "Factory New", 1: "Minimal Wear", 4: "Battle Scarred"}
+def test_wear_float_one_point_zero_decodes_to_canonical_wear_id():
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
     data = {
         "items": [
             {
@@ -1482,10 +1496,11 @@ def test_wear_float_one_point_zero_is_not_treated_as_schema_id():
     item = ip.enrich_inventory(data)[0]
     assert item["wear_name"] == "Battle Scarred"
     assert item["wear_float"] == 1.0
+    assert item["wear_id"] == 5
 
 
-def test_wear_integer_id_still_uses_schema_wear_lookup():
-    ld.WEAR_NAMES_BY_ID = {1: "Minimal Wear"}
+def test_wear_integer_id_is_not_used_as_direct_schema_lookup():
+    ld.WEAR_NAMES_BY_ID = {"5": "Battle Scarred"}
     data = {
         "items": [
             {
@@ -1498,9 +1513,10 @@ def test_wear_integer_id_still_uses_schema_wear_lookup():
     ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     item = ip.enrich_inventory(data)[0]
-    assert item["wear_name"] == "Minimal Wear"
+    assert item["wear_name"] == "Battle Scarred"
+    assert item["wear_id"] == 5
     assert item["wear_source"] == "schema_wears"
-    assert item["wear_float"] is None
+    assert item["wear_float"] == 1.0
 
 
 def test_invalid_wear_does_not_default_factory_new():
@@ -1521,17 +1537,26 @@ def test_invalid_wear_does_not_default_factory_new():
 
 
 @pytest.mark.parametrize(
-    "wear_float,expected",
+    "wear_float,expected_id,expected_name",
     [
-        (0.00, "Factory New"),
-        (0.07, "Minimal Wear"),
-        (0.15, "Field-Tested"),
-        (0.38, "Well-Worn"),
-        (0.45, "Battle Scarred"),
+        (0.2, 1, "Factory New"),
+        (0.4, 2, "Minimal Wear"),
+        (0.6, 3, "Field-Tested"),
+        (0.8, 4, "Well-Worn"),
+        (1.0, 5, "Battle Scarred"),
     ],
 )
-def test_wear_float_boundary_ranges(monkeypatch, wear_float, expected):
+def test_wear_float_decodes_via_canonical_wear_ids(
+    monkeypatch, wear_float, expected_id, expected_name
+):
     ld.SCHEMA_ATTRIBUTES = {725: {"attribute_class": "set_item_texture_wear"}}
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
     data = {
         "items": [
             {
@@ -1544,9 +1569,135 @@ def test_wear_float_boundary_ranges(monkeypatch, wear_float, expected):
     ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
     ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
     item = ip.enrich_inventory(data)[0]
-    assert item["wear_name"] == expected
-    assert item["wear"] == expected
-    assert item["exterior"] == expected
+    assert item["wear_name"] == expected_name
+    assert item["wear"] == expected_name
+    assert item["exterior"] == expected_name
+    assert item["wear_id"] == expected_id
+
+
+def test_wear_regression_giga_drain_canonical_texture_wear():
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "custom_name": "Giga Drain",
+                "attributes": [
+                    {"defindex": 834, "value": 426},
+                    {"defindex": 725, "float_value": 0.6000000238418579},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["custom_name"] == "Giga Drain"
+    assert item["wear_source_attr"] == 725
+    assert item["wear_raw_float"] == pytest.approx(0.6000000238418579)
+    assert item["wear_id"] == 3
+    assert item["wear_name"] == "Field-Tested"
+    assert item["exterior"] == "Field-Tested"
+    assert item["wear_name"] != "Battle Scarred"
+    assert item["wear_name"] != "Factory New"
+
+
+def test_wear_regression_kagura_canonical_texture_wear():
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "custom_name": "Kagura",
+                "attributes": [
+                    {"defindex": 834, "value": 224},
+                    {"defindex": 725, "float_value": 0.4000000059604645},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["custom_name"] == "Kagura"
+    assert item["wear_source_attr"] == 725
+    assert item["wear_raw_float"] == pytest.approx(0.4000000059604645)
+    assert item["wear_id"] == 2
+    assert item["wear_name"] == "Minimal Wear"
+    assert item["exterior"] == "Minimal Wear"
+    assert item["wear_name"] != "Field-Tested"
+    assert item["wear_name"] != "Battle Scarred"
+    assert item["wear_name"] != "Factory New"
+
+
+def test_wear_ignores_unrelated_float_attributes_without_texture_wear():
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 214, "float_value": 1e-30},
+                    {"defindex": 834, "float_value": 0.5},
+                    {"defindex": 866, "float_value": 0.75},
+                    {"defindex": 867, "float_value": 0.8},
+                    {"defindex": 741, "float_value": 1.0},
+                    {"defindex": 2053, "float_value": 99999},
+                    {"defindex": 45, "float_value": -5},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_id"] is None
+    assert item["wear_float"] is None
+    assert item["wear_raw_float"] is None
+    assert item["wear_name"] is None
+    assert item["exterior"] is None
+
+
+def test_paintkit_float_is_ignored_for_wear_detection():
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
+    ld.PAINTKIT_NAMES_BY_ID = {"426": "Giga Drain"}
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [
+                    {"defindex": 834, "value": 426, "float_value": 426.0},
+                ],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["paintkit_id"] == 426
+    assert item["wear_id"] is None
+    assert item["wear_name"] is None
 
 
 def test_uncraftable_flag_true():
