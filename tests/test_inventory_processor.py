@@ -10,6 +10,8 @@ import pytest
 def reset_data(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {}
     ld.SCHEMA_ATTRIBUTES = {}
+    ld.WEAR_NAMES_BY_ID = {}
+    ld.ITEM_GRADE_BY_DEFINDEX = {}
 
 
 @pytest.fixture
@@ -1384,7 +1386,36 @@ def test_grade_tier_extracted_from_schema_tags(monkeypatch):
     assert item["grade_name"] == "Elite Grade"
     assert item["tier_name"] != "Elite Grade"
     assert item["grade_color"] == "#FF5E5E"
+    assert item["grade_source"] == "econ_tag"
     assert any(b.get("type") == "grade" for b in item["badges"])
+
+
+def test_grade_tier_from_econ_tag_category_name_grade():
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "value": 350}],
+                "tags": [{"category_name": "Grade", "localized_tag_name": "Assassin Grade"}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flame Thrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["grade_name"] == "Assassin Grade"
+    assert item["grade_source"] == "econ_tag"
+
+
+def test_grade_tier_from_cached_defindex_map():
+    data = {"items": [{"defindex": 3001, "quality": 6, "attributes": []}]}
+    ld.ITEMS_BY_DEFINDEX = {3001: {"item_name": "Some Hat", "item_class": "hat"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    ld.ITEM_GRADE_BY_DEFINDEX = {3001: "Freelance Grade"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["grade_name"] == "Freelance Grade"
+    assert item["grade_source"] == "schema_grade_v2"
 
 
 def test_grade_tier_fallback_extracted_from_item_name():
@@ -1394,7 +1425,62 @@ def test_grade_tier_fallback_extracted_from_item_name():
     item = ip.enrich_inventory(data)[0]
     assert item["grade_name"] == "Mercenary Grade"
     assert item["tier"] == "Mercenary Grade"
+    assert item["grade_source"] == "name_fallback"
     assert item["grade_color"] == "#8C63FF"
+
+
+def test_wear_name_from_econ_tag_exterior():
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 725, "float_value": 0.01}],
+                "tags": [{"category": "Exterior", "localized_tag_name": "Field-Tested"}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_name"] == "Field-Tested"
+    assert item["exterior"] == "Field-Tested"
+    assert item["wear_source"] == "econ_tag"
+
+
+def test_wear_from_schema_wears_mapping():
+    ld.WEAR_NAMES_BY_ID = {0: "Factory New", 1: "Minimal Wear", 2: "Field-Tested"}
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 725, "float_value": 0.2}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_name"] == "Field-Tested"
+    assert item["wear_source"] == "schema_wears"
+
+
+def test_invalid_wear_does_not_default_factory_new():
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 725, "float_value": "not-a-float"}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flamethrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["wear_name"] is None
+    assert item["wear_source"] == "none"
 
 
 @pytest.mark.parametrize(

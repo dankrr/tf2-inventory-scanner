@@ -53,72 +53,143 @@ def _extract_pattern_seed(asset: Dict[str, Any]) -> int | None:
     return seed
 
 
-def _extract_wear(asset: Dict[str, Any]) -> str | None:
-    """Return wear tier name if present."""
+def _extract_econ_tag(
+    asset: Dict[str, Any], *, category: str, category_name: str | None = None
+) -> str | None:
+    """Return localized Steam Econ tag value for a category if present."""
+
+    tags = asset.get("tags")
+    if not isinstance(tags, list):
+        return None
+    category = category.lower()
+    category_name = category_name.lower() if category_name else None
+    for tag in tags:
+        if not isinstance(tag, dict):
+            continue
+        tag_category = str(tag.get("category", "")).lower()
+        tag_category_name = str(tag.get("category_name", "")).lower()
+        if tag_category != category and (
+            category_name is None or tag_category_name != category_name
+        ):
+            continue
+        raw = (
+            tag.get("localized_tag_name")
+            or tag.get("name")
+            or tag.get("internal_name")
+        )
+        if isinstance(raw, str) and raw.strip():
+            return raw.strip()
+    return None
+
+
+def _extract_wear_attr_value(asset: Dict[str, Any]) -> tuple[float | None, Any | None]:
+    """Return ``(wear_float, raw_value)`` when a wear attribute can be parsed."""
 
     refresh_attr_classes()
     for attr in asset.get("attributes", []):
         idx = attr.get("defindex")
         attr_class = get_attr_class(idx)
-        if attr_class in WEAR_CLASSES:
-            raw = attr.get("float_value")
-            if raw is None:
-                raw = attr.get("value")
-            try:
-                val = float(raw)
-            except (TypeError, ValueError):
-                logger.warning("Invalid wear value: %r", raw)
-                continue
-            if not 0 <= val <= 1:
-                logger.warning("Wear value out of range: %s", val)
-            name = local_data.WEAR_NAMES.get(str(int(val)))
-            return name or _wear_tier(val)
-        elif idx in (725, 749):
-            logger.warning("Using numeric fallback for wear index %s", idx)
-            raw = attr.get("float_value")
-            if raw is None:
-                raw = attr.get("value")
-            try:
-                val = float(raw)
-            except (TypeError, ValueError):
-                logger.warning("Invalid wear value: %r", raw)
-                continue
-            if not 0 <= val <= 1:
-                logger.warning("Wear value out of range: %s", val)
-            name = local_data.WEAR_NAMES.get(str(int(val)))
-            return name or _wear_tier(val)
+        if attr_class not in WEAR_CLASSES and idx not in (725, 749):
+            continue
+        raw = attr.get("float_value")
+        if raw is None:
+            raw = attr.get("value")
+        try:
+            val = float(raw)
+        except (TypeError, ValueError):
+            logger.warning("Invalid wear value: %r", raw)
+            continue
+        if not 0 <= val <= 1 and val not in (0, 1, 2, 3, 4):
+            logger.warning("Wear value out of range: %s", val)
+        return val, raw
 
     wear_float, _ = _decode_seed_info(asset.get("attributes", []))
     if wear_float is not None:
-        name = local_data.WEAR_NAMES.get(str(int(wear_float)))
-        return name or _wear_tier(wear_float)
+        return wear_float, wear_float
+    return None, None
 
-    return None
+
+def resolve_wear(asset: Dict[str, Any]) -> Dict[str, Any]:
+    """Resolve wear metadata using econ tag, schema map, then float fallback."""
+
+    econ_wear = _extract_econ_tag(asset, category="Exterior")
+    if econ_wear:
+        wear_float, wear_raw = _extract_wear_attr_value(asset)
+        if wear_float is not None and not (0 <= wear_float <= 1):
+            wear_float = None
+        return {
+            "wear": econ_wear,
+            "wear_name": econ_wear,
+            "exterior": econ_wear,
+            "wear_float": wear_float,
+            "wear_raw": wear_raw,
+            "wear_source": "econ_tag",
+        }
+
+    wear_float, wear_raw = _extract_wear_attr_value(asset)
+    if wear_float is not None:
+        if wear_float in (0, 1, 2, 3, 4):
+            mapped = local_data.WEAR_NAMES_BY_ID.get(int(wear_float))
+            if mapped:
+                return {
+                    "wear": mapped,
+                    "wear_name": mapped,
+                    "exterior": mapped,
+                    "wear_float": None,
+                    "wear_raw": wear_raw,
+                    "wear_source": "schema_wears",
+                }
+
+        if 0 <= wear_float <= 1:
+            # Prefer canonical schema names when they include this float tier.
+            fallback_name = _wear_tier(wear_float)
+            mapped = next(
+                (
+                    schema_name
+                    for schema_name in local_data.WEAR_NAMES_BY_ID.values()
+                    if str(schema_name).lower() == fallback_name.lower()
+                ),
+                None,
+            )
+            if mapped:
+                return {
+                    "wear": mapped,
+                    "wear_name": mapped,
+                    "exterior": mapped,
+                    "wear_float": wear_float,
+                    "wear_raw": wear_raw,
+                    "wear_source": "schema_wears",
+                }
+
+            return {
+                "wear": fallback_name,
+                "wear_name": fallback_name,
+                "exterior": fallback_name,
+                "wear_float": wear_float,
+                "wear_raw": wear_raw,
+                "wear_source": "float",
+            }
+
+    return {
+        "wear": None,
+        "wear_name": None,
+        "exterior": None,
+        "wear_float": None,
+        "wear_raw": wear_raw,
+        "wear_source": "none",
+    }
+
+
+def _extract_wear(asset: Dict[str, Any]) -> str | None:
+    """Backward-compatible wear extractor returning only the wear name."""
+
+    return resolve_wear(asset).get("wear_name")
 
 
 def _extract_wear_float(asset: Dict[str, Any]) -> float | None:
-    """Return wear float value if present."""
+    """Backward-compatible helper returning normalized wear float when available."""
 
-    refresh_attr_classes()
-    for attr in asset.get("attributes", []):
-        idx = attr.get("defindex")
-        attr_class = get_attr_class(idx)
-        if attr_class in WEAR_CLASSES or idx in (725, 749):
-            raw = attr.get("float_value")
-            if raw is None:
-                raw = attr.get("value")
-            try:
-                val = float(raw)
-            except (TypeError, ValueError):
-                logger.warning("Invalid wear value: %r", raw)
-                continue
-            if 0 <= val <= 1:
-                return val
-
-    wear_float, _ = _decode_seed_info(asset.get("attributes", []))
-    if wear_float is not None and 0 <= wear_float <= 1:
-        return wear_float
-    return None
+    return resolve_wear(asset).get("wear_float")
 
 
 def _slug_to_paintkit_name(slug: str) -> str:
@@ -232,4 +303,5 @@ __all__ = [
     "_extract_pattern_seed",
     "_slug_to_paintkit_name",
     "_extract_paintkit",
+    "resolve_wear",
 ]

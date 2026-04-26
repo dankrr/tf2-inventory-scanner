@@ -83,6 +83,8 @@ def test_load_files_auto_refetch(tmp_path, monkeypatch, caplog):
         "items": [{"defindex": 1, "name": "One"}],
         "particles": [{"id": 1, "name": "P"}],
         "qualities": {"1": "Unique"},
+        "wears": {"0": "Factory New"},
+        "item_grade_v2": {"15141": "Elite Grade"},
         "paintkits": [],
         "string_lookups": {
             "value": [

@@ -56,6 +56,8 @@ class SchemaProvider:
         "paintkits": "/properties/paintkits",
         "qualities": "/properties/qualities",
         "defindexes": "/properties/defindexes",
+        "wears": "/properties/wears",
+        "item_grade_v2": "/getItemGrade/v2",
         "string_lookups": "/raw/schema/string_lookups",
     }
 
@@ -81,6 +83,9 @@ class SchemaProvider:
         self.defindex_names: Dict[int, str] | None = None
         self.origins_by_index: Dict[int, str] | None = None
         self.string_lookups: Dict[str, str] | None = None
+        self.wears_map: Dict[int, str] | None = None
+        self.item_grade_map: Dict[int, str] | None = None
+        self._item_grade_endpoint_cache: Dict[int, str | None] = {}
 
     # ------------------------------------------------------------------
     def _fetch(self, endpoint: str) -> Any:
@@ -203,6 +208,9 @@ class SchemaProvider:
         self.effects_by_index = None
         self.origins_by_index = None
         self.string_lookups = None
+        self.wears_map = None
+        self.item_grade_map = None
+        self._item_grade_endpoint_cache = {}
 
     async def refresh_all_async(self, verbose: bool = False) -> None:
         """Asynchronously refresh all schema files."""
@@ -228,6 +236,9 @@ class SchemaProvider:
         self.effects_by_index = None
         self.origins_by_index = None
         self.string_lookups = None
+        self.wears_map = None
+        self.item_grade_map = None
+        self._item_grade_endpoint_cache = {}
 
     def _to_int_map(self, data: dict) -> Dict[int, Any]:
         mapping: Dict[int, Any] = {}
@@ -422,7 +433,110 @@ class SchemaProvider:
         return {}
 
     def get_wears(self, *, force: bool = False) -> Dict[int, str]:
-        return {}
+        """Return a mapping of wear id -> wear name from ``/properties/wears``."""
+
+        if self.wears_map is None or force:
+            data = self._load("wears", self.ENDPOINTS["wears"], force)
+            mapping: Dict[int, str] = {}
+            if isinstance(data, list):
+                for entry in data:
+                    if not isinstance(entry, dict):
+                        continue
+                    raw_id = entry.get("id")
+                    raw_name = entry.get("name") or entry.get("value")
+                    if raw_id is None or raw_name is None:
+                        continue
+                    try:
+                        mapping[int(raw_id)] = str(raw_name)
+                    except (TypeError, ValueError):
+                        continue
+            elif isinstance(data, dict):
+                for key, value in data.items():
+                    try:
+                        if str(key).isdigit():
+                            mapping[int(key)] = str(value)
+                        elif isinstance(value, dict):
+                            raw_id = value.get("id")
+                            raw_name = value.get("name") or value.get("value")
+                            if raw_id is not None and raw_name is not None:
+                                mapping[int(raw_id)] = str(raw_name)
+                        elif str(value).isdigit():
+                            mapping[int(value)] = str(key)
+                    except (TypeError, ValueError):
+                        continue
+            self.wears_map = mapping
+        return self.wears_map
+
+    def get_item_grade_map(self, *, force: bool = False) -> Dict[int, str]:
+        """Return a mapping of item defindex -> canonical grade name from v2."""
+
+        if self.item_grade_map is None or force:
+            data = self._load("item_grade_v2", self.ENDPOINTS["item_grade_v2"], force)
+            mapping: Dict[int, str] = {}
+            if isinstance(data, list):
+                for entry in data:
+                    if not isinstance(entry, dict):
+                        continue
+                    raw_defindex = entry.get("defindex") or entry.get("id")
+                    raw_grade = entry.get("grade") or entry.get("name") or entry.get("value")
+                    if raw_defindex is None or raw_grade is None:
+                        continue
+                    try:
+                        mapping[int(raw_defindex)] = str(raw_grade)
+                    except (TypeError, ValueError):
+                        continue
+            elif isinstance(data, dict):
+                # Common shape: {"5021": "Civilian Grade"}
+                for key, value in data.items():
+                    if str(key).isdigit() and value is not None:
+                        mapping[int(key)] = str(value)
+                        continue
+                    if isinstance(value, dict):
+                        raw_defindex = value.get("defindex") or value.get("id")
+                        raw_grade = value.get("grade") or value.get("name") or value.get("value")
+                        if raw_defindex is None or raw_grade is None:
+                            continue
+                        try:
+                            mapping[int(raw_defindex)] = str(raw_grade)
+                        except (TypeError, ValueError):
+                            continue
+            self.item_grade_map = mapping
+        return self.item_grade_map
+
+    def get_item_grade_from_defindex(
+        self, defindex: int, *, force: bool = False
+    ) -> str | None:
+        """Return canonical grade for a defindex using cached endpoint fallback."""
+
+        grade_map = self.get_item_grade_map(force=force)
+        if int(defindex) in grade_map:
+            return grade_map[int(defindex)]
+        if int(defindex) in self._item_grade_endpoint_cache and not force:
+            return self._item_grade_endpoint_cache[int(defindex)]
+
+        endpoint = f"/getItemGrade/fromDefindex/{int(defindex)}"
+        try:
+            data = self._fetch(endpoint)
+        except Exception:
+            self._item_grade_endpoint_cache[int(defindex)] = None
+            return None
+
+        resolved: str | None = None
+        if isinstance(data, dict):
+            value = data.get("value") if "value" in data else data
+            if isinstance(value, dict):
+                for key in ("grade", "name", "value"):
+                    raw = value.get(key)
+                    if isinstance(raw, str) and raw.strip():
+                        resolved = raw.strip()
+                        break
+            elif isinstance(value, str) and value.strip():
+                resolved = value.strip()
+
+        self._item_grade_endpoint_cache[int(defindex)] = resolved
+        if resolved:
+            grade_map[int(defindex)] = resolved
+        return resolved
 
     def get_crateseries(self, *, force: bool = False) -> Dict[int, int]:
         return {}
