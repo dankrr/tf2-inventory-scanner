@@ -19,7 +19,7 @@ except Exception:  # pragma: no cover
             get_valuation_service,
         )
 from .processor import _process_item
-from .extractors_misc import _PARTS_BY_ID
+from .extractors_misc import _PARTS_BY_ID, _KILL_EATER_PRIMARY
 
 
 def enrich_inventory(
@@ -61,7 +61,7 @@ def enrich_inventory(
                 attrs = asset.get("attributes", [])
             parts_found: set[str] = set()
             for attr in attrs:
-                if attr.get("defindex") == 214:
+                if attr.get("defindex") == _KILL_EATER_PRIMARY:
                     try:
                         idx = int(attr.get("value"))
                     except (TypeError, ValueError):

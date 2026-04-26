@@ -129,6 +129,7 @@ def _decode_texture_wear(wear_raw_float: float | None) -> tuple[int | None, str 
         return None, None
     wear_id = round(wear_raw_float * 5)
     if wear_id < 1 or wear_id > 5:
+        logger.warning("Wear value out of range: %r (id=%d)", wear_raw_float, wear_id)
         return None, None
     return wear_id, _wear_name_from_id(wear_id)
 
