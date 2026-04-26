@@ -273,8 +273,25 @@ def test_price_map_newline_name(tmp_path, monkeypatch):
 
 def test_missing_api_key(monkeypatch):
     monkeypatch.delenv("BPTF_API_KEY", raising=False)
+    monkeypatch.delenv("BACKPACK_TF_API_KEY", raising=False)
     with pytest.raises(RuntimeError):
         price_loader.ensure_prices_cached(refresh=True)
+
+
+def test_backpack_tf_alias_key(tmp_path, monkeypatch):
+    """Accept BACKPACK_TF_API_KEY when BPTF_API_KEY is not set."""
+
+    monkeypatch.delenv("BPTF_API_KEY", raising=False)
+    monkeypatch.setenv("BACKPACK_TF_API_KEY", "TEST")
+    monkeypatch.setattr(price_loader, "PRICES_FILE", tmp_path / "prices.json")
+    url = "https://backpack.tf/api/IGetPrices/v4?raw=1&key=TEST"
+    payload = {"response": {"success": 1, "items": {}}}
+
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, url, json=payload, status=200)
+        p = price_loader.ensure_prices_cached(refresh=True)
+
+    assert p.exists()
 
 
 def test_dump_and_load_price_map(tmp_path):

@@ -20,3 +20,9 @@ def test_extract_ids_from_status_block():
     ]
     assert "Xanmangamer" not in ids
     assert "active" not in ids
+
+
+def test_extract_vanity_from_url():
+    text = "https://steamcommunity.com/id/gaben/"
+    ids = extract_steam_ids(text)
+    assert ids == ["gaben"]

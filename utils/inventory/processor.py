@@ -18,6 +18,7 @@ from .maps_and_constants import (
     WAR_PAINT_TOOL_DEFINDEXES,
 )
 from .extractors_unusual_killstreak import (
+    _extract_unusual_effect,
     _extract_killstreak_tier,
     _extract_killstreak,
     _extract_killstreak_effect,
@@ -266,10 +267,11 @@ def _process_item(
                 continue
         return None
 
-    effect_id = _attr_val(attach_idx)
-    effect_name = (
-        local_data.EFFECT_NAMES.get(str(effect_id)) if effect_id is not None else None
-    )
+    unusual = _extract_unusual_effect(asset)
+    effect_id = unusual.get("id") if unusual else _attr_val(attach_idx)
+    effect_name = unusual.get("name") if unusual else None
+    if effect_name is None and effect_id is not None:
+        effect_name = local_data.EFFECT_NAMES.get(str(effect_id))
     has_attach_attr = effect_id is not None
 
     has_kill_eater_attr = _attr_val(kill_eater_idx) is not None

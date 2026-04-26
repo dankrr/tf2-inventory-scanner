@@ -8,7 +8,8 @@ The loader functions retry fetching prices from Backpack.tf. You can control the
 
 - `PRICE_RETRIES` – number of attempts (default: `3`)
 - `PRICE_DELAY` – seconds to wait between attempts (default: `5`)
-- `BPTF_API_KEY` – required Backpack.tf API key
+- `BPTF_API_KEY` – required Backpack.tf API key (preferred)
+- `BACKPACK_TF_API_KEY` – backward-compatible fallback key name
 
 When `prices.json` exists but is smaller than **512 KB** (`EMPTY_THRESHOLD`), it is considered incomplete. The file is deleted and the loader retries the download. If all retries fail, an empty `{}` cache is written and a warning is printed.
 
@@ -30,7 +31,8 @@ Running the application with `--refresh` forces a new download. Any incomplete c
 
 | Variable | Default | Description |
 | -------- | ------- | ----------- |
-| `BPTF_API_KEY` | – | Required Backpack.tf API key |
+| `BPTF_API_KEY` | – | Required Backpack.tf API key (preferred name) |
+| `BACKPACK_TF_API_KEY` | – | Fallback alias for legacy environments |
 | `PRICE_RETRIES` | `3` | How many times to retry fetching prices |
 | `PRICE_DELAY` | `5` | Seconds to wait between retries |
 

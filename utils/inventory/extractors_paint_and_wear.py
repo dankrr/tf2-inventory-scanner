@@ -172,6 +172,23 @@ def _extract_paintkit(
                     name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
                     return paintkit_id, (name or "Unknown")
 
+    # Legacy fallback: some payloads expose paintkit ids under defindex 749.
+    for attr in asset.get("attributes", []):
+        if attr.get("defindex") != 749:
+            continue
+        raw = attr.get("value")
+        if raw is None:
+            raw = attr.get("float_value")
+        try:
+            paintkit_id = int(float(raw)) if raw is not None else None
+        except (TypeError, ValueError):
+            logger.warning("Invalid paintkit id: %r", raw)
+            continue
+        if paintkit_id is not None:
+            logger.warning("Using numeric fallback for paintkit index %s", 749)
+            name = local_data.PAINTKIT_NAMES_BY_ID.get(str(paintkit_id))
+            return paintkit_id, (name or "Unknown")
+
     schema_name = schema_entry.get("name")
     if isinstance(schema_name, str):
         prefixes = (

@@ -56,3 +56,28 @@ async def test_get_tf2_playtime_hours(monkeypatch):
     monkeypatch.setattr(sac.httpx, "AsyncClient", DummyAsyncClient)
     hours = await sac.get_tf2_playtime_hours_async("1")
     assert hours == 1.5
+
+
+def test_convert_vanity_to_steam64(monkeypatch):
+    monkeypatch.setattr(sac, "STEAM_API_KEY", "x")
+
+    class DummyClient:
+        def __init__(self, *a, **k):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def get(self, *_a, **_k):
+            return types.SimpleNamespace(
+                status_code=200,
+                json=lambda: {
+                    "response": {"success": 1, "steamid": "76561197960287930"}
+                },
+            )
+
+    monkeypatch.setattr(sac.httpx, "Client", DummyClient)
+    assert sac.convert_to_steam64("gaben") == "76561197960287930"
