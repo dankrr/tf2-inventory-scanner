@@ -1,9 +1,12 @@
-"""Helpers for extracting TF2 item grade/tier metadata."""
+"""Helpers for extracting TF2 item grade metadata while keeping killstreak tiers separate."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Iterable
 import re
+
+from .. import local_data
+from ..schema_provider import SchemaProvider
 
 
 GRADE_COLOR_MAP: Dict[str, str] = {
@@ -19,6 +22,9 @@ _GRADE_REGEX = re.compile(
     r"\b(Civilian Grade|Freelance Grade|Mercenary Grade|Commando Grade|Assassin Grade|Elite Grade)\b",
     re.IGNORECASE,
 )
+
+_GRADE_ENDPOINT_LOOKUPS: dict[int, str | None] = {}
+_GRADE_PROVIDER: SchemaProvider | None = None
 
 
 def _normalize_grade_name(raw: str | None) -> str | None:
@@ -49,34 +55,72 @@ def _iter_string_candidates(schema_entry: Dict[str, Any], asset: Dict[str, Any])
             yield val
 
 
+def _extract_grade_from_tags(asset: Dict[str, Any], schema_entry: Dict[str, Any]) -> str | None:
+    """Resolve grade name from Steam Econ tags first, then schema tags."""
+
+    for tag_source in (asset.get("tags"), schema_entry.get("tags")):
+        if not isinstance(tag_source, list):
+            continue
+        for tag in tag_source:
+            if not isinstance(tag, dict):
+                continue
+            category = str(tag.get("category", "")).lower()
+            category_name = str(tag.get("category_name", "")).lower()
+            if category != "rarity" and category_name != "grade":
+                continue
+            for key in ("localized_tag_name", "name", "internal_name"):
+                parsed = _normalize_grade_name(tag.get(key))
+                if parsed:
+                    return parsed
+    return None
+
+
+def _grade_provider() -> SchemaProvider:
+    """Return a singleton schema provider used for grade endpoint fallback."""
+
+    global _GRADE_PROVIDER
+    if _GRADE_PROVIDER is None:
+        _GRADE_PROVIDER = SchemaProvider(cache_dir=local_data.ITEM_GRADE_FILE.parent)
+    return _GRADE_PROVIDER
+
+
+def _resolve_grade_from_defindex(defindex: int | None) -> tuple[str | None, str]:
+    """Resolve grade from cached v2 map and defindex endpoint fallback."""
+
+    if defindex is None:
+        return None, "none"
+
+    cached = local_data.ITEM_GRADE_BY_DEFINDEX.get(int(defindex))
+    normalized = _normalize_grade_name(cached)
+    if normalized:
+        return normalized, "schema_grade_v2"
+
+    if int(defindex) in _GRADE_ENDPOINT_LOOKUPS:
+        normalized = _normalize_grade_name(_GRADE_ENDPOINT_LOOKUPS[int(defindex)])
+        return normalized, "grade_endpoint" if normalized else "none"
+
+    fetched = _grade_provider().get_item_grade_from_defindex(int(defindex))
+    _GRADE_ENDPOINT_LOOKUPS[int(defindex)] = fetched
+    normalized = _normalize_grade_name(fetched)
+    if normalized:
+        return normalized, "grade_endpoint"
+    return None, "none"
+
+
 def _extract_grade_tier(
     asset: Dict[str, Any],
     schema_entry: Dict[str, Any],
     display_name: str | None = None,
     resolved_name: str | None = None,
+    defindex: int | None = None,
 ) -> Dict[str, str | None]:
-    """Return normalized grade/tier fields for cosmetics, war paints, and skins.
+    """Return normalized grade fields; never aliases killstreak tiers into grade."""
 
-    The extraction prefers schema-provided tag metadata and then falls back to
-    parsing known grade labels from name-like fields.
-    """
+    grade_name = _extract_grade_from_tags(asset, schema_entry)
+    grade_source = "econ_tag" if grade_name else "none"
 
-    grade_name: str | None = None
-
-    tags = schema_entry.get("tags")
-    if isinstance(tags, list):
-        for tag in tags:
-            if not isinstance(tag, dict):
-                continue
-            if str(tag.get("category", "")).lower() != "rarity":
-                continue
-            for key in ("localized_tag_name", "name", "internal_name"):
-                parsed = _normalize_grade_name(tag.get(key))
-                if parsed:
-                    grade_name = parsed
-                    break
-            if grade_name:
-                break
+    if not grade_name:
+        grade_name, grade_source = _resolve_grade_from_defindex(defindex)
 
     if not grade_name:
         for text in (
@@ -87,20 +131,23 @@ def _extract_grade_tier(
             parsed = _normalize_grade_name(text)
             if parsed:
                 grade_name = parsed
+                grade_source = "name_fallback"
                 break
 
     color = GRADE_COLOR_MAP.get(grade_name or "")
+    grade_slug = (grade_name or "").lower().replace(" ", "-") if grade_name else None
     return {
         "grade": grade_name,
         "grade_name": grade_name,
         "grade_color": color,
+        "grade_slug": grade_slug,
         "tier": grade_name,
         "item_tier": grade_name,
         "item_tier_name": grade_name,
         "tier_color": color,
         "item_tier_color": color,
+        "grade_source": grade_source if grade_name else "none",
     }
 
 
 __all__ = ["GRADE_COLOR_MAP", "_extract_grade_tier"]
-

@@ -26,10 +26,9 @@ from .extractors_unusual_killstreak import (
 )
 from .extractors_paint_and_wear import (
     _extract_paint,
-    _extract_wear,
-    _extract_wear_float,
     _extract_pattern_seed,
     _extract_paintkit,
+    resolve_wear,
 )
 from .extractors_grade_tier import _extract_grade_tier
 from .extractors_misc import (
@@ -178,8 +177,9 @@ def _process_item(
 
     paintkit_id = paintkit_name = None
     target_weapon_def = target_weapon_name = None
-    wear_name = _extract_wear(asset)
-    wear_float = _extract_wear_float(asset)
+    wear_meta = resolve_wear(asset)
+    wear_name = wear_meta.get("wear_name")
+    wear_float = wear_meta.get("wear_float")
 
     if warpaint_tool:
         (
@@ -357,8 +357,9 @@ def _process_item(
         schema_entry,
         display_name=display_name,
         resolved_name=resolved_name,
+        defindex=defindex_int,
     )
-    wear_exterior = wear_name
+    wear_exterior = wear_meta.get("exterior")
     original_name = name if is_unusual else None
     if is_unusual:
         name = display_name
@@ -490,7 +491,9 @@ def _process_item(
         "wear": wear_exterior,
         "wear_name": wear_name,
         "wear_float": wear_float,
+        "wear_raw": wear_meta.get("wear_raw"),
         "exterior": wear_exterior,
+        "wear_source": wear_meta.get("wear_source", "none"),
         "pattern_seed": pattern_seed,
         "skin_name": skin_name,
         "composite_name": composite_name,

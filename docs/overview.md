@@ -32,7 +32,7 @@ async def main() -> None:
 - **`utils/price_service.py`** – Formats raw price values into readable strings.
 - **`utils/valuation_service.py`** – Builds a price map and exposes helpers to attach price info to items.
 - **`utils/local_data.py`** – Loads cached schema files and constant mappings such as paints and qualities.
-- **`utils/schema_provider.py`** – Fetches and caches TF2 schema data from `schema.autobot.tf`.
+- **`utils/schema_provider.py`** – Fetches and caches TF2 schema data from `schema.autobot.tf`, including canonical wear (`/properties/wears`) and grade (`/getItemGrade/v2`) maps.
 
 ## Templates
 
@@ -57,7 +57,8 @@ async def main() -> None:
 1. Input text is parsed with `extract_steam_ids()` to collect valid Steam IDs.
 2. For each ID, the app fetches profile summaries, playtime and inventory data asynchronously via `steam_api_client`.
 3. `inventory_processor.process_inventory()` enriches each item with schema details and pricing via `valuation_service`.
+   - Wear uses this order: Steam Econ `Exterior` tag → cached `/properties/wears` lookup → safe float fallback.
+   - Grade uses this order: Steam Econ `Rarity`/`Grade` tags → cached `/getItemGrade/v2` lookup → cached per-defindex endpoint fallback → name parser fallback.
 4. User cards are rendered server‑side using `_user.html` and `item_card.html` and inserted into `index.html`.
 5. JavaScript enhances the page with lazy loading, modal dialogs and retry functionality.
 6. Price and schema data are cached under `cache/` to speed up processing and reduce network calls.
-
