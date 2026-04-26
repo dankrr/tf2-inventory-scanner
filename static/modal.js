@@ -131,7 +131,10 @@
       attrs.push(html);
     }
 
-    if (data.wear_name) attrs.push('<div>Wear: ' + esc(data.wear_name) + '</div>');
+    if (data.wear_name) {
+      const wearSlug = String(data.wear_name).toLowerCase().replace(/\s+/g, '-');
+      attrs.push('<div>Wear: <span class="wear-tier wear-' + esc(wearSlug) + '">' + esc(data.wear_name) + '</span></div>');
+    }
     if (data.wear_float !== undefined && data.wear_float !== null) {
       attrs.push('<div>Wear Float: ' + esc(Number(data.wear_float).toFixed(4)) + '</div>');
     }
@@ -214,6 +217,12 @@
         : data.unusual_effect;
     }
     if (effectBox) effectBox.textContent = effectText;
+
+    // Set quality color accent on the modal border-top (visual only).
+    const modalEl = document.getElementById('item-modal');
+    if (modalEl && data.quality_color) {
+      modalEl.style.setProperty('--modal-quality-color', data.quality_color);
+    }
   }
 
   function renderBadges(badges) {
