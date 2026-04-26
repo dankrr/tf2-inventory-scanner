@@ -4,6 +4,7 @@ import asyncio
 import time
 import json
 import argparse
+import logging
 import psutil
 import sys
 import contextlib
@@ -21,9 +22,9 @@ from utils import local_data
 from utils import constants as consts
 from utils.price_loader import ensure_prices_cached, ensure_currencies_cached
 from utils.cache_manager import _do_refresh, fetch_missing_cache_files
+from utils.terminal import COLOR_YELLOW, COLOR_RESET
 
-COLOR_YELLOW = "\033[33m"
-COLOR_RESET = "\033[0m"
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 if not os.getenv("STEAM_API_KEY"):
@@ -56,7 +57,13 @@ TEST_API_RESULTS_DIR: Path | None = None
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-insecure-change-me")
+_secret = os.getenv("FLASK_SECRET_KEY", "dev-insecure-change-me")
+if _secret == "dev-insecure-change-me":
+    print(
+        f"{COLOR_YELLOW}⚠ FLASK_SECRET_KEY not set — using insecure default. "
+        f"Set it in .env before deploying.{COLOR_RESET}"
+    )
+app.secret_key = _secret
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -153,7 +160,7 @@ async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
 
     Returns ``None`` if the player summary could not be retrieved.
     """
-    print(f"Fetching player summary for {steamid64}")
+    logger.debug("Fetching player summary for %s", steamid64)
     players: List[Dict[str, Any]] | None = None
     playtime: float | None = None
 
@@ -200,7 +207,7 @@ async def get_player_summary(steamid64: str) -> Dict[str, Any] | None:
     return {
         "username": username,
         "avatar": avatar,
-        "playtime": round(playtime, 1),
+        "playtime": round(playtime, 1) if playtime is not None else 0.0,
         "profile": profile,
     }
 
@@ -253,10 +260,7 @@ async def build_user_data_async(steamid64: str) -> Dict[str, Any] | None:
     merge_ms = int((time.perf_counter() - t2) * 1000)
     global MAX_MERGE_MS
     MAX_MERGE_MS = max(MAX_MERGE_MS, merge_ms)
-    print(
-        f"inventory_fetch_ms={inventory_fetch_ms} merge_ms={merge_ms}",
-        flush=True,
-    )
+    logger.debug("inventory_fetch_ms=%d merge_ms=%d", inventory_fetch_ms, merge_ms)
 
     return summary
 
@@ -269,10 +273,12 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
     return SimpleNamespace(**user)
 
 
-async def fetch_and_process_single_user(steamid64: int) -> str:
+async def fetch_and_process_single_user(steamid64: int) -> tuple[str, int]:
     user = await build_user_data_async(str(steamid64))
-    user = normalize_user_payload(user)
-    return render_template("_user.html", user=user)
+    if user is None:
+        return "", 404
+    user_ns = normalize_user_payload(user)
+    return render_template("_user.html", user=user_ns), 200
 
 
 async def fetch_and_process_many(
@@ -308,7 +314,7 @@ async def fetch_and_process_many(
             continue
         user_ns = normalize_user_payload(user)
         if user_ns.steamid in seen:
-            print("DUPLICATE PANEL:", user_ns.steamid)
+            logger.warning("Duplicate panel skipped for steamid %s", user_ns.steamid)
             continue
         seen.add(user_ns.steamid)
         rendered = render_template("_user.html", user=user_ns)
@@ -476,7 +482,7 @@ async def index():
                 ids.append(sac.convert_to_steam64(token))
             except ValueError:
                 invalid.append(token)
-        print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
+        logger.debug("Parsed %d valid IDs, %d tokens ignored", len(ids), len(invalid))
         if ids:
             if invalid:
                 flash(f"Ignored {len(invalid)} invalid input(s).")

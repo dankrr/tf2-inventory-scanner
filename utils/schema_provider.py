@@ -538,11 +538,3 @@ class SchemaProvider:
             grade_map[int(defindex)] = resolved
         return resolved
 
-    def get_crateseries(self, *, force: bool = False) -> Dict[int, int]:
-        return {}
-
-    def get_craftWeapons(self, *, force: bool = False) -> Dict[int, str]:
-        return {}
-
-    def get_uncraftWeapons(self, *, force: bool = False) -> Dict[int, str]:
-        return {}

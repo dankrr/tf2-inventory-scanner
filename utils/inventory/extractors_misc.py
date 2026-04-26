@@ -12,6 +12,11 @@ from .extract_attr_classes import (
 
 logger = logging.getLogger(__name__)
 
+# Kill-eater attribute defindexes (Strange tracking counters and score types)
+_KILL_EATER_PRIMARY = 214       # primary kill count
+_KILL_EATER_SCORE_TYPE = 292    # primary score type
+_KILL_EATER_SECONDARY_BASE = 379  # secondary kill-eater attrs start here
+
 SCHEMA_DIR = Path("cache/schema")
 try:  # graceful fallback if the optional file is missing
     with open(SCHEMA_DIR / "strange_parts.json") as fp:
@@ -185,20 +190,18 @@ def _extract_kill_eater_info(
             # Ignore non-numeric values
             continue
 
-        if idx == 214:
+        if idx == _KILL_EATER_PRIMARY:
             counts[1] = val
             continue
-        if idx == 292:
+        if idx == _KILL_EATER_SCORE_TYPE:
             types[1] = val
             continue
 
-        if idx >= 379:
+        if idx >= _KILL_EATER_SECONDARY_BASE:
             if idx % 2:  # odd -> kill_eater_X
-                counts[(idx - 379) // 2 + 2] = val
+                counts[(idx - _KILL_EATER_SECONDARY_BASE) // 2 + 2] = val
             else:  # even -> score_type_X
-                types[(idx - 380) // 2 + 2] = val
-        elif idx in (214, 292):
-            pass
+                types[(idx - (_KILL_EATER_SECONDARY_BASE + 1)) // 2 + 2] = val
 
     return counts, types
 
@@ -232,12 +235,6 @@ def _trade_hold_timestamp(asset: dict) -> int | None:
     return None
 
 
-def _has_trade_hold(asset: dict) -> bool:
-    """Return ``True`` if the item has a temporary trade hold."""
-
-    return _trade_hold_timestamp(asset) is not None
-
-
 __all__ = [
     "_PARTS_BY_ID",
     "_extract_crate_series",
@@ -247,5 +244,4 @@ __all__ = [
     "_extract_strange_parts",
     "_extract_kill_eater_info",
     "_trade_hold_timestamp",
-    "_has_trade_hold",
 ]
