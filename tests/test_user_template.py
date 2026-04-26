@@ -1,4 +1,5 @@
 import importlib
+import json
 from pathlib import Path
 
 import pytest
@@ -269,6 +270,62 @@ def test_uncraftable_class_rendered(app):
     assert card is not None
     classes = card.get("class", [])
     assert "uncraftable" in classes
+    assert "is-uncraftable" in classes
+
+
+def test_uncraftable_data_item_flags_and_badge_rendered(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Widget",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                    "craftable": False,
+                    "is_craftable": False,
+                    "uncraftable": True,
+                    "is_uncraftable": True,
+                    "craftability_source": "flag_cannot_craft",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    payload = json.loads(card["data-item"])
+    assert payload["craftable"] is False
+    assert payload["is_uncraftable"] is True
+    badge = soup.find("span", class_="uncraftable-badge")
+    assert badge is not None
+
+
+def test_craftable_item_does_not_render_uncraftable_badge(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Craftable Widget",
+                    "image_url": "",
+                    "quality_color": "#fff",
+                    "craftable": True,
+                    "is_craftable": True,
+                    "uncraftable": False,
+                    "is_uncraftable": False,
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.find("span", class_="uncraftable-badge") is None
 
 
 def test_elevated_strange_class_rendered(app):

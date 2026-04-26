@@ -102,37 +102,83 @@ def _get_special_attr_defindexes() -> Dict[str, int | None]:
 
 
 
-def _extract_craftability(asset: Dict[str, Any]) -> tuple[bool, bool, str]:
-    """Return normalized craftability flags and the source used.
+def _coerce_bool(value: Any) -> bool | None:
+    """Return a normalized boolean for common boolean-like values.
 
-    Returns:
-        Tuple ``(craftable, is_uncraftable, source)``.
+    Supports booleans, numeric sentinels (``0``/``1``), and string booleans.
+    Returns ``None`` when the value is unknown.
     """
 
-    if "flag_cannot_craft" in asset:
-        is_uncraftable = bool(asset.get("flag_cannot_craft"))
-        return (not is_uncraftable), is_uncraftable, "asset_flag"
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+        return None
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y"}:
+            return True
+        if normalized in {"false", "0", "no", "n"}:
+            return False
+    return None
 
-    if "craftable" in asset and isinstance(asset.get("craftable"), bool):
-        craftable = bool(asset.get("craftable"))
-        return craftable, (not craftable), "asset_craftable"
 
-    if "is_craftable" in asset and isinstance(asset.get("is_craftable"), bool):
-        craftable = bool(asset.get("is_craftable"))
-        return craftable, (not craftable), "asset_is_craftable"
+def normalize_craftability(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Return canonical craftability fields for an item-like mapping.
 
-    if "is_uncraftable" in asset and isinstance(asset.get("is_uncraftable"), bool):
-        is_uncraftable = bool(asset.get("is_uncraftable"))
-        return (not is_uncraftable), is_uncraftable, "asset_is_uncraftable"
+    Priority:
+      1. ``flag_cannot_craft == true``
+      2. ``uncraftable`` / ``is_uncraftable`` set true
+      3. ``craftable`` / ``is_craftable`` set false
+      4. explicit craftable true
+      5. description fallback
+      6. default craftable true
+    """
 
-    for desc in asset.get("descriptions", []) or []:
-        if not isinstance(desc, dict):
-            continue
-        text = str(desc.get("value", "")).lower()
-        if "not usable in crafting" in text:
-            return False, True, "description"
+    flag_cannot_craft = _coerce_bool(item.get("flag_cannot_craft"))
+    uncraftable = _coerce_bool(item.get("uncraftable"))
+    is_uncraftable = _coerce_bool(item.get("is_uncraftable"))
+    craftable = _coerce_bool(item.get("craftable"))
+    is_craftable = _coerce_bool(item.get("is_craftable"))
 
-    return True, False, "default"
+    if flag_cannot_craft is True:
+        final_craftable = False
+        source = "flag_cannot_craft"
+    elif uncraftable is True or is_uncraftable is True:
+        final_craftable = False
+        source = "is_uncraftable"
+    elif craftable is False or is_craftable is False:
+        final_craftable = False
+        source = "craftable_false"
+    elif craftable is True or is_craftable is True:
+        final_craftable = True
+        source = "craftable_true"
+    else:
+        final_craftable = None
+        source = "unknown"
+        for desc in item.get("descriptions", []) or []:
+            if not isinstance(desc, dict):
+                continue
+            text = str(desc.get("value", "")).lower()
+            if "not usable in crafting" in text:
+                final_craftable = False
+                source = "description"
+                break
+        if final_craftable is None:
+            final_craftable = True
+            source = "default"
+
+    final_uncraftable = not final_craftable
+    return {
+        "craftable": final_craftable,
+        "is_craftable": final_craftable,
+        "uncraftable": final_uncraftable,
+        "is_uncraftable": final_uncraftable,
+        "craftability_source": source,
+    }
 
 
 def _process_item(
@@ -183,7 +229,8 @@ def _process_item(
     if hide_item:
         valuation_service = None
 
-    craftable, is_uncraftable, craftability_source = _extract_craftability(asset)
+    craftability = normalize_craftability(asset)
+    craftable = bool(craftability["craftable"])
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -587,11 +634,11 @@ def _process_item(
         ),
         "trade_hold_expires": trade_hold_ts,
         "untradable_hold": untradable_hold,
-        "uncraftable": is_uncraftable,
-        "is_uncraftable": is_uncraftable,
-        "craftable": craftable,
-        "is_craftable": craftable,
-        "craftability_source": craftability_source,
+        "uncraftable": craftability["uncraftable"],
+        "is_uncraftable": craftability["is_uncraftable"],
+        "craftable": craftability["craftable"],
+        "is_craftable": craftability["is_craftable"],
+        "craftability_source": craftability["craftability_source"],
         "_hidden": hide_item,
         "extra_qualities": extra_qualities,
         "killstreak_tier_name": (

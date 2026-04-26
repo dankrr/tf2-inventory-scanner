@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 
 - [2026-04-26] - Polished inventory UI: refined card depth/chips, added compact-safe user summary row, improved Border Mode accents, and redesigned modal sections while preserving Compact/Border toggles and delegated modal behavior.
 - [2026-04-26] - Refined grade chip isolation/short labels, added spelled-item summary count, and normalized uncraftable flags for display + craftability-aware pricing lookup.
+- [2026-04-26] - Fixed craftability normalization so raw `flag_cannot_craft` always produces consistent uncraftable booleans and pricing receives `craftable=false`.
 - Updated schema caching logic and UI (previous releases).
 - Security audit using git-secrets and pip-audit.
 - Price loader now reads both Craftable and Non-Craftable price entries.

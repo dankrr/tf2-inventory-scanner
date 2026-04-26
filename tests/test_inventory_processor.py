@@ -3,6 +3,7 @@ from utils import local_data as ld
 from utils.valuation_service import ValuationService
 from utils.inventory.extractors_paint_and_wear import _extract_wear
 from pathlib import Path
+import json
 import pytest
 
 
@@ -1706,7 +1707,10 @@ def test_uncraftable_flag_true():
     ld.QUALITIES_BY_INDEX = {6: "Unique"}
     items = ip.enrich_inventory(data)
     assert items[0]["uncraftable"] is True
+    assert items[0]["is_uncraftable"] is True
     assert items[0]["craftable"] is False
+    assert items[0]["is_craftable"] is False
+    assert items[0]["craftability_source"] == "flag_cannot_craft"
 
 
 def test_uncraftable_flag_absent():
@@ -1716,6 +1720,26 @@ def test_uncraftable_flag_absent():
     items = ip.enrich_inventory(data)
     assert items[0]["uncraftable"] is False
     assert items[0]["craftable"] is True
+
+
+def test_cache_regression_flag_cannot_craft_always_normalizes():
+    """Regression for cached inventories where `flag_cannot_craft` was ignored."""
+
+    fixture_path = Path("tests/fixtures/craftability_cache_sample.json")
+    data = json.loads(fixture_path.read_text())
+    ld.ITEMS_BY_DEFINDEX = {
+        61: {"item_name": "Ambassador"},
+        594: {"item_name": "Phlogistinator"},
+    }
+    ld.QUALITIES_BY_INDEX = {6: "Unique", 11: "Strange"}
+    items = ip.enrich_inventory(data)
+    assert len(items) == 2
+    for item in items:
+        assert item["craftable"] is False
+        assert item["is_craftable"] is False
+        assert item["uncraftable"] is True
+        assert item["is_uncraftable"] is True
+        assert item["craftability_source"] == "flag_cannot_craft"
 
 
 
@@ -1776,9 +1800,19 @@ def test_uncraftable_detected_from_description_when_flag_missing():
 
 
 def test_uncraftable_pricing_uses_non_craftable_lookup(monkeypatch):
-    data = {"items": [{"defindex": 111, "quality": 6, "flag_cannot_craft": True}]}
-    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
-    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    data = {
+        "items": [
+            {
+                "id": 16084572708,
+                "defindex": 594,
+                "quality": 11,
+                "custom_name": "Tyler TF2",
+                "flag_cannot_craft": True,
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {594: {"item_name": "Phlogistinator"}}
+    ld.QUALITIES_BY_INDEX = {11: "Strange"}
 
     class SpyValuation:
         def __init__(self):
@@ -1797,6 +1831,7 @@ def test_uncraftable_pricing_uses_non_craftable_lookup(monkeypatch):
     assert spy.calls
     assert spy.calls[0][2] is False
     assert item["price_string"] == ""
+    assert item["craftability_source"] == "flag_cannot_craft"
 
 
 def test_killstreak_kit_parsing():

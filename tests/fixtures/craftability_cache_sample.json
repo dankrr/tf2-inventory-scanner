@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "id": 14520068643,
+      "defindex": 61,
+      "quality": 6,
+      "flag_cannot_craft": true
+    },
+    {
+      "id": 16084572708,
+      "defindex": 594,
+      "quality": 11,
+      "custom_name": "Tyler TF2",
+      "flag_cannot_craft": true
+    }
+  ]
+}

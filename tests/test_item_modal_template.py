@@ -69,6 +69,16 @@ def test_uncraftable_text_shown(app):
     assert "Uncraftable" in soup.text
 
 
+def test_uncraftable_badge_shown_from_normalized_field(app):
+    item = {"is_uncraftable": True, "grade_name": "Elite Grade"}
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    badge = soup.find("span", class_="uncraftable-badge")
+    assert badge is not None
+    assert "Uncraftable" in badge.text
+
+
 def test_team_shine_gradient(app):
     item = {
         "killstreak_name": "Professional Killstreak",

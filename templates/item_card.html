@@ -50,7 +50,7 @@ full_title = (title_parts + [base]) | join(' ') %}
 {% endif %}
 
 <div
-  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable %} uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
+  class="item-card{% if item.untradable_hold %} trade-hold{% endif %}{% if item.uncraftable or item.is_uncraftable %} uncraftable is-uncraftable{% endif %}{% if item.has_strange_tracking %} elevated-strange{% endif %}{% if alt_q %} has-dual-quality{% endif %}"
   style="--quality-color: {{ item.quality_color }};{% if alt_q %} --quality-alt: {{ alt_q }};{% endif %} border-color: {{ item.border_color or item.quality_color }};"
   title="{{ full_title }}"
   {%
@@ -134,7 +134,7 @@ full_title = (title_parts + [base]) | join(' ') %}
     >
     {% endif %} {% endif %} {% endfor %}
   </div>
-  {% if item.grade_name or item.wear_name %}
+  {% if item.grade_name or item.wear_name or item.is_uncraftable or item.uncraftable %}
   <div class="item-meta-badges">
     {% if item.grade_name %}
     <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}" title="{{ item.grade_name }}">{{ item.grade_short_name or item.grade_name }}</span>
