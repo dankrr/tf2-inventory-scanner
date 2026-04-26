@@ -276,7 +276,15 @@ def normalize_user_payload(user: Dict[str, Any]) -> SimpleNamespace:
 async def fetch_and_process_single_user(steamid64: int) -> tuple[str, int]:
     user = await build_user_data_async(str(steamid64))
     if user is None:
-        return "", 404
+        user = {
+            "steamid": str(steamid64),
+            "username": str(steamid64),
+            "avatar": "",
+            "playtime": 0.0,
+            "profile": f"https://steamcommunity.com/profiles/{steamid64}",
+            "items": [],
+            "status": "failed",
+        }
     user_ns = normalize_user_payload(user)
     return render_template("_user.html", user=user_ns), 200
 
