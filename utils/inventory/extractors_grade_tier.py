@@ -27,6 +27,20 @@ _GRADE_ENDPOINT_LOOKUPS: dict[int, str | None] = {}
 _GRADE_PROVIDER: SchemaProvider | None = None
 
 
+def short_grade_label(grade_name: str | None) -> str | None:
+    """Return a display-safe short label for a canonical grade name.
+
+    Examples:
+        ``"Commando Grade" -> "Commando"``
+        ``"Elite Grade" -> "Elite"``
+    """
+
+    if not grade_name:
+        return None
+    normalized = _normalize_grade_name(grade_name) or grade_name.strip()
+    return re.sub(r"\s+Grade$", "", normalized, flags=re.IGNORECASE).strip()
+
+
 def _normalize_grade_name(raw: str | None) -> str | None:
     """Normalize a raw grade label to its canonical TF2 grade name."""
 
@@ -136,9 +150,11 @@ def _extract_grade_tier(
 
     color = GRADE_COLOR_MAP.get(grade_name or "")
     grade_slug = (grade_name or "").lower().replace(" ", "-") if grade_name else None
+    grade_short_name = short_grade_label(grade_name)
     return {
         "grade": grade_name,
         "grade_name": grade_name,
+        "grade_short_name": grade_short_name,
         "grade_color": color,
         "grade_slug": grade_slug,
         "tier": grade_name,
@@ -150,4 +166,4 @@ def _extract_grade_tier(
     }
 
 
-__all__ = ["GRADE_COLOR_MAP", "_extract_grade_tier"]
+__all__ = ["GRADE_COLOR_MAP", "short_grade_label", "_extract_grade_tier"]

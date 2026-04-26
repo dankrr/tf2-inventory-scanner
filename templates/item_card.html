@@ -137,11 +137,14 @@ full_title = (title_parts + [base]) | join(' ') %}
   {% if item.grade_name or item.wear_name %}
   <div class="item-meta-badges">
     {% if item.grade_name %}
-    <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}" title="{{ item.grade_name }}">{{ item.grade_name }}</span>
+    <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}" title="{{ item.grade_name }}">{{ item.grade_short_name or item.grade_name }}</span>
     {% endif %}
     {% if item.wear_name %}
     {% set wear_short = {'Factory New':'FN','Minimal Wear':'MW','Field-Tested':'FT','Well-Worn':'WW','Battle Scarred':'BS'}.get(item.wear_name, item.wear_name) %}
     <span class="meta-badge wear-badge" title="{{ item.wear_name }}" data-short="{{ wear_short }}">{{ item.wear_name }}</span>
+    {% endif %}
+    {% if item.is_uncraftable or item.uncraftable %}
+    <span class="meta-badge uncraftable-badge" title="Uncraftable">Uncraftable</span>
     {% endif %}
   </div>
   {% endif %}

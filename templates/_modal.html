@@ -30,16 +30,19 @@
       {% endif %}
     </div>
   {% endif %}
-  {% if item.grade_name or item.wear_name or item.paintkit_name %}
+  {% if item.grade_name or item.wear_name or item.paintkit_name or item.uncraftable or item.is_uncraftable %}
     <div class="killstreak-info">
       {% if item.grade_name %}
-        <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}">{{ item.grade_name }}</span>
+        <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}">{{ item.grade_short_name or (item.grade_name|replace(" Grade", "")) }}</span>
       {% endif %}
       {% if item.wear_name %}
         <span class="meta-badge wear-badge">{{ item.wear_name }}</span>
       {% endif %}
       {% if item.paintkit_name %}
         <span class="meta-badge">{{ item.paintkit_name }}</span>
+      {% endif %}
+      {% if item.uncraftable or item.is_uncraftable or item.craftable is sameas false %}
+        <span class="meta-badge uncraftable-badge">Uncraftable</span>
       {% endif %}
     </div>
   {% endif %}

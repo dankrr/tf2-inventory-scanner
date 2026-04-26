@@ -87,6 +87,17 @@
   }
 
   /**
+   * Return a short display label for TF2 grade chips.
+   *
+   * @param {string|null|undefined} gradeName - Full grade label.
+   * @returns {string} Grade label without trailing "Grade".
+   */
+  function shortGradeLabel(gradeName) {
+    if (!gradeName) return '';
+    return String(gradeName).replace(/\s+Grade$/i, '').trim();
+  }
+
+  /**
    * Build modal detail rows in a sectioned layout while keeping existing labels for tests/compat.
    *
    * @param {Record<string, any>} data - Item payload from `data-item`.
@@ -203,13 +214,17 @@
     const badgeParts = [];
     if (data.grade_name) {
       const cls = gradeClassSuffix(data.grade_name);
-      badgeParts.push('<span class="meta-badge grade-badge grade-' + esc(cls) + '">' + esc(data.grade_name) + '</span>');
+      const gradeLabel = data.grade_short_name || shortGradeLabel(data.grade_name);
+      badgeParts.push('<span class="meta-badge grade-badge grade-' + esc(cls) + '" title="' + esc(data.grade_name) + '">' + esc(gradeLabel) + '</span>');
     }
     if (data.wear_name) {
       badgeParts.push('<span class="meta-badge wear-badge">' + esc(data.wear_name) + '</span>');
     }
     if (data.paintkit_name) {
       badgeParts.push('<span class="meta-badge">' + esc(data.paintkit_name) + '</span>');
+    }
+    if (data.is_uncraftable === true || data.uncraftable === true || data.craftable === false) {
+      badgeParts.push('<span class="meta-badge uncraftable-badge">Uncraftable</span>');
     }
 
     const imgTag = '<div class="modal-media-wrap"><img class="modal-main-image" src="' + esc(data.image_url || '') + '" width="96" height="96" alt=""></div>';

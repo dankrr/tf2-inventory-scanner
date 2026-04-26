@@ -63,13 +63,14 @@ if (!html2.includes('<li>Fire</li>')) {
 }
 const htmlWearGrade = modal.generateModalHTML({
   grade_name: 'Elite Grade',
+  grade_short_name: 'Elite',
   wear_name: 'Factory New',
   wear_float: 0.042,
 });
-if (!htmlWearGrade.includes('Elite Grade')) {
-  throw new Error('Grade badge not rendered');
+if (!htmlWearGrade.includes('Elite')) {
+  throw new Error('Short grade badge not rendered');
 }
-if (!htmlWearGrade.includes('Wear: Factory New')) {
+if (!htmlWearGrade.includes('Wear:</strong> Factory New')) {
   throw new Error('Wear line not rendered');
 }
 if (!htmlWearGrade.includes('Wear Float: 0.0420')) {

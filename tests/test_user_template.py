@@ -348,3 +348,51 @@ def test_professional_killstreak_australium_title(app):
     card = soup.find("div", class_="item-card")
     assert card is not None
     assert card.get("title") == "Professional Killstreak Australium Scattergun"
+
+
+def test_grade_badge_uses_short_label_and_card_keeps_quality_style(app):
+    context = {
+        "user": {
+            "items": [
+                {
+                    "name": "Decorated Test",
+                    "display_name": "Decorated Test",
+                    "quality_color": "#123456",
+                    "border_color": "#123456",
+                    "grade_name": "Commando Grade",
+                    "grade_short_name": "Commando",
+                }
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    soup = BeautifulSoup(html, "html.parser")
+    card = soup.find("div", class_="item-card")
+    assert card is not None
+    assert "grade-commando-grade" not in card.get("class", [])
+    assert "--quality-color: #123456" in card.get("style", "")
+    grade_chip = soup.find("span", class_="grade-badge")
+    assert grade_chip is not None
+    assert grade_chip.text.strip() == "Commando"
+
+
+def test_user_summary_counts_spelled_items(app):
+    context = {
+        "user": {
+            "items": [
+                {"name": "A", "image_url": "", "spells": ["Exorcism"]},
+                {"name": "B", "image_url": "", "has_spells": True},
+                {"name": "C", "image_url": "", "spell_names": ["Halloween Fire"]},
+                {"name": "D", "image_url": ""},
+            ]
+        }
+    }
+    with app.test_request_context():
+        app_module = importlib.import_module("app")
+        context["user"] = app_module.normalize_user_payload(context["user"])
+        html = render_template_string(HTML, **context)
+    assert "Spells:" in html
+    assert "> 3<" in html or "Spells:</span> 3" in html

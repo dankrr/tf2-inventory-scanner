@@ -68,6 +68,12 @@
   {% set strange_count = visible_items | selectattr('has_strange_tracking') | list | length %}
   {% set decorated_count = visible_items | selectattr('grade_name') | list | length %}
   {% set ns = namespace(total_ref=0, has_total=false) %}
+  {% set ns_spells = namespace(total=0) %}
+  {% for inv_item in visible_items %}
+    {% if inv_item.has_spells or (inv_item.spells is defined and inv_item.spells) or (inv_item.spell_names is defined and inv_item.spell_names) %}
+      {% set ns_spells.total = ns_spells.total + 1 %}
+    {% endif %}
+  {% endfor %}
   {% for inv_item in visible_items %}
     {% if inv_item.price_ref is defined and inv_item.price_ref is not none %}
       {% set ns.total_ref = ns.total_ref + inv_item.price_ref %}
@@ -82,6 +88,7 @@
     <span class="summary-pill" title="Unusual items"><i class="fa-solid fa-star"></i> {{ unusual_count }}</span>
     <span class="summary-pill" title="Strange items"><i class="fa-solid fa-flask"></i> {{ strange_count }}</span>
     <span class="summary-pill" title="Decorated / war paint items"><i class="fa-solid fa-palette"></i> {{ decorated_count }}</span>
+    <span class="summary-pill" title="Items with Halloween spells"><i class="fa-solid fa-wand-magic-sparkles"></i> <span class="summary-label">Spells:</span> {{ ns_spells.total }}</span>
   </div>
 
   <div class="card-body">

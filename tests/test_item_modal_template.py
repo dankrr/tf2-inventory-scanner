@@ -114,3 +114,17 @@ def test_grade_and_wear_badges_render_once_per_modal(app):
     wear_badges = soup.select("span.wear-badge")
     assert len(badges) == 1
     assert len(wear_badges) == 1
+
+
+def test_modal_grade_badge_uses_short_label(app):
+    item = {
+        "grade_name": "Commando Grade",
+        "grade_short_name": "Commando",
+        "wear_name": "Field-Tested",
+    }
+    with app.app_context():
+        html = render_template("_modal.html", item=item)
+    soup = BeautifulSoup(html, "html.parser")
+    badge = soup.find("span", class_="grade-badge")
+    assert badge is not None
+    assert badge.text.strip() == "Commando"

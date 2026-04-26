@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 import logging
 import re
 from functools import lru_cache
@@ -101,6 +101,40 @@ def _get_special_attr_defindexes() -> Dict[str, int | None]:
     return result
 
 
+
+def _extract_craftability(asset: Dict[str, Any]) -> tuple[bool, bool, str]:
+    """Return normalized craftability flags and the source used.
+
+    Returns:
+        Tuple ``(craftable, is_uncraftable, source)``.
+    """
+
+    if "flag_cannot_craft" in asset:
+        is_uncraftable = bool(asset.get("flag_cannot_craft"))
+        return (not is_uncraftable), is_uncraftable, "asset_flag"
+
+    if "craftable" in asset and isinstance(asset.get("craftable"), bool):
+        craftable = bool(asset.get("craftable"))
+        return craftable, (not craftable), "asset_craftable"
+
+    if "is_craftable" in asset and isinstance(asset.get("is_craftable"), bool):
+        craftable = bool(asset.get("is_craftable"))
+        return craftable, (not craftable), "asset_is_craftable"
+
+    if "is_uncraftable" in asset and isinstance(asset.get("is_uncraftable"), bool):
+        is_uncraftable = bool(asset.get("is_uncraftable"))
+        return (not is_uncraftable), is_uncraftable, "asset_is_uncraftable"
+
+    for desc in asset.get("descriptions", []) or []:
+        if not isinstance(desc, dict):
+            continue
+        text = str(desc.get("value", "")).lower()
+        if "not usable in crafting" in text:
+            return False, True, "description"
+
+    return True, False, "default"
+
+
 def _process_item(
     asset: dict,
     valuation_service: ValuationService | None = None,
@@ -149,8 +183,7 @@ def _process_item(
     if hide_item:
         valuation_service = None
 
-    uncraftable = bool(asset.get("flag_cannot_craft"))
-    craftable = not uncraftable
+    craftable, is_uncraftable, craftability_source = _extract_craftability(asset)
 
     defindex_raw = asset.get("defindex", 0)
     try:
@@ -245,6 +278,8 @@ def _process_item(
     pattern_seed = _extract_pattern_seed(asset)
     crate_series_name = _extract_crate_series(asset)
     spell_badges, spells = _extract_spells(asset)
+    spell_names = [str(sp) for sp in spells if isinstance(sp, str) and sp]
+    has_spells = bool(spell_names)
     strange_parts = _extract_strange_parts(asset)
     kill_eater_counts, score_types = _extract_kill_eater_info(asset)
     defs = _get_special_attr_defindexes()
@@ -392,7 +427,7 @@ def _process_item(
         badges.append(
             {
                 "title": f"Grade: {grade_tier['grade_name']}",
-                "label": grade_tier["grade_name"],
+                "label": grade_tier.get("grade_short_name") or grade_tier["grade_name"],
                 "type": "grade",
                 "color": grade_tier.get("grade_color"),
             }
@@ -537,6 +572,8 @@ def _process_item(
         "crate_series_name": crate_series_name,
         "killstreak_effect": ks_effect,
         "spells": spells,
+        "spell_names": spell_names,
+        "has_spells": has_spells,
         "badges": badges,  # always present, may be empty
         "has_strange_tracking": has_strange_tracking,
         "statclock_badge": stat_clock_img,
@@ -550,8 +587,11 @@ def _process_item(
         ),
         "trade_hold_expires": trade_hold_ts,
         "untradable_hold": untradable_hold,
-        "uncraftable": uncraftable,
+        "uncraftable": is_uncraftable,
+        "is_uncraftable": is_uncraftable,
         "craftable": craftable,
+        "is_craftable": craftable,
+        "craftability_source": craftability_source,
         "_hidden": hide_item,
         "extra_qualities": extra_qualities,
         "killstreak_tier_name": (

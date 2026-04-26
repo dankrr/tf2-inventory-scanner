@@ -473,22 +473,22 @@ body.border-mode .item-card.has-dual-quality {
 .wear-badge {
   color: #d9d9d9;
 }
-.grade-civilian-grade {
+.grade-badge.grade-civilian-grade {
   color: #9ed9ff;
 }
-.grade-freelance-grade {
+.grade-badge.grade-freelance-grade {
   color: #5d8eff;
 }
-.grade-mercenary-grade {
+.grade-badge.grade-mercenary-grade {
   color: #8c63ff;
 }
-.grade-commando-grade {
+.grade-badge.grade-commando-grade {
   color: #e65bff;
 }
-.grade-assassin-grade {
+.grade-badge.grade-assassin-grade {
   color: #ffa347;
 }
-.grade-elite-grade {
+.grade-badge.grade-elite-grade {
   color: #ff5e5e;
 }
 .item-qty {
@@ -1353,12 +1353,12 @@ button[data-role="toggle-border"] {
 }
 
 /* Requested explicit grade colors. */
-.grade-civilian-grade { color: #9ed9ff; }
-.grade-freelance-grade { color: #5d8eff; }
-.grade-mercenary-grade { color: #8c63ff; }
-.grade-commando-grade { color: #e65bff; }
-.grade-assassin-grade { color: #ffa347; }
-.grade-elite-grade { color: #ff5e5e; }
+.grade-badge.grade-civilian-grade { color: #9ed9ff; }
+.grade-badge.grade-freelance-grade { color: #5d8eff; }
+.grade-badge.grade-mercenary-grade { color: #8c63ff; }
+.grade-badge.grade-commando-grade { color: #e65bff; }
+.grade-badge.grade-assassin-grade { color: #ffa347; }
+.grade-badge.grade-elite-grade { color: #ff5e5e; }
 
 body.compact .item-meta-badges { gap: 1px; }
 body.compact .meta-badge { font-size: 8px; padding: 1px 5px; }
@@ -1485,4 +1485,14 @@ body:not(.border-mode) .item-card {
   .modal-media-wrap { justify-content: flex-start; }
   .user-header { flex-wrap: wrap; gap: 8px; }
   .user-controls { width: 100%; justify-content: space-between; }
+}
+
+.uncraftable-badge {
+  color: #ffb4b4;
+  border-color: rgba(255, 90, 90, 0.5);
+  background: rgba(90, 24, 24, 0.58);
+}
+
+body.compact .summary-pill .summary-label {
+  display: none;
 }

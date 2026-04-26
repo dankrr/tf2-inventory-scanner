@@ -1718,6 +1718,87 @@ def test_uncraftable_flag_absent():
     assert items[0]["craftable"] is True
 
 
+
+
+def test_grade_short_name_is_exposed():
+    data = {
+        "items": [
+            {
+                "defindex": 15141,
+                "quality": 15,
+                "attributes": [{"defindex": 834, "value": 350}],
+                "tags": [{"category": "Rarity", "localized_tag_name": "Elite Grade"}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {15141: {"item_name": "Flame Thrower", "craft_class": "weapon"}}
+    ld.QUALITIES_BY_INDEX = {15: "Decorated Weapon"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["grade_name"] == "Elite Grade"
+    assert item["grade_short_name"] == "Elite"
+
+
+def test_spelled_flags_are_exposed_on_item():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 6,
+                "attributes": [{"defindex": 1009, "value": 1}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    ld.SCHEMA_ATTRIBUTES = {1009: {"attribute_class": "halloween_death_ghosts", "name": "SPELL: Ghost"}}
+    ld.SPELL_DISPLAY_NAMES = {"halloween_death_ghosts": "Exorcism"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["has_spells"] is True
+    assert "Exorcism" in item["spell_names"]
+
+
+def test_uncraftable_detected_from_description_when_flag_missing():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 6,
+                "descriptions": [{"value": "( Not Usable in Crafting )"}],
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    item = ip.enrich_inventory(data)[0]
+    assert item["is_uncraftable"] is True
+    assert item["craftable"] is False
+    assert item["craftability_source"] == "description"
+
+
+def test_uncraftable_pricing_uses_non_craftable_lookup(monkeypatch):
+    data = {"items": [{"defindex": 111, "quality": 6, "flag_cannot_craft": True}]}
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Thing"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+
+    class SpyValuation:
+        def __init__(self):
+            self.calls = []
+
+        def format_price(self, item_name, quality, craftable, is_australium, **kwargs):
+            self.calls.append((item_name, quality, craftable, is_australium, kwargs))
+            return ""
+
+        def get_price_info(self, *args, **kwargs):
+            return None
+
+    spy = SpyValuation()
+    monkeypatch.setattr(ip, "get_valuation_service", lambda: spy)
+    item = ip.enrich_inventory(data)[0]
+    assert spy.calls
+    assert spy.calls[0][2] is False
+    assert item["price_string"] == ""
+
+
 def test_killstreak_kit_parsing():
     data = {
         "items": [
