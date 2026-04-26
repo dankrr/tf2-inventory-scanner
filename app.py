@@ -56,6 +56,7 @@ TEST_API_RESULTS_DIR: Path | None = None
 STEAM_API_KEY = os.environ["STEAM_API_KEY"]
 
 app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-insecure-change-me")
 
 MAX_MERGE_MS = 0
 local_data.load_files(auto_refetch=True, verbose=ARGS.verbose)
@@ -419,13 +420,18 @@ async def api_users():
     if not isinstance(ids_raw, list):
         return jsonify({"error": "ids must be a list"}), 400
 
-    try:
-        ids = [sac.convert_to_steam64(str(i)) for i in ids_raw]
-    except ValueError:
+    ids: List[str] = []
+    invalid_count = 0
+    for raw in ids_raw:
+        try:
+            ids.append(sac.convert_to_steam64(str(raw)))
+        except ValueError:
+            invalid_count += 1
+    if not ids:
         return jsonify({"error": "Invalid Steam ID"}), 400
 
     completed, failed, _ = await fetch_and_process_many(ids)
-    return jsonify({"completed": completed, "failed": failed})
+    return jsonify({"completed": completed, "failed": failed, "invalid": invalid_count})
 
 
 @app.get("/api/constants")
@@ -465,7 +471,11 @@ async def index():
         tokens = re.split(r"\s+", steamids_input.strip())
         raw_ids = extract_steam_ids(steamids_input)
         invalid = [t for t in tokens if t and t not in raw_ids]
-        ids = [sac.convert_to_steam64(t) for t in raw_ids]
+        for token in raw_ids:
+            try:
+                ids.append(sac.convert_to_steam64(token))
+            except ValueError:
+                invalid.append(token)
         print(f"Parsed {len(ids)} valid IDs, {len(invalid)} tokens ignored")
         if ids:
             if invalid:

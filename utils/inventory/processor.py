@@ -18,6 +18,7 @@ from .maps_and_constants import (
     WAR_PAINT_TOOL_DEFINDEXES,
 )
 from .extractors_unusual_killstreak import (
+    _extract_unusual_effect,
     _extract_killstreak_tier,
     _extract_killstreak,
     _extract_killstreak_effect,
@@ -25,11 +26,11 @@ from .extractors_unusual_killstreak import (
 )
 from .extractors_paint_and_wear import (
     _extract_paint,
-    _extract_wear,
-    _extract_wear_float,
     _extract_pattern_seed,
     _extract_paintkit,
+    resolve_wear,
 )
+from .extractors_grade_tier import _extract_grade_tier
 from .extractors_misc import (
     _extract_crate_series,
     _extract_australium,
@@ -176,8 +177,9 @@ def _process_item(
 
     paintkit_id = paintkit_name = None
     target_weapon_def = target_weapon_name = None
-    wear_name = _extract_wear(asset)
-    wear_float = _extract_wear_float(asset)
+    wear_meta = resolve_wear(asset)
+    wear_name = wear_meta.get("wear_name")
+    wear_float = wear_meta.get("wear_float")
 
     if warpaint_tool:
         (
@@ -266,10 +268,11 @@ def _process_item(
                 continue
         return None
 
-    effect_id = _attr_val(attach_idx)
-    effect_name = (
-        local_data.EFFECT_NAMES.get(str(effect_id)) if effect_id is not None else None
-    )
+    unusual = _extract_unusual_effect(asset)
+    effect_id = unusual.get("id") if unusual else _attr_val(attach_idx)
+    effect_name = unusual.get("name") if unusual else None
+    if effect_name is None and effect_id is not None:
+        effect_name = local_data.EFFECT_NAMES.get(str(effect_id))
     has_attach_attr = effect_id is not None
 
     has_kill_eater_attr = _attr_val(kill_eater_idx) is not None
@@ -349,6 +352,14 @@ def _process_item(
         if not is_unusual
         else f"{effect_name or f'Effect #{effect_id}'} {display_base}"
     )
+    grade_tier = _extract_grade_tier(
+        asset,
+        schema_entry,
+        display_name=display_name,
+        resolved_name=resolved_name,
+        defindex=defindex_int,
+    )
+    wear_exterior = wear_meta.get("exterior")
     original_name = name if is_unusual else None
     if is_unusual:
         name = display_name
@@ -375,6 +386,23 @@ def _process_item(
                 "title": f"Paint: {paint_name}",
                 "label": paint_name,
                 "type": "paint",
+            }
+        )
+    if grade_tier.get("grade_name"):
+        badges.append(
+            {
+                "title": f"Grade: {grade_tier['grade_name']}",
+                "label": grade_tier["grade_name"],
+                "type": "grade",
+                "color": grade_tier.get("grade_color"),
+            }
+        )
+    if wear_exterior:
+        badges.append(
+            {
+                "title": f"Wear: {wear_exterior}",
+                "label": wear_exterior,
+                "type": "wear",
             }
         )
     if warpaintable and paintkit_id is not None:
@@ -460,8 +488,15 @@ def _process_item(
         "sheen_gradient_css": sheen_gradient_css,
         "paint_name": paint_name,
         "paint_hex": paint_hex,
+        "wear": wear_exterior,
         "wear_name": wear_name,
         "wear_float": wear_float,
+        "wear_raw": wear_meta.get("wear_raw"),
+        "wear_raw_float": wear_meta.get("wear_raw_float"),
+        "wear_id": wear_meta.get("wear_id"),
+        "wear_source_attr": wear_meta.get("wear_source_attr"),
+        "exterior": wear_exterior,
+        "wear_source": wear_meta.get("wear_source", "none"),
         "pattern_seed": pattern_seed,
         "skin_name": skin_name,
         "composite_name": composite_name,
@@ -519,6 +554,12 @@ def _process_item(
         "craftable": craftable,
         "_hidden": hide_item,
         "extra_qualities": extra_qualities,
+        "killstreak_tier_name": (
+            ks_tool_info.get("tier_name")
+            if ks_tool_info
+            else KILLSTREAK_TIERS.get(int(float(ks_tier_val))) if ks_tier_val else None
+        ),
+        **grade_tier,
     }
 
     if valuation_service is not None:

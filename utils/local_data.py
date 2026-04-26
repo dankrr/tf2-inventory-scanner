@@ -20,7 +20,9 @@ PARTICLE_NAMES: Dict[int, str] = {}
 EFFECT_NAMES: Dict[str, str] = {}
 PAINT_NAMES: Dict[str, str] = {}
 WEAR_NAMES: Dict[str, str] = {}
+WEAR_NAMES_BY_ID: Dict[int, str] = {}
 KILLSTREAK_NAMES: Dict[str, str] = {}
+ITEM_GRADE_BY_DEFINDEX: Dict[int, str] = {}
 STRANGE_PART_NAMES: Dict[str, str] = {}
 # will be populated at import time
 PAINTKIT_NAMES: Dict[str, str]
@@ -68,7 +70,8 @@ QUALITIES_FILE = Path(os.getenv("TF2_QUALITIES_FILE", DEFAULT_QUALITIES_FILE))
 CURRENCIES_FILE = Path(os.getenv("TF2_CURRENCIES_FILE", DEFAULT_CURRENCIES_FILE))
 DEFAULT_EFFECT_FILE = BASE_DIR / "cache" / "schema" / "effects.json"
 DEFAULT_PAINT_FILE = BASE_DIR / "cache" / "schema" / "paints.json"
-DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "wear_names.json"
+DEFAULT_WEAR_FILE = BASE_DIR / "cache" / "schema" / "wears.json"
+DEFAULT_ITEM_GRADE_FILE = BASE_DIR / "cache" / "schema" / "item_grade_v2.json"
 DEFAULT_KILLSTREAK_FILE = BASE_DIR / "cache" / "killstreak_names.json"
 DEFAULT_KS_EFFECT_FILE = BASE_DIR / "cache" / "killstreak_effect_names.json"
 DEFAULT_STRANGE_PART_FILE = BASE_DIR / "cache" / "strange_part_names.json"
@@ -94,6 +97,7 @@ DEFAULT_EFFECT_NAMES_FILE = BASE_DIR / "data" / "effect_names.json"
 EFFECT_NAMES_FILE = Path(os.getenv("TF2_EFFECT_NAMES_FILE", DEFAULT_EFFECT_NAMES_FILE))
 PAINT_FILE = Path(os.getenv("TF2_PAINT_FILE", DEFAULT_PAINT_FILE))
 WEAR_FILE = Path(os.getenv("TF2_WEAR_FILE", DEFAULT_WEAR_FILE))
+ITEM_GRADE_FILE = Path(os.getenv("TF2_ITEM_GRADE_FILE", DEFAULT_ITEM_GRADE_FILE))
 KILLSTREAK_FILE = Path(os.getenv("TF2_KILLSTREAK_FILE", DEFAULT_KILLSTREAK_FILE))
 KILLSTREAK_EFFECT_FILE = Path(os.getenv("TF2_KS_EFFECT_FILE", DEFAULT_KS_EFFECT_FILE))
 STRANGE_PART_FILE = Path(os.getenv("TF2_STRANGE_PART_FILE", DEFAULT_STRANGE_PART_FILE))
@@ -205,13 +209,45 @@ def _load_paint_id_map(path: Path) -> Dict[str, str]:
     return {}
 
 
+def _load_item_grade_by_defindex(path: Path) -> Dict[int, str]:
+    """Return a defindex->grade map from dict or list cache shapes."""
+
+    if not path.exists():
+        return {}
+    try:
+        with path.open() as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+
+    raw = data.get("value") if isinstance(data, dict) and "value" in data else data
+
+    if isinstance(raw, dict):
+        return {int(k): str(v) for k, v in raw.items() if str(k).isdigit()}
+
+    if isinstance(raw, list):
+        out: Dict[int, str] = {}
+        for entry in raw:
+            if not isinstance(entry, dict):
+                continue
+            defindex = entry.get("defindex")
+            grade = entry.get("grade")
+            if str(defindex).isdigit() and isinstance(grade, str) and grade.strip():
+                out[int(defindex)] = grade.strip()
+        return out
+
+    return {}
+
+
 def load_files(
     *, auto_refetch: bool = False, verbose: bool = False
 ) -> Tuple[Dict[int, Any], Dict[int, Any]]:
     """Load local schema files from the schema.autobot.tf cache."""
 
     global SCHEMA_ATTRIBUTES, ITEMS_BY_DEFINDEX, QUALITIES_BY_INDEX, PARTICLE_NAMES
-    global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
+    global EFFECT_NAMES, PAINT_NAMES, WEAR_NAMES, WEAR_NAMES_BY_ID
+    global KILLSTREAK_NAMES, STRANGE_PART_NAMES, PAINTKIT_NAMES, CRATE_SERIES_NAMES
+    global ITEM_GRADE_BY_DEFINDEX
     global FOOTPRINT_SPELL_MAP, PAINT_SPELL_MAP
 
     cleanup_legacy_files(verbose)
@@ -223,7 +259,11 @@ def load_files(
         "particles": PARTICLES_FILE.resolve(),
         "currencies": CURRENCIES_FILE.resolve(),
     }
-    optional = {"string_lookups": STRING_LOOKUPS_FILE.resolve()}
+    optional = {
+        "string_lookups": STRING_LOOKUPS_FILE.resolve(),
+        "wears": WEAR_FILE.resolve(),
+        "item_grade_v2": ITEM_GRADE_FILE.resolve(),
+    }
 
     missing = {k: p for k, p in required.items() if not p.exists()}
     if missing:
@@ -381,10 +421,14 @@ def load_files(
         EFFECT_NAMES.update(extra)
     PAINT_NAMES = _load_paint_id_map(PAINT_FILE)
     WEAR_NAMES = _load_json_map(WEAR_FILE)
+    WEAR_NAMES_BY_ID = {
+        int(k): str(v) for k, v in WEAR_NAMES.items() if str(k).isdigit()
+    }
     KILLSTREAK_NAMES = _load_json_map(KILLSTREAK_FILE)
     KILLSTREAK_EFFECT_NAMES = _load_json_map(KILLSTREAK_EFFECT_FILE)
     STRANGE_PART_NAMES = _load_json_map(STRANGE_PART_FILE)
     CRATE_SERIES_NAMES = _load_json_map(CRATE_SERIES_FILE)
+    ITEM_GRADE_BY_DEFINDEX = _load_item_grade_by_defindex(ITEM_GRADE_FILE)
 
     FOOTPRINT_SPELL_MAP = {}
     PAINT_SPELL_MAP = {}
@@ -435,6 +479,7 @@ def load_files(
         ("effects", EFFECT_NAMES, EFFECT_NAMES_FILE),
         ("paints", PAINT_NAMES, PAINT_FILE),
         ("wears", WEAR_NAMES, WEAR_FILE),
+        ("item grades", ITEM_GRADE_BY_DEFINDEX, ITEM_GRADE_FILE),
         ("killstreaks", KILLSTREAK_NAMES, KILLSTREAK_FILE),
         ("killstreak effects", KILLSTREAK_EFFECT_NAMES, KILLSTREAK_EFFECT_FILE),
         ("strange parts", STRANGE_PART_NAMES, STRANGE_PART_FILE),

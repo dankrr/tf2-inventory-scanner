@@ -67,10 +67,16 @@ def _extract_killstreak(name: str) -> tuple[str, int]:
 
 
 def _require_key() -> str:
-    key = os.getenv("BPTF_API_KEY")
+    """Return Backpack.tf API key from supported env-var names.
+
+    Preferred variable is ``BPTF_API_KEY``. ``BACKPACK_TF_API_KEY`` is
+    supported as a backward-compatible fallback for older environments.
+    """
+
+    key = os.getenv("BPTF_API_KEY") or os.getenv("BACKPACK_TF_API_KEY")
     if not key:
         raise RuntimeError(
-            "BPTF_API_KEY is required. Set it in the environment or .env file."
+            "Backpack.tf API key is required. Set BPTF_API_KEY or BACKPACK_TF_API_KEY."
         )
     return key
 

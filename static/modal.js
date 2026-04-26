@@ -60,6 +60,17 @@
       .replace(/'/g, '&#39;');
   }
 
+  /**
+   * Return the CSS class suffix for a grade label.
+   *
+   * @param {string|null|undefined} gradeName - Grade label from enriched item data.
+   * @returns {string} Safe CSS suffix, or an empty string when grade is missing.
+   */
+  function gradeClassSuffix(gradeName) {
+    if (!gradeName) return '';
+    return String(gradeName).toLowerCase().replace(/\s+/g, '-');
+  }
+
   function generateModalHTML(data) {
     if (!data) return '';
     const esc = escapeHtml;
@@ -121,8 +132,17 @@
     }
 
     if (data.wear_name) attrs.push('<div>Wear: ' + esc(data.wear_name) + '</div>');
+    if (data.wear_float !== undefined && data.wear_float !== null) {
+      attrs.push('<div>Wear Float: ' + esc(Number(data.wear_float).toFixed(4)) + '</div>');
+    }
 
     if (data.paintkit_name) attrs.push('<div>Paintkit: ' + esc(data.paintkit_name) + '</div>');
+    if (data.grade_name) {
+      const cls = gradeClassSuffix(data.grade_name);
+      attrs.push(
+        '<div>Grade: <span class="meta-badge grade-badge grade-' + esc(cls) + '">' + esc(data.grade_name) + '</span></div>',
+      );
+    }
 
     if (data.crate_series_name) attrs.push('<div>Crate series: ' + esc(data.crate_series_name) + '</div>');
 
@@ -201,6 +221,7 @@
     if (!box) return;
     box.innerHTML = '';
     (badges || []).forEach(b => {
+      if (!b || !b.icon) return;
       const span = document.createElement('span');
       span.className = 'badge';
       span.dataset.icon = b.icon;

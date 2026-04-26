@@ -34,14 +34,24 @@ def _chunks(seq: List[str], size: int) -> Iterator[List[str]]:
 STEAMID2_RE = re.compile(r"^STEAM_0:[01]:\d+$")
 STEAMID3_RE = re.compile(r"^\[U:1:\d+\]$")
 STEAMID64_RE = re.compile(r"^\d{17}$")
+VANITY_RE = re.compile(r"^[A-Za-z0-9_-]{2,32}$")
+VANITY_URL_RE = re.compile(
+    r"(?:https?://)?(?:www\.)?steamcommunity\.com/id/([A-Za-z0-9_-]{2,32})/?",
+    re.IGNORECASE,
+)
 
 
 def extract_steam_ids(raw_text: str) -> List[str]:
-    """Return unique Steam ID tokens found in ``raw_text``."""
+    """Return unique Steam ID tokens found in ``raw_text``.
 
-    tokens = re.split(r"\s+", raw_text.strip())
+    Supports SteamID64/2/3 tokens and vanity URLs in ``steamcommunity.com/id``
+    form while avoiding accidental username matches from TF2 ``status`` dumps.
+    """
+
     ids: List[str] = []
     seen: set[str] = set()
+    text = raw_text.strip()
+    tokens = re.split(r"\s+", text) if text else []
 
     for token in tokens:
         if not token:
@@ -54,7 +64,35 @@ def extract_steam_ids(raw_text: str) -> List[str]:
             if token not in seen:
                 seen.add(token)
                 ids.append(token)
+    for match in VANITY_URL_RE.finditer(text):
+        vanity = match.group(1)
+        if vanity not in seen:
+            seen.add(vanity)
+            ids.append(vanity)
+
     return ids
+
+
+async def resolve_vanity_url_async(vanity: str) -> str | None:
+    """Resolve a Steam vanity string to SteamID64, or ``None`` on failure."""
+
+    key = _require_key()
+    url = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            resp = await client.get(url, params={"key": key, "vanityurl": vanity})
+        except httpx.HTTPError:
+            logger.warning("Vanity resolve failed for %s", vanity)
+            return None
+    if resp.status_code != 200:
+        return None
+    try:
+        payload = resp.json().get("response", {})
+    except ValueError:
+        return None
+    if payload.get("success") == 1 and payload.get("steamid"):
+        return str(payload.get("steamid"))
+    return None
 
 
 async def get_player_summaries_async(steamids: List[str]) -> List[Dict[str, Any]]:
@@ -141,7 +179,7 @@ async def fetch_inventory_async(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
 
 def convert_to_steam64(id_str: str) -> str:
-    """Convert Steam identifiers (SteamID64, SteamID2, SteamID3) to SteamID64."""
+    """Convert Steam identifiers (SteamID64, SteamID2, SteamID3, vanity) to SteamID64."""
 
     if re.fullmatch(r"\d{17}", id_str):
         return id_str
@@ -157,6 +195,30 @@ def convert_to_steam64(id_str: str) -> str:
     if match:
         z = int(match.group(1))
         return str(z + 76561197960265728)
+
+    if VANITY_RE.fullmatch(id_str):
+        key = _require_key()
+        try:
+            with httpx.Client(timeout=10) as client:
+                resp = client.get(
+                    "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/",
+                    params={"key": key, "vanityurl": id_str},
+                )
+        except httpx.HTTPError:
+            logger.warning("Vanity resolve failed for %s", id_str)
+            raise ValueError(f"Invalid Steam ID format: {id_str}")
+        if resp.status_code != 200:
+            logger.warning(
+                "Vanity resolve HTTP %s for %s", resp.status_code, id_str
+            )
+            raise ValueError(f"Invalid Steam ID format: {id_str}")
+        try:
+            payload = resp.json().get("response", {})
+        except ValueError:
+            logger.warning("Vanity resolve returned invalid JSON for %s", id_str)
+            raise ValueError(f"Invalid Steam ID format: {id_str}")
+        if payload.get("success") == 1 and payload.get("steamid"):
+            return str(payload.get("steamid"))
 
     raise ValueError(f"Invalid Steam ID format: {id_str}")
 

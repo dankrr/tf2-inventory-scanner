@@ -63,9 +63,12 @@ Create a `.env` file in the project root:
 # Server
 STEAM_API_KEY=your_steam_key_here
 BPTF_API_KEY=your_backpack_key_here
+# Optional alias if your environment already uses this name
+BACKPACK_TF_API_KEY=
+FLASK_SECRET_KEY=replace_with_random_secret
 CACHE_RETRIES=2
 CACHE_DELAY=2
-SKIP_CACHE_INIT=01
+SKIP_CACHE_INIT=0
 ```
 
 ---
