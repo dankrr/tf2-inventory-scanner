@@ -1,0 +1,28 @@
+{
+  "name": "tf2-inventory-scanner",
+  "version": "1.0.0",
+  "description": "A lightweight Flask web app for exploring Team Fortress 2 inventories.",
+  "main": "eslint.config.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node tests/test_modal.js",
+    "lint": "eslint static/**/*.js",
+    "format": "prettier --write static/**/*.js templates/**/*.html static/*.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:35491/git/dankrr/tf2-inventory-scanner"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jsdom": "^29.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.2.1"
+  }
+}

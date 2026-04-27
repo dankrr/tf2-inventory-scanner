@@ -14,3 +14,5 @@ cache/schema/*
 cached_inventories/*
 .venv/
 .coverage
+node_modules/
+package-lock.json

@@ -60,101 +60,148 @@
       .replace(/'/g, '&#39;');
   }
 
-  /**
-   * Return the CSS class suffix for a grade label.
-   *
-   * @param {string|null|undefined} gradeName - Grade label from enriched item data.
-   * @returns {string} Safe CSS suffix, or an empty string when grade is missing.
-   */
   function gradeClassSuffix(gradeName) {
     if (!gradeName) return '';
     return String(gradeName).toLowerCase().replace(/\s+/g, '-');
   }
 
+  const KS_TIER_LABELS = {
+    1: '❯ Basic Killstreak',
+    2: '❯❯ Specialized Killstreak',
+    3: '❯❯❯ Professional Killstreak',
+  };
+
+  const PRICE_MISSING_REASONS = {
+    missing_defindex: 'Could not identify base item.',
+    missing_effect_id: 'Could not identify unusual effect.',
+    no_price: 'No matching price found.',
+    decorated_not_supported: 'Decorated skin pricing not available.',
+    variant_not_priced: 'Exact variant not priced.',
+  };
+
+  function makeRow(label, valueHtml) {
+    const esc = escapeHtml;
+    return (
+      '<div class="modal-row">' +
+      '<span class="modal-label">' + esc(label) + '</span>' +
+      '<span class="modal-value">' + valueHtml + '</span>' +
+      '</div>'
+    );
+  }
+
   function generateModalHTML(data) {
     if (!data) return '';
     const esc = escapeHtml;
-    const attrs = [];
+    const rows = [];
 
-    const tierMap = { 1: 'Killstreak', 2: 'Specialized', 3: 'Professional' };
-    const tierName = data.killstreak_tier ? tierMap[data.killstreak_tier] || data.killstreak_tier : null;
-    const hasKsInfo = tierName || data.sheen || data.killstreak_effect;
-    if (hasKsInfo) {
-      let info = '<div class="killstreak-info">';
-      if (tierName) {
-        info += '<span class="killstreak-tier">' + esc(tierName) + '</span>';
-      }
-      if (data.sheen) {
-        info += '<span class="sheen">';
-        const bgStyle = data.sheen_gradient_css || `background-color:${esc(data.sheen_color || '#ccc')}`;
-        info += `<span class="sheen-dot" style="${bgStyle}"></span>` + esc(data.sheen) + '</span>';
-      }
-      if (data.killstreak_effect) {
-        info += '<span class="killstreaker">| ' + esc(data.killstreak_effect) + '</span>';
-      }
-      info += '</div>';
-      attrs.push(info);
+    // Quality (skip Normal/Unique — not visually interesting)
+    if (data.quality && data.quality !== 'Normal' && data.quality !== 'Unique') {
+      const qColor = esc(data.quality_color || '#ccc');
+      rows.push(makeRow('Quality', '<span class="quality-chip" style="color:' + qColor + '">' + esc(data.quality) + '</span>'));
     }
 
+    // Grade
+    if (data.grade_name) {
+      const cls = gradeClassSuffix(data.grade_name);
+      rows.push(makeRow('Grade', '<span class="meta-badge grade-badge grade-' + esc(cls) + '">' + esc(data.grade_name) + '</span>'));
+    }
+
+    // Wear
+    if (data.wear_name) {
+      const wearSlug = String(data.wear_name).toLowerCase().replace(/\s+/g, '-');
+      rows.push(makeRow('Wear', '<span class="wear-tier wear-' + esc(wearSlug) + '">' + esc(data.wear_name) + '</span>'));
+    }
+
+    // Craftable — only show when explicitly uncraftable
+    if (data.craftable === false) {
+      rows.push(makeRow('Craftable', '<span class="attr-chip attr-negative">Uncraftable</span>'));
+    }
+
+    // Tradable — only show when backend explicitly flags it
+    if (data.display_not_tradable) {
+      rows.push(makeRow('Tradable', '<span class="attr-chip attr-negative">Not Tradable</span>'));
+    }
+
+    // Killstreak tier
+    const ksLabel = data.killstreak_tier ? KS_TIER_LABELS[data.killstreak_tier] || null : null;
+    if (ksLabel) {
+      rows.push(makeRow('Killstreak', '<span class="ks-chip ks-tier-' + esc(String(data.killstreak_tier)) + '">' + esc(ksLabel) + '</span>'));
+    }
+
+    // Sheen
+    if (data.sheen) {
+      const sStyle = data.sheen_gradient_css || ('background:' + esc(data.sheen_color || '#ccc'));
+      rows.push(makeRow('Sheen', '<span class="sheen-dot" style="' + sStyle + '"></span>' + esc(data.sheen)));
+    }
+
+    // Killstreaker effect
+    if (data.killstreak_effect) {
+      rows.push(makeRow('Killstreaker', esc(data.killstreak_effect)));
+    }
+
+    // Unusual effect
     if (data.unusual_effect) {
       const name = typeof data.unusual_effect === 'object'
         ? data.unusual_effect.name
         : data.unusual_effect;
       if (name) {
-        attrs.push('<div><strong>Unusual Effect:</strong> ' + esc(name) + '</div>');
+        rows.push(makeRow('Unusual Effect', '<strong class="unusual-chip">' + esc(name) + '</strong>'));
       }
     }
 
-    ;[
-      ['Type', data.item_type_name],
-      ['Level', data.level],
-      [
-        'Craftable',
-        typeof data.craftable === 'boolean'
-          ? data.craftable
-            ? 'Craftable'
-            : 'Uncraftable'
-          : null,
-      ],
-      ['Origin', data.origin],
-    ].forEach(([label, value]) => {
-      if (!value) return;
-      attrs.push('<div>' + esc(label) + ': ' + esc(value) + '</div>');
-    });
-
+    // Paint
     if (data.paint_name) {
-      let html = '<div>';
+      let paintVal = '';
       if (data.paint_hex) {
-        html += '<span class="paint-dot" style="background:' + esc(data.paint_hex) + '"></span>';
+        paintVal += '<span class="paint-dot" style="background:' + esc(data.paint_hex) + '"></span>';
       }
-      html += 'Paint: ' + esc(data.paint_name) + '</div>';
-      attrs.push(html);
+      paintVal += esc(data.paint_name);
+      rows.push(makeRow('Paint', paintVal));
     }
 
-    if (data.wear_name) {
-      const wearSlug = String(data.wear_name).toLowerCase().replace(/\s+/g, '-');
-      attrs.push('<div>Wear: <span class="wear-tier wear-' + esc(wearSlug) + '">' + esc(data.wear_name) + '</span></div>');
+    // Origin
+    if (data.origin) rows.push(makeRow('Origin', esc(data.origin)));
+
+    // Type
+    if (data.item_type_name) rows.push(makeRow('Type', esc(data.item_type_name)));
+
+    // Level
+    if (data.level != null) rows.push(makeRow('Level', esc(String(data.level))));
+
+    // Crate series
+    if (data.crate_series_name) rows.push(makeRow('Crate Series', esc(data.crate_series_name)));
+
+    // Custom description
+    if (data.custom_description) rows.push(makeRow('Description', esc(data.custom_description)));
+
+    const detailsHtml = rows.join('');
+
+    // === PRICE SECTION ===
+    const priceText = data.price_text || data.formatted_price || data.price_string;
+    let priceHtml = '';
+    if (priceText || data.price_missing_reason) {
+      priceHtml += '<div class="modal-price-section">';
+      if (priceText) {
+        priceHtml += '<div class="price-display">' + esc(priceText);
+        if (data.price_is_fallback) {
+          priceHtml += ' <span class="price-badge">Base price estimate</span>';
+        }
+        priceHtml += '</div>';
+      }
+      if (data.price_is_fallback && !data.price_missing_reason) {
+        priceHtml += '<div class="price-note">Exact variant not priced; showing base item price.</div>';
+      }
+      if (data.price_missing_reason) {
+        const reasonText = PRICE_MISSING_REASONS[data.price_missing_reason] || esc(data.price_missing_reason);
+        priceHtml += '<div class="price-note">' + reasonText + '</div>';
+      }
+      priceHtml += '</div>';
     }
-    if (data.wear_float !== undefined && data.wear_float !== null) {
-      attrs.push('<div>Wear Float: ' + esc(Number(data.wear_float).toFixed(4)) + '</div>');
-    }
 
-    if (data.paintkit_name) attrs.push('<div>Paintkit: ' + esc(data.paintkit_name) + '</div>');
-    if (data.grade_name) {
-      const cls = gradeClassSuffix(data.grade_name);
-      attrs.push(
-        '<div>Grade: <span class="meta-badge grade-badge grade-' + esc(cls) + '">' + esc(data.grade_name) + '</span></div>',
-      );
-    }
-
-    if (data.crate_series_name) attrs.push('<div>Crate series: ' + esc(data.crate_series_name) + '</div>');
-
-    if (data.custom_description) attrs.push('<div>Custom Desc: ' + esc(data.custom_description) + '</div>');
-
-
-    let spells = '';
+    // === SPELLS SECTION ===
+    let spellsHtml = '';
     if (Array.isArray(data.spells) && data.spells.length) {
-      spells += '<h4 id="modal-spells">Spells</h4><ul>';
+      spellsHtml += '<h4 id="modal-spells" class="modal-section-title">Spells</h4><ul class="modal-spells-list">';
       data.spells.forEach(sp => {
         let name = '';
         let count = null;
@@ -170,25 +217,65 @@
         if (count && count > 1) {
           line += ' (' + esc(count) + ')';
         }
-        spells += '<li>' + line + '</li>';
+        spellsHtml += '<li>' + line + '</li>';
       });
-      spells += '</ul>';
+      spellsHtml += '</ul>';
     }
 
+    // === HISTORY ===
+    let historyHtml = '';
     if (data.id && (!data.quantity || data.quantity <= 1) && !data._hidden) {
       const url = 'https://next.backpack.tf/item/' + esc(data.id);
-      let link = '<div><a href="' + url + '" target="_blank" rel="noopener" class="history-link">History\ud83d\udd0e</a>';
+      historyHtml = '<div class="modal-row modal-history">' +
+        '<a href="' + url + '" target="_blank" rel="noopener" class="history-link">History🔎</a>';
       if (data.trade_hold_expires) {
         const dateStr = new Date(data.trade_hold_expires * 1000).toLocaleString();
-        link += ' Tradable after: ' + esc(dateStr);
+        historyHtml += ' <span class="trade-hold-text">Tradable after: ' + esc(dateStr) + '</span>';
       }
-      link += '</div>';
-      attrs.push(link);
+      historyHtml += '</div>';
     }
 
-    const details = attrs.join('') + spells;
-    const imgTag = '<img src="' + esc(data.image_url || '') + '" width="64" height="64" alt="">';
-    return imgTag + '<div id="modal-details">' + details + '</div>';
+    // === DEBUG SECTION (collapsed) ===
+    const debugEntries = [
+      ['defindex', data.defindex],
+      ['resolved_defindex', data.resolved_defindex],
+      ['sku', data.sku],
+      ['price_item_name', data.price_item_name],
+      ['price_lookup_key', data.price_lookup_key],
+      ['effect_id', data.effect_id != null ? data.effect_id : data.unusual_effect_id],
+      ['paintkit', data.paintkit_name],
+      ['wear_float', data.wear_float != null ? Number(data.wear_float).toFixed(4) : null],
+    ].filter(([, v]) => v != null && v !== '');
+
+    let debugHtml = '';
+    if (debugEntries.length) {
+      debugHtml = '<details class="modal-debug"><summary>Details</summary>';
+      debugEntries.forEach(([k, v]) => {
+        debugHtml +=
+          '<div class="modal-row debug-row">' +
+          '<span class="modal-label">' + esc(k) + '</span>' +
+          '<span class="modal-value">' + esc(String(v)) + '</span>' +
+          '</div>';
+      });
+      debugHtml += '</details>';
+    }
+
+    // === PARTICLE OVERLAY (baked-in so it persists after body replacement) ===
+    let particleHtml = '<div id="modal-effect-bg" class="particle-overlay">';
+    if (data.unusual_effect_id) {
+      particleHtml += '<img src="/static/images/effects/' + esc(String(data.unusual_effect_id)) + '.png" alt="">';
+    }
+    particleHtml += '</div>';
+
+    // === IMAGE WRAP ===
+    const imgHtml =
+      '<div class="modal-img-wrap">' +
+      particleHtml +
+      '<img src="' + esc(data.image_url || '') + '" width="96" height="96" alt="" class="modal-item-img">' +
+      '</div>';
+
+    const innerHtml = detailsHtml + priceHtml + spellsHtml + historyHtml + debugHtml;
+    return imgHtml + '<div id="modal-details">' + innerHtml + '</div>';
   }
 
   function updateHeader(data) {
@@ -199,7 +286,7 @@
     if (title) {
       let text = '';
       if (data.killstreak_name) {
-        if (["Specialized", "Professional"].includes(data.killstreak_name)) {
+        if (['Specialized', 'Professional'].includes(data.killstreak_name)) {
           text += data.killstreak_name + ' Killstreak ';
         } else {
           text += data.killstreak_name + ' ';
@@ -218,7 +305,6 @@
     }
     if (effectBox) effectBox.textContent = effectText;
 
-    // Set quality color accent on the modal border-top (visual only).
     const modalEl = document.getElementById('item-modal');
     if (modalEl && data.quality_color) {
       modalEl.style.setProperty('--modal-quality-color', data.quality_color);
@@ -274,6 +360,10 @@
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeModal();
     });
+    const closeBtn = document.getElementById('modal-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeModal);
+    }
     initialized = true;
   }
 

@@ -120,44 +120,11 @@
         align-items: flex-start;
         position: relative;
       }
-      #item-modal #modal-img {
-        flex-shrink: 0;
-        border-radius: 6px;
-        background: rgba(255, 255, 255, 0.04);
-      }
-      #item-modal #modal-details {
-        flex: 1;
-        min-width: 0;
-      }
-      #item-modal .particle-overlay img {
-        max-width: 64px;
-        max-height: 64px;
-      }
-      #modal-details > div {
-        padding: 4px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        font-size: 0.88rem;
-        color: #ccc;
-        line-height: 1.5;
-      }
-      #modal-details > div:last-child {
-        border-bottom: none;
-      }
       .modal-effect {
         font-size: 13px;
         font-weight: 500;
         color: #8650ac;
         margin-bottom: 2px;
-      }
-      .item-badges {
-        position: absolute;
-        top: 2px;
-        right: 2px;
-        display: flex;
-        gap: 2px;
-      }
-      .item-badges span {
-        font-size: 0.75rem;
       }
     </style>
   </head>
@@ -241,18 +208,16 @@
             <h3 id="modal-title"></h3>
             <div id="modal-custom-name"></div>
             <div id="modal-badges" class="item-badges"></div>
+            <button
+              id="modal-close-btn"
+              class="modal-close-btn"
+              type="button"
+              aria-label="Close"
+              title="Close"
+            >✕</button>
           </div>
           <div class="modal-body">
-            <div id="modal-effect-bg" class="particle-overlay"></div>
-            <img
-              id="modal-img"
-              src=""
-              width="64"
-              height="64"
-              alt=""
-              loading="lazy"
-            />
-            <div id="modal-details"></div>
+            <!-- populated by modal.js generateModalHTML -->
           </div>
         </dialog>
       </main>

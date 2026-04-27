@@ -1573,3 +1573,290 @@ body.border-mode .item-card.uncraftable {
   font-size: 0.88rem;
 }
 
+/* ===================================================================
+   REDESIGN — compact next.backpack.tf-style cards & modal
+=================================================================== */
+
+/* --- Killstreak chip: compact text label in bottom badge rail ---- */
+.ks-chip {
+  color: #ff9040;
+  background: rgba(255, 126, 48, 0.12);
+  border: 1px solid rgba(255, 126, 48, 0.28);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.ks-chip.ks-tier-3 {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+/* --- Modal: label/value row layout ------------------------------- */
+.modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.88rem;
+  color: #ccc;
+  line-height: 1.5;
+}
+.modal-row:last-child {
+  border-bottom: none;
+}
+.modal-label {
+  color: #666;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  min-width: 76px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.modal-value {
+  color: #ddd;
+  text-align: right;
+  word-break: break-word;
+  flex: 1;
+}
+
+/* Quality chip in modal */
+.quality-chip {
+  font-weight: 600;
+}
+
+/* Killstreak chip in modal */
+.ks-chip.ks-tier-1 { color: #ff9040; }
+.ks-chip.ks-tier-2 { color: #ff9040; }
+.ks-chip.ks-tier-3 { color: #ffd700; }
+#modal-details .ks-chip {
+  background: none;
+  border: none;
+  padding: 0;
+  font-weight: 600;
+  font-size: inherit;
+}
+
+/* Unusual chip in modal */
+.unusual-chip {
+  color: #a56bcf;
+  font-weight: 600;
+}
+
+/* Attribute chips (Uncraftable, Not Tradable) */
+.attr-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.attr-negative {
+  color: #ff7070;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+/* --- Modal price section ---------------------------------------- */
+.modal-price-section {
+  margin: 10px 0 6px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.price-display {
+  font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0c040;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.price-badge {
+  font-size: 0.68rem;
+  font-weight: 400;
+  font-family: inherit;
+  background: rgba(240, 192, 64, 0.13);
+  color: #c9a030;
+  border: 1px solid rgba(240, 192, 64, 0.28);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.price-note {
+  font-size: 0.78rem;
+  color: #777;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* --- Modal image wrap ------------------------------------------- */
+.modal-img-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+.modal-item-img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+.modal-img-wrap .particle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-img-wrap .particle-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* --- Modal spells ----------------------------------------------- */
+.modal-section-title {
+  font-size: 0.72rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 10px 0 4px;
+  font-weight: 500;
+}
+.modal-spells-list {
+  margin: 0 0 4px;
+  padding-left: 14px;
+  font-size: 0.85rem;
+  color: #a156d6;
+  line-height: 1.6;
+}
+
+/* --- Modal history row ------------------------------------------ */
+.modal-history {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: none;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.trade-hold-text {
+  font-size: 0.78rem;
+  color: #ff9800;
+}
+
+/* --- Modal debug section (collapsed) ---------------------------- */
+.modal-debug {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 6px;
+}
+.modal-debug summary {
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+  list-style: none;
+  outline: none;
+}
+.modal-debug summary:hover {
+  color: #777;
+}
+.modal-debug .modal-row {
+  font-size: 0.78rem;
+}
+.modal-debug .modal-label {
+  font-size: 0.72rem;
+  color: #444;
+  min-width: 110px;
+}
+.modal-debug .modal-value {
+  font-size: 0.72rem;
+  color: #555;
+  font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+}
+
+/* --- Modal close button ----------------------------------------- */
+.modal-close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  line-height: 1;
+}
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #e0e0e0;
+}
+
+/* Modal header must be relative for close button absolute positioning */
+#item-modal .modal-header {
+  position: relative;
+}
+
+/* Modal body: make scrollable when content is tall */
+#item-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+#item-modal .modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+#item-modal .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+/* --- Mobile: stack image above details on narrow screens -------- */
+@media (max-width: 400px) {
+  #item-modal .modal-body {
+    flex-direction: column;
+    align-items: center;
+  }
+  .modal-img-wrap {
+    width: 80px;
+    height: 80px;
+  }
+  .modal-item-img {
+    width: 80px;
+    height: 80px;
+  }
+  #modal-details {
+    width: 100%;
+  }
+  .modal-label {
+    min-width: 60px;
+  }
+}
+

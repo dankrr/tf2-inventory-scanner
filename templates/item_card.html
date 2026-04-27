@@ -63,6 +63,7 @@ full_title = (title_parts + [base]) | join(' ') %}
   data-item='{{ item|tojson|forceescape }}'
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
 >
+  {# Small decorative icons — top-right, no text, do not cover image centre #}
   <div class="item-badges">
     {% if item.is_australium %}
     <img
@@ -76,8 +77,7 @@ full_title = (title_parts + [base]) | join(' ') %}
       style="background-color: {{ item.paint_hex }};"
       title="Paint: {{ item.paint_name }}"
     ></span>
-    {% endif %} {# Festivized badge (uses small PNG, no glow). Backed by server
-    flag. #} {% if item.is_festivized %}
+    {% endif %} {# Festivized badge (uses small PNG, no glow). #} {% if item.is_festivized %}
     <span class="badge festive" title="Festivized" aria-label="Festivized">
       <img
         src="/static/images/logos/festive.png"
@@ -89,28 +89,13 @@ full_title = (title_parts + [base]) | join(' ') %}
         loading="lazy"
       />
     </span>
-    {% endif %} {% for badge in item.badges %} {% if badge.type != 'statclock'
-    and badge.icon != '🎨' and (badge.icon or badge.icon_url) %} {% if badge.type == 'killstreak' %}
-    <span class="badge" data-icon="{{ badge.icon }}" title="{{ badge.title }}">
-      <span
-        class="chevron-icon"
-        {%
-        if
-        item.sheen_gradient_css
-        %}
-        style="{{ item.sheen_gradient_css }}; -webkit-background-clip: text; background-clip: text; color: transparent;"
-        {%
-        elif
-        item.sheen_color
-        %}
-        style="color: {{ item.sheen_color }};"
-        {%
-        endif
-        %}
-        >{{ badge.icon }}</span
-      >
-    </span>
-    {% elif badge.icon_url %}
+    {% endif %} {% for badge in item.badges %} {# Skip: statclock (rendered separately),
+    paint emoji, killstreak (shown in badge rail below) #}
+    {% if badge.type != 'statclock'
+    and badge.type != 'killstreak'
+    and badge.icon != '🎨'
+    and (badge.icon or badge.icon_url) %}
+    {% if badge.icon_url %}
     <img
       src="{{ badge.icon_url }}"
       class="badge-icon"
@@ -134,8 +119,19 @@ full_title = (title_parts + [base]) | join(' ') %}
     >
     {% endif %} {% endif %} {% endfor %}
   </div>
-  {% if item.grade_name or item.wear_name %}
+
+  {# Bottom badge rail: killstreak chip (first), then grade/wear #}
+  {% set has_rail = item.killstreak_tier or item.grade_name or item.wear_name %}
+  {% if has_rail %}
   <div class="item-meta-badges">
+    {% if item.killstreak_tier %}
+    <span class="meta-badge ks-chip ks-tier-{{ item.killstreak_tier }}"
+      >{% if item.killstreak_tier == 1 %}❯ Basic
+      {%- elif item.killstreak_tier == 2 %}❯❯ Specialized
+      {%- elif item.killstreak_tier == 3 %}❯❯❯ Professional
+      {%- else %}Killstreak{% endif %}</span
+    >
+    {% endif %}
     {% if item.grade_name %}
     <span class="meta-badge grade-badge grade-{{ (item.grade_name or '')|lower|replace(' ', '-') }}">{{ item.grade_name }}</span>
     {% endif %}
@@ -144,6 +140,7 @@ full_title = (title_parts + [base]) | join(' ') %}
     {% endif %}
   </div>
   {% endif %}
+
   {% if item.quantity and item.quantity > 1 %}
   <span class="item-qty">x{{ item.quantity }}</span>
   {% endif %} {% if item.statclock_badge %}
@@ -197,6 +194,5 @@ full_title = (title_parts + [base]) | join(' ') %}
     <div class="missing-icon"></div>
     {% endif %}
   </div>
-  {# Title is shown as tooltip via the title attribute above; no inline name
-  row. #}
+  {# Title is shown as tooltip via the title attribute above; no inline name row. #}
 </div>
