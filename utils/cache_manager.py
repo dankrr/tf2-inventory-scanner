@@ -93,6 +93,11 @@ async def _do_refresh() -> int:
         flush=True,
     )
 
+    from .cdn_image_cache import clear as _clear_cdn_cache
+
+    _clear_cdn_cache()
+    print("\N{CHECK MARK} Cleared CDN image cache")
+
     count = 0
 
     provider = SchemaProvider(cache_dir="cache/schema")
