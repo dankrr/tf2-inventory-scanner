@@ -69,7 +69,15 @@ FLASK_SECRET_KEY=replace_with_random_secret
 CACHE_RETRIES=2
 CACHE_DELAY=2
 SKIP_CACHE_INIT=0
+# Optional: authenticated Steam Community inventory media overlay
+STEAM_COOKIE_STRING=
+STEAM_LOGIN_SECURE=
+STEAM_SESSION_ID=
+# Optional: enable media overlay diagnostics + debug endpoint
+DEBUG_MEDIA=0
 ```
+
+Security note: never log Steam cookie values. Use a bot/throwaway Steam account for server-side cookies and treat `STEAM_LOGIN_SECURE` as a secret.
 
 ---
 

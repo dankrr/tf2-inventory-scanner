@@ -53,6 +53,7 @@ from .naming_and_warpaint import (
 from .filters_and_rules import _is_plain_craft_weapon, _has_attr
 
 logger = logging.getLogger(__name__)
+ECON_IMAGE_CDN = "https://steamcommunity-a.akamaihd.net/economy/image/"
 
 
 ATTRIBUTE_ALIASES = {
@@ -74,6 +75,50 @@ def _normalize_attr_name(name: str) -> str:
     """Return a normalized attribute name for comparison."""
 
     return re.sub(r"[-_\s]+", "", str(name).lower())
+
+
+def _economy_image_url(icon_hash: str | None, size: str | None = None) -> str | None:
+    """Return a full Steam economy image URL for an icon hash."""
+    if not icon_hash:
+        return None
+    icon = str(icon_hash).strip()
+    if not icon:
+        return None
+    if icon.startswith("http://") or icon.startswith("https://"):
+        base = icon
+    else:
+        base = ECON_IMAGE_CDN + icon.lstrip("/")
+    return f"{base}/{size}" if size else base
+
+
+def _resolve_item_image(asset: dict, schema_entry: dict) -> tuple[str, str | None, str]:
+    """Resolve item image URLs and source preference for item card rendering."""
+    schema_image = schema_entry.get("image_url", "") if schema_entry else ""
+    candidates = [
+        asset.get("image_url"),
+        asset.get("image_url_large")
+        if str(asset.get("image_url_large", "")).startswith(("http://", "https://"))
+        else None,
+        _economy_image_url(asset.get("icon_url_large")),
+        _economy_image_url(asset.get("icon_url")),
+        schema_image,
+    ]
+    image_url = next((img for img in candidates if img), "") or ""
+    image_url_small = asset.get("image_url_small") or _economy_image_url(
+        asset.get("icon_url"), "96fx96f"
+    )
+    community_won = image_url in {
+        asset.get("image_url"),
+        _economy_image_url(asset.get("icon_url_large")),
+        _economy_image_url(asset.get("icon_url")),
+    }
+    if community_won and asset.get("media_source") == "steam_community_inventory":
+        image_source = "steam_community_inventory"
+    elif image_url == schema_image and schema_image:
+        image_source = "schema"
+    else:
+        image_source = "asset"
+    return image_url, image_url_small, image_source
 
 
 @lru_cache(maxsize=1)
@@ -168,7 +213,7 @@ def _process_item(
         return None
 
     defindex = str(defindex_int)
-    image_url = schema_entry.get("image_url", "")
+    image_url, image_url_small, image_source = _resolve_item_image(asset, schema_entry)
 
     warpaintable = _is_warpaintable(schema_entry)
     warpaint_tool = defindex_int in WAR_PAINT_TOOL_DEFINDEXES or _is_warpaint_tool(
@@ -454,6 +499,8 @@ def _process_item(
         "quality_color": q_col,
         "border_color": border_color,
         "image_url": image_url,
+        "image_url_small": image_url_small,
+        "image_source": image_source,
         "item_type_name": schema_entry.get("item_type_name"),
         "item_name": schema_entry.get("name"),
         "craft_class": schema_entry.get("craft_class"),

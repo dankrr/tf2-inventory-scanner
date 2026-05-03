@@ -23,6 +23,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Updated schema caching logic and UI (previous releases).
+- Item cards now prefer exact Steam Community inventory media images when available, while keeping schema images as fallback.
+- Added optional authenticated Steam Community cookie env vars (`STEAM_COOKIE_STRING`, `STEAM_LOGIN_SECURE`, `STEAM_SESSION_ID`) for more reliable media fetching.
+- Added `DEBUG_MEDIA=1` observability hooks and a debug inventory media API endpoint.
 - Security audit using git-secrets and pip-audit.
 - Price loader now reads both Craftable and Non-Craftable price entries.
 - Plain craft weapons from achievements or promotions are no longer filtered and

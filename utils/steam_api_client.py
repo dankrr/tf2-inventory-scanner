@@ -10,8 +10,39 @@ from dotenv import load_dotenv
 load_dotenv()
 
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
+ECON_IMAGE_CDN = "https://steamcommunity-a.akamaihd.net/economy/image/"
 
 logger = logging.getLogger(__name__)
+
+
+def _economy_image_url(icon_hash: str | None, size: str | None = None) -> str | None:
+    """Return a full Steam economy image URL for an icon hash."""
+    if not icon_hash:
+        return None
+    icon = str(icon_hash).strip()
+    if not icon:
+        return None
+    if icon.startswith("http://") or icon.startswith("https://"):
+        base = icon
+    else:
+        base = ECON_IMAGE_CDN + icon.lstrip("/")
+    return f"{base}/{size}" if size else base
+
+
+def _steam_cookie_header() -> str | None:
+    """Return a Steam Community Cookie header from env vars, without logging secrets."""
+    raw = os.getenv("STEAM_COOKIE_STRING")
+    if raw and raw.strip():
+        return raw.strip()
+
+    login_secure = os.getenv("STEAM_LOGIN_SECURE")
+    sessionid = os.getenv("STEAM_SESSION_ID")
+    parts = []
+    if sessionid:
+        parts.append(f"sessionid={sessionid}")
+    if login_secure:
+        parts.append(f"steamLoginSecure={login_secure}")
+    return "; ".join(parts) if parts else None
 
 
 def _require_key() -> str:
@@ -166,6 +197,73 @@ async def fetch_inventory_async(steamid: str) -> Tuple[str, Dict[str, Any]]:
     items = result.get("items") or []
 
     if status_code == 1:
+        media_by_assetid = await fetch_inventory_media_async(steamid)
+        media_by_class_instance = {
+            (str(media.get("classid")), str(media.get("instanceid"))): media
+            for media in media_by_assetid.values()
+            if media.get("classid") is not None and media.get("instanceid") is not None
+        }
+        matched = 0
+        unmatched_ids: list[str] = []
+        for item in items:
+            candidate_ids = [
+                item.get("id"),
+                item.get("original_id"),
+                item.get("assetid"),
+            ]
+            media = None
+            for candidate in candidate_ids:
+                if candidate is None:
+                    continue
+                media = media_by_assetid.get(str(candidate))
+                if media:
+                    break
+            if media is None:
+                classid = item.get("classid")
+                instanceid = item.get("instanceid")
+                if classid is not None and instanceid is not None:
+                    media = media_by_class_instance.get((str(classid), str(instanceid)))
+            if not media:
+                unmatched_ids.append(str(item.get("id") or item.get("assetid") or ""))
+                continue
+            matched += 1
+            item.update(
+                {
+                    "image_url": media.get("image_url"),
+                    "image_url_small": media.get("image_url_small"),
+                    "icon_url": media.get("icon_url"),
+                    "icon_url_large": media.get("icon_url_large"),
+                    "market_hash_name": media.get("market_hash_name"),
+                    "market_name": media.get("market_name"),
+                    "steam_name": media.get("name"),
+                    "steam_type": media.get("type"),
+                    "name_color": media.get("name_color"),
+                    "background_color": media.get("background_color"),
+                    "steam_descriptions": media.get("descriptions", []),
+                    "steam_tags": media.get("tags", []),
+                    "media_source": media.get("media_source"),
+                }
+            )
+        debug_media = os.getenv("DEBUG_MEDIA") == "1"
+        cookies_present = "yes" if _steam_cookie_header() else "no"
+        logger.info(
+            "Inventory media overlay %s: web_items=%s media=%s matched=%s cookies=%s",
+            steamid,
+            len(items),
+            len(media_by_assetid),
+            matched,
+            cookies_present,
+        )
+        if debug_media:
+            web_ids = [str(item.get("id")) for item in items[:5]]
+            media_ids = list(media_by_assetid.keys())[:5]
+            logger.info("Inventory media debug %s web_ids=%s", steamid, web_ids)
+            logger.info("Inventory media debug %s media_ids=%s", steamid, media_ids)
+            logger.info(
+                "Inventory media debug %s unmatched_ids=%s",
+                steamid,
+                unmatched_ids[:5],
+            )
         if items:
             logger.info(
                 "Inventory %s: Public and Parsed (%s items)", steamid, len(items)
@@ -176,6 +274,105 @@ async def fetch_inventory_async(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
     logger.info("Inventory %s: Private", steamid)
     return "private", result
+
+
+async def fetch_inventory_media_async(steamid: str) -> dict[str, dict[str, Any]]:
+    """Fetch Steam Community inventory metadata and images keyed by asset ID."""
+    cookie = _steam_cookie_header()
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json,text/plain,*/*",
+        "Referer": f"https://steamcommunity.com/profiles/{steamid}/inventory/",
+    }
+    if cookie:
+        headers["Cookie"] = cookie
+    cookies_present = "yes" if cookie else "no"
+    media_by_assetid: dict[str, dict[str, Any]] = {}
+    start_assetid: str | None = None
+    page = 1
+    async with httpx.AsyncClient(timeout=20) as client:
+        while True:
+            params: dict[str, Any] = {"l": "english", "count": 5000}
+            if start_assetid:
+                params["start_assetid"] = start_assetid
+            url = f"https://steamcommunity.com/inventory/{steamid}/440/2"
+            try:
+                resp = await client.get(url, params=params, headers=headers)
+            except httpx.HTTPError:
+                logger.info(
+                    "Community media %s: page=%s status=error cookies=%s assets=0 descriptions=0",
+                    steamid,
+                    page,
+                    cookies_present,
+                )
+                return {}
+            if resp.status_code != 200:
+                logger.info(
+                    "Community media %s: page=%s status=%s cookies=%s assets=0 descriptions=0",
+                    steamid,
+                    page,
+                    resp.status_code,
+                    cookies_present,
+                )
+                return {}
+            try:
+                payload = resp.json()
+            except ValueError:
+                return {}
+            assets = payload.get("assets", []) or []
+            descriptions = payload.get("descriptions", []) or []
+            logger.info(
+                "Community media %s: page=%s status=%s cookies=%s assets=%s descriptions=%s",
+                steamid,
+                page,
+                resp.status_code,
+                cookies_present,
+                len(assets),
+                len(descriptions),
+            )
+            desc_lookup = {
+                (str(desc.get("classid")), str(desc.get("instanceid"))): desc
+                for desc in descriptions
+            }
+            for asset in assets:
+                assetid = str(asset.get("assetid") or "")
+                classid = str(asset.get("classid") or "")
+                instanceid = str(asset.get("instanceid") or "0")
+                if not assetid:
+                    continue
+                desc = desc_lookup.get((classid, instanceid), {})
+                icon_url = desc.get("icon_url")
+                icon_url_large = desc.get("icon_url_large")
+                exact_image = _economy_image_url(icon_url_large) or _economy_image_url(
+                    icon_url
+                )
+                small_image = _economy_image_url(icon_url, "96fx96f")
+                media_by_assetid[assetid] = {
+                    "assetid": assetid,
+                    "classid": classid,
+                    "instanceid": instanceid,
+                    "image_url": exact_image,
+                    "image_url_small": small_image,
+                    "icon_url": icon_url,
+                    "icon_url_large": icon_url_large,
+                    "market_hash_name": desc.get("market_hash_name"),
+                    "market_name": desc.get("market_name"),
+                    "name": desc.get("name"),
+                    "type": desc.get("type"),
+                    "name_color": desc.get("name_color"),
+                    "background_color": desc.get("background_color"),
+                    "descriptions": desc.get("descriptions", []),
+                    "tags": desc.get("tags", []),
+                    "media_source": "steam_community_inventory",
+                }
+            more_items = bool(payload.get("more_items"))
+            next_assetid = payload.get("last_assetid")
+            if not more_items or not next_assetid:
+                break
+            start_assetid = str(next_assetid)
+            page += 1
+    logger.info("Community media %s: total_media=%s", steamid, len(media_by_assetid))
+    return media_by_assetid
 
 
 def convert_to_steam64(id_str: str) -> str:

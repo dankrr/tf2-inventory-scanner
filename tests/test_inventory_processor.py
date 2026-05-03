@@ -10,7 +10,13 @@ import pytest
 def reset_data(monkeypatch):
     ld.ITEMS_BY_DEFINDEX = {}
     ld.SCHEMA_ATTRIBUTES = {}
-    ld.WEAR_NAMES_BY_ID = {}
+    ld.WEAR_NAMES_BY_ID = {
+        "1": "Factory New",
+        "2": "Minimal Wear",
+        "3": "Field-Tested",
+        "4": "Well-Worn",
+        "5": "Battle Scarred",
+    }
     ld.ITEM_GRADE_BY_DEFINDEX = {}
 
 
@@ -1798,3 +1804,30 @@ def test_killstreak_fabricator_parsing():
     ]
     assert item["stack_key"] is None
     assert item["target_weapon_image"] == "blut.png"
+
+def test_processor_prefers_community_image():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 6,
+                "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/exact",
+                "image_url_small": "https://steamcommunity-a.akamaihd.net/economy/image/exact/96fx96f",
+                "media_source": "steam_community_inventory",
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {111: {"item_name": "Rocket Launcher", "image_url": "schema-image"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    item = ip.process_inventory(data)[0]
+    assert item["image_url"].endswith("/exact")
+    assert item["image_source"] == "steam_community_inventory"
+
+
+def test_processor_falls_back_to_schema_image_source():
+    data = {"items": [{"defindex": 112, "quality": 6}]}
+    ld.ITEMS_BY_DEFINDEX = {112: {"item_name": "Shotgun", "image_url": "schema-image"}}
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+    item = ip.process_inventory(data)[0]
+    assert item["image_url"] == "schema-image"
+    assert item["image_source"] == "schema"

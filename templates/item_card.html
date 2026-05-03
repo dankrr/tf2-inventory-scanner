@@ -62,6 +62,7 @@ full_title = (title_parts + [base]) | join(' ') %}
   %}
   data-item='{{ item|tojson|forceescape }}'
   data-craftable="{{ 'true' if item.craftable else 'false' }}"
+  data-image-source="{{ item.image_source or 'unknown' }}"
 >
   <div class="item-badges">
     {% if item.is_australium %}

@@ -449,6 +449,33 @@ def api_constants():
     )
 
 
+@app.get("/api/debug/inventory-media/<steamid64>")
+async def debug_inventory_media(steamid64: str):
+    """Return a debug summary of Steam Community inventory media for one user."""
+    debug_enabled = os.getenv("DEBUG_MEDIA") == "1" or bool(app.debug)
+    if not debug_enabled:
+        return "", 404
+    media = await sac.fetch_inventory_media_async(steamid64)
+    sample = [
+        {
+            "assetid": row.get("assetid"),
+            "classid": row.get("classid"),
+            "instanceid": row.get("instanceid"),
+            "image_url": row.get("image_url"),
+            "market_hash_name": row.get("market_hash_name"),
+        }
+        for row in list(media.values())[:10]
+    ]
+    return jsonify(
+        {
+            "ok": True,
+            "used_cookies": bool(sac._steam_cookie_header()),
+            "count": len(media),
+            "sample": sample,
+        }
+    )
+
+
 # --- Flask routes -----------------------------------------------------------
 
 
