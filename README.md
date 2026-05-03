@@ -77,6 +77,7 @@ FLASK_SECRET_KEY=replace_with_random_secret
 CACHE_RETRIES=2            # Retries when fetching remote caches
 CACHE_DELAY=2              # Seconds between retry attempts
 SKIP_CACHE_INIT=0          # Set to 1 to skip cache validation on startup
+CDN_RESOLVER_ENABLED=1    # Set to 0 to disable CDN image resolution for Australium/War Paint variants
 ```
 
 **Getting API keys:**
