@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Prefer exact Steam Community inventory icon images as an overlay on parsed Web API inventory items, with schema images preserved as fallback.
+
 ### Added
 
 - Pre-commit configuration for formatting, linting, and secret scanning.

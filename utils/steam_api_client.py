@@ -13,6 +13,17 @@ STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 
 logger = logging.getLogger(__name__)
 
+ECON_IMAGE_CDN = "https://steamcommunity-a.akamaihd.net/economy/image/"
+
+
+def _economy_image_url(icon_hash: str | None, size: str | None = None) -> str | None:
+    """Return a full Steam economy image URL for an icon hash."""
+
+    if not icon_hash:
+        return None
+    base = ECON_IMAGE_CDN + str(icon_hash).lstrip("/")
+    return f"{base}/{size}" if size else base
+
 
 def _require_key() -> str:
     """Return the Steam API key or raise an error if missing."""
@@ -126,6 +137,87 @@ async def get_player_summaries_async(steamids: List[str]) -> List[Dict[str, Any]
     return results
 
 
+
+
+async def fetch_inventory_media_async(steamid: str) -> dict[str, dict[str, Any]]:
+    """Return Steam Community inventory media metadata keyed by asset ID.
+
+    This endpoint is used as a media overlay only and should not be treated as
+    a hard dependency for inventory parsing.
+    """
+
+    headers = {"User-Agent": "Mozilla/5.0"}
+    url = f"https://steamcommunity.com/inventory/{steamid}/440/2"
+    params: dict[str, Any] = {"l": "english", "count": 5000}
+    media_by_assetid: dict[str, dict[str, Any]] = {}
+
+    async with httpx.AsyncClient(timeout=20) as client:
+        while True:
+            try:
+                resp = await client.get(url, params=params, headers=headers)
+            except httpx.HTTPError as exc:
+                logger.warning("Community media fetch failed for %s: %s", steamid, exc)
+                return {}
+
+            if resp.status_code != 200:
+                logger.warning(
+                    "Community media HTTP %s for %s", resp.status_code, steamid
+                )
+                return {}
+
+            try:
+                payload = resp.json()
+            except ValueError:
+                logger.warning("Community media invalid JSON for %s", steamid)
+                return {}
+
+            descriptions = payload.get("descriptions") or []
+            assets = payload.get("assets") or []
+            description_by_key = {
+                (str(d.get("classid") or ""), str(d.get("instanceid") or "0")): d
+                for d in descriptions
+                if d.get("classid")
+            }
+
+            for asset in assets:
+                assetid = str(asset.get("assetid") or "")
+                if not assetid:
+                    continue
+                classid = str(asset.get("classid") or "")
+                instanceid = str(asset.get("instanceid") or "0")
+                desc = description_by_key.get((classid, instanceid), {})
+
+                icon_url = desc.get("icon_url")
+                icon_url_large = desc.get("icon_url_large")
+                exact_image = _economy_image_url(icon_url_large) or _economy_image_url(icon_url)
+                media_by_assetid[assetid] = {
+                    "assetid": assetid,
+                    "classid": classid,
+                    "instanceid": instanceid,
+                    "image_url": exact_image,
+                    "image_url_small": _economy_image_url(icon_url, "96fx96f"),
+                    "icon_url": icon_url,
+                    "icon_url_large": icon_url_large,
+                    "market_hash_name": desc.get("market_hash_name"),
+                    "market_name": desc.get("market_name"),
+                    "name": desc.get("name"),
+                    "type": desc.get("type"),
+                    "name_color": desc.get("name_color"),
+                    "background_color": desc.get("background_color"),
+                    "descriptions": desc.get("descriptions", []),
+                    "tags": desc.get("tags", []),
+                    "media_source": "steam_community_inventory",
+                }
+
+            if not payload.get("more_items"):
+                break
+            last_assetid = payload.get("last_assetid")
+            if not last_assetid:
+                break
+            params["start_assetid"] = str(last_assetid)
+
+    return media_by_assetid
+
 async def fetch_inventory_async(steamid: str) -> Tuple[str, Dict[str, Any]]:
     """Asynchronously fetch and classify a user's TF2 inventory."""
 
@@ -167,6 +259,29 @@ async def fetch_inventory_async(steamid: str) -> Tuple[str, Dict[str, Any]]:
 
     if status_code == 1:
         if items:
+            media_by_assetid = await fetch_inventory_media_async(steamid)
+            for item in items:
+                asset_id = str(item.get("id") or item.get("original_id") or "")
+                media = media_by_assetid.get(asset_id)
+                if not media:
+                    continue
+                item.update(
+                    {
+                        "image_url": media.get("image_url"),
+                        "image_url_small": media.get("image_url_small"),
+                        "icon_url": media.get("icon_url"),
+                        "icon_url_large": media.get("icon_url_large"),
+                        "market_hash_name": media.get("market_hash_name"),
+                        "market_name": media.get("market_name"),
+                        "steam_name": media.get("name"),
+                        "steam_type": media.get("type"),
+                        "name_color": media.get("name_color"),
+                        "background_color": media.get("background_color"),
+                        "steam_descriptions": media.get("descriptions", []),
+                        "steam_tags": media.get("tags", []),
+                        "media_source": media.get("media_source"),
+                    }
+                )
             logger.info(
                 "Inventory %s: Public and Parsed (%s items)", steamid, len(items)
             )

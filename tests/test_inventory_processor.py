@@ -1798,3 +1798,35 @@ def test_killstreak_fabricator_parsing():
     ]
     assert item["stack_key"] is None
     assert item["target_weapon_image"] == "blut.png"
+
+def test_enrich_inventory_prefers_community_image_over_schema():
+    data = {
+        "items": [
+            {
+                "defindex": 111,
+                "quality": 6,
+                "image_url": "https://steamcommunity-a.akamaihd.net/economy/image/exact_skin",
+                "media_source": "steam_community_inventory",
+            }
+        ]
+    }
+    ld.ITEMS_BY_DEFINDEX = {
+        111: {"item_name": "Rocket Launcher", "image_url": "schema_base_weapon.png"}
+    }
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+
+    items = ip.enrich_inventory(data)
+    assert items[0]["image_url"] == "https://steamcommunity-a.akamaihd.net/economy/image/exact_skin"
+    assert items[0]["image_source"] == "steam_community_inventory"
+
+
+def test_enrich_inventory_falls_back_to_schema_image_without_media():
+    data = {"items": [{"defindex": 111, "quality": 6}]}
+    ld.ITEMS_BY_DEFINDEX = {
+        111: {"item_name": "Rocket Launcher", "image_url": "schema_base_weapon.png"}
+    }
+    ld.QUALITIES_BY_INDEX = {6: "Unique"}
+
+    items = ip.enrich_inventory(data)
+    assert items[0]["image_url"] == "schema_base_weapon.png"
+    assert items[0]["image_source"] == "schema"

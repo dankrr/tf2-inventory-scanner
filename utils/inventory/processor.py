@@ -55,6 +55,35 @@ from .filters_and_rules import _is_plain_craft_weapon, _has_attr
 logger = logging.getLogger(__name__)
 
 
+ECON_IMAGE_CDN = "https://steamcommunity-a.akamaihd.net/economy/image/"
+
+
+def _economy_image_url(icon_hash: str | None, size: str | None = None) -> str | None:
+    """Return a full Steam economy image URL for an icon hash."""
+
+    if not icon_hash:
+        return None
+    base = ECON_IMAGE_CDN + str(icon_hash).lstrip("/")
+    return f"{base}/{size}" if size else base
+
+
+def _resolve_item_image(asset: dict, schema_entry: dict) -> tuple[str, str | None, str]:
+    """Return preferred item image URL, small URL, and image source label."""
+
+    icon_url_cdn = asset.get("icon_url_cdn") or _economy_image_url(asset.get("icon_url"))
+    icon_url_large_cdn = asset.get("icon_url_large_cdn") or _economy_image_url(asset.get("icon_url_large"))
+    image_url = (
+        asset.get("image_url")
+        or asset.get("image_url_large")
+        or icon_url_large_cdn
+        or icon_url_cdn
+        or schema_entry.get("image_url", "")
+    )
+    image_url_small = asset.get("image_url_small") or _economy_image_url(asset.get("icon_url"), "96fx96f")
+    image_source = "steam_community_inventory" if image_url and image_url != schema_entry.get("image_url", "") else "schema"
+    return image_url, image_url_small, image_source
+
+
 ATTRIBUTE_ALIASES = {
     "attach_particle_effect": [
         "attach particle effect",
@@ -168,7 +197,7 @@ def _process_item(
         return None
 
     defindex = str(defindex_int)
-    image_url = schema_entry.get("image_url", "")
+    image_url, image_url_small, image_source = _resolve_item_image(asset, schema_entry)
 
     warpaintable = _is_warpaintable(schema_entry)
     warpaint_tool = defindex_int in WAR_PAINT_TOOL_DEFINDEXES or _is_warpaint_tool(
@@ -453,6 +482,8 @@ def _process_item(
         "quality_color": q_col,
         "border_color": border_color,
         "image_url": image_url,
+        "image_url_small": image_url_small,
+        "image_source": image_source,
         "item_type_name": schema_entry.get("item_type_name"),
         "item_name": schema_entry.get("name"),
         "craft_class": schema_entry.get("craft_class"),
