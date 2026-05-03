@@ -8,7 +8,6 @@ import time
 import asyncio
 
 from .constants import KILLSTREAK_TIERS
-from .terminal import COLOR_YELLOW, COLOR_RESET
 
 import httpx
 import requests
@@ -21,6 +20,10 @@ logger = logging.getLogger(__name__)
 PRICES_FILE = Path("cache/prices.json")
 CURRENCIES_FILE = Path("cache/currencies.json")
 PRICE_MAP_FILE = Path("cache/price_map.json")
+
+# ANSI color codes
+COLOR_YELLOW = "\033[33m"
+COLOR_RESET = "\033[0m"
 
 # bytes
 EMPTY_THRESHOLD = 512 * 1024
@@ -95,15 +98,14 @@ def ensure_prices_cached(refresh: bool = False) -> Path:
     if path.exists() and not refresh:
         return path
 
-    bptf_url = "https://backpack.tf/api/IGetPrices/v4"
-    bptf_params = {"raw": "1", "key": _require_key()}
+    url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
     retries = int(os.getenv("PRICE_RETRIES", "3"))
     delay = int(os.getenv("PRICE_DELAY", "5"))
     last_err: Exception | None = None
 
     for attempt in range(1, retries + 1):
         try:
-            resp = requests.get(bptf_url, params=bptf_params, timeout=30, headers={"accept": "application/json"})
+            resp = requests.get(url, timeout=5, headers={"accept": "application/json"})
             resp.raise_for_status()
             data = resp.json()
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -143,8 +145,7 @@ async def ensure_prices_cached_async(refresh: bool = False) -> Path:
     if path.exists() and not refresh:
         return path
 
-    bptf_url = "https://backpack.tf/api/IGetPrices/v4"
-    bptf_params = {"raw": "1", "key": _require_key()}
+    url = f"https://backpack.tf/api/IGetPrices/v4?raw=1&key={_require_key()}"
     retries = int(os.getenv("PRICE_RETRIES", "3"))
     delay = int(os.getenv("PRICE_DELAY", "5"))
     last_err: Exception | None = None
@@ -153,7 +154,7 @@ async def ensure_prices_cached_async(refresh: bool = False) -> Path:
         for attempt in range(1, retries + 1):
             try:
                 resp = await client.get(
-                    bptf_url, params=bptf_params, timeout=30, headers={"accept": "application/json"}
+                    url, timeout=5, headers={"accept": "application/json"}
                 )
                 resp.raise_for_status()
                 data = resp.json()
@@ -184,10 +185,9 @@ def ensure_currencies_cached(refresh: bool = False) -> Path:
     if path.exists() and not refresh:
         return path
 
-    curr_url = "https://backpack.tf/api/IGetCurrencies/v1"
-    curr_params = {"raw": "1", "key": _require_key()}
+    url = f"https://backpack.tf/api/IGetCurrencies/v1?raw=1&key={_require_key()}"
     try:
-        resp = requests.get(curr_url, params=curr_params, timeout=10, headers={"accept": "application/json"})
+        resp = requests.get(url, timeout=5, headers={"accept": "application/json"})
         resp.raise_for_status()
         data = resp.json()
     except Exception as exc:  # requests or JSON
@@ -208,12 +208,11 @@ async def ensure_currencies_cached_async(refresh: bool = False) -> Path:
     if path.exists() and not refresh:
         return path
 
-    curr_url = "https://backpack.tf/api/IGetCurrencies/v1"
-    curr_params = {"raw": "1", "key": _require_key()}
+    url = f"https://backpack.tf/api/IGetCurrencies/v1?raw=1&key={_require_key()}"
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.get(
-                curr_url, params=curr_params, timeout=10, headers={"accept": "application/json"}
+                url, timeout=5, headers={"accept": "application/json"}
             )
             resp.raise_for_status()
             data = resp.json()

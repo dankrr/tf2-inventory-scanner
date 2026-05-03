@@ -53,15 +53,11 @@ def _decode_seed_info(attrs: Iterable[dict]) -> Tuple[float | None, int | None]:
     if lo is None or hi is None:
         return None, None
 
-    _UINT32_MAX = 0xFFFFFFFF
-    try:
-        wear = struct.unpack("<f", struct.pack("<I", hi & _UINT32_MAX))[0]
-        seed = lo
-        if not (0 <= wear <= 1):
-            wear = struct.unpack("<f", struct.pack("<I", lo & _UINT32_MAX))[0]
-            seed = hi
-    except struct.error:
-        return None, None
+    wear = struct.unpack("<f", struct.pack("<I", hi))[0]
+    seed = lo
+    if not (0 <= wear <= 1):
+        wear = struct.unpack("<f", struct.pack("<I", lo))[0]
+        seed = hi
     if not (0 <= wear <= 1):
         wear = None
     return wear, seed

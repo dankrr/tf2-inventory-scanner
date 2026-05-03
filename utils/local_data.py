@@ -8,7 +8,11 @@ import vdf
 from .schema_provider import SchemaProvider
 from .price_loader import ensure_currencies_cached
 
-# Schema maps sourced from schema.autobot.tf
+# Legacy globals kept for backward compatibility
+TF2_SCHEMA: Dict[str, Any] = {}
+ITEMS_GAME_CLEANED: Dict[str, Any] = {}
+
+# New schema maps sourced from schema.autobot.tf
 SCHEMA_ATTRIBUTES: Dict[int, Dict[str, Any]] = {}
 ITEMS_BY_DEFINDEX: Dict[int, Dict[str, Any]] = {}
 QUALITIES_BY_INDEX: Dict[int, str] = {}
@@ -35,6 +39,19 @@ KILLSTREAK_EFFECT_NAMES: Dict[str, str] = {
     "2006": "Singularity",
     "2007": "Incinerator",
     "2008": "Hypno-Beam",
+}
+
+# Map of attribute class -> in-game spell name
+SPELL_DISPLAY_NAMES: Dict[str, str] = {
+    "halloween_voice_modulation": "Voices From Below",
+    "halloween_pumpkin_explosions": "Pumpkin Bombs",
+    "halloween_green_flames": "Halloween Fire",
+    "halloween_death_ghosts": "Exorcism",
+    "halloween_footstep_type": "Halloween Footprints",
+    "set_item_tint_rgb_override": "Die Job (Purple/Green Paint)",
+    "set_item_tint_rgb_unusual": "Chromatic Corruption",
+    "set_item_texture_wear_override": "Spectral Spectrum",
+    "set_item_color_wear_override": "Sinister Staining",
 }
 
 # Base directory of the project
