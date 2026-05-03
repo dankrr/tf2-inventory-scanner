@@ -121,6 +121,14 @@ async def _do_refresh() -> int:
             except FileNotFoundError:
                 pass
 
+    cdn_path = Path("cache/cdn_images.json")
+    if cdn_path.exists():
+        try:
+            cdn_path.unlink()
+            print(f"\N{BROOM} Cleared {cdn_path}")
+        except FileNotFoundError:
+            pass
+
     curr_path = Path("cache/currencies.json")
     if curr_path.exists():
         size = curr_path.stat().st_size
