@@ -1,4 +1,5 @@
 from typing import Any, Dict, List
+import asyncio
 import json
 from pathlib import Path
 
@@ -20,9 +21,10 @@ except Exception:  # pragma: no cover
         )
 from .processor import _process_item
 from .extractors_misc import _PARTS_BY_ID
+from ..cdn_image_resolver import CDNImageResolver, is_enabled
 
 
-def enrich_inventory(
+async def enrich_inventory_async(
     data: Dict[str, Any],
     valuation_service: ValuationService | None = None,
 ) -> List[Dict[str, Any]]:
@@ -88,17 +90,29 @@ def enrich_inventory(
         item["spells"] = spells_list  # backward compatibility for JS
         items.append(item)
 
+    if is_enabled() and items:
+        resolver = CDNImageResolver()
+        semaphore = asyncio.Semaphore(4)
+
+        async def _resolve_and_patch(item: Dict[str, Any]) -> None:
+            async with semaphore:
+                resolved = await resolver.resolve_item_image(item)
+            if resolved:
+                item["image_url"] = resolved
+
+        await asyncio.gather(*[_resolve_and_patch(item) for item in items])
+
     return items
 
 
-def process_inventory(
+async def process_inventory_async(
     data: Dict[str, Any],
     valuation_service: ValuationService | None = None,
 ) -> List[Dict[str, Any]]:
     """Return enriched items sorted by descending price."""
     if valuation_service is None:
         valuation_service = get_valuation_service()
-    items = enrich_inventory(data, valuation_service)
+    items = await enrich_inventory_async(data, valuation_service)
 
     def _sort_key(item: Dict[str, Any]) -> tuple[float, str]:
         price_info = item.get("price") or {}
@@ -106,6 +120,24 @@ def process_inventory(
         return -float(value), item["name"]
 
     return sorted(items, key=_sort_key)
+
+
+def enrich_inventory(
+    data: Dict[str, Any],
+    valuation_service: ValuationService | None = None,
+) -> List[Dict[str, Any]]:
+    """Synchronous wrapper around :func:`enrich_inventory_async`."""
+
+    return asyncio.run(enrich_inventory_async(data, valuation_service))
+
+
+def process_inventory(
+    data: Dict[str, Any],
+    valuation_service: ValuationService | None = None,
+) -> List[Dict[str, Any]]:
+    """Synchronous wrapper around :func:`process_inventory_async`."""
+
+    return asyncio.run(process_inventory_async(data, valuation_service))
 
 
 def run_enrichment_test(path: str | None = None) -> None:
@@ -130,11 +162,13 @@ def run_enrichment_test(path: str | None = None) -> None:
     with file_path.open() as f:
         raw = json.load(f)
 
-    items = process_inventory(raw)
+    items = asyncio.run(process_inventory_async(raw))
     print(json.dumps(items, indent=2))
 
 
 __all__ = [
+    "enrich_inventory_async",
+    "process_inventory_async",
     "enrich_inventory",
     "process_inventory",
     "run_enrichment_test",
