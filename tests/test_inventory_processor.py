@@ -1337,7 +1337,7 @@ def test_skin_with_statclock(monkeypatch):
     assert any(b["type"] == "statclock" for b in item["badges"])
     assert item["has_strange_tracking"] is True
     assert item["statclock_badge"] == (
-        "https://media.steampowered.com/apps/440/icons/"
+        "http://media.steampowered.com/apps/440/icons/"
         "stattrack.fea7f754b9ab447df18af382036d7d93ed97aca9.png"
     )
 

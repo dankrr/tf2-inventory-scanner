@@ -8,7 +8,6 @@ from typing import List
 
 from .price_loader import ensure_prices_cached_async, ensure_currencies_cached_async
 from .schema_provider import SchemaProvider
-from .terminal import COLOR_YELLOW, COLOR_GREEN, COLOR_RED, COLOR_RESET
 
 # Environment configuration
 CACHE_RETRIES_DEFAULT = int(os.getenv("CACHE_RETRIES", "2"))
@@ -19,6 +18,12 @@ SKIP_CACHE_INIT_DEFAULT = os.getenv("SKIP_CACHE_INIT", "0") == "1"
 MIN_SCHEMA_FILE_SIZE = 1024  # 1 KB
 MIN_PRICES_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 MIN_CURRENCIES_FILE_SIZE = 1024  # 1 KB
+
+# ANSI color codes
+COLOR_YELLOW = "\033[33m"
+COLOR_GREEN = "\033[32m"
+COLOR_RED = "\033[31m"
+COLOR_RESET = "\033[0m"
 
 # List of files required for the application to run
 REQUIRED_FILES: List[Path] = [

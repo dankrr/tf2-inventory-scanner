@@ -31,3 +31,20 @@ def format_price(value_raw: float, currencies: Dict[str, Any]) -> str:
     return " ".join(parts)
 
 
+def convert_price_to_keys_ref(
+    value_raw: float, currency: str, currencies: Dict[str, Any]
+) -> str:
+    """Return a price string like ``"1 Key 0.11 ref"``."""
+
+    return format_price(value_raw, currencies)
+
+
+def convert_to_key_ref(
+    value_refined: float, currencies: Dict[str, Any] | None = None
+) -> str:
+    """Return a price string formatted using key price and refined metal."""
+
+    if currencies is None:
+        currencies = local_data.CURRENCIES
+
+    return format_price(value_refined, currencies)

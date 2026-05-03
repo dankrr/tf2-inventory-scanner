@@ -427,17 +427,18 @@ def _process_item(
         else:
             display_name = f"{display_name} (Strange)"
         stat_clock_img = (
-            "https://media.steampowered.com/apps/440/icons/"
+            "http://media.steampowered.com/apps/440/icons/"
             "stattrack.fea7f754b9ab447df18af382036d7d93ed97aca9.png"
         )
-        badges.insert(
-            0,
-            {
-                "icon_url": stat_clock_img,
-                "type": "statclock",
-                "title": "StatTrak\u2122",
-            },
-        )
+        if stat_clock_img:
+            badges.insert(
+                0,
+                {
+                    "icon_url": stat_clock_img,
+                    "type": "statclock",
+                    "title": "StatTrak\u2122",
+                },
+            )
 
     item = {
         "id": asset.get("id"),
@@ -553,6 +554,11 @@ def _process_item(
         "craftable": craftable,
         "_hidden": hide_item,
         "extra_qualities": extra_qualities,
+        "killstreak_tier_name": (
+            ks_tool_info.get("tier_name")
+            if ks_tool_info
+            else KILLSTREAK_TIERS.get(int(float(ks_tier_val))) if ks_tier_val else None
+        ),
         **grade_tier,
     }
 
